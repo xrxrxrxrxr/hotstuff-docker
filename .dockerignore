@@ -1,0 +1,10 @@
+# Ignore target directory
+hotstuff_rs/target
+
+# Ignore Git files
+hotstuff_rs/.git
+hotstuff_rs/.gitignore
+
+# Ignore build artifacts
+hotstuff_rs/target/
+hotstuff_rs/coverage/

@@ -1,0 +1,19 @@
+# version: "3.8"
+
+services:
+  hotstuff:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hotstuff_rs
+    working_dir: /xr/hsf
+    volumes:
+      - ./hotstuff_rs:/xr/hsf # Mount the forked hotstuff_rs to /xr/hsf
+      - ./data:/xr/hsf/data # Mount data directory for persistence
+    ports:
+      - "8080:8080" # Adjust the port mapping as needed
+    command: ["./target/release/hotstuff_rs"]
+
+volumes:
+  data:
+    driver: local
