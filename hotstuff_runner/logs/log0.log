@@ -1,0 +1,63 @@
+[1753883125] Node 0: 🎬 Starting up
+[1753883125] Node 0: Connected to peers: [1, 2, 3]
+[1753883125] Node 0: Initialized successfully
+[1753883125] Node 0: Starting main loop
+[1753883125] Node 0: Starting consensus round 0
+[1753883125] Node 0: Is leader for round 0
+[1753883125] Node 0: Broadcasting: PROPOSE: Round 0
+[1753883125] Node 0: Sending to Node 1: PROPOSE: Round 0
+[1753883125] Node 0: Sending to Node 2: PROPOSE: Round 0
+[1753883125] Node 0: Sending to Node 3: PROPOSE: Round 0
+[1753883125] Node 0: Broadcasting: VOTE: Round 0
+[1753883125] Node 0: Sending to Node 1: VOTE: Round 0
+[1753883125] Node 0: Sending to Node 2: VOTE: Round 0
+[1753883125] Node 0: Sending to Node 3: VOTE: Round 0
+[1753883125] Node 0: Committing round 0
+[1753883125] Node 0: Broadcasting: COMMIT: Round 0
+[1753883125] Node 0: Sending to Node 1: COMMIT: Round 0
+[1753883125] Node 0: Sending to Node 2: COMMIT: Round 0
+[1753883125] Node 0: Sending to Node 3: COMMIT: Round 0
+[1753883125] Node 0: Current counter value: 0
+[1753883126] Node 0: Starting consensus round 1
+[1753883126] Node 0: Broadcasting: VOTE: Round 1
+[1753883126] Node 0: Sending to Node 1: VOTE: Round 1
+[1753883126] Node 0: Sending to Node 2: VOTE: Round 1
+[1753883126] Node 0: Sending to Node 3: VOTE: Round 1
+[1753883126] Node 0: Current counter value: 0
+[1753883127] Node 0: Starting consensus round 2
+[1753883127] Node 0: Broadcasting: VOTE: Round 2
+[1753883127] Node 0: Sending to Node 1: VOTE: Round 2
+[1753883127] Node 0: Sending to Node 2: VOTE: Round 2
+[1753883127] Node 0: Sending to Node 3: VOTE: Round 2
+[1753883127] Node 0: Received transaction: Decrement
+[1753883127] Node 0: Current counter value: 0
+[1753883128] Node 0: Processing 1 transactions
+[1753883128] Node 0: Applied transaction Decrement: 0 -> 0
+[1753883128] Node 0: Broadcasting: TX: "Decrement"
+[1753883128] Node 0: Sending to Node 1: TX: "Decrement"
+[1753883128] Node 0: Sending to Node 2: TX: "Decrement"
+[1753883128] Node 0: Sending to Node 3: TX: "Decrement"
+[1753883128] Node 0: Starting consensus round 3
+[1753883128] Node 0: Broadcasting: VOTE: Round 3
+[1753883128] Node 0: Sending to Node 1: VOTE: Round 3
+[1753883128] Node 0: Sending to Node 2: VOTE: Round 3
+[1753883128] Node 0: Sending to Node 3: VOTE: Round 3
+[1753883128] Node 0: Current counter value: 0
+[1753883129] Node 0: Starting consensus round 4
+[1753883129] Node 0: Is leader for round 4
+[1753883129] Node 0: Broadcasting: PROPOSE: Round 4
+[1753883129] Node 0: Sending to Node 1: PROPOSE: Round 4
+[1753883129] Node 0: Sending to Node 2: PROPOSE: Round 4
+[1753883129] Node 0: Sending to Node 3: PROPOSE: Round 4
+[1753883129] Node 0: Broadcasting: VOTE: Round 4
+[1753883129] Node 0: Sending to Node 1: VOTE: Round 4
+[1753883129] Node 0: Sending to Node 2: VOTE: Round 4
+[1753883129] Node 0: Sending to Node 3: VOTE: Round 4
+[1753883129] Node 0: Committing round 4
+[1753883129] Node 0: Broadcasting: COMMIT: Round 4
+[1753883129] Node 0: Sending to Node 1: COMMIT: Round 4
+[1753883129] Node 0: Sending to Node 2: COMMIT: Round 4
+[1753883129] Node 0: Sending to Node 3: COMMIT: Round 4
+[1753883129] Node 0: Current counter value: 0
+[1753883130] Node 0: Completed. Final counter value: 0
+[1753883130] Node 0: Shutting down
