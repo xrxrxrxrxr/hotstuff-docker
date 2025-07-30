@@ -1,9 +1,19 @@
 [package]
 name = "hotstuff_runner"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 [dependencies]
-hotstuff_rs = { path = "../hotstuff_rs" } # 确保路径正确
-log = "0.4" # 添加日志支持
-fern = "0.6" # 添加日志格式化支持
+hotstuff_rs = { path = "../hotstuff_rs" }
+tokio = { version = "1.0", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+uuid = { version = "1.0", features = ["v4"] }
+tracing = "0.1"
+tracing-subscriber = "0.3"
+anyhow = "1.0"
+async-trait = "0.1"
+
+[[bin]]
+name = "node"
+path = "src/main.rs"
