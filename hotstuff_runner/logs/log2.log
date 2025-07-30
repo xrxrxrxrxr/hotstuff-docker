@@ -1,0 +1,47 @@
+2025-07-30T13:39:02.389303Z  INFO tokio-runtime-worker ThreadId(03) 🎬 Node 2 starting up
+2025-07-30T13:39:02.389393Z  INFO tokio-runtime-worker ThreadId(03) Node 2 connected to peers: [0, 1, 3]
+2025-07-30T13:39:02.389422Z  INFO tokio-runtime-worker ThreadId(03) Node 2 initialized successfully
+2025-07-30T13:39:02.389443Z  INFO tokio-runtime-worker ThreadId(03) Node 2 starting main loop
+2025-07-30T13:39:02.389469Z  INFO tokio-runtime-worker ThreadId(03) Node 2 starting consensus round 0
+2025-07-30T13:39:02.491719Z  INFO tokio-runtime-worker ThreadId(02) Node 2 broadcasting: VOTE: Round 0
+2025-07-30T13:39:02.491810Z  INFO tokio-runtime-worker ThreadId(02) Node 2 sending to Node 0: VOTE: Round 0
+2025-07-30T13:39:02.503878Z  INFO tokio-runtime-worker ThreadId(02) Node 2 sending to Node 1: VOTE: Round 0
+2025-07-30T13:39:02.515999Z  INFO tokio-runtime-worker ThreadId(02) Node 2 sending to Node 3: VOTE: Round 0
+2025-07-30T13:39:02.630021Z  INFO tokio-runtime-worker ThreadId(02) Node 2 current counter value: 0
+2025-07-30T13:39:03.431761Z  INFO tokio-runtime-worker ThreadId(02) Node 2 starting consensus round 1
+2025-07-30T13:39:03.532967Z  INFO tokio-runtime-worker ThreadId(02) Node 2 broadcasting: VOTE: Round 1
+2025-07-30T13:39:03.533037Z  INFO tokio-runtime-worker ThreadId(02) Node 2 sending to Node 0: VOTE: Round 1
+2025-07-30T13:39:03.544427Z  INFO tokio-runtime-worker ThreadId(02) Node 2 sending to Node 1: VOTE: Round 1
+2025-07-30T13:39:03.556490Z  INFO tokio-runtime-worker ThreadId(02) Node 2 sending to Node 3: VOTE: Round 1
+2025-07-30T13:39:03.669553Z  INFO tokio-runtime-worker ThreadId(02) Node 2 current counter value: 0
+2025-07-30T13:39:04.471757Z  INFO tokio-runtime-worker ThreadId(02) Node 2 starting consensus round 2
+2025-07-30T13:39:04.471882Z  INFO tokio-runtime-worker ThreadId(02) Node 2 is leader for round 2
+2025-07-30T13:39:04.471953Z  INFO tokio-runtime-worker ThreadId(02) Node 2 broadcasting: PROPOSE: Round 2
+2025-07-30T13:39:04.471980Z  INFO tokio-runtime-worker ThreadId(02) Node 2 sending to Node 0: PROPOSE: Round 2
+2025-07-30T13:39:04.483507Z  INFO tokio-runtime-worker ThreadId(02) Node 2 sending to Node 1: PROPOSE: Round 2
+2025-07-30T13:39:04.495658Z  INFO tokio-runtime-worker ThreadId(02) Node 2 sending to Node 3: PROPOSE: Round 2
+2025-07-30T13:39:04.608804Z  INFO tokio-runtime-worker ThreadId(02) Node 2 broadcasting: VOTE: Round 2
+2025-07-30T13:39:04.608890Z  INFO tokio-runtime-worker ThreadId(02) Node 2 sending to Node 0: VOTE: Round 2
+2025-07-30T13:39:04.620142Z  INFO tokio-runtime-worker ThreadId(02) Node 2 sending to Node 1: VOTE: Round 2
+2025-07-30T13:39:04.631552Z  INFO tokio-runtime-worker ThreadId(02) Node 2 sending to Node 3: VOTE: Round 2
+2025-07-30T13:39:04.744941Z  INFO tokio-runtime-worker ThreadId(02) Node 2 committing round 2
+2025-07-30T13:39:04.745105Z  INFO tokio-runtime-worker ThreadId(02) Node 2 broadcasting: COMMIT: Round 2
+2025-07-30T13:39:04.745152Z  INFO tokio-runtime-worker ThreadId(02) Node 2 sending to Node 0: COMMIT: Round 2
+2025-07-30T13:39:04.757235Z  INFO tokio-runtime-worker ThreadId(02) Node 2 sending to Node 1: COMMIT: Round 2
+2025-07-30T13:39:04.769156Z  INFO tokio-runtime-worker ThreadId(02) Node 2 sending to Node 3: COMMIT: Round 2
+2025-07-30T13:39:04.781387Z  INFO tokio-runtime-worker ThreadId(02) Node 2 current counter value: 0
+2025-07-30T13:39:05.583400Z  INFO tokio-runtime-worker ThreadId(02) Node 2 starting consensus round 3
+2025-07-30T13:39:05.685131Z  INFO tokio-runtime-worker ThreadId(02) Node 2 broadcasting: VOTE: Round 3
+2025-07-30T13:39:05.685232Z  INFO tokio-runtime-worker ThreadId(02) Node 2 sending to Node 0: VOTE: Round 3
+2025-07-30T13:39:05.697309Z  INFO tokio-runtime-worker ThreadId(02) Node 2 sending to Node 1: VOTE: Round 3
+2025-07-30T13:39:05.708992Z  INFO tokio-runtime-worker ThreadId(02) Node 2 sending to Node 3: VOTE: Round 3
+2025-07-30T13:39:05.821365Z  INFO tokio-runtime-worker ThreadId(02) Node 2 current counter value: 0
+2025-07-30T13:39:06.622813Z  INFO tokio-runtime-worker ThreadId(02) Node 2 starting consensus round 4
+2025-07-30T13:39:06.724316Z  INFO tokio-runtime-worker ThreadId(02) Node 2 broadcasting: VOTE: Round 4
+2025-07-30T13:39:06.724417Z  INFO tokio-runtime-worker ThreadId(02) Node 2 sending to Node 0: VOTE: Round 4
+2025-07-30T13:39:06.736465Z  INFO tokio-runtime-worker ThreadId(02) Node 2 sending to Node 1: VOTE: Round 4
+2025-07-30T13:39:06.748466Z  INFO tokio-runtime-worker ThreadId(02) Node 2 sending to Node 3: VOTE: Round 4
+2025-07-30T13:39:06.862591Z  INFO tokio-runtime-worker ThreadId(02) Node 2 received transaction: Decrement
+2025-07-30T13:39:06.862697Z  INFO tokio-runtime-worker ThreadId(02) Node 2 current counter value: 0
+2025-07-30T13:39:07.665073Z  INFO tokio-runtime-worker ThreadId(02) Node 2 completed. Final counter value: 0
+2025-07-30T13:39:07.665300Z  INFO tokio-runtime-worker ThreadId(02) Node 2 shutting down
