@@ -1,307 +1,202 @@
-use std::{sync::Arc, time::Duration, fs};
-use tokio::sync::Mutex;
-use tokio::io::AsyncWriteExt;
+// hotstuff_runner/src/main.rs
+use hotstuff_rs::{
+    types::{
+        crypto_primitives::VerifyingKey,
+        data_types::Power,
+        update_sets::{AppStateUpdates, ValidatorSetUpdates},
+    },
+};
+use hotstuff_runner::{
+    node::Node,
+    network::create_mock_network,
+};
+use log::{info, debug, warn, error};
+use std::sync::{Arc, Mutex};
+use std::thread;
+use std::time::Duration;
+use ed25519_dalek::SigningKey;
+use std::fs;
+use chrono::{DateTime, Local};
 
-// 简化版本，使用自定义日志而不是tracing，避免全局订阅器冲突
-
-// 自定义日志宏
-macro_rules! node_log {
-    ($logger:expr, $($arg:tt)*) => {
-        $logger.log(format!($($arg)*)).await;
-    };
-}
-
-// 简单的日志记录器
-#[derive(Clone)]
-struct NodeLogger {
-    node_id: u32,
-    file: Arc<Mutex<tokio::fs::File>>,
-}
-
-impl NodeLogger {
-    async fn new(node_id: u32) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
-        fs::create_dir_all("logs")?;
-        let file = tokio::fs::OpenOptions::new()
-            .create(true)
-            .write(true)
-            .truncate(true)
-            .open(format!("logs/log{}.log", node_id))
-            .await?;
-        
-        Ok(Self {
-            node_id,
-            file: Arc::new(Mutex::new(file)),
-        })
-    }
-
-    async fn log(&self, message: String) {
-        let timestamp = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_secs();
-        
-        let log_line = format!("[{}] Node {}: {}\n", timestamp, self.node_id, message);
-        
-        let mut file = self.file.lock().await;
-        if let Err(e) = file.write_all(log_line.as_bytes()).await {
-            eprintln!("Failed to write to log file for node {}: {}", self.node_id, e);
-        }
-        if let Err(e) = file.flush().await {
-            eprintln!("Failed to flush log file for node {}: {}", self.node_id, e);
-        }
-    }
-}
-
-// 简单的计数器应用
-#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
-pub enum CounterTransaction {
-    Increment,
-    Decrement,
-    Set(u64),
-}
-
-#[derive(Clone)]
-pub struct CounterApp {
-    node_id: u32,
-    state: Arc<Mutex<u64>>,
-    logger: NodeLogger,
-}
-
-impl CounterApp {
-    pub async fn new(node_id: u32, logger: NodeLogger) -> Self {
-        Self {
-            node_id,
-            state: Arc::new(Mutex::new(0)),
-            logger,
-        }
-    }
-
-    pub async fn get_value(&self) -> u64 {
-        *self.state.lock().await
-    }
-
-    async fn apply_transaction(&self, tx: &CounterTransaction) {
-        let mut state = self.state.lock().await;
-        let old_value = *state;
-        match tx {
-            CounterTransaction::Increment => *state += 1,
-            CounterTransaction::Decrement => *state = state.saturating_sub(1),
-            CounterTransaction::Set(value) => *state = *value,
-        }
-        node_log!(self.logger, "Applied transaction {:?}: {} -> {}", tx, old_value, *state);
-    }
-}
-
-// 简化的网络模拟
-#[derive(Clone)]
-struct MockNetwork {
-    node_id: u32,
-    peers: Vec<u32>,
-    logger: NodeLogger,
-}
-
-impl MockNetwork {
-    fn new(node_id: u32, peers: Vec<u32>, logger: NodeLogger) -> Self {
-        Self { node_id, peers, logger }
-    }
-
-    async fn send_to_peer(&self, peer_id: u32, message: &str) {
-        node_log!(self.logger, "Sending to Node {}: {}", peer_id, message);
-        // 模拟网络延迟
-        tokio::time::sleep(Duration::from_millis(10)).await;
-    }
-
-    async fn broadcast(&self, message: &str) {
-        node_log!(self.logger, "Broadcasting: {}", message);
-        for &peer_id in &self.peers {
-            if peer_id != self.node_id {
-                self.send_to_peer(peer_id, message).await;
-            }
-        }
-    }
-
-    async fn simulate_receive(&self) -> Option<(u32, String)> {
-        // 模拟偶尔接收到消息
-        if rand::random::<f32>() < 0.2 { // 20%概率
-            let sender_idx = (rand::random::<u32>() as usize) % self.peers.len();
-            let sender = self.peers[sender_idx];
-            if sender != self.node_id {
-                let message = format!("Hello from Node {}", sender);
-                node_log!(self.logger, "Received message from Node {}: {}", sender, message);
-                return Some((sender, message));
-            }
-        }
-        None
-    }
-}
-
-// 节点结构体
-struct Node {
-    id: u32,
-    app: CounterApp,
-    network: MockNetwork,
-    transaction_queue: Arc<Mutex<Vec<CounterTransaction>>>,
-    logger: NodeLogger,
-}
-
-impl Node {
-    async fn new(id: u32, peers: Vec<u32>) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
-        let logger = NodeLogger::new(id).await?;
-        let app = CounterApp::new(id, logger.clone()).await;
-        let network = MockNetwork::new(id, peers, logger.clone());
-        
-        Ok(Self {
-            id,
-            app,
-            network,
-            transaction_queue: Arc::new(Mutex::new(Vec::new())),
-            logger,
-        })
-    }
-
-    async fn submit_transaction(&self, tx: CounterTransaction) {
-        node_log!(self.logger, "Received transaction: {:?}", tx);
-        let mut queue = self.transaction_queue.lock().await;
-        queue.push(tx);
-    }
-
-    async fn process_transactions(&self) {
-        let mut queue = self.transaction_queue.lock().await;
-        if !queue.is_empty() {
-            node_log!(self.logger, "Processing {} transactions", queue.len());
-            for tx in queue.drain(..) {
-                self.app.apply_transaction(&tx).await;
-                
-                // 广播交易给其他节点
-                let tx_json = serde_json::to_string(&tx).unwrap_or_default();
-                self.network.broadcast(&format!("TX: {}", tx_json)).await;
-            }
-        }
-    }
-
-    async fn simulate_consensus_round(&self, round: u32) {
-        node_log!(self.logger, "Starting consensus round {}", round);
-        
-        // 模拟提议阶段
-        if self.id == (round % 4) { // 轮流做leader
-            node_log!(self.logger, "Is leader for round {}", round);
-            self.network.broadcast(&format!("PROPOSE: Round {}", round)).await;
-        }
-        
-        // 模拟投票阶段
-        tokio::time::sleep(Duration::from_millis(100)).await;
-        self.network.broadcast(&format!("VOTE: Round {}", round)).await;
-        
-        // 模拟提交阶段
-        tokio::time::sleep(Duration::from_millis(100)).await;
-        if self.id == (round % 4) {
-            node_log!(self.logger, "Committing round {}", round);
-            self.network.broadcast(&format!("COMMIT: Round {}", round)).await;
-        }
-    }
-
-    async fn run(&self) {
-        node_log!(self.logger, "Starting main loop");
-        
-        for round in 0..5 {
-            // 模拟接收网络消息
-            if let Some((sender, message)) = self.network.simulate_receive().await {
-                node_log!(self.logger, "Processed message from Node {}: {}", sender, message);
-            }
-            
-            // 处理交易队列
-            self.process_transactions().await;
-            
-            // 模拟共识轮次
-            self.simulate_consensus_round(round).await;
-            
-            // 随机提交交易
-            if rand::random::<f32>() < 0.3 { // 30%概率
-                match rand::random::<u32>() % 3 {
-                    0 => self.submit_transaction(CounterTransaction::Increment).await,
-                    1 => self.submit_transaction(CounterTransaction::Decrement).await,
-                    _ => self.submit_transaction(CounterTransaction::Set((rand::random::<u32>() % 100) as u64)).await,
-                }
-            }
-            
-            // 输出当前状态
-            let current_value = self.app.get_value().await;
-            node_log!(self.logger, "Current counter value: {}", current_value);
-            
-            // 轮次间隔
-            tokio::time::sleep(Duration::from_millis(800)).await;
-        }
-        
-        let final_value = self.app.get_value().await;
-        node_log!(self.logger, "Completed. Final counter value: {}", final_value);
-    }
-}
-
-#[tokio::main]
-async fn main() -> anyhow::Result<()> {
-    println!("🚀 Starting HotStuff 4-Node Network Simulation");
-
-    // 创建logs目录
-    fs::create_dir_all("logs")?;
-    println!("📁 Created logs directory");
-
-    // 定义四个节点的网络拓扑
-    let all_peers = vec![0, 1, 2, 3];
-    println!("🌐 Network topology: 4 fully connected nodes");
-
-    // 创建并启动4个节点任务
-    let mut handles = Vec::new();
+fn setup_logger() {
+    fs::create_dir_all("log").unwrap();
     
-    for node_id in 0..4u32 {
-        let peers = all_peers.clone();
-        
-        let handle = tokio::spawn(async move {
-            // 创建并运行节点
-            match Node::new(node_id, peers).await {
-                Ok(node) => {
-                    node_log!(node.logger, "🎬 Starting up");
-                    node_log!(node.logger, "Connected to peers: {:?}", 
-                             node.network.peers.iter().filter(|&&p| p != node_id).collect::<Vec<_>>());
-                    
-                    node_log!(node.logger, "Initialized successfully");
-                    
-                    // 运行节点主循环
-                    node.run().await;
-                    
-                    node_log!(node.logger, "Shutting down");
-                },
-                Err(e) => {
-                    eprintln!("Failed to create node {}: {}", node_id, e);
-                }
-            }
-        });
-        
-        handles.push(handle);
-        println!("✅ Started node {}", node_id);
-    }
-
-    println!("⏰ All 4 nodes started, running simulation...");
-    
-    // 等待所有节点完成
-    for (i, handle) in handles.into_iter().enumerate() {
-        if let Err(e) = handle.await {
-            println!("❌ Node {} error: {}", i, e);
-        } else {
-            println!("✅ Node {} completed", i);
-        }
-    }
-
-    println!("🎉 All nodes completed successfully!");
-    println!("📊 Simulation Results:");
-    println!("   - 4 nodes ran in parallel");
-    println!("   - Each node processed transactions independently");
-    println!("   - Mock consensus rounds were executed");
-    println!("   - Network communication was simulated");
-    println!();
-    println!("📋 Check the detailed logs:");
+    // 清理旧的日志文件
     for i in 0..4 {
-        println!("   - Node {}: logs/log{}.log", i, i);
+        let _ = fs::remove_file(format!("log/node{}.log", i));
+    }
+    let _ = fs::remove_file("log/main.log");
+    
+    let dispatch = fern::Dispatch::new()
+        .format(|out, message, record| {
+            out.finish(format_args!(
+                "[{}][{}][{}] {}",
+                chrono::Local::now().format("%Y-%m-%d %H:%M:%S%.3f"),
+                record.level(),
+                record.target(),
+                message
+            ))
+        })
+        .level(log::LevelFilter::Info)
+        .chain(std::io::stdout())
+        .chain(fern::log_file("log/main.log").unwrap())
+        .chain(
+            fern::Dispatch::new()
+                .filter(|metadata| metadata.target() == "node_0")
+                .chain(fern::log_file("log/node0.log").unwrap())  // ← 这个字段创建 node0.log
+        )
+        .chain(
+            fern::Dispatch::new()
+                .filter(|metadata| metadata.target() == "node_1")
+                .chain(fern::log_file("log/node1.log").unwrap())  // ← 这个字段创建 node1.log
+        )
+        .chain(
+            fern::Dispatch::new()
+                .filter(|metadata| metadata.target() == "node_2")
+                .chain(fern::log_file("log/node2.log").unwrap())  // ← 这个字段创建 node2.log
+        )
+        .chain(
+            fern::Dispatch::new()
+                .filter(|metadata| metadata.target() == "node_3")
+                .chain(fern::log_file("log/node3.log").unwrap())  // ← 这个字段创建 node3.log
+        );
+    
+    dispatch.apply().unwrap();
+}
+
+fn main() {
+    setup_logger();
+    info!("🚀 启动HotStuff多节点集群 (4个节点)");
+
+    // 1. 生成4个节点的签名密钥
+    let mut keypairs = Vec::new();
+    let mut verifying_keys = Vec::new();
+    
+    for i in 0..4 {
+        let secret_bytes: [u8; 32] = [i as u8 + 1; 32];
+        let signing_key = SigningKey::from_bytes(&secret_bytes);
+        let verifying_key = signing_key.verifying_key();
+        
+        keypairs.push(signing_key);
+        verifying_keys.push(VerifyingKey::from(verifying_key));
+        
+        info!("🔑 为节点 {} 生成密钥对", i);
     }
 
-    Ok(())
+    // 2. 创建初始应用状态更新
+    let init_app_state_updates = AppStateUpdates::new();
+    info!("📱 创建初始应用状态更新");
+
+    // 3. 创建初始验证者集合更新（包含所有4个节点）
+    let init_validator_set_updates = {
+        let mut vs_updates = ValidatorSetUpdates::new();
+        // 添加所有4个节点作为初始验证者，每个权力为1
+        for i in 0..4 {
+            vs_updates.insert(verifying_keys[i].clone(), Power::new(1));
+            info!("👥 添加验证者 {} 到初始集合", i);
+        }
+        vs_updates
+    };
+
+    // 4. 使用修正的网络创建方法
+    info!("🌐 创建4节点模拟网络...");
+    let (_shared_network, node_networks) = create_mock_network(verifying_keys.clone());
+    info!("✅ 网络创建完成，所有节点已注册");
+
+    // 5. 按照官方模式创建所有节点
+    info!("🏗️ 创建所有4个节点...");
+    let mut nodes = Vec::new();
+    
+    for i in 0..4 {
+        info!("启动节点 {}", i);
+        
+        let node = Node::new(
+            keypairs[i].clone(),
+            node_networks[i].clone(),
+            init_app_state_updates.clone(),
+            init_validator_set_updates.clone(),
+        );
+        
+        nodes.push(node);
+        info!("✅ 节点 {} 启动完成", i);
+        
+        // 给节点间隔启动时间
+        thread::sleep(Duration::from_millis(500));
+    }
+
+    info!("🎉 所有4个节点已启动，等待共识建立...");
+    thread::sleep(Duration::from_secs(3));
+
+    // 6. 验证初始状态
+    info!("🔍 验证集群初始状态:");
+    for (i, node) in nodes.iter().enumerate() {
+        let vs = node.committed_validator_set();
+        let view = node.highest_view_entered().int();
+        info!("   节点 {}: {} 验证者, 视图 {}", i, vs.len(), view);
+    }
+
+    // 7. 监控循环 - 检查集群健康状态
+    info!("📊 开始监控集群状态...");
+    info!("日志文件:");
+    info!("  - 主日志: log/main.log");
+    info!("  - 节点日志: log/node0.log, log/node1.log, log/node2.log, log/node3.log");
+
+    let start_time = std::time::Instant::now();
+    let mut last_views = vec![0u64; 4]; // 跟踪每个节点的最后视图
+    
+    // 初始化最后视图
+    for (i, node) in nodes.iter().enumerate() {
+        last_views[i] = node.highest_view_entered().int();
+    }
+
+    loop {
+        thread::sleep(Duration::from_secs(5));
+        
+        let elapsed = start_time.elapsed();
+        
+        // 检查所有节点的状态
+        let mut progress_detected = false;
+        for (i, node) in nodes.iter().enumerate() {
+            let current_view = node.highest_view_entered().int();
+            
+            if current_view != last_views[i] {
+                info!("🔄 节点 {} 视图进展: {} -> {}", i, last_views[i], current_view);
+                last_views[i] = current_view;
+                progress_detected = true;
+            }
+        }
+        
+        if !progress_detected {
+            debug!("⏰ 运行时间: {:.1}秒 - 无视图变化", elapsed.as_secs_f64());
+        }
+        
+        // 每30秒打印详细状态
+        if elapsed.as_secs() % 30 == 0 {
+            info!("📈 集群状态摘要 (运行 {:.0}秒):", elapsed.as_secs_f64());
+            for (i, node) in nodes.iter().enumerate() {
+                let vs = node.committed_validator_set();
+                let view = node.highest_view_entered().int();
+                info!("   节点 {}: 验证者={}, 当前视图={}", i, vs.len(), view);
+            }
+            
+            // 检查视图同步情况
+            let views: Vec<u64> = nodes.iter().map(|n| n.highest_view_entered().int()).collect();
+            let min_view = *views.iter().min().unwrap();
+            let max_view = *views.iter().max().unwrap();
+            
+            if max_view - min_view <= 1 {
+                info!("✅ 集群视图同步良好 (差异 <= 1)");
+            } else {
+                warn!("⚠️ 集群视图分歧较大: 最小={}, 最大={}", min_view, max_view);
+            }
+        }
+        
+        // 如果运行超过5分钟，报告状态并继续
+        if elapsed > Duration::from_secs(300) {
+            info!("📊 集群已稳定运行5分钟");
+            
+            // 重置计时器
+            let start_time = std::time::Instant::now();
+        }
+    }
 }
