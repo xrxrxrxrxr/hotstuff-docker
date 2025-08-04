@@ -39,36 +39,16 @@ fn setup_logger() {
         })
         .level(log::LevelFilter::Info)
         .chain(std::io::stdout())
-        .chain(fern::log_file("log/main.log").unwrap())
-        .chain(
-            fern::Dispatch::new()
-                .filter(|metadata| metadata.target() == "node_0")
-                .chain(fern::log_file("log/node0.log").unwrap())  // ← 这个字段创建 node0.log
-        )
-        .chain(
-            fern::Dispatch::new()
-                .filter(|metadata| metadata.target() == "node_1")
-                .chain(fern::log_file("log/node1.log").unwrap())  // ← 这个字段创建 node1.log
-        )
-        .chain(
-            fern::Dispatch::new()
-                .filter(|metadata| metadata.target() == "node_2")
-                .chain(fern::log_file("log/node2.log").unwrap())  // ← 这个字段创建 node2.log
-        )
-        .chain(
-            fern::Dispatch::new()
-                .filter(|metadata| metadata.target() == "node_3")
-                .chain(fern::log_file("log/node3.log").unwrap())  // ← 这个字段创建 node3.log
-        );
+        .chain(fern::log_file("log/main.log").unwrap());
     
     dispatch.apply().unwrap();
 }
 
 fn main() {
     setup_logger();
-    info!("🚀 启动HotStuff多节点集群 (4个节点)");
+    info!("🚀 启动HotStuff多Node集群 (4个Node)");
 
-    // 1. 生成4个节点的签名密钥
+    // 1. 生成4个Node的签名密钥
     let mut keypairs = Vec::new();
     let mut verifying_keys = Vec::new();
     
@@ -80,17 +60,17 @@ fn main() {
         keypairs.push(signing_key);
         verifying_keys.push(VerifyingKey::from(verifying_key));
         
-        info!("🔑 为节点 {} 生成密钥对", i);
+        info!("🔑 为Node {} 生成密钥对", i);
     }
 
     // 2. 创建初始应用状态更新
     let init_app_state_updates = AppStateUpdates::new();
     info!("📱 创建初始应用状态更新");
 
-    // 3. 创建初始验证者集合更新（包含所有4个节点）
+    // 3. 创建初始验证者集合更新（包含所有4个Node）
     let init_validator_set_updates = {
         let mut vs_updates = ValidatorSetUpdates::new();
-        // 添加所有4个节点作为初始验证者，每个权力为1
+        // 添加所有4个Node作为初始验证者，每个权力为1
         for i in 0..4 {
             vs_updates.insert(verifying_keys[i].clone(), Power::new(1));
             info!("👥 添加验证者 {} 到初始集合", i);
@@ -99,18 +79,19 @@ fn main() {
     };
 
     // 4. 使用修正的网络创建方法
-    info!("🌐 创建4节点模拟网络...");
+    info!("🌐 创建4Node模拟网络...");
     let (_shared_network, node_networks) = create_mock_network(verifying_keys.clone());
-    info!("✅ 网络创建完成，所有节点已注册");
+    info!("✅ 网络创建完成，所有Node已注册");
 
-    // 5. 按照官方模式创建所有节点
-    info!("🏗️ 创建所有4个节点...");
+    // 5. 按照官方模式创建所有Node
+    info!("🏗️ 创建所有4个Node...");
     let mut nodes = Vec::new();
     
     for i in 0..4 {
-        info!("启动节点 {}", i);
+        info!("启动Node {}", i);
         
         let node = Node::new(
+            i,
             keypairs[i].clone(),
             node_networks[i].clone(),
             init_app_state_updates.clone(),
@@ -118,13 +99,13 @@ fn main() {
         );
         
         nodes.push(node);
-        info!("✅ 节点 {} 启动完成", i);
+        info!("✅ Node {} 启动完成", i);
         
-        // 给节点间隔启动时间
+        // 给Node间隔启动时间
         thread::sleep(Duration::from_millis(500));
     }
 
-    info!("🎉 所有4个节点已启动，等待共识建立...");
+    info!("🎉 所有4个Node已启动，等待共识建立...");
     thread::sleep(Duration::from_secs(3));
 
     // 6. 验证初始状态
@@ -132,19 +113,19 @@ fn main() {
     for (i, node) in nodes.iter().enumerate() {
         let vs = node.committed_validator_set();
         let view = node.highest_view_entered().int();
-        info!("   节点 {}: {} 验证者, 视图 {}", i, vs.len(), view);
+        info!("   Node {}: {} 验证者, View {}", i, vs.len(), view);
     }
 
     // 7. 监控循环 - 检查集群健康状态
     info!("📊 开始监控集群状态...");
     info!("日志文件:");
     info!("  - 主日志: log/main.log");
-    info!("  - 节点日志: log/node0.log, log/node1.log, log/node2.log, log/node3.log");
+    info!("  - Node日志: log/node0.log, log/node1.log, log/node2.log, log/node3.log");
 
     let start_time = std::time::Instant::now();
-    let mut last_views = vec![0u64; 4]; // 跟踪每个节点的最后视图
+    let mut last_views = vec![0u64; 4]; // 跟踪每个Node的最后View
     
-    // 初始化最后视图
+    // 初始化最后View
     for (i, node) in nodes.iter().enumerate() {
         last_views[i] = node.highest_view_entered().int();
     }
@@ -154,20 +135,20 @@ fn main() {
         
         let elapsed = start_time.elapsed();
         
-        // 检查所有节点的状态
+        // 检查所有Node的状态
         let mut progress_detected = false;
         for (i, node) in nodes.iter().enumerate() {
             let current_view = node.highest_view_entered().int();
             
             if current_view != last_views[i] {
-                info!("🔄 节点 {} 视图进展: {} -> {}", i, last_views[i], current_view);
+                info!("🔄 Node {} View进展: {} -> {}", i, last_views[i], current_view);
                 last_views[i] = current_view;
                 progress_detected = true;
             }
         }
         
         if !progress_detected {
-            debug!("⏰ 运行时间: {:.1}秒 - 无视图变化", elapsed.as_secs_f64());
+            debug!("⏰ 运行时间: {:.1}秒 - 无View变化", elapsed.as_secs_f64());
         }
         
         // 每30秒打印详细状态
@@ -176,18 +157,18 @@ fn main() {
             for (i, node) in nodes.iter().enumerate() {
                 let vs = node.committed_validator_set();
                 let view = node.highest_view_entered().int();
-                info!("   节点 {}: 验证者={}, 当前视图={}", i, vs.len(), view);
+                info!("   Node {}: 验证者={}, 当前View={}", i, vs.len(), view);
             }
             
-            // 检查视图同步情况
+            // 检查View同步情况
             let views: Vec<u64> = nodes.iter().map(|n| n.highest_view_entered().int()).collect();
             let min_view = *views.iter().min().unwrap();
             let max_view = *views.iter().max().unwrap();
             
             if max_view - min_view <= 1 {
-                info!("✅ 集群视图同步良好 (差异 <= 1)");
+                info!("✅ 集群View同步良好 (差异 <= 1)");
             } else {
-                warn!("⚠️ 集群视图分歧较大: 最小={}, 最大={}", min_view, max_view);
+                warn!("⚠️ 集群View分歧较大: 最小={}, 最大={}", min_view, max_view);
             }
         }
         
