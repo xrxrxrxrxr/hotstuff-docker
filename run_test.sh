@@ -1,47 +1,48 @@
 #!/bin/bash
+# run_test.sh - 快速启动HotStuff Docker集群
 
-# 颜色定义
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+set -e
 
-echo -e "${GREEN}Starting HotStuff Docker Test${NC}"
+echo "🚀 HotStuff Docker集群快速启动"
+echo "================================"
 
-# 检查必要的文件是否存在
-echo "Checking project structure..."
-
-if [ ! -d "hotstuff_rs" ]; then
-    echo -e "${RED}Error: hotstuff_rs directory not found${NC}"
+# 检查是否在正确的目录
+if [ ! -f "docker-compose.yml" ]; then
+    echo "❌ 请在包含docker-compose.yml的目录中运行此脚本"
     exit 1
 fi
 
 if [ ! -d "hotstuff_runner" ]; then
-    echo -e "${RED}Error: hotstuff_runner directory not found${NC}"
+    echo "❌ 找不到hotstuff_runner目录"
     exit 1
 fi
 
-if [ ! -f "hotstuff_runner/Cargo.toml" ]; then
-    echo -e "${RED}Error: hotstuff_runner/Cargo.toml not found${NC}"
-    exit 1
-fi
+# echo "✅ 目录结构检查通过"
 
-if [ ! -f "hotstuff_runner/src/main.rs" ]; then
-    echo -e "${RED}Error: hotstuff_runner/src/main.rs not found${NC}"
-    exit 1
-fi
+# 快速构建和启动
+echo "🏗️ 构建并启动集群..."
+docker-compose up --build -d
 
-echo -e "${GREEN}Project structure looks good!${NC}"
+echo "⏳ 等待节点初始化..."
+sleep 15
 
-# 创建日志目录
-mkdir -p logs
+# 检查健康状态
+echo "🏥 检查节点健康状态..."
+for i in {0..3}; do
+    echo -n "  节点$i: "
+    if docker-compose ps node$i | grep -q "Up"; then
+        echo "✅ 运行中"
+    else
+        echo "❌ 异常"
+    fi
+done
 
-# 清理之前的容器
-echo "Cleaning up previous containers..."
-docker-compose -f docker-compose.test.yml down
-
-# 构建并运行测试
-echo -e "${YELLOW}Building and running test container...${NC}"
-docker-compose -f docker-compose.test.yml up --build
-
-echo -e "${GREEN}Test completed!${NC}"
+echo ""
+echo "🎉 集群启动完成！"
+echo ""
+echo "💡 常用命令:"
+echo "  查看实时日志: docker-compose logs -f"
+echo "  查看特定节点: docker-compose logs -f node0"
+echo "  重启集群:     docker-compose restart"
+echo "  停止集群:     docker-compose down"
+echo "  查看状态:     docker-compose ps"

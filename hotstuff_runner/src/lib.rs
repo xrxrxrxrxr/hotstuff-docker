@@ -2,6 +2,8 @@
 pub mod app;
 pub mod network;
 pub mod kv_store;
+pub mod tcp_network;
+pub mod tcp_node;
 
 // 重新导出常用类型
 pub use app::TestApp;

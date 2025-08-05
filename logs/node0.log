@@ -1,0 +1,1495 @@
+2025-08-05T02:58:33.528401Z  INFO ThreadId(01) docker_node: 📝 日志系统初始化成功
+2025-08-05T02:58:33.528751Z  INFO ThreadId(01) docker_node: 🚀 启动Docker节点 0 (端口: 8000)
+2025-08-05T02:58:33.528873Z  INFO ThreadId(01) docker_node: 🔑 节点密钥: [138, 136, 227, 221, 116, 9, 241, 149]
+2025-08-05T02:58:33.529254Z  INFO ThreadId(01) docker_node: 🔍 尝试解析地址: node0:8000
+2025-08-05T02:58:33.529508Z  INFO ThreadId(01) docker_node: ✅ 成功解析地址: node0:8000 -> 172.20.0.5:8000
+2025-08-05T02:58:33.529637Z  INFO ThreadId(01) docker_node: 📋 节点 0: [138, 136, 227, 221] -> 172.20.0.5:8000
+2025-08-05T02:58:33.529714Z  INFO ThreadId(01) docker_node: 🔍 尝试解析地址: node1:8001
+2025-08-05T02:58:33.530164Z  INFO ThreadId(01) docker_node: ✅ 成功解析地址: node1:8001 -> 172.20.0.3:8001
+2025-08-05T02:58:33.530237Z  INFO ThreadId(01) docker_node: 📋 节点 1: [129, 57, 119, 14] -> 172.20.0.3:8001
+2025-08-05T02:58:33.530361Z  INFO ThreadId(01) docker_node: 🔍 尝试解析地址: node2:8002
+2025-08-05T02:58:33.530753Z  INFO ThreadId(01) docker_node: ✅ 成功解析地址: node2:8002 -> 172.20.0.2:8002
+2025-08-05T02:58:33.531217Z  INFO ThreadId(01) docker_node: 📋 节点 2: [237, 73, 40, 198] -> 172.20.0.2:8002
+2025-08-05T02:58:33.531420Z  INFO ThreadId(01) docker_node: 🔍 尝试解析地址: node3:8003
+2025-08-05T02:58:33.531986Z  INFO ThreadId(01) docker_node: ✅ 成功解析地址: node3:8003 -> 172.20.0.4:8003
+2025-08-05T02:58:33.532154Z  INFO ThreadId(01) docker_node: 📋 节点 3: [202, 147, 172, 23] -> 172.20.0.4:8003
+2025-08-05T02:58:33.532473Z  INFO ThreadId(01) docker_node: 👥 验证者集合: 4 个验证者
+2025-08-05T02:58:33.532673Z  INFO ThreadId(01) docker_node: 🌐 创建TCP网络...
+2025-08-05T02:58:33.532866Z  INFO ThreadId(02) hotstuff_runner::tcp_network: 🎧 TCP服务器监听: 0.0.0.0:8000
+2025-08-05T02:58:34.007379Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📞 新连接来自: 172.20.0.3:45998
+2025-08-05T02:58:34.016537Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📞 新连接来自: 172.20.0.2:47688
+2025-08-05T02:58:34.030614Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📞 新连接来自: 172.20.0.4:47824
+2025-08-05T02:58:34.033234Z  INFO ThreadId(01) hotstuff_runner::tcp_network: 🔗 尝试连接对等节点: [237, 73, 40, 198] -> 172.20.0.2:8002
+2025-08-05T02:58:34.033670Z  INFO ThreadId(01) hotstuff_runner::tcp_network: ✅ 成功连接到对等节点: 172.20.0.2:8002 (尝试 1)
+2025-08-05T02:58:34.033975Z  INFO ThreadId(01) hotstuff_runner::tcp_network: 🔗 尝试连接对等节点: [202, 147, 172, 23] -> 172.20.0.4:8003
+2025-08-05T02:58:34.034399Z  INFO ThreadId(01) hotstuff_runner::tcp_network: ✅ 成功连接到对等节点: 172.20.0.4:8003 (尝试 1)
+2025-08-05T02:58:34.034557Z  INFO ThreadId(01) hotstuff_runner::tcp_network: 🔗 尝试连接对等节点: [129, 57, 119, 14] -> 172.20.0.3:8001
+2025-08-05T02:58:34.035057Z  INFO ThreadId(01) hotstuff_runner::tcp_network: ✅ 成功连接到对等节点: 172.20.0.3:8001 (尝试 1)
+2025-08-05T02:58:34.035277Z  INFO ThreadId(01) hotstuff_runner::tcp_network: 🌐 建立了 3 个对等连接
+2025-08-05T02:58:34.035458Z  INFO ThreadId(01) docker_node: ✅ TCP网络创建成功
+2025-08-05T02:58:34.035586Z  INFO ThreadId(01) docker_node: ⏳ 等待其他节点启动...
+2025-08-05T02:58:38.563593Z DEBUG ThreadId(06) hotstuff_runner::tcp_network: 📞 新连接来自: 127.0.0.1:44832
+2025-08-05T02:58:38.565071Z DEBUG ThreadId(06) hotstuff_runner::tcp_network: 连接正常关闭: 127.0.0.1:44832
+2025-08-05T02:58:38.566754Z DEBUG ThreadId(06) hotstuff_runner::tcp_network: 客户端连接处理结束: 127.0.0.1:44832
+2025-08-05T02:58:44.036264Z  INFO ThreadId(01) docker_node: 🏗️ 创建HotStuff节点...
+2025-08-05T02:58:44.050310Z  INFO ThreadId(01) hotstuff_runner::tcp_node: 创建Node，验证密钥: [138, 136, 227, 221, 116, 9, 241, 149]
+2025-08-05T02:58:44.052282Z  INFO ThreadId(01) hotstuff_runner::tcp_node: Node验证者集合: 4 个验证者，总权力: 4
+2025-08-05T02:58:44.052549Z  INFO ThreadId(01) hotstuff_runner::tcp_network: 🏗️ TCP节点 [138, 136, 227, 221] 初始化验证者集合: 4 个验证者
+2025-08-05T02:58:44.054973Z  INFO ThreadId(01) hotstuff_runner::tcp_node: ✅ Node 0 已启动
+2025-08-05T02:58:44.055152Z  INFO ThreadId(01) docker_node: ✅ 节点 0 启动完成！
+2025-08-05T02:58:44.055276Z  INFO ThreadId(01) docker_node: 🔄 节点运行中...
+2025-08-05T02:58:46.024394Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: Pacemaker
+2025-08-05T02:58:46.024793Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 84 bytes
+2025-08-05T02:58:46.024922Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:46.025109Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:58:46.029962Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: Pacemaker
+2025-08-05T02:58:46.034845Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 84 bytes
+2025-08-05T02:58:46.036646Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:46.036738Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:58:46.054740Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:58:46.056453Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: Pacemaker
+2025-08-05T02:58:46.056662Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 84 bytes
+2025-08-05T02:58:46.056608Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 84 bytes, 类型: Pacemaker
+2025-08-05T02:58:46.056819Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:46.057767Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:58:46.060226Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:58:46.061792Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 84 bytes, 类型: Pacemaker
+2025-08-05T02:58:46.069517Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:58:46.069638Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 84 bytes, 类型: Pacemaker
+2025-08-05T02:58:46.070215Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:58:46.071769Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:58:46.073189Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:58:46.081632Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: Pacemaker
+2025-08-05T02:58:46.082217Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 220 bytes, 类型: Pacemaker
+2025-08-05T02:58:46.082387Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: Pacemaker
+2025-08-05T02:58:46.088003Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 220 bytes
+2025-08-05T02:58:46.104186Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:58:46.125536Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:46.125537Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 220 bytes
+2025-08-05T02:58:46.155713Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:46.140422Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 220 bytes, 类型: Pacemaker
+2025-08-05T02:58:46.155527Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:58:46.159246Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:58:46.159264Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:58:46.159434Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 220 bytes, 类型: Pacemaker
+2025-08-05T02:58:46.163573Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:58:46.165808Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:58:46.168979Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [138, 136, 227, 221]
+2025-08-05T02:58:46.170604Z  INFO ThreadId(17) hotstuff_runner::tcp_network: 🔄 重新连接到对等节点: 172.20.0.5:8000
+2025-08-05T02:58:46.170625Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T02:58:46.170629Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: 📞 新连接来自: 172.20.0.5:42316
+2025-08-05T02:58:46.170788Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:58:46.171143Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 72 bytes
+2025-08-05T02:58:46.171609Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [138, 136, 227, 221]
+2025-08-05T02:58:46.171624Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.5:42316, 消息类型: HotStuff
+2025-08-05T02:58:46.171897Z  INFO ThreadId(17) hotstuff_runner::app: [node-[138, 136, 227, 221]] Producing block for view 1    
+2025-08-05T02:58:46.171701Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:46.171959Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 72 bytes
+2025-08-05T02:58:46.172163Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:58:46.172203Z  INFO ThreadId(17) hotstuff_runner::app: [node-[138, 136, 227, 221]] Produced block with 0 transactions    
+2025-08-05T02:58:46.172534Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:46.172677Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:58:46.172711Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [138, 136, 227, 221]
+2025-08-05T02:58:46.172818Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:58:46.173456Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:58:46.173624Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:58:46.173856Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:58:46.174086Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:58:46.174310Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:58:46.174423Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:58:46.176372Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:58:46.176454Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 72 bytes
+2025-08-05T02:58:46.176798Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:46.177022Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:58:46.181982Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: Pacemaker
+2025-08-05T02:58:46.182114Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 220 bytes
+2025-08-05T02:58:46.182223Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:46.182413Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:58:46.265444Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: HotStuff
+2025-08-05T02:58:46.271876Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 72 bytes
+2025-08-05T02:58:46.280023Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:46.285326Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:58:46.319780Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: Pacemaker
+2025-08-05T02:58:46.322977Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:58:46.323660Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:46.323772Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:58:46.324482Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:58:46.324647Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:58:46.324763Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:58:46.324825Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:58:46.324919Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:58:46.325292Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:58:46.329340Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:58:46.329455Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:58:46.329824Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: Pacemaker
+2025-08-05T02:58:46.329958Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:58:46.329848Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [202, 147, 172, 23]
+2025-08-05T02:58:46.330014Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:46.330182Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:58:46.330377Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:58:46.330651Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:58:46.335912Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: Pacemaker
+2025-08-05T02:58:46.345201Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:58:46.345718Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:46.345827Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:58:46.432420Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:58:46.433227Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T02:58:46.433298Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:46.434378Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:58:50.167603Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [237, 73, 40, 198]
+2025-08-05T02:58:50.172124Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:58:50.180496Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:58:50.275320Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T02:58:50.275480Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T02:58:50.285161Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:50.287015Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:58:52.169185Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [129, 57, 119, 14]
+2025-08-05T02:58:52.169478Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:58:52.170828Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:58:52.269745Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: HotStuff
+2025-08-05T02:58:52.270094Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T02:58:52.270152Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:52.270975Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T02:58:52.271103Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 116 bytes
+2025-08-05T02:58:52.271165Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:52.271955Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:58:52.274617Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:58:52.275736Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:58:52.275927Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 116 bytes
+2025-08-05T02:58:52.275981Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:52.277958Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:58:54.026608Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: BlockSyncAdvertise
+2025-08-05T02:58:54.027358Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T02:58:54.027195Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: BlockSyncAdvertise
+2025-08-05T02:58:54.027535Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:54.027802Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T02:58:54.028722Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:54.028269Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:58:54.029037Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: BlockSyncAdvertise
+2025-08-05T02:58:54.029321Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T02:58:54.030238Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:54.030281Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:58:54.030653Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:58:54.032854Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: BlockSyncAdvertise
+2025-08-05T02:58:54.033068Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T02:58:54.033243Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:54.033318Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:58:54.038671Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: BlockSyncAdvertise
+2025-08-05T02:58:54.038857Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T02:58:54.040410Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:54.040563Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:58:54.040962Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: BlockSyncAdvertise
+2025-08-05T02:58:54.041450Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T02:58:54.051014Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:54.051292Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:58:54.053172Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:58:54.053324Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:58:54.053548Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:58:54.053660Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:58:54.053813Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:58:54.053881Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:58:54.054156Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:58:54.054274Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:58:54.054448Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:58:54.054604Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:58:54.055659Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:58:54.055812Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:58:54.055907Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:58:54.056054Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:58:54.056368Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:58:54.056477Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:58:54.167306Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [138, 136, 227, 221]
+2025-08-05T02:58:54.174682Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:58:54.174864Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [138, 136, 227, 221]
+2025-08-05T02:58:54.175042Z  INFO ThreadId(17) hotstuff_runner::app: [node-[138, 136, 227, 221]] Producing block for view 5    
+2025-08-05T02:58:54.175138Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T02:58:54.175064Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.5:42316, 消息类型: HotStuff
+2025-08-05T02:58:54.175297Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 72 bytes
+2025-08-05T02:58:54.175166Z  INFO ThreadId(17) hotstuff_runner::app: [node-[138, 136, 227, 221]] Produced block with 0 transactions    
+2025-08-05T02:58:54.175252Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T02:58:54.175359Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:54.175443Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:58:54.175511Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:54.182155Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [138, 136, 227, 221]
+2025-08-05T02:58:54.182327Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:58:54.183118Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:58:54.182910Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:58:54.183269Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:58:54.183598Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:58:54.183707Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:58:54.183716Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:58:54.183932Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:58:54.185800Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:58:54.185854Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T02:58:54.189715Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:54.189829Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:58:54.262969Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: HotStuff
+2025-08-05T02:58:54.269231Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T02:58:54.272145Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:54.273595Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:58:54.286487Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: Pacemaker
+2025-08-05T02:58:54.294988Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:58:54.295530Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:54.298202Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:58:54.305244Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:58:54.307185Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:58:54.316094Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: Pacemaker
+2025-08-05T02:58:54.316125Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:58:54.316898Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:58:54.316618Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:58:54.317041Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:58:54.317529Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:58:54.317661Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:54.318427Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:58:54.319588Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:58:54.321219Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [202, 147, 172, 23]
+2025-08-05T02:58:54.319598Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:58:54.321731Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:58:54.329704Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:58:54.332393Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: Pacemaker
+2025-08-05T02:58:54.332543Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:58:54.332764Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:54.332952Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:58:54.361366Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:58:54.361620Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T02:58:54.365113Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:54.365406Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:58:58.180133Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T02:58:58.184251Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T02:58:58.181188Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [237, 73, 40, 198]
+2025-08-05T02:58:58.184940Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:58:58.184829Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:58:58.185349Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:58:58.185745Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:00.179457Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [129, 57, 119, 14]
+2025-08-05T02:59:00.240775Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:00.332436Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:00.348875Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: HotStuff
+2025-08-05T02:59:00.349078Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:59:00.352133Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 116 bytes
+2025-08-05T02:59:00.349289Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T02:59:00.357713Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:00.352262Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T02:59:00.357512Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:00.357943Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:00.357981Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 116 bytes
+2025-08-05T02:59:00.360365Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:00.361274Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:00.361731Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:02.175530Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [138, 136, 227, 221]
+2025-08-05T02:59:02.185485Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:02.179303Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T02:59:02.193270Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T02:59:02.187521Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:59:02.187809Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [138, 136, 227, 221]
+2025-08-05T02:59:02.194109Z  INFO ThreadId(17) hotstuff_runner::app: [node-[138, 136, 227, 221]] Producing block for view 9    
+2025-08-05T02:59:02.187860Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.5:42316, 消息类型: HotStuff
+2025-08-05T02:59:02.193928Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:02.194042Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T02:59:02.194195Z  INFO ThreadId(17) hotstuff_runner::app: [node-[138, 136, 227, 221]] Produced block with 0 transactions    
+2025-08-05T02:59:02.194278Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 72 bytes
+2025-08-05T02:59:02.196151Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:02.195968Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:02.196023Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:02.196091Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:59:02.196333Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [138, 136, 227, 221]
+2025-08-05T02:59:02.196439Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:59:02.196640Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:02.197003Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:02.197083Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:59:02.197276Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:02.197377Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:59:02.203545Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:02.212400Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:59:02.275322Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: HotStuff
+2025-08-05T02:59:02.277505Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T02:59:02.277559Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:02.281263Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:02.287048Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: Pacemaker
+2025-08-05T02:59:02.287967Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:59:02.288075Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:02.288215Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:02.289100Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:59:02.289210Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:59:02.289637Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:02.289763Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:59:02.289911Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:02.290056Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:59:02.290189Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:02.290294Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:59:02.290511Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [202, 147, 172, 23]
+2025-08-05T02:59:02.290574Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:02.290651Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:02.291606Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: Pacemaker
+2025-08-05T02:59:02.291755Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:59:02.294257Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:02.295257Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:02.302897Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: Pacemaker
+2025-08-05T02:59:02.303277Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:59:02.303465Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:02.303566Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:02.303829Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:59:02.303916Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T02:59:02.303990Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:02.304100Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:04.048018Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:04.048556Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:04.049611Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T02:59:04.048757Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T02:59:04.050542Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:04.052423Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:04.052705Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:04.053563Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:04.053959Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:04.053660Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:04.054089Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T02:59:04.057506Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:04.054302Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T02:59:04.057778Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:04.058042Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:04.062117Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:04.064911Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:59:04.065214Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:04.065562Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:04.065835Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:04.066219Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:04.066305Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:04.066841Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:04.067291Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:59:04.067524Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:59:04.069150Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:04.068960Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:04.069607Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T02:59:04.069540Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:04.069872Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:04.069748Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:04.070385Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:04.070044Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:04.072832Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:04.073816Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:04.070391Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:04.073486Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T02:59:04.074062Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:59:04.074743Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:04.075449Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:06.177143Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [237, 73, 40, 198]
+2025-08-05T02:59:06.181430Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:06.183569Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T02:59:06.184015Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:06.186884Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T02:59:06.190088Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:06.190293Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:08.176651Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [129, 57, 119, 14]
+2025-08-05T02:59:08.178442Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:08.178755Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:08.271626Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T02:59:08.271764Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 116 bytes
+2025-08-05T02:59:08.271911Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:08.272031Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:08.271917Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: HotStuff
+2025-08-05T02:59:08.272403Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T02:59:08.272528Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:08.276312Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:08.278408Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:59:08.278517Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 116 bytes
+2025-08-05T02:59:08.278591Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:08.278669Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:08.701570Z DEBUG ThreadId(20) hotstuff_runner::tcp_network: 📞 新连接来自: 127.0.0.1:44062
+2025-08-05T02:59:08.705019Z DEBUG ThreadId(20) hotstuff_runner::tcp_network: 连接正常关闭: 127.0.0.1:44062
+2025-08-05T02:59:08.705346Z DEBUG ThreadId(20) hotstuff_runner::tcp_network: 客户端连接处理结束: 127.0.0.1:44062
+2025-08-05T02:59:10.175772Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [138, 136, 227, 221]
+2025-08-05T02:59:10.177424Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:10.179975Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [138, 136, 227, 221]
+2025-08-05T02:59:10.195757Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.5:42316, 消息类型: HotStuff
+2025-08-05T02:59:10.196071Z  INFO ThreadId(17) hotstuff_runner::app: [node-[138, 136, 227, 221]] Producing block for view 13    
+2025-08-05T02:59:10.196161Z  INFO ThreadId(17) hotstuff_runner::app: [node-[138, 136, 227, 221]] Produced block with 0 transactions    
+2025-08-05T02:59:10.196113Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 72 bytes
+2025-08-05T02:59:10.196209Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T02:59:10.196830Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T02:59:10.196695Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:59:10.196926Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:59:10.196768Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:10.196876Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:10.197038Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:10.197170Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:59:10.197304Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:10.197350Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:59:10.197447Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:10.202128Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:59:10.200245Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [138, 136, 227, 221]
+2025-08-05T02:59:10.202505Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:10.205640Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:59:10.205861Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T02:59:10.205954Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:10.207263Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:10.267808Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: HotStuff
+2025-08-05T02:59:10.267900Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T02:59:10.267946Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:10.268007Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:10.271253Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: Pacemaker
+2025-08-05T02:59:10.271389Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:59:10.271458Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:10.272251Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:10.272652Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:59:10.273025Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:59:10.273114Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:10.273190Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: Pacemaker
+2025-08-05T02:59:10.273282Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:59:10.273235Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:59:10.273351Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:10.273478Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:10.274043Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:59:10.273906Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:10.274145Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:10.275753Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:59:10.277427Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [202, 147, 172, 23]
+2025-08-05T02:59:10.277543Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:10.277685Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:10.283005Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: Pacemaker
+2025-08-05T02:59:10.283097Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:59:10.283145Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:10.285311Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:10.294397Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:59:10.294483Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T02:59:10.294662Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:10.294871Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:14.058152Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:14.058438Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T02:59:14.058591Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:14.058837Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:14.062178Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:14.062279Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T02:59:14.062947Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:14.063092Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:14.063323Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:14.063488Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T02:59:14.063570Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:14.063679Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:14.064418Z  INFO ThreadId(01) docker_node: 💓 节点 0 心跳 #1
+2025-08-05T02:59:14.064772Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:14.064958Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T02:59:14.065244Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:14.065593Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:14.075002Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:59:14.075210Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:14.075390Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:14.075699Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:14.075458Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:14.078800Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T02:59:14.076036Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:14.090408Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:14.084283Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:14.095377Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:14.094997Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:14.096179Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:59:14.096311Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:59:14.096703Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:14.096704Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:14.099905Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:14.107203Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:14.107070Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T02:59:14.108253Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:14.107993Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:14.108358Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:14.108526Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:14.111694Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:14.115445Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:59:14.175576Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [237, 73, 40, 198]
+2025-08-05T02:59:14.175950Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:14.176151Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:14.199570Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T02:59:14.200222Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T02:59:14.201918Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:14.215816Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:16.175641Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [129, 57, 119, 14]
+2025-08-05T02:59:16.175970Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:16.176459Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:16.276351Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: HotStuff
+2025-08-05T02:59:16.276707Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T02:59:16.280896Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:16.288823Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T02:59:16.289280Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 116 bytes
+2025-08-05T02:59:16.289337Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:16.289284Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:16.289538Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:16.289559Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:59:16.292265Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 116 bytes
+2025-08-05T02:59:16.292327Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:16.292444Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:18.183276Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [138, 136, 227, 221]
+2025-08-05T02:59:18.188353Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:18.196088Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T02:59:18.209574Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T02:59:18.196648Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:59:18.218354Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T02:59:18.204051Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [138, 136, 227, 221]
+2025-08-05T02:59:18.219588Z  INFO ThreadId(17) hotstuff_runner::app: [node-[138, 136, 227, 221]] Producing block for view 17    
+2025-08-05T02:59:18.204062Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.5:42316, 消息类型: HotStuff
+2025-08-05T02:59:18.214074Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:18.219481Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:18.225571Z  INFO ThreadId(17) hotstuff_runner::app: [node-[138, 136, 227, 221]] Produced block with 0 transactions    
+2025-08-05T02:59:18.225765Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:59:18.225631Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 72 bytes
+2025-08-05T02:59:18.225860Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:18.225697Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:18.226362Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:18.225813Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:59:18.227445Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:18.226430Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [138, 136, 227, 221]
+2025-08-05T02:59:18.227528Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:59:18.227834Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:18.227967Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:59:18.228070Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:18.228463Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:59:18.269519Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: HotStuff
+2025-08-05T02:59:18.271135Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T02:59:18.271204Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:18.271275Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:18.288197Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: Pacemaker
+2025-08-05T02:59:18.289456Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:59:18.290034Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:18.290109Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:18.290133Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: Pacemaker
+2025-08-05T02:59:18.293921Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:59:18.292527Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:59:18.294108Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:59:18.294025Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:18.294324Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:18.294464Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:18.294580Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:59:18.294810Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:18.295143Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:59:18.295285Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:18.296614Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:59:18.297426Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [202, 147, 172, 23]
+2025-08-05T02:59:18.301041Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:18.301478Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:18.302211Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: Pacemaker
+2025-08-05T02:59:18.302340Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:59:18.302884Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:18.303009Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:18.303247Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:59:18.303328Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T02:59:18.303423Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:18.303535Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:22.176209Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [237, 73, 40, 198]
+2025-08-05T02:59:22.177780Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:22.179145Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:22.192631Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T02:59:22.192782Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T02:59:22.192892Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:22.192972Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:24.069972Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:24.070223Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T02:59:24.070781Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:24.071093Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:24.071437Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T02:59:24.071553Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:24.072033Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:24.071281Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:24.072496Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T02:59:24.075935Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:24.076076Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:24.076206Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:24.099934Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:24.101307Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T02:59:24.102821Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:24.107315Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:24.109931Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:24.112120Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T02:59:24.112695Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:24.114009Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:24.115909Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:59:24.117572Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:24.117963Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:24.120692Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:24.121786Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T02:59:24.127918Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:24.131560Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:24.132692Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:24.133160Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:24.133344Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:24.135458Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:24.137434Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:59:24.137947Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:59:24.138357Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:24.141088Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:24.145408Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:24.145675Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:24.155514Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:24.159519Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:24.167258Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:59:24.175599Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [129, 57, 119, 14]
+2025-08-05T02:59:24.175987Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:24.176211Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:24.273628Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:59:24.273842Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 116 bytes
+2025-08-05T02:59:24.273928Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:24.274006Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:24.276480Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: HotStuff
+2025-08-05T02:59:24.278944Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T02:59:24.281697Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:24.281931Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T02:59:24.282066Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 116 bytes
+2025-08-05T02:59:24.282158Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:24.283102Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:24.283663Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:26.176116Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [138, 136, 227, 221]
+2025-08-05T02:59:26.177820Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:26.182829Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [138, 136, 227, 221]
+2025-08-05T02:59:26.192070Z  INFO ThreadId(17) hotstuff_runner::app: [node-[138, 136, 227, 221]] Producing block for view 21    
+2025-08-05T02:59:26.182859Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.5:42316, 消息类型: HotStuff
+2025-08-05T02:59:26.195359Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 72 bytes
+2025-08-05T02:59:26.195215Z  INFO ThreadId(17) hotstuff_runner::app: [node-[138, 136, 227, 221]] Produced block with 0 transactions    
+2025-08-05T02:59:26.206586Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:59:26.195629Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T02:59:26.207176Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T02:59:26.197759Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:59:26.213528Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T02:59:26.197765Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:26.207064Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:59:26.209464Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:26.219546Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:26.220269Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [138, 136, 227, 221]
+2025-08-05T02:59:26.262219Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:26.221970Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:26.292399Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:59:26.291673Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:26.292823Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:26.305822Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: HotStuff
+2025-08-05T02:59:26.313183Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T02:59:26.313264Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:26.312957Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:59:26.313766Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:26.313834Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:59:26.313812Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:26.326683Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: Pacemaker
+2025-08-05T02:59:26.326854Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:59:26.326968Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:26.328415Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:26.328925Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:59:26.330020Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:59:26.331350Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:26.331828Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:59:26.332521Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: Pacemaker
+2025-08-05T02:59:26.332612Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:59:26.332792Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:26.332618Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:26.333548Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:59:26.332883Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:26.333761Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:26.334144Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:59:26.334959Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [202, 147, 172, 23]
+2025-08-05T02:59:26.336160Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: Pacemaker
+2025-08-05T02:59:26.336237Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:59:26.336164Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:26.336365Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:26.336615Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:26.336651Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:26.349974Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:59:26.350093Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T02:59:26.350698Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:26.350805Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:30.176051Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [237, 73, 40, 198]
+2025-08-05T02:59:30.185433Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:30.187071Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:30.199133Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T02:59:30.203030Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T02:59:30.205499Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:30.205656Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:32.175989Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [129, 57, 119, 14]
+2025-08-05T02:59:32.177333Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:32.182425Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:32.298552Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: HotStuff
+2025-08-05T02:59:32.298604Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:59:32.298680Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T02:59:32.298759Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 116 bytes
+2025-08-05T02:59:32.298808Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:32.298878Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:32.298946Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:32.299976Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:32.310823Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T02:59:32.312547Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 116 bytes
+2025-08-05T02:59:32.312757Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:32.312877Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:34.077980Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:34.078309Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T02:59:34.078967Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:34.079323Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:34.088190Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:34.088398Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T02:59:34.088572Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:34.088954Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:34.122679Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:34.128591Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T02:59:34.128792Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:34.129005Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:34.130029Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:34.130241Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:34.130404Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T02:59:34.130492Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T02:59:34.130608Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:34.131922Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:34.132410Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:34.135737Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:34.141469Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:34.147411Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T02:59:34.153207Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:34.167555Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:34.167938Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:59:34.169960Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:34.170661Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:34.172605Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:34.173048Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:34.173411Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:34.174460Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:34.174585Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:59:34.174740Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:59:34.174845Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:34.175062Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:34.175209Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:34.175379Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:34.175547Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:34.176029Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:34.176162Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:59:34.176115Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [138, 136, 227, 221]
+2025-08-05T02:59:34.176438Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:34.176487Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T02:59:34.176682Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [138, 136, 227, 221]
+2025-08-05T02:59:34.177102Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T02:59:34.176787Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.5:42316, 消息类型: HotStuff
+2025-08-05T02:59:34.177204Z  INFO ThreadId(17) hotstuff_runner::app: [node-[138, 136, 227, 221]] Producing block for view 25    
+2025-08-05T02:59:34.177411Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:34.177468Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 72 bytes
+2025-08-05T02:59:34.177678Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:34.177571Z  INFO ThreadId(17) hotstuff_runner::app: [node-[138, 136, 227, 221]] Produced block with 0 transactions    
+2025-08-05T02:59:34.177630Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:34.177815Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:59:34.179381Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [138, 136, 227, 221]
+2025-08-05T02:59:34.179528Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:59:34.179798Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:34.179882Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:59:34.179983Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:34.180064Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:59:34.180301Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:34.180469Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:59:34.188514Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:59:34.188788Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T02:59:34.191289Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:34.191417Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:34.269270Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: HotStuff
+2025-08-05T02:59:34.269414Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T02:59:34.269726Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:34.270122Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:34.275928Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: Pacemaker
+2025-08-05T02:59:34.276559Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:59:34.277299Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:34.279525Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:34.280325Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:59:34.288847Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:59:34.289410Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:34.288950Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: Pacemaker
+2025-08-05T02:59:34.289994Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:59:34.291564Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:59:34.293873Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:34.294105Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:34.295148Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:59:34.296306Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:34.295415Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: Pacemaker
+2025-08-05T02:59:34.298262Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:59:34.297333Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:59:34.299086Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [202, 147, 172, 23]
+2025-08-05T02:59:34.297523Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:34.298667Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:34.299572Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:34.300044Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:34.300131Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:34.318379Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:59:34.318670Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T02:59:34.319421Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:34.319519Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:38.176343Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [237, 73, 40, 198]
+2025-08-05T02:59:38.184176Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:38.194621Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:38.252739Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T02:59:38.260286Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T02:59:38.260379Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:38.260610Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:38.867680Z DEBUG ThreadId(21) hotstuff_runner::tcp_network: 📞 新连接来自: 127.0.0.1:38644
+2025-08-05T02:59:38.868385Z DEBUG ThreadId(21) hotstuff_runner::tcp_network: 连接正常关闭: 127.0.0.1:38644
+2025-08-05T02:59:38.868525Z DEBUG ThreadId(21) hotstuff_runner::tcp_network: 客户端连接处理结束: 127.0.0.1:38644
+2025-08-05T02:59:40.176093Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [129, 57, 119, 14]
+2025-08-05T02:59:40.182587Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:40.189880Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:40.294819Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: HotStuff
+2025-08-05T02:59:40.298211Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T02:59:40.298460Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:40.298607Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:40.299011Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T02:59:40.299097Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 116 bytes
+2025-08-05T02:59:40.299236Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:40.299282Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:59:40.299411Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 116 bytes
+2025-08-05T02:59:40.299496Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:40.299529Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:40.299661Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:42.176472Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [138, 136, 227, 221]
+2025-08-05T02:59:42.180345Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:42.181378Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [138, 136, 227, 221]
+2025-08-05T02:59:42.181751Z  INFO ThreadId(17) hotstuff_runner::app: [node-[138, 136, 227, 221]] Producing block for view 29    
+2025-08-05T02:59:42.181414Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.5:42316, 消息类型: HotStuff
+2025-08-05T02:59:42.186396Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 72 bytes
+2025-08-05T02:59:42.181813Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T02:59:42.187400Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T02:59:42.185690Z  INFO ThreadId(17) hotstuff_runner::app: [node-[138, 136, 227, 221]] Produced block with 0 transactions    
+2025-08-05T02:59:42.193669Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:59:42.187301Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:42.187378Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:59:42.193896Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T02:59:42.187707Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:42.193770Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:59:42.193839Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [138, 136, 227, 221]
+2025-08-05T02:59:42.194161Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:42.193962Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:42.194166Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:42.195641Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:42.195713Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:59:42.195927Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:42.196016Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:59:42.196112Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:42.196165Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:59:42.272557Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: HotStuff
+2025-08-05T02:59:42.274757Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T02:59:42.279527Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:42.283166Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:42.297038Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: Pacemaker
+2025-08-05T02:59:42.297713Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:59:42.298603Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:42.299762Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:42.300833Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: Pacemaker
+2025-08-05T02:59:42.300953Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:59:42.301079Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:42.301367Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:59:42.306965Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:42.306996Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:59:42.307366Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:42.307486Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:59:42.307586Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:42.307714Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:59:42.307814Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:42.307946Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:59:42.308395Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [202, 147, 172, 23]
+2025-08-05T02:59:42.308684Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:42.308839Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:42.312994Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: Pacemaker
+2025-08-05T02:59:42.313115Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:59:42.313264Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:42.313681Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:42.315288Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:59:42.315383Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T02:59:42.315442Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:42.315526Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:44.073141Z  INFO ThreadId(01) docker_node: 💓 节点 0 心跳 #2
+2025-08-05T02:59:44.096317Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:44.103492Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T02:59:44.104957Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:44.106282Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:44.120902Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [202, 147, 172, 23]
+2025-08-05T02:59:44.126722Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 22 bytes, 类型: BlockSyncRequest
+2025-08-05T02:59:44.134728Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:44.134751Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:44.136956Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T02:59:44.137764Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:44.143907Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:44.147201Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:44.147386Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T02:59:44.147919Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:44.148037Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:44.149330Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:44.149392Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T02:59:44.149484Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:44.160532Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:44.161530Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: BlockSyncResponse
+2025-08-05T02:59:44.168233Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 384 bytes
+2025-08-05T02:59:44.168344Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:44.172018Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:44.173611Z  INFO ThreadId(17) hotstuff_runner::app: [node-[138, 136, 227, 221]] Validating block at height 0    
+2025-08-05T02:59:44.176305Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:59:44.176588Z  INFO ThreadId(17) hotstuff_runner::app: [node-[138, 136, 227, 221]] Block validation failed: empty data    
+2025-08-05T02:59:44.176592Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:44.177157Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:44.177167Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:44.177409Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:44.180369Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T02:59:44.180388Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:44.180606Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:44.180512Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:44.208407Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:44.208725Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T02:59:44.209029Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:44.180862Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:44.210970Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:59:44.208540Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:44.211071Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:59:44.211288Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:44.211236Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:44.211780Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:44.212032Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:44.212247Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:44.213218Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:44.213339Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:44.213485Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:59:46.176177Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [237, 73, 40, 198]
+2025-08-05T02:59:46.176414Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:46.176849Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:46.179911Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T02:59:46.180050Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T02:59:46.180302Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:46.185981Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:48.177298Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [129, 57, 119, 14]
+2025-08-05T02:59:48.178261Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:48.179783Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:48.301977Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: HotStuff
+2025-08-05T02:59:48.302091Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T02:59:48.302196Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:48.303419Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:48.312711Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T02:59:48.312897Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 116 bytes
+2025-08-05T02:59:48.312995Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:48.313543Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:48.332887Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:59:48.335252Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 116 bytes
+2025-08-05T02:59:48.335614Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:48.335699Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:50.177946Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [138, 136, 227, 221]
+2025-08-05T02:59:50.182483Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:50.185080Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [138, 136, 227, 221]
+2025-08-05T02:59:50.193560Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:59:50.185128Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T02:59:50.198120Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T02:59:50.185361Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.5:42316, 消息类型: HotStuff
+2025-08-05T02:59:50.198443Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 72 bytes
+2025-08-05T02:59:50.197933Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T02:59:50.200589Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:50.198339Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:50.198548Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:50.200719Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:50.200999Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:50.201093Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [138, 136, 227, 221]
+2025-08-05T02:59:50.208557Z  INFO ThreadId(17) hotstuff_runner::app: [node-[138, 136, 227, 221]] Producing block for view 33    
+2025-08-05T02:59:50.208687Z  INFO ThreadId(17) hotstuff_runner::app: [node-[138, 136, 227, 221]] Produced block with 0 transactions    
+2025-08-05T02:59:50.208758Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:59:50.208821Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:59:50.209336Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:50.209477Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:59:50.210686Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:50.210770Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:59:50.210980Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:50.211100Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:59:50.271415Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: HotStuff
+2025-08-05T02:59:50.271570Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T02:59:50.271648Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:50.271714Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:50.311233Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: Pacemaker
+2025-08-05T02:59:50.322230Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:59:50.324207Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:50.324319Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:50.325248Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:59:50.326864Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:59:50.336830Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:50.337036Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:59:50.342809Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:50.343253Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:59:50.348047Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:50.346492Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: Pacemaker
+2025-08-05T02:59:50.357696Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:59:50.351882Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:59:50.362554Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [202, 147, 172, 23]
+2025-08-05T02:59:50.357803Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:50.357924Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: Pacemaker
+2025-08-05T02:59:50.368223Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:50.373907Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:50.378785Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:59:50.381949Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:50.404530Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:50.424652Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:50.433144Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:59:50.433355Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T02:59:50.433626Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:50.435164Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:54.149197Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:54.149807Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T02:59:54.151020Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:54.151342Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:54.155490Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:54.155610Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T02:59:54.155687Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:54.155763Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:54.164203Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:54.164467Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T02:59:54.164564Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:54.164698Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:54.175826Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [237, 73, 40, 198]
+2025-08-05T02:59:54.179229Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:54.179278Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:54.181353Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:54.181170Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T02:59:54.182118Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:54.182353Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:54.183470Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T02:59:54.183590Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T02:59:54.184559Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:54.184651Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:54.190954Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:54.191192Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T02:59:54.192164Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:54.194556Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:54.195010Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: BlockSyncAdvertise
+2025-08-05T02:59:54.195117Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T02:59:54.196640Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:54.196710Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:54.213592Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:59:54.216257Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:54.217546Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:54.217742Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:54.218407Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:54.218670Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:54.218895Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:54.219159Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:59:54.219308Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:59:54.219395Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:54.219671Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:54.219731Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:54.220116Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:54.220217Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T02:59:54.220683Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:54.220991Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:59:56.174906Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [129, 57, 119, 14]
+2025-08-05T02:59:56.180226Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:56.185315Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:56.280695Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: HotStuff
+2025-08-05T02:59:56.280824Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T02:59:56.283701Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:56.284054Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:56.284128Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:59:56.285353Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 116 bytes
+2025-08-05T02:59:56.285463Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:56.285573Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:56.287119Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T02:59:56.289265Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 116 bytes
+2025-08-05T02:59:56.289368Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:56.289450Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:58.174381Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [138, 136, 227, 221]
+2025-08-05T02:59:58.174830Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:58.175224Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [138, 136, 227, 221]
+2025-08-05T02:59:58.175264Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.5:42316, 消息类型: HotStuff
+2025-08-05T02:59:58.175371Z  INFO ThreadId(17) hotstuff_runner::app: [node-[138, 136, 227, 221]] Producing block for view 37    
+2025-08-05T02:59:58.175456Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 72 bytes
+2025-08-05T02:59:58.175540Z  INFO ThreadId(17) hotstuff_runner::app: [node-[138, 136, 227, 221]] Produced block with 0 transactions    
+2025-08-05T02:59:58.175618Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:58.175694Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:59:58.175758Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [138, 136, 227, 221]
+2025-08-05T02:59:58.175861Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:59:58.176276Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:58.176370Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:59:58.176534Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:58.176615Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T02:59:58.192936Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T02:59:58.193092Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:59:58.201442Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:58.204299Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T02:59:58.207292Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T02:59:58.218344Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:59:58.231652Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:58.236172Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:58.252410Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:58.287733Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:58.291301Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: HotStuff
+2025-08-05T02:59:58.298354Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T02:59:58.306723Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:58.306815Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:58.311375Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: Pacemaker
+2025-08-05T02:59:58.311704Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:59:58.311800Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:58.312117Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T02:59:58.313218Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T02:59:58.315485Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:59:58.315749Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T02:59:58.315971Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:59:58.316250Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:58.316406Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T02:59:58.316770Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T02:59:58.317096Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T02:59:58.324414Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: Pacemaker
+2025-08-05T02:59:58.324523Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:59:58.324662Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:58.324744Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T02:59:58.324943Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: Pacemaker
+2025-08-05T02:59:58.326137Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T02:59:58.326252Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:58.326376Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T02:59:58.327396Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [202, 147, 172, 23]
+2025-08-05T02:59:58.327496Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T02:59:58.327612Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T02:59:58.332577Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T02:59:58.332666Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T02:59:58.332740Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T02:59:58.332797Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T03:00:02.181805Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [237, 73, 40, 198]
+2025-08-05T03:00:02.184481Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T03:00:02.192496Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T03:00:02.201805Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T03:00:02.202000Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T03:00:02.202137Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:02.202318Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T03:00:04.168579Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: BlockSyncAdvertise
+2025-08-05T03:00:04.168792Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T03:00:04.168950Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:04.174745Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [129, 57, 119, 14]
+2025-08-05T03:00:04.179575Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T03:00:04.178091Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T03:00:04.181018Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T03:00:04.191573Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: BlockSyncAdvertise
+2025-08-05T03:00:04.191723Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T03:00:04.193276Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:04.200197Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T03:00:04.202804Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: BlockSyncAdvertise
+2025-08-05T03:00:04.208139Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T03:00:04.208646Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:04.208749Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T03:00:04.208903Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: BlockSyncAdvertise
+2025-08-05T03:00:04.209824Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T03:00:04.209955Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:04.213104Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T03:00:04.217849Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: BlockSyncAdvertise
+2025-08-05T03:00:04.217954Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T03:00:04.218046Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:04.218195Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: BlockSyncAdvertise
+2025-08-05T03:00:04.218271Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T03:00:04.218358Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:04.219098Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T03:00:04.219194Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T03:00:04.220773Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T03:00:04.222257Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T03:00:04.222586Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T03:00:04.223094Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T03:00:04.223260Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T03:00:04.223362Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T03:00:04.223672Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T03:00:04.224004Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T03:00:04.225359Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T03:00:04.225487Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T03:00:04.230277Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T03:00:04.230454Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T03:00:04.230712Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T03:00:04.230948Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T03:00:04.231253Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T03:00:04.231445Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T03:00:04.274877Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: HotStuff
+2025-08-05T03:00:04.275015Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T03:00:04.275133Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:04.275222Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T03:00:04.278771Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T03:00:04.278882Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 116 bytes
+2025-08-05T03:00:04.279115Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:04.278911Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T03:00:04.280093Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T03:00:04.282554Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 116 bytes
+2025-08-05T03:00:04.282801Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:04.282882Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T03:00:06.174810Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [138, 136, 227, 221]
+2025-08-05T03:00:06.189014Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T03:00:06.199925Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [138, 136, 227, 221]
+2025-08-05T03:00:06.200081Z  INFO ThreadId(17) hotstuff_runner::app: [node-[138, 136, 227, 221]] Producing block for view 41    
+2025-08-05T03:00:06.199928Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.5:42316, 消息类型: HotStuff
+2025-08-05T03:00:06.211340Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 72 bytes
+2025-08-05T03:00:06.200292Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T03:00:06.217647Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T03:00:06.202502Z  INFO ThreadId(17) hotstuff_runner::app: [node-[138, 136, 227, 221]] Produced block with 0 transactions    
+2025-08-05T03:00:06.217856Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T03:00:06.211394Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T03:00:06.222803Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T03:00:06.213863Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:06.217768Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:06.221661Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T03:00:06.223930Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T03:00:06.223587Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:06.223669Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [138, 136, 227, 221]
+2025-08-05T03:00:06.230388Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T03:00:06.224495Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T03:00:06.238009Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T03:00:06.243473Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T03:00:06.253791Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T03:00:06.256132Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T03:00:06.256341Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T03:00:06.271112Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: HotStuff
+2025-08-05T03:00:06.279613Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T03:00:06.286375Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:06.287091Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T03:00:06.302224Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: Pacemaker
+2025-08-05T03:00:06.302596Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T03:00:06.319646Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:06.320310Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T03:00:06.327503Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T03:00:06.329944Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T03:00:06.330363Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T03:00:06.330679Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T03:00:06.330827Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T03:00:06.331160Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T03:00:06.331342Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T03:00:06.333349Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T03:00:06.333862Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [202, 147, 172, 23]
+2025-08-05T03:00:06.337236Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T03:00:06.333986Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: Pacemaker
+2025-08-05T03:00:06.339543Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T03:00:06.339466Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T03:00:06.339640Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:06.339832Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T03:00:06.350571Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: Pacemaker
+2025-08-05T03:00:06.350692Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T03:00:06.350785Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:06.355245Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T03:00:06.357488Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T03:00:06.364159Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T03:00:06.365031Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:06.365413Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T03:00:09.084177Z DEBUG ThreadId(22) hotstuff_runner::tcp_network: 📞 新连接来自: 127.0.0.1:36054
+2025-08-05T03:00:09.088914Z DEBUG ThreadId(22) hotstuff_runner::tcp_network: 连接正常关闭: 127.0.0.1:36054
+2025-08-05T03:00:09.090896Z DEBUG ThreadId(22) hotstuff_runner::tcp_network: 客户端连接处理结束: 127.0.0.1:36054
+2025-08-05T03:00:10.212151Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [237, 73, 40, 198]
+2025-08-05T03:00:10.267249Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T03:00:10.276169Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T03:00:10.314308Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T03:00:10.320844Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T03:00:10.323522Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:10.330866Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T03:00:12.175537Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [129, 57, 119, 14]
+2025-08-05T03:00:12.184236Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T03:00:12.184986Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T03:00:12.270117Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: HotStuff
+2025-08-05T03:00:12.270319Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T03:00:12.270494Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:12.271117Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T03:00:12.272862Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T03:00:12.273157Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 116 bytes
+2025-08-05T03:00:12.273170Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T03:00:12.273344Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 116 bytes
+2025-08-05T03:00:12.273251Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:12.273420Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:12.273600Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T03:00:12.273829Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T03:00:14.074076Z  INFO ThreadId(01) docker_node: 💓 节点 0 心跳 #3
+2025-08-05T03:00:14.174898Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [138, 136, 227, 221]
+2025-08-05T03:00:14.176167Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T03:00:14.175509Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T03:00:14.177318Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [138, 136, 227, 221]
+2025-08-05T03:00:14.177690Z  INFO ThreadId(17) hotstuff_runner::app: [node-[138, 136, 227, 221]] Producing block for view 45    
+2025-08-05T03:00:14.177380Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.5:42316, 消息类型: HotStuff
+2025-08-05T03:00:14.177568Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T03:00:14.177914Z  INFO ThreadId(17) hotstuff_runner::app: [node-[138, 136, 227, 221]] Produced block with 0 transactions    
+2025-08-05T03:00:14.177985Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T03:00:14.178043Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T03:00:14.177943Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:14.177971Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 72 bytes
+2025-08-05T03:00:14.178328Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T03:00:14.178415Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:14.178603Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [138, 136, 227, 221]
+2025-08-05T03:00:14.178967Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T03:00:14.179046Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T03:00:14.180908Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T03:00:14.183136Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T03:00:14.183995Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T03:00:14.184179Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T03:00:14.184492Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:14.184603Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T03:00:14.184637Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T03:00:14.186307Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T03:00:14.223662Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: BlockSyncAdvertise
+2025-08-05T03:00:14.224945Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T03:00:14.225146Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: BlockSyncAdvertise
+2025-08-05T03:00:14.225372Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T03:00:14.225478Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:14.225604Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:14.225758Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: BlockSyncAdvertise
+2025-08-05T03:00:14.225937Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T03:00:14.226052Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:14.226014Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T03:00:14.226505Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T03:00:14.226614Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T03:00:14.226866Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: BlockSyncAdvertise
+2025-08-05T03:00:14.227116Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T03:00:14.227596Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:14.227823Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T03:00:14.231568Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T03:00:14.234089Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T03:00:14.235777Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T03:00:14.234445Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: BlockSyncAdvertise
+2025-08-05T03:00:14.239310Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T03:00:14.236026Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T03:00:14.241011Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T03:00:14.239613Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:14.242600Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T03:00:14.242339Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T03:00:14.243432Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T03:00:14.253287Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: BlockSyncAdvertise
+2025-08-05T03:00:14.253510Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T03:00:14.254580Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T03:00:14.254955Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T03:00:14.255037Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T03:00:14.255112Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:14.255268Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T03:00:14.255333Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T03:00:14.260182Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T03:00:14.260581Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T03:00:14.262479Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T03:00:14.262995Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T03:00:14.263423Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T03:00:14.274830Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: HotStuff
+2025-08-05T03:00:14.274971Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T03:00:14.275097Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:14.275201Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T03:00:14.282207Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: Pacemaker
+2025-08-05T03:00:14.282386Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T03:00:14.282528Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:14.282828Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T03:00:14.285196Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T03:00:14.286101Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T03:00:14.286522Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T03:00:14.286676Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T03:00:14.286837Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: Pacemaker
+2025-08-05T03:00:14.286933Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T03:00:14.287037Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:14.287141Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T03:00:14.287055Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T03:00:14.288515Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T03:00:14.287322Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: Pacemaker
+2025-08-05T03:00:14.288884Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T03:00:14.288762Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T03:00:14.289234Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T03:00:14.289038Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:14.289654Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [202, 147, 172, 23]
+2025-08-05T03:00:14.290176Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T03:00:14.290181Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T03:00:14.291007Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T03:00:14.296134Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T03:00:14.296295Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T03:00:14.297280Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:14.297445Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T03:00:18.178159Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [237, 73, 40, 198]
+2025-08-05T03:00:18.179208Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T03:00:18.179630Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T03:00:18.215917Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T03:00:18.217330Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T03:00:18.217681Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:18.217833Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T03:00:20.204383Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [129, 57, 119, 14]
+2025-08-05T03:00:20.207277Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T03:00:20.211126Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T03:00:20.295507Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: HotStuff
+2025-08-05T03:00:20.313977Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T03:00:20.314100Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:20.314263Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T03:00:20.334161Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T03:00:20.363452Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 116 bytes
+2025-08-05T03:00:20.363533Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T03:00:20.363965Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 116 bytes
+2025-08-05T03:00:20.363628Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:20.364070Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:20.378038Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T03:00:20.378205Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T03:00:22.178108Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [138, 136, 227, 221]
+2025-08-05T03:00:22.179299Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T03:00:22.179822Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [138, 136, 227, 221]
+2025-08-05T03:00:22.179858Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.5:42316, 消息类型: HotStuff
+2025-08-05T03:00:22.180559Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 72 bytes
+2025-08-05T03:00:22.180203Z  INFO ThreadId(17) hotstuff_runner::app: [node-[138, 136, 227, 221]] Producing block for view 49    
+2025-08-05T03:00:22.180972Z DEBUG ThreadId(19) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:22.181034Z  INFO ThreadId(17) hotstuff_runner::app: [node-[138, 136, 227, 221]] Produced block with 0 transactions    
+2025-08-05T03:00:22.183815Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [138, 136, 227, 221]
+2025-08-05T03:00:22.185113Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T03:00:22.184162Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T03:00:22.185320Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T03:00:22.185509Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T03:00:22.186005Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:22.186573Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T03:00:22.187192Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T03:00:22.188267Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T03:00:22.188926Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T03:00:22.189123Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 168 bytes, 类型: HotStuff
+2025-08-05T03:00:22.190186Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T03:00:22.190631Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T03:00:22.259114Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: HotStuff
+2025-08-05T03:00:22.270656Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T03:00:22.286691Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:22.304307Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T03:00:22.289018Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: HotStuff
+2025-08-05T03:00:22.318394Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 268 bytes
+2025-08-05T03:00:22.318492Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:22.318587Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T03:00:22.500103Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: Pacemaker
+2025-08-05T03:00:22.500273Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T03:00:22.500341Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:22.501805Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: Pacemaker
+2025-08-05T03:00:22.501947Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T03:00:22.502097Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:22.524422Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: Pacemaker
+2025-08-05T03:00:22.524532Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 253 bytes
+2025-08-05T03:00:22.525512Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:22.529632Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T03:00:22.537214Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: HotStuff
+2025-08-05T03:00:22.540093Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T03:00:22.540166Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T03:00:22.540107Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 364 bytes
+2025-08-05T03:00:22.540275Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:22.540356Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T03:00:22.540771Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T03:00:22.540832Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T03:00:22.540954Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T03:00:22.541078Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T03:00:22.541187Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T03:00:22.541302Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 253 bytes, 类型: Pacemaker
+2025-08-05T03:00:22.541479Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T03:00:22.541558Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T03:00:22.542082Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📨 TCP节点发送消息给 [202, 147, 172, 23]
+2025-08-05T03:00:22.542386Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 72 bytes, 类型: HotStuff
+2025-08-05T03:00:22.542496Z DEBUG ThreadId(17) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T03:00:24.239210Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: BlockSyncAdvertise
+2025-08-05T03:00:24.242328Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T03:00:24.239234Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: BlockSyncAdvertise
+2025-08-05T03:00:24.243469Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T03:00:24.242559Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:24.243583Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:24.243674Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T03:00:24.244028Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T03:00:24.262092Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.4:47824, 消息类型: BlockSyncAdvertise
+2025-08-05T03:00:24.267613Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T03:00:24.263834Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T03:00:24.264239Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.3:45998, 消息类型: BlockSyncAdvertise
+2025-08-05T03:00:24.269250Z DEBUG ThreadId(05) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:24.278110Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [202, 147, 172, 23]
+2025-08-05T03:00:24.270232Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T03:00:24.277143Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T03:00:24.277488Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: BlockSyncAdvertise
+2025-08-05T03:00:24.285018Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 252 bytes
+2025-08-05T03:00:24.280563Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T03:00:24.283849Z DEBUG ThreadId(03) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:24.285280Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:24.300501Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: 📨 收到网络消息 from 172.20.0.2:47688, 消息类型: BlockSyncAdvertise
+2025-08-05T03:00:24.286862Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T03:00:24.292190Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [129, 57, 119, 14]
+2025-08-05T03:00:24.303217Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 反序列化消息成功: 83 bytes
+2025-08-05T03:00:24.322750Z DEBUG ThreadId(04) hotstuff_runner::tcp_network: ✅ 成功反序列化 HotStuff 消息
+2025-08-05T03:00:24.306935Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T03:00:24.309323Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T03:00:24.344896Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 56 bytes, 类型: BlockSyncAdvertise
+2025-08-05T03:00:24.345942Z DEBUG ThreadId(09) hotstuff_runner::tcp_network: 📬 TCP节点接收消息来自 [237, 73, 40, 198]
+2025-08-05T03:00:24.346192Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T03:00:24.346354Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点
+2025-08-05T03:00:24.346461Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📡 TCP节点 [138, 136, 227, 221] 广播给 3 个对等节点
+2025-08-05T03:00:24.346519Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T03:00:24.347692Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [237, 73, 40, 198]
+2025-08-05T03:00:24.347842Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T03:00:24.347970Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [202, 147, 172, 23]
+2025-08-05T03:00:24.348069Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 序列化消息成功: 83 bytes, 类型: BlockSyncAdvertise
+2025-08-05T03:00:24.348196Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: 📤 发送消息到 [129, 57, 119, 14]
+2025-08-05T03:00:24.348766Z DEBUG ThreadId(11) hotstuff_runner::tcp_network: ✅ 成功广播给 3/3 个对等节点

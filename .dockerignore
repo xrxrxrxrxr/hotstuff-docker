@@ -8,3 +8,40 @@ hotstuff_rs/.gitignore
 # Ignore build artifacts
 hotstuff_rs/target/
 hotstuff_rs/coverage/
+
+# .dockerignore
+
+# 排除目标目录和构建缓存
+hotstuff_runner/target/
+hotstuff_runner/.cargo/
+
+# 排除日志文件
+*.log
+log/
+
+# 排除Git相关
+.git/
+.gitignore
+
+# 排除IDE文件
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 排除临时文件
+*.tmp
+*.temp
+
+# 排除Docker相关文件（避免递归包含）
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# 排除文档和README
+*.md
+docs/
+
+# 排除操作系统生成的文件
+.DS_Store
+Thumbs.db

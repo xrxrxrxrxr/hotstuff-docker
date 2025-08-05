@@ -1,19 +1,46 @@
-# Use the official Rust image as the base image
-FROM rust:latest
+# Dockerfile
+FROM rust:latest as builder
 
-# Set the working directory inside the container
+# 安装必要的系统依赖
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# 设置工作目录
 WORKDIR /app
 
-# # Copy the Cargo.toml and Cargo.lock files for both `hotstuff_rs` and `hotstuff_runner`
-# COPY hotstuff_rs/Cargo.toml hotstuff_rs/Cargo.lock ./hotstuff_rs/
-# COPY hotstuff_runner/Cargo.toml hotstuff_runner/Cargo.lock ./hotstuff_runner/
-
-
-# Copy the source code into the container
+# 复制整个项目（包括hotstuff_runner子目录）
 COPY . .
 
-# Build the `hotstuff_runner` binary
-RUN cd hotstuff_runner && cargo build --release
+# 进入hotstuff_runner目录并构建应用
+WORKDIR /app/hotstuff_runner
+RUN cargo build --release --bin docker_node
 
-# Set the command to run the application
-CMD ["./hotstuff_runner/target/release/node"]
+# 运行时镜像
+FROM ubuntu:22.04
+
+# 安装运行时依赖
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    netcat \
+    && rm -rf /var/lib/apt/lists/*
+
+# 创建应用用户
+RUN useradd -r -s /bin/false hotstuff
+
+# 复制构建好的二进制文件
+COPY --from=builder /app/hotstuff_runner/target/release/docker_node /usr/local/bin/docker_node
+
+# 切换到应用用户
+# USER hotstuff
+
+# 设置默认环境变量
+ENV NODE_ID=0
+ENV NODE_PORT=8000
+
+# 暴露端口
+EXPOSE 8000
+
+# 启动命令
+CMD ["docker_node"]
