@@ -79,7 +79,7 @@ fn main() {
     };
 
     // 4. 使用修正的网络创建方法
-    info!("🌐 创建4Node模拟网络...");
+    info!("🌐 创建 4 Node 模拟网络...");
     let (_shared_network, node_networks) = create_mock_network(verifying_keys.clone());
     info!("✅ 网络创建完成，所有Node已注册");
 

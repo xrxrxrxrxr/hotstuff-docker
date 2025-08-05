@@ -1,18 +1,106 @@
-# version: "3.8"
+# docker-compose.yml
+# version: '3.8'
 
 services:
-  test-node:
+  node0:
     build: 
       context: .
       dockerfile: Dockerfile
-    container_name: hotstuff-test
+    container_name: hotstuff_node0
+    hostname: node0
     environment:
+      - NODE_ID=0
+      - NODE_PORT=8000
       - RUST_LOG=info
+    ports:
+      - "8000:8000"
     volumes:
-      - ./logs:/app/logs
+      - ./logs:/logs
     networks:
-      - hotstuff-network
+      - hotstuff_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "8000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  node1:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: hotstuff_node1
+    hostname: node1
+    environment:
+      - NODE_ID=1
+      - NODE_PORT=8001
+      - RUST_LOG=info
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./logs:/logs
+    networks:
+      - hotstuff_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "8001"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  node2:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: hotstuff_node2
+    hostname: node2
+    environment:
+      - NODE_ID=2
+      - NODE_PORT=8002
+      - RUST_LOG=info
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./logs:/logs
+    networks:
+      - hotstuff_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "8002"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  node3:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: hotstuff_node3
+    hostname: node3
+    environment:
+      - NODE_ID=3
+      - NODE_PORT=8003
+      - RUST_LOG=info
+    ports:
+      - "8003:8003"
+    volumes:
+      - ./logs:/logs
+    networks:
+      - hotstuff_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "8003"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
 networks:
-  hotstuff-network:
+  hotstuff_network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
