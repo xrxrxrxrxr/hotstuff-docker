@@ -1,0 +1,331 @@
+2025-08-05T05:51:08.956009Z  INFO ThreadId(01) client: 📝 客户端日志系统初始化成功
+2025-08-05T05:51:08.957358Z  INFO ThreadId(01) client: 🏃 启动客户端节点: client_1
+2025-08-05T05:51:08.963788Z  INFO ThreadId(01) client: 🚀 初始化客户端: client_1
+2025-08-05T05:51:08.964917Z  INFO ThreadId(01) client: ⏳ 等待共识节点启动...
+2025-08-05T05:51:23.996209Z  INFO ThreadId(01) client: 🎮 进入交互模式 - 每5秒发送一个交易
+2025-08-05T05:51:24.008025Z  INFO ThreadId(01) client: 📤 发送交易 1 到节点 0: david -> alice (937)
+2025-08-05T05:51:24.008489Z  INFO ThreadId(01) client: 🔗 尝试连接: node0:9000
+2025-08-05T05:51:24.236696Z  INFO ThreadId(01) client: ✅ 成功连接到节点 0
+2025-08-05T05:51:24.255352Z  INFO ThreadId(01) client: ✅ 交易 1 已发送到节点 0
+2025-08-05T05:51:24.659799Z  INFO ThreadId(01) client: 📥 收到节点 0 的响应: Object {"message": String("交易 1 已被节点 0 接收"), "node_id": Number(0), "status": String("received"), "transaction_id": Number(1)}
+2025-08-05T05:51:29.772195Z  INFO ThreadId(01) client: 📤 发送交易 2 到节点 1: eve -> alice (836)
+2025-08-05T05:51:29.774034Z  INFO ThreadId(01) client: 🔗 尝试连接: node1:9001
+2025-08-05T05:51:29.776270Z  INFO ThreadId(01) client: ✅ 成功连接到节点 1
+2025-08-05T05:51:29.776935Z  INFO ThreadId(01) client: ✅ 交易 2 已发送到节点 1
+2025-08-05T05:51:30.281413Z  INFO ThreadId(01) client: 📥 收到节点 1 的响应: Object {"message": String("交易 2 已被节点 1 接收"), "node_id": Number(1), "status": String("received"), "transaction_id": Number(2)}
+2025-08-05T05:51:35.289445Z  INFO ThreadId(01) client: 📤 发送交易 3 到节点 2: bob -> charlie (13)
+2025-08-05T05:51:35.290220Z  INFO ThreadId(01) client: 🔗 尝试连接: node2:9002
+2025-08-05T05:51:35.697241Z  INFO ThreadId(01) client: ✅ 成功连接到节点 2
+2025-08-05T05:51:35.717176Z  INFO ThreadId(01) client: ✅ 交易 3 已发送到节点 2
+2025-08-05T05:51:36.297262Z  INFO ThreadId(01) client: 📥 收到节点 2 的响应: Object {"message": String("交易 3 已被节点 2 接收"), "node_id": Number(2), "status": String("received"), "transaction_id": Number(3)}
+2025-08-05T05:51:41.445217Z  INFO ThreadId(01) client: 📤 发送交易 4 到节点 3: alice -> eve (957)
+2025-08-05T05:51:41.502613Z  INFO ThreadId(01) client: 🔗 尝试连接: node3:9003
+2025-08-05T05:51:41.574767Z  INFO ThreadId(01) client: ✅ 成功连接到节点 3
+2025-08-05T05:51:41.576544Z  INFO ThreadId(01) client: ✅ 交易 4 已发送到节点 3
+2025-08-05T05:51:41.631644Z  INFO ThreadId(01) client: 📥 收到节点 3 的响应: Object {"message": String("交易 4 已被节点 3 接收"), "node_id": Number(3), "status": String("received"), "transaction_id": Number(4)}
+2025-08-05T05:51:46.635858Z  INFO ThreadId(01) client: 📤 发送交易 5 到节点 0: bob -> charlie (268)
+2025-08-05T05:51:46.662644Z  INFO ThreadId(01) client: 🔗 尝试连接: node0:9000
+2025-08-05T05:51:46.667066Z  INFO ThreadId(01) client: ✅ 成功连接到节点 0
+2025-08-05T05:51:46.692096Z  INFO ThreadId(01) client: ✅ 交易 5 已发送到节点 0
+2025-08-05T05:51:46.892774Z  INFO ThreadId(01) client: 📥 收到节点 0 的响应: Object {"message": String("交易 5 已被节点 0 接收"), "node_id": Number(0), "status": String("received"), "transaction_id": Number(5)}
+2025-08-05T05:51:51.924163Z  INFO ThreadId(01) client: 📤 发送交易 6 到节点 1: charlie -> eve (628)
+2025-08-05T05:51:51.924388Z  INFO ThreadId(01) client: 🔗 尝试连接: node1:9001
+2025-08-05T05:51:51.991922Z  INFO ThreadId(01) client: ✅ 成功连接到节点 1
+2025-08-05T05:51:51.992937Z  INFO ThreadId(01) client: ✅ 交易 6 已发送到节点 1
+2025-08-05T05:51:51.993477Z  INFO ThreadId(01) client: 📥 收到节点 1 的响应: Object {"message": String("交易 6 已被节点 1 接收"), "node_id": Number(1), "status": String("received"), "transaction_id": Number(6)}
+2025-08-05T05:51:57.081912Z  INFO ThreadId(01) client: 📤 发送交易 7 到节点 2: charlie -> alice (748)
+2025-08-05T05:51:57.085047Z  INFO ThreadId(01) client: 🔗 尝试连接: node2:9002
+2025-08-05T05:51:57.096587Z  INFO ThreadId(01) client: ✅ 成功连接到节点 2
+2025-08-05T05:51:57.096849Z  INFO ThreadId(01) client: ✅ 交易 7 已发送到节点 2
+2025-08-05T05:51:57.097658Z  INFO ThreadId(01) client: 📥 收到节点 2 的响应: Object {"message": String("交易 7 已被节点 2 接收"), "node_id": Number(2), "status": String("received"), "transaction_id": Number(7)}
+2025-08-05T05:52:02.113622Z  INFO ThreadId(01) client: 📤 发送交易 8 到节点 3: charlie -> alice (543)
+2025-08-05T05:52:02.116541Z  INFO ThreadId(01) client: 🔗 尝试连接: node3:9003
+2025-08-05T05:52:02.134785Z  INFO ThreadId(01) client: ✅ 成功连接到节点 3
+2025-08-05T05:52:02.138105Z  INFO ThreadId(01) client: ✅ 交易 8 已发送到节点 3
+2025-08-05T05:52:02.138551Z  INFO ThreadId(01) client: 📥 收到节点 3 的响应: Object {"message": String("交易 8 已被节点 3 接收"), "node_id": Number(3), "status": String("received"), "transaction_id": Number(8)}
+2025-08-05T05:52:07.143506Z  INFO ThreadId(01) client: 📤 发送交易 9 到节点 0: eve -> bob (628)
+2025-08-05T05:52:07.144378Z  INFO ThreadId(01) client: 🔗 尝试连接: node0:9000
+2025-08-05T05:52:07.151486Z  INFO ThreadId(01) client: ✅ 成功连接到节点 0
+2025-08-05T05:52:07.151783Z  INFO ThreadId(01) client: ✅ 交易 9 已发送到节点 0
+2025-08-05T05:52:07.168799Z  INFO ThreadId(01) client: 📥 收到节点 0 的响应: Object {"message": String("交易 9 已被节点 0 接收"), "node_id": Number(0), "status": String("received"), "transaction_id": Number(9)}
+2025-08-05T05:52:12.170410Z  INFO ThreadId(01) client: 📤 发送交易 10 到节点 1: david -> bob (567)
+2025-08-05T05:52:12.173942Z  INFO ThreadId(01) client: 🔗 尝试连接: node1:9001
+2025-08-05T05:52:12.175494Z  INFO ThreadId(01) client: ✅ 成功连接到节点 1
+2025-08-05T05:52:12.175630Z  INFO ThreadId(01) client: ✅ 交易 10 已发送到节点 1
+2025-08-05T05:52:12.176431Z  INFO ThreadId(01) client: 📥 收到节点 1 的响应: Object {"message": String("交易 10 已被节点 1 接收"), "node_id": Number(1), "status": String("received"), "transaction_id": Number(10)}
+2025-08-05T05:52:12.177033Z  INFO ThreadId(01) client: 📊 客户端统计 - 发送: 10, 确认: 10, 失败: 0, TPS: 0.21, 成功率: 100.0%
+2025-08-05T05:52:17.179576Z  INFO ThreadId(01) client: 📤 发送交易 11 到节点 2: alice -> eve (780)
+2025-08-05T05:52:17.180026Z  INFO ThreadId(01) client: 🔗 尝试连接: node2:9002
+2025-08-05T05:52:17.183817Z  INFO ThreadId(01) client: ✅ 成功连接到节点 2
+2025-08-05T05:52:17.184139Z  INFO ThreadId(01) client: ✅ 交易 11 已发送到节点 2
+2025-08-05T05:52:17.186342Z  INFO ThreadId(01) client: 📥 收到节点 2 的响应: Object {"message": String("交易 11 已被节点 2 接收"), "node_id": Number(2), "status": String("received"), "transaction_id": Number(11)}
+2025-08-05T05:52:22.190298Z  INFO ThreadId(01) client: 📤 发送交易 12 到节点 3: bob -> alice (751)
+2025-08-05T05:52:22.191772Z  INFO ThreadId(01) client: 🔗 尝试连接: node3:9003
+2025-08-05T05:52:22.198654Z  INFO ThreadId(01) client: ✅ 成功连接到节点 3
+2025-08-05T05:52:22.204396Z  INFO ThreadId(01) client: ✅ 交易 12 已发送到节点 3
+2025-08-05T05:52:22.209420Z  INFO ThreadId(01) client: 📥 收到节点 3 的响应: Object {"message": String("交易 12 已被节点 3 接收"), "node_id": Number(3), "status": String("received"), "transaction_id": Number(12)}
+2025-08-05T05:52:27.216064Z  INFO ThreadId(01) client: 📤 发送交易 13 到节点 0: eve -> charlie (139)
+2025-08-05T05:52:27.217082Z  INFO ThreadId(01) client: 🔗 尝试连接: node0:9000
+2025-08-05T05:52:27.221449Z  INFO ThreadId(01) client: ✅ 成功连接到节点 0
+2025-08-05T05:52:27.222064Z  INFO ThreadId(01) client: ✅ 交易 13 已发送到节点 0
+2025-08-05T05:52:27.223496Z  INFO ThreadId(01) client: 📥 收到节点 0 的响应: Object {"message": String("交易 13 已被节点 0 接收"), "node_id": Number(0), "status": String("received"), "transaction_id": Number(13)}
+2025-08-05T05:52:32.226063Z  INFO ThreadId(01) client: 📤 发送交易 14 到节点 1: alice -> charlie (832)
+2025-08-05T05:52:32.226314Z  INFO ThreadId(01) client: 🔗 尝试连接: node1:9001
+2025-08-05T05:52:32.229169Z  INFO ThreadId(01) client: ✅ 成功连接到节点 1
+2025-08-05T05:52:32.230093Z  INFO ThreadId(01) client: ✅ 交易 14 已发送到节点 1
+2025-08-05T05:52:32.232422Z  INFO ThreadId(01) client: 📥 收到节点 1 的响应: Object {"message": String("交易 14 已被节点 1 接收"), "node_id": Number(1), "status": String("received"), "transaction_id": Number(14)}
+2025-08-05T05:52:37.235144Z  INFO ThreadId(01) client: 📤 发送交易 15 到节点 2: bob -> alice (960)
+2025-08-05T05:52:37.235369Z  INFO ThreadId(01) client: 🔗 尝试连接: node2:9002
+2025-08-05T05:52:37.237506Z  INFO ThreadId(01) client: ✅ 成功连接到节点 2
+2025-08-05T05:52:37.237741Z  INFO ThreadId(01) client: ✅ 交易 15 已发送到节点 2
+2025-08-05T05:52:37.238388Z  INFO ThreadId(01) client: 📥 收到节点 2 的响应: Object {"message": String("交易 15 已被节点 2 接收"), "node_id": Number(2), "status": String("received"), "transaction_id": Number(15)}
+2025-08-05T05:52:42.240999Z  INFO ThreadId(01) client: 📤 发送交易 16 到节点 3: bob -> david (840)
+2025-08-05T05:52:42.241263Z  INFO ThreadId(01) client: 🔗 尝试连接: node3:9003
+2025-08-05T05:52:42.242935Z  INFO ThreadId(01) client: ✅ 成功连接到节点 3
+2025-08-05T05:52:42.243085Z  INFO ThreadId(01) client: ✅ 交易 16 已发送到节点 3
+2025-08-05T05:52:42.243927Z  INFO ThreadId(01) client: 📥 收到节点 3 的响应: Object {"message": String("交易 16 已被节点 3 接收"), "node_id": Number(3), "status": String("received"), "transaction_id": Number(16)}
+2025-08-05T05:52:47.246030Z  INFO ThreadId(01) client: 📤 发送交易 17 到节点 0: charlie -> bob (457)
+2025-08-05T05:52:47.248942Z  INFO ThreadId(01) client: 🔗 尝试连接: node0:9000
+2025-08-05T05:52:47.250741Z  INFO ThreadId(01) client: ✅ 成功连接到节点 0
+2025-08-05T05:52:47.252558Z  INFO ThreadId(01) client: ✅ 交易 17 已发送到节点 0
+2025-08-05T05:52:47.262799Z  INFO ThreadId(01) client: 📥 收到节点 0 的响应: Object {"message": String("交易 17 已被节点 0 接收"), "node_id": Number(0), "status": String("received"), "transaction_id": Number(17)}
+2025-08-05T05:52:52.271013Z  INFO ThreadId(01) client: 📤 发送交易 18 到节点 1: david -> alice (963)
+2025-08-05T05:52:52.271599Z  INFO ThreadId(01) client: 🔗 尝试连接: node1:9001
+2025-08-05T05:52:52.276879Z  INFO ThreadId(01) client: ✅ 成功连接到节点 1
+2025-08-05T05:52:52.278982Z  INFO ThreadId(01) client: ✅ 交易 18 已发送到节点 1
+2025-08-05T05:52:52.281075Z  INFO ThreadId(01) client: 📥 收到节点 1 的响应: Object {"message": String("交易 18 已被节点 1 接收"), "node_id": Number(1), "status": String("received"), "transaction_id": Number(18)}
+2025-08-05T05:52:57.287986Z  INFO ThreadId(01) client: 📤 发送交易 19 到节点 2: david -> eve (728)
+2025-08-05T05:52:57.288271Z  INFO ThreadId(01) client: 🔗 尝试连接: node2:9002
+2025-08-05T05:52:57.291059Z  INFO ThreadId(01) client: ✅ 成功连接到节点 2
+2025-08-05T05:52:57.291650Z  INFO ThreadId(01) client: ✅ 交易 19 已发送到节点 2
+2025-08-05T05:52:57.293778Z  INFO ThreadId(01) client: 📥 收到节点 2 的响应: Object {"message": String("交易 19 已被节点 2 接收"), "node_id": Number(2), "status": String("received"), "transaction_id": Number(19)}
+2025-08-05T05:53:02.295840Z  INFO ThreadId(01) client: 📤 发送交易 20 到节点 3: charlie -> bob (20)
+2025-08-05T05:53:02.296144Z  INFO ThreadId(01) client: 🔗 尝试连接: node3:9003
+2025-08-05T05:53:02.298640Z  INFO ThreadId(01) client: ✅ 成功连接到节点 3
+2025-08-05T05:53:02.298967Z  INFO ThreadId(01) client: ✅ 交易 20 已发送到节点 3
+2025-08-05T05:53:02.300563Z  INFO ThreadId(01) client: 📥 收到节点 3 的响应: Object {"message": String("交易 20 已被节点 3 接收"), "node_id": Number(3), "status": String("received"), "transaction_id": Number(20)}
+2025-08-05T05:53:02.300734Z  INFO ThreadId(01) client: 📊 客户端统计 - 发送: 20, 确认: 20, 失败: 0, TPS: 0.20, 成功率: 100.0%
+2025-08-05T05:53:07.302933Z  INFO ThreadId(01) client: 📤 发送交易 21 到节点 0: charlie -> david (170)
+2025-08-05T05:53:07.303171Z  INFO ThreadId(01) client: 🔗 尝试连接: node0:9000
+2025-08-05T05:53:07.304210Z  INFO ThreadId(01) client: ✅ 成功连接到节点 0
+2025-08-05T05:53:07.304486Z  INFO ThreadId(01) client: ✅ 交易 21 已发送到节点 0
+2025-08-05T05:53:07.304925Z  INFO ThreadId(01) client: 📥 收到节点 0 的响应: Object {"message": String("交易 21 已被节点 0 接收"), "node_id": Number(0), "status": String("received"), "transaction_id": Number(21)}
+2025-08-05T05:53:12.306938Z  INFO ThreadId(01) client: 📤 发送交易 22 到节点 1: bob -> david (829)
+2025-08-05T05:53:12.312936Z  INFO ThreadId(01) client: 🔗 尝试连接: node1:9001
+2025-08-05T05:53:12.315167Z  INFO ThreadId(01) client: ✅ 成功连接到节点 1
+2025-08-05T05:53:12.315711Z  INFO ThreadId(01) client: ✅ 交易 22 已发送到节点 1
+2025-08-05T05:53:12.317498Z  INFO ThreadId(01) client: 📥 收到节点 1 的响应: Object {"message": String("交易 22 已被节点 1 接收"), "node_id": Number(1), "status": String("received"), "transaction_id": Number(22)}
+2025-08-05T05:53:17.320247Z  INFO ThreadId(01) client: 📤 发送交易 23 到节点 2: charlie -> bob (272)
+2025-08-05T05:53:17.320647Z  INFO ThreadId(01) client: 🔗 尝试连接: node2:9002
+2025-08-05T05:53:17.323775Z  INFO ThreadId(01) client: ✅ 成功连接到节点 2
+2025-08-05T05:53:17.323983Z  INFO ThreadId(01) client: ✅ 交易 23 已发送到节点 2
+2025-08-05T05:53:17.333182Z  INFO ThreadId(01) client: 📥 收到节点 2 的响应: Object {"message": String("交易 23 已被节点 2 接收"), "node_id": Number(2), "status": String("received"), "transaction_id": Number(23)}
+2025-08-05T05:53:22.340040Z  INFO ThreadId(01) client: 📤 发送交易 24 到节点 3: charlie -> eve (211)
+2025-08-05T05:53:22.340446Z  INFO ThreadId(01) client: 🔗 尝试连接: node3:9003
+2025-08-05T05:53:22.342902Z  INFO ThreadId(01) client: ✅ 成功连接到节点 3
+2025-08-05T05:53:22.343045Z  INFO ThreadId(01) client: ✅ 交易 24 已发送到节点 3
+2025-08-05T05:53:22.345941Z  INFO ThreadId(01) client: 📥 收到节点 3 的响应: Object {"message": String("交易 24 已被节点 3 接收"), "node_id": Number(3), "status": String("received"), "transaction_id": Number(24)}
+2025-08-05T05:53:27.341918Z  INFO ThreadId(01) client: 📤 发送交易 25 到节点 0: charlie -> eve (865)
+2025-08-05T05:53:27.342150Z  INFO ThreadId(01) client: 🔗 尝试连接: node0:9000
+2025-08-05T05:53:27.354157Z  INFO ThreadId(01) client: ✅ 成功连接到节点 0
+2025-08-05T05:53:27.357498Z  INFO ThreadId(01) client: ✅ 交易 25 已发送到节点 0
+2025-08-05T05:53:27.361632Z  INFO ThreadId(01) client: 📥 收到节点 0 的响应: Object {"message": String("交易 25 已被节点 0 接收"), "node_id": Number(0), "status": String("received"), "transaction_id": Number(25)}
+2025-08-05T05:53:32.363251Z  INFO ThreadId(01) client: 📤 发送交易 26 到节点 1: charlie -> eve (168)
+2025-08-05T05:53:32.363490Z  INFO ThreadId(01) client: 🔗 尝试连接: node1:9001
+2025-08-05T05:53:32.371585Z  INFO ThreadId(01) client: ✅ 成功连接到节点 1
+2025-08-05T05:53:32.373419Z  INFO ThreadId(01) client: ✅ 交易 26 已发送到节点 1
+2025-08-05T05:53:32.374047Z  INFO ThreadId(01) client: 📥 收到节点 1 的响应: Object {"message": String("交易 26 已被节点 1 接收"), "node_id": Number(1), "status": String("received"), "transaction_id": Number(26)}
+2025-08-05T05:53:37.377791Z  INFO ThreadId(01) client: 📤 发送交易 27 到节点 2: eve -> david (323)
+2025-08-05T05:53:37.391849Z  INFO ThreadId(01) client: 🔗 尝试连接: node2:9002
+2025-08-05T05:53:37.521800Z  INFO ThreadId(01) client: ✅ 成功连接到节点 2
+2025-08-05T05:53:37.522480Z  INFO ThreadId(01) client: ✅ 交易 27 已发送到节点 2
+2025-08-05T05:53:37.523123Z  INFO ThreadId(01) client: 📥 收到节点 2 的响应: Object {"message": String("交易 27 已被节点 2 接收"), "node_id": Number(2), "status": String("received"), "transaction_id": Number(27)}
+2025-08-05T05:53:42.524982Z  INFO ThreadId(01) client: 📤 发送交易 28 到节点 3: alice -> eve (66)
+2025-08-05T05:53:42.526849Z  INFO ThreadId(01) client: 🔗 尝试连接: node3:9003
+2025-08-05T05:53:42.529414Z  INFO ThreadId(01) client: ✅ 成功连接到节点 3
+2025-08-05T05:53:42.548849Z  INFO ThreadId(01) client: ✅ 交易 28 已发送到节点 3
+2025-08-05T05:53:42.567164Z  INFO ThreadId(01) client: 📥 收到节点 3 的响应: Object {"message": String("交易 28 已被节点 3 接收"), "node_id": Number(3), "status": String("received"), "transaction_id": Number(28)}
+2025-08-05T05:53:47.569807Z  INFO ThreadId(01) client: 📤 发送交易 29 到节点 0: charlie -> david (763)
+2025-08-05T05:53:47.571215Z  INFO ThreadId(01) client: 🔗 尝试连接: node0:9000
+2025-08-05T05:53:47.572744Z  INFO ThreadId(01) client: ✅ 成功连接到节点 0
+2025-08-05T05:53:47.573219Z  INFO ThreadId(01) client: ✅ 交易 29 已发送到节点 0
+2025-08-05T05:53:47.579787Z  INFO ThreadId(01) client: 📥 收到节点 0 的响应: Object {"message": String("交易 29 已被节点 0 接收"), "node_id": Number(0), "status": String("received"), "transaction_id": Number(29)}
+2025-08-05T05:53:52.636977Z  INFO ThreadId(01) client: 📤 发送交易 30 到节点 1: alice -> bob (689)
+2025-08-05T05:53:52.640263Z  INFO ThreadId(01) client: 🔗 尝试连接: node1:9001
+2025-08-05T05:53:52.667024Z  INFO ThreadId(01) client: ✅ 成功连接到节点 1
+2025-08-05T05:53:52.667402Z  INFO ThreadId(01) client: ✅ 交易 30 已发送到节点 1
+2025-08-05T05:53:52.669162Z  INFO ThreadId(01) client: 📥 收到节点 1 的响应: Object {"message": String("交易 30 已被节点 1 接收"), "node_id": Number(1), "status": String("received"), "transaction_id": Number(30)}
+2025-08-05T05:53:52.669342Z  INFO ThreadId(01) client: 📊 客户端统计 - 发送: 30, 确认: 30, 失败: 0, TPS: 0.20, 成功率: 100.0%
+2025-08-05T05:53:57.678372Z  INFO ThreadId(01) client: 📤 发送交易 31 到节点 2: charlie -> alice (994)
+2025-08-05T05:53:57.680958Z  INFO ThreadId(01) client: 🔗 尝试连接: node2:9002
+2025-08-05T05:53:57.688024Z  INFO ThreadId(01) client: ✅ 成功连接到节点 2
+2025-08-05T05:53:57.691791Z  INFO ThreadId(01) client: ✅ 交易 31 已发送到节点 2
+2025-08-05T05:53:57.701383Z  INFO ThreadId(01) client: 📥 收到节点 2 的响应: Object {"message": String("交易 31 已被节点 2 接收"), "node_id": Number(2), "status": String("received"), "transaction_id": Number(31)}
+2025-08-05T05:54:02.704099Z  INFO ThreadId(01) client: 📤 发送交易 32 到节点 3: david -> bob (942)
+2025-08-05T05:54:02.709849Z  INFO ThreadId(01) client: 🔗 尝试连接: node3:9003
+2025-08-05T05:54:02.712631Z  INFO ThreadId(01) client: ✅ 成功连接到节点 3
+2025-08-05T05:54:02.712931Z  INFO ThreadId(01) client: ✅ 交易 32 已发送到节点 3
+2025-08-05T05:54:02.715966Z  INFO ThreadId(01) client: 📥 收到节点 3 的响应: Object {"message": String("交易 32 已被节点 3 接收"), "node_id": Number(3), "status": String("received"), "transaction_id": Number(32)}
+2025-08-05T05:54:07.724742Z  INFO ThreadId(01) client: 📤 发送交易 33 到节点 0: david -> eve (702)
+2025-08-05T05:54:07.725109Z  INFO ThreadId(01) client: 🔗 尝试连接: node0:9000
+2025-08-05T05:54:07.730190Z  INFO ThreadId(01) client: ✅ 成功连接到节点 0
+2025-08-05T05:54:07.733685Z  INFO ThreadId(01) client: ✅ 交易 33 已发送到节点 0
+2025-08-05T05:54:07.745124Z  INFO ThreadId(01) client: 📥 收到节点 0 的响应: Object {"message": String("交易 33 已被节点 0 接收"), "node_id": Number(0), "status": String("received"), "transaction_id": Number(33)}
+2025-08-05T05:54:12.747799Z  INFO ThreadId(01) client: 📤 发送交易 34 到节点 1: david -> eve (362)
+2025-08-05T05:54:12.750254Z  INFO ThreadId(01) client: 🔗 尝试连接: node1:9001
+2025-08-05T05:54:12.757036Z  INFO ThreadId(01) client: ✅ 成功连接到节点 1
+2025-08-05T05:54:12.767024Z  INFO ThreadId(01) client: ✅ 交易 34 已发送到节点 1
+2025-08-05T05:54:12.777112Z  INFO ThreadId(01) client: 📥 收到节点 1 的响应: Object {"message": String("交易 34 已被节点 1 接收"), "node_id": Number(1), "status": String("received"), "transaction_id": Number(34)}
+2025-08-05T05:54:17.780660Z  INFO ThreadId(01) client: 📤 发送交易 35 到节点 2: eve -> david (28)
+2025-08-05T05:54:17.783807Z  INFO ThreadId(01) client: 🔗 尝试连接: node2:9002
+2025-08-05T05:54:17.786645Z  INFO ThreadId(01) client: ✅ 成功连接到节点 2
+2025-08-05T05:54:17.792965Z  INFO ThreadId(01) client: ✅ 交易 35 已发送到节点 2
+2025-08-05T05:54:17.801873Z  INFO ThreadId(01) client: 📥 收到节点 2 的响应: Object {"message": String("交易 35 已被节点 2 接收"), "node_id": Number(2), "status": String("received"), "transaction_id": Number(35)}
+2025-08-05T05:54:22.810253Z  INFO ThreadId(01) client: 📤 发送交易 36 到节点 3: alice -> eve (228)
+2025-08-05T05:54:22.813128Z  INFO ThreadId(01) client: 🔗 尝试连接: node3:9003
+2025-08-05T05:54:22.823782Z  INFO ThreadId(01) client: ✅ 成功连接到节点 3
+2025-08-05T05:54:22.824005Z  INFO ThreadId(01) client: ✅ 交易 36 已发送到节点 3
+2025-08-05T05:54:22.827945Z  INFO ThreadId(01) client: 📥 收到节点 3 的响应: Object {"message": String("交易 36 已被节点 3 接收"), "node_id": Number(3), "status": String("received"), "transaction_id": Number(36)}
+2025-08-05T05:54:27.832208Z  INFO ThreadId(01) client: 📤 发送交易 37 到节点 0: charlie -> eve (849)
+2025-08-05T05:54:27.836911Z  INFO ThreadId(01) client: 🔗 尝试连接: node0:9000
+2025-08-05T05:54:27.840072Z  INFO ThreadId(01) client: ✅ 成功连接到节点 0
+2025-08-05T05:54:27.840335Z  INFO ThreadId(01) client: ✅ 交易 37 已发送到节点 0
+2025-08-05T05:54:27.851913Z  INFO ThreadId(01) client: 📥 收到节点 0 的响应: Object {"message": String("交易 37 已被节点 0 接收"), "node_id": Number(0), "status": String("received"), "transaction_id": Number(37)}
+2025-08-05T05:54:32.856000Z  INFO ThreadId(01) client: 📤 发送交易 38 到节点 1: charlie -> eve (347)
+2025-08-05T05:54:32.856408Z  INFO ThreadId(01) client: 🔗 尝试连接: node1:9001
+2025-08-05T05:54:32.858046Z  INFO ThreadId(01) client: ✅ 成功连接到节点 1
+2025-08-05T05:54:32.858404Z  INFO ThreadId(01) client: ✅ 交易 38 已发送到节点 1
+2025-08-05T05:54:32.865938Z  INFO ThreadId(01) client: 📥 收到节点 1 的响应: Object {"message": String("交易 38 已被节点 1 接收"), "node_id": Number(1), "status": String("received"), "transaction_id": Number(38)}
+2025-08-05T05:54:37.868034Z  INFO ThreadId(01) client: 📤 发送交易 39 到节点 2: bob -> david (42)
+2025-08-05T05:54:37.869075Z  INFO ThreadId(01) client: 🔗 尝试连接: node2:9002
+2025-08-05T05:54:37.879552Z  INFO ThreadId(01) client: ✅ 成功连接到节点 2
+2025-08-05T05:54:37.882548Z  INFO ThreadId(01) client: ✅ 交易 39 已发送到节点 2
+2025-08-05T05:54:37.884794Z  INFO ThreadId(01) client: 📥 收到节点 2 的响应: Object {"message": String("交易 39 已被节点 2 接收"), "node_id": Number(2), "status": String("received"), "transaction_id": Number(39)}
+2025-08-05T05:54:42.905303Z  INFO ThreadId(01) client: 📤 发送交易 40 到节点 3: david -> alice (90)
+2025-08-05T05:54:42.905648Z  INFO ThreadId(01) client: 🔗 尝试连接: node3:9003
+2025-08-05T05:54:42.917660Z  INFO ThreadId(01) client: ✅ 成功连接到节点 3
+2025-08-05T05:54:42.925726Z  INFO ThreadId(01) client: ✅ 交易 40 已发送到节点 3
+2025-08-05T05:54:42.941199Z  INFO ThreadId(01) client: 📥 收到节点 3 的响应: Object {"message": String("交易 40 已被节点 3 接收"), "node_id": Number(3), "status": String("received"), "transaction_id": Number(40)}
+2025-08-05T05:54:42.952951Z  INFO ThreadId(01) client: 📊 客户端统计 - 发送: 40, 确认: 40, 失败: 0, TPS: 0.20, 成功率: 100.0%
+2025-08-05T05:54:47.955929Z  INFO ThreadId(01) client: 📤 发送交易 41 到节点 0: alice -> charlie (125)
+2025-08-05T05:54:47.960296Z  INFO ThreadId(01) client: 🔗 尝试连接: node0:9000
+2025-08-05T05:54:47.968239Z  INFO ThreadId(01) client: ✅ 成功连接到节点 0
+2025-08-05T05:54:47.970581Z  INFO ThreadId(01) client: ✅ 交易 41 已发送到节点 0
+2025-08-05T05:54:47.979236Z  INFO ThreadId(01) client: 📥 收到节点 0 的响应: Object {"message": String("交易 41 已被节点 0 接收"), "node_id": Number(0), "status": String("received"), "transaction_id": Number(41)}
+2025-08-05T05:54:52.982403Z  INFO ThreadId(01) client: 📤 发送交易 42 到节点 1: alice -> david (590)
+2025-08-05T05:54:52.986418Z  INFO ThreadId(01) client: 🔗 尝试连接: node1:9001
+2025-08-05T05:54:52.994289Z  INFO ThreadId(01) client: ✅ 成功连接到节点 1
+2025-08-05T05:54:52.996745Z  INFO ThreadId(01) client: ✅ 交易 42 已发送到节点 1
+2025-08-05T05:54:53.006498Z  INFO ThreadId(01) client: 📥 收到节点 1 的响应: Object {"message": String("交易 42 已被节点 1 接收"), "node_id": Number(1), "status": String("received"), "transaction_id": Number(42)}
+2025-08-05T05:54:58.007833Z  INFO ThreadId(01) client: 📤 发送交易 43 到节点 2: david -> alice (357)
+2025-08-05T05:54:58.008040Z  INFO ThreadId(01) client: 🔗 尝试连接: node2:9002
+2025-08-05T05:54:58.010758Z  INFO ThreadId(01) client: ✅ 成功连接到节点 2
+2025-08-05T05:54:58.010968Z  INFO ThreadId(01) client: ✅ 交易 43 已发送到节点 2
+2025-08-05T05:54:58.012410Z  INFO ThreadId(01) client: 📥 收到节点 2 的响应: Object {"message": String("交易 43 已被节点 2 接收"), "node_id": Number(2), "status": String("received"), "transaction_id": Number(43)}
+2025-08-05T05:55:03.030288Z  INFO ThreadId(01) client: 📤 发送交易 44 到节点 3: alice -> bob (951)
+2025-08-05T05:55:03.032777Z  INFO ThreadId(01) client: 🔗 尝试连接: node3:9003
+2025-08-05T05:55:03.038252Z  INFO ThreadId(01) client: ✅ 成功连接到节点 3
+2025-08-05T05:55:03.051608Z  INFO ThreadId(01) client: ✅ 交易 44 已发送到节点 3
+2025-08-05T05:55:03.071436Z  INFO ThreadId(01) client: 📥 收到节点 3 的响应: Object {"message": String("交易 44 已被节点 3 接收"), "node_id": Number(3), "status": String("received"), "transaction_id": Number(44)}
+2025-08-05T05:55:08.080287Z  INFO ThreadId(01) client: 📤 发送交易 45 到节点 0: david -> eve (493)
+2025-08-05T05:55:08.081404Z  INFO ThreadId(01) client: 🔗 尝试连接: node0:9000
+2025-08-05T05:55:08.097385Z  INFO ThreadId(01) client: ✅ 成功连接到节点 0
+2025-08-05T05:55:08.099298Z  INFO ThreadId(01) client: ✅ 交易 45 已发送到节点 0
+2025-08-05T05:55:08.100093Z  INFO ThreadId(01) client: 📥 收到节点 0 的响应: Object {"message": String("交易 45 已被节点 0 接收"), "node_id": Number(0), "status": String("received"), "transaction_id": Number(45)}
+2025-08-05T05:55:13.102001Z  INFO ThreadId(01) client: 📤 发送交易 46 到节点 1: charlie -> eve (909)
+2025-08-05T05:55:13.112333Z  INFO ThreadId(01) client: 🔗 尝试连接: node1:9001
+2025-08-05T05:55:13.121045Z  INFO ThreadId(01) client: ✅ 成功连接到节点 1
+2025-08-05T05:55:13.136097Z  INFO ThreadId(01) client: ✅ 交易 46 已发送到节点 1
+2025-08-05T05:55:13.143048Z  INFO ThreadId(01) client: 📥 收到节点 1 的响应: Object {"message": String("交易 46 已被节点 1 接收"), "node_id": Number(1), "status": String("received"), "transaction_id": Number(46)}
+2025-08-05T05:55:18.145979Z  INFO ThreadId(01) client: 📤 发送交易 47 到节点 2: bob -> charlie (501)
+2025-08-05T05:55:18.148121Z  INFO ThreadId(01) client: 🔗 尝试连接: node2:9002
+2025-08-05T05:55:18.157357Z  INFO ThreadId(01) client: ✅ 成功连接到节点 2
+2025-08-05T05:55:18.158960Z  INFO ThreadId(01) client: ✅ 交易 47 已发送到节点 2
+2025-08-05T05:55:18.164787Z  INFO ThreadId(01) client: 📥 收到节点 2 的响应: Object {"message": String("交易 47 已被节点 2 接收"), "node_id": Number(2), "status": String("received"), "transaction_id": Number(47)}
+2025-08-05T05:55:23.167431Z  INFO ThreadId(01) client: 📤 发送交易 48 到节点 3: david -> eve (658)
+2025-08-05T05:55:23.167794Z  INFO ThreadId(01) client: 🔗 尝试连接: node3:9003
+2025-08-05T05:55:23.174891Z  INFO ThreadId(01) client: ✅ 成功连接到节点 3
+2025-08-05T05:55:23.184248Z  INFO ThreadId(01) client: ✅ 交易 48 已发送到节点 3
+2025-08-05T05:55:23.189904Z  INFO ThreadId(01) client: 📥 收到节点 3 的响应: Object {"message": String("交易 48 已被节点 3 接收"), "node_id": Number(3), "status": String("received"), "transaction_id": Number(48)}
+2025-08-05T05:55:28.201339Z  INFO ThreadId(01) client: 📤 发送交易 49 到节点 0: alice -> bob (93)
+2025-08-05T05:55:28.204586Z  INFO ThreadId(01) client: 🔗 尝试连接: node0:9000
+2025-08-05T05:55:28.211040Z  INFO ThreadId(01) client: ✅ 成功连接到节点 0
+2025-08-05T05:55:28.213338Z  INFO ThreadId(01) client: ✅ 交易 49 已发送到节点 0
+2025-08-05T05:55:28.217731Z  INFO ThreadId(01) client: 📥 收到节点 0 的响应: Object {"message": String("交易 49 已被节点 0 接收"), "node_id": Number(0), "status": String("received"), "transaction_id": Number(49)}
+2025-08-05T05:55:33.220085Z  INFO ThreadId(01) client: 📤 发送交易 50 到节点 1: eve -> bob (529)
+2025-08-05T05:55:33.220347Z  INFO ThreadId(01) client: 🔗 尝试连接: node1:9001
+2025-08-05T05:55:33.223563Z  INFO ThreadId(01) client: ✅ 成功连接到节点 1
+2025-08-05T05:55:33.230718Z  INFO ThreadId(01) client: ✅ 交易 50 已发送到节点 1
+2025-08-05T05:55:33.241910Z  INFO ThreadId(01) client: 📥 收到节点 1 的响应: Object {"message": String("交易 50 已被节点 1 接收"), "node_id": Number(1), "status": String("received"), "transaction_id": Number(50)}
+2025-08-05T05:55:33.242166Z  INFO ThreadId(01) client: 📊 客户端统计 - 发送: 50, 确认: 50, 失败: 0, TPS: 0.20, 成功率: 100.0%
+2025-08-05T05:55:38.244652Z  INFO ThreadId(01) client: 📤 发送交易 51 到节点 2: bob -> alice (295)
+2025-08-05T05:55:38.247329Z  INFO ThreadId(01) client: 🔗 尝试连接: node2:9002
+2025-08-05T05:55:38.249635Z  INFO ThreadId(01) client: ✅ 成功连接到节点 2
+2025-08-05T05:55:38.257514Z  INFO ThreadId(01) client: ✅ 交易 51 已发送到节点 2
+2025-08-05T05:55:38.258035Z  INFO ThreadId(01) client: 📥 收到节点 2 的响应: Object {"message": String("交易 51 已被节点 2 接收"), "node_id": Number(2), "status": String("received"), "transaction_id": Number(51)}
+2025-08-05T05:55:43.262072Z  INFO ThreadId(01) client: 📤 发送交易 52 到节点 3: bob -> david (464)
+2025-08-05T05:55:43.262464Z  INFO ThreadId(01) client: 🔗 尝试连接: node3:9003
+2025-08-05T05:55:43.268252Z  INFO ThreadId(01) client: ✅ 成功连接到节点 3
+2025-08-05T05:55:43.268492Z  INFO ThreadId(01) client: ✅ 交易 52 已发送到节点 3
+2025-08-05T05:55:43.269697Z  INFO ThreadId(01) client: 📥 收到节点 3 的响应: Object {"message": String("交易 52 已被节点 3 接收"), "node_id": Number(3), "status": String("received"), "transaction_id": Number(52)}
+2025-08-05T05:55:48.272712Z  INFO ThreadId(01) client: 📤 发送交易 53 到节点 0: charlie -> david (883)
+2025-08-05T05:55:48.273140Z  INFO ThreadId(01) client: 🔗 尝试连接: node0:9000
+2025-08-05T05:55:48.276601Z  INFO ThreadId(01) client: ✅ 成功连接到节点 0
+2025-08-05T05:55:48.276787Z  INFO ThreadId(01) client: ✅ 交易 53 已发送到节点 0
+2025-08-05T05:55:48.280918Z  INFO ThreadId(01) client: 📥 收到节点 0 的响应: Object {"message": String("交易 53 已被节点 0 接收"), "node_id": Number(0), "status": String("received"), "transaction_id": Number(53)}
+2025-08-05T05:55:53.295456Z  INFO ThreadId(01) client: 📤 发送交易 54 到节点 1: bob -> eve (899)
+2025-08-05T05:55:53.298482Z  INFO ThreadId(01) client: 🔗 尝试连接: node1:9001
+2025-08-05T05:55:53.299779Z  INFO ThreadId(01) client: ✅ 成功连接到节点 1
+2025-08-05T05:55:53.300053Z  INFO ThreadId(01) client: ✅ 交易 54 已发送到节点 1
+2025-08-05T05:55:53.306352Z  INFO ThreadId(01) client: 📥 收到节点 1 的响应: Object {"message": String("交易 54 已被节点 1 接收"), "node_id": Number(1), "status": String("received"), "transaction_id": Number(54)}
+2025-08-05T05:55:58.312571Z  INFO ThreadId(01) client: 📤 发送交易 55 到节点 2: eve -> bob (270)
+2025-08-05T05:55:58.313108Z  INFO ThreadId(01) client: 🔗 尝试连接: node2:9002
+2025-08-05T05:55:58.314904Z  INFO ThreadId(01) client: ✅ 成功连接到节点 2
+2025-08-05T05:55:58.315062Z  INFO ThreadId(01) client: ✅ 交易 55 已发送到节点 2
+2025-08-05T05:55:58.316333Z  INFO ThreadId(01) client: 📥 收到节点 2 的响应: Object {"message": String("交易 55 已被节点 2 接收"), "node_id": Number(2), "status": String("received"), "transaction_id": Number(55)}
+2025-08-05T05:56:03.318730Z  INFO ThreadId(01) client: 📤 发送交易 56 到节点 3: charlie -> alice (502)
+2025-08-05T05:56:03.318970Z  INFO ThreadId(01) client: 🔗 尝试连接: node3:9003
+2025-08-05T05:56:03.339605Z  INFO ThreadId(01) client: ✅ 成功连接到节点 3
+2025-08-05T05:56:03.351938Z  INFO ThreadId(01) client: ✅ 交易 56 已发送到节点 3
+2025-08-05T05:56:03.377826Z  INFO ThreadId(01) client: 📥 收到节点 3 的响应: Object {"message": String("交易 56 已被节点 3 接收"), "node_id": Number(3), "status": String("received"), "transaction_id": Number(56)}
+2025-08-05T05:56:08.387971Z  INFO ThreadId(01) client: 📤 发送交易 57 到节点 0: eve -> david (821)
+2025-08-05T05:56:08.388818Z  INFO ThreadId(01) client: 🔗 尝试连接: node0:9000
+2025-08-05T05:56:08.440535Z  INFO ThreadId(01) client: ✅ 成功连接到节点 0
+2025-08-05T05:56:08.441694Z  INFO ThreadId(01) client: ✅ 交易 57 已发送到节点 0
+2025-08-05T05:56:08.474670Z  INFO ThreadId(01) client: 📥 收到节点 0 的响应: Object {"message": String("交易 57 已被节点 0 接收"), "node_id": Number(0), "status": String("received"), "transaction_id": Number(57)}
+2025-08-05T05:56:13.485173Z  INFO ThreadId(01) client: 📤 发送交易 58 到节点 1: alice -> bob (889)
+2025-08-05T05:56:13.485580Z  INFO ThreadId(01) client: 🔗 尝试连接: node1:9001
+2025-08-05T05:56:13.489541Z  INFO ThreadId(01) client: ✅ 成功连接到节点 1
+2025-08-05T05:56:13.489871Z  INFO ThreadId(01) client: ✅ 交易 58 已发送到节点 1
+2025-08-05T05:56:13.516778Z  INFO ThreadId(01) client: 📥 收到节点 1 的响应: Object {"message": String("交易 58 已被节点 1 接收"), "node_id": Number(1), "status": String("received"), "transaction_id": Number(58)}
+2025-08-05T05:56:18.532503Z  INFO ThreadId(01) client: 📤 发送交易 59 到节点 2: bob -> alice (785)
+2025-08-05T05:56:18.539092Z  INFO ThreadId(01) client: 🔗 尝试连接: node2:9002
+2025-08-05T05:56:18.540878Z  INFO ThreadId(01) client: ✅ 成功连接到节点 2
+2025-08-05T05:56:18.543670Z  INFO ThreadId(01) client: ✅ 交易 59 已发送到节点 2
+2025-08-05T05:56:18.555821Z  INFO ThreadId(01) client: 📥 收到节点 2 的响应: Object {"message": String("交易 59 已被节点 2 接收"), "node_id": Number(2), "status": String("received"), "transaction_id": Number(59)}
+2025-08-05T05:56:23.557758Z  INFO ThreadId(01) client: 📤 发送交易 60 到节点 3: david -> bob (123)
+2025-08-05T05:56:23.564104Z  INFO ThreadId(01) client: 🔗 尝试连接: node3:9003
+2025-08-05T05:56:23.586445Z  INFO ThreadId(01) client: ✅ 成功连接到节点 3
+2025-08-05T05:56:23.588078Z  INFO ThreadId(01) client: ✅ 交易 60 已发送到节点 3
+2025-08-05T05:56:23.602424Z  INFO ThreadId(01) client: 📥 收到节点 3 的响应: Object {"message": String("交易 60 已被节点 3 接收"), "node_id": Number(3), "status": String("received"), "transaction_id": Number(60)}
+2025-08-05T05:56:23.602820Z  INFO ThreadId(01) client: 📊 客户端统计 - 发送: 60, 确认: 60, 失败: 0, TPS: 0.20, 成功率: 100.0%
+2025-08-05T05:56:28.606333Z  INFO ThreadId(01) client: 📤 发送交易 61 到节点 0: david -> charlie (402)
+2025-08-05T05:56:28.608216Z  INFO ThreadId(01) client: 🔗 尝试连接: node0:9000
+2025-08-05T05:56:28.620674Z  INFO ThreadId(01) client: ✅ 成功连接到节点 0
+2025-08-05T05:56:28.623761Z  INFO ThreadId(01) client: ✅ 交易 61 已发送到节点 0
+2025-08-05T05:56:28.624897Z  INFO ThreadId(01) client: 📥 收到节点 0 的响应: Object {"message": String("交易 61 已被节点 0 接收"), "node_id": Number(0), "status": String("received"), "transaction_id": Number(61)}
+2025-08-05T05:56:33.650948Z  INFO ThreadId(01) client: 📤 发送交易 62 到节点 1: charlie -> alice (42)
+2025-08-05T05:56:33.651442Z  INFO ThreadId(01) client: 🔗 尝试连接: node1:9001
+2025-08-05T05:56:33.681661Z  INFO ThreadId(01) client: ✅ 成功连接到节点 1
+2025-08-05T05:56:33.683571Z  INFO ThreadId(01) client: ✅ 交易 62 已发送到节点 1
+2025-08-05T05:56:33.685091Z  INFO ThreadId(01) client: 📥 收到节点 1 的响应: Object {"message": String("交易 62 已被节点 1 接收"), "node_id": Number(1), "status": String("received"), "transaction_id": Number(62)}
+2025-08-05T05:56:38.688309Z  INFO ThreadId(01) client: 📤 发送交易 63 到节点 2: david -> alice (914)
+2025-08-05T05:56:38.689474Z  INFO ThreadId(01) client: 🔗 尝试连接: node2:9002
+2025-08-05T05:56:38.691572Z  INFO ThreadId(01) client: ✅ 成功连接到节点 2
+2025-08-05T05:56:38.696457Z  INFO ThreadId(01) client: ✅ 交易 63 已发送到节点 2
+2025-08-05T05:56:38.707266Z  INFO ThreadId(01) client: 📥 收到节点 2 的响应: Object {"message": String("交易 63 已被节点 2 接收"), "node_id": Number(2), "status": String("received"), "transaction_id": Number(63)}
+2025-08-05T05:56:43.709781Z  INFO ThreadId(01) client: 📤 发送交易 64 到节点 3: eve -> alice (10)
+2025-08-05T05:56:43.710134Z  INFO ThreadId(01) client: 🔗 尝试连接: node3:9003
+2025-08-05T05:56:43.716495Z  INFO ThreadId(01) client: ✅ 成功连接到节点 3
+2025-08-05T05:56:43.728281Z  INFO ThreadId(01) client: ✅ 交易 64 已发送到节点 3
+2025-08-05T05:56:43.752322Z  INFO ThreadId(01) client: 📥 收到节点 3 的响应: Object {"message": String("交易 64 已被节点 3 接收"), "node_id": Number(3), "status": String("received"), "transaction_id": Number(64)}
