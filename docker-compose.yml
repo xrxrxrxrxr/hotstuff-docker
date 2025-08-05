@@ -14,6 +14,7 @@ services:
       - RUST_LOG=info
     ports:
       - "8000:8000"
+      - "9000:9000"
     volumes:
       - ./logs:/logs
     networks:
@@ -38,6 +39,7 @@ services:
       - RUST_LOG=info
     ports:
       - "8001:8001"
+      - "9001:9001"
     volumes:
       - ./logs:/logs
     networks:
@@ -62,6 +64,7 @@ services:
       - RUST_LOG=info
     ports:
       - "8002:8002"
+      - "9002:9002"
     volumes:
       - ./logs:/logs
     networks:
@@ -86,6 +89,7 @@ services:
       - RUST_LOG=info
     ports:
       - "8003:8003"
+      - "9003:9003"
     volumes:
       - ./logs:/logs
     networks:
@@ -97,6 +101,29 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+
+  # 客户端节点 - 交互模式
+  client:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: hotstuff_client
+    hostname: client
+    command: ["client"]  # 覆盖默认命令
+    environment:
+      - CLIENT_ID=client_1
+      - CLIENT_MODE=interactive
+      - RUST_LOG=info
+    volumes:
+      - ./logs:/logs
+    networks:
+      - hotstuff_network
+    depends_on:
+      - node0
+      - node1
+      - node2
+      - node3
+    restart: unless-stopped
 
 networks:
   hotstuff_network:

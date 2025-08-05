@@ -30,12 +30,20 @@ sleep 15
 echo "🏥 检查节点健康状态..."
 for i in {0..3}; do
     echo -n "  节点$i: "
-    if docker-compose ps node$i | grep -q "Up"; then
+    if docker ps --filter "name=hotstuff_node$i" --filter "status=running" | grep -q "hotstuff_node$i"; then
         echo "✅ 运行中"
     else
         echo "❌ 异常"
     fi
 done
+
+echo "🏥 检查客户端健康状态..."
+echo -n "  客户端: "
+    if docker-compose ps client | grep -q "Up"; then
+        echo "✅ 运行中"
+    else
+        echo "❌ 异常"
+    fi
 
 echo ""
 echo "🎉 集群启动完成！"
