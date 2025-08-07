@@ -203,22 +203,22 @@ impl ClientNode {
                 // self.stats.record_confirmed();
                 
                 // 简单的响应处理（可选）
-                let mut response_len_buf = [0u8; 4];
-                if stream.read_exact(&mut response_len_buf).await.is_ok() {
-                    let response_len = u32::from_be_bytes(response_len_buf) as usize;
-                    if response_len < 1024 { // 安全检查
-                        let mut response_buf = vec![0u8; response_len];
-                        if stream.read_exact(&mut response_buf).await.is_ok() {
-                            if let Ok(response) = serde_json::from_slice::<serde_json::Value>(&response_buf) {
-                                info!("📥 收到节点 {} 的响应: {:?}", node_id, response);
-                                self.stats.record_confirmed();
-                            }
-                        }
-                    }
-                } else {
-                    // 没有响应也认为发送成功（异步处理）
-                    self.stats.record_confirmed();
-                }
+                // let mut response_len_buf = [0u8; 4];
+                // if stream.read_exact(&mut response_len_buf).await.is_ok() {
+                //     let response_len = u32::from_be_bytes(response_len_buf) as usize;
+                //     if response_len < 1024 { // 安全检查
+                //         let mut response_buf = vec![0u8; response_len];
+                //         if stream.read_exact(&mut response_buf).await.is_ok() {
+                //             if let Ok(response) = serde_json::from_slice::<serde_json::Value>(&response_buf) {
+                //                 info!("📥 收到节点 {} 的响应: {:?}", node_id, response);
+                //                 self.stats.record_confirmed();
+                //             }
+                //         }
+                //     }
+                // } else {
+                //     // 没有响应也认为发送成功（异步处理）
+                //     self.stats.record_confirmed();
+                // }
 
                 Ok(())
             }
@@ -262,23 +262,24 @@ impl ClientNode {
         self.stats.log_summary();
     }
 
-    pub async fn run_interactive_mode(&mut self) {
-        info!("🎮 进入交互模式 - 每5秒发送一个交易");
+    pub async fn run_interactive_mode(&mut self,node_least_id: usize,node_num: usize) {
+        info!("🎮 进入交互模式 - 每10毫秒发送一个交易");
 
         loop {
             let transaction = self.tx_generator.generate_transaction();
-            let target_node = (transaction.id - 1) % 4;
+            // let target_node = (transaction.id - 1) % 4;
+            let target_node = (transaction.id -1) as usize % node_num + node_least_id;
 
-            if let Err(e) = self.send_transaction_to_node(target_node as usize, transaction).await {
+            if let Err(e) = self.send_transaction_to_node(target_node, transaction).await {
                 warn!("发送交易失败: {}", e);
             }
 
             // 每10个交易输出一次统计
             if self.tx_generator.current_tx_id % 10 == 0 {
-                self.stats.log_summary();
+            self.stats.log_summary();
             }
 
-            tokio::time::sleep(Duration::from_secs(5)).await;
+            tokio::time::sleep(Duration::from_millis(10)).await;
         }
     }
 }
@@ -325,8 +326,16 @@ fn setup_tracing_logger() {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     setup_tracing_logger();
 
-    let client_id = env::var("CLIENT_ID").unwrap_or_else(|_| "client_001".to_string());
+    let client_id = env::var("CLIENT_ID").unwrap_or_else(|_| "client_1".to_string());
     let mode = env::var("CLIENT_MODE").unwrap_or_else(|_| "interactive".to_string());
+    let node_least_id: usize = env::var("NODE_LEAST_ID")
+        .unwrap_or_else(|_| "1".to_string())
+        .parse()
+        .expect("NODE_LEAST_ID 必须是数字");
+    let node_num: usize = env::var("NODE_NUM")
+        .unwrap_or_else(|_| "4".to_string())
+        .parse()
+        .expect("NODE_NUM 必须是数字");
 
     info!("🏃 启动客户端节点: {}", client_id);
 
@@ -356,7 +365,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             client_node.run_load_test(config).await;
         }
         _ => {
-            client_node.run_interactive_mode().await;
+            client_node.run_interactive_mode(node_least_id,node_num).await;
         }
     }
 

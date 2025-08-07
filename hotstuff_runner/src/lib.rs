@@ -9,7 +9,7 @@ pub mod tcp_node;
 pub use app::TestApp;
 pub use network::{TestNetwork, NodeNetwork};
 pub use kv_store::MemoryKVStore;
-pub mod node;  
+
 
 use std::io::Write;
 

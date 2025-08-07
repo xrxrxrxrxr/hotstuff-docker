@@ -5,6 +5,7 @@ FROM rust:latest as builder
 RUN apt-get update && apt-get install -y \
     pkg-config \
     libssl-dev \
+    iputils-ping \
     && rm -rf /var/lib/apt/lists/*
 
 # 设置工作目录
@@ -38,12 +39,12 @@ COPY --from=builder /app/hotstuff_runner/target/release/client /usr/local/bin/cl
 # 切换到应用用户
 # USER hotstuff
 
-# 设置默认环境变量
-ENV NODE_ID=0
-ENV NODE_PORT=8000
+# # 设置默认环境变量
+# ENV NODE_ID=0
+# ENV NODE_PORT=8000
 
-# 暴露端口
-EXPOSE 8000
+# # 暴露端口
+# EXPOSE 8000
 
 # 启动命令
 CMD ["docker_node"]
