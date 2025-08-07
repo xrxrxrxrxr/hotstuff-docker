@@ -343,7 +343,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .parse()
         .expect("NODE_NUM 必须是数字");
 
-    // 首先初始化日志系统
+    // 初始化日志系统
     setup_tracing_logger(node_id);
     
     info!("🚀 启动Docker节点 {} (端口: {})", node_id, my_port);
