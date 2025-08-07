@@ -26,7 +26,8 @@ pub struct Node {
     replica: Replica<MemoryKVStore>,
     node_id: usize,
     // 添加对应用的引用以支持交易提交
-    app_handle: Arc<Mutex<TestApp>>,
+    // app_handle: Arc<Mutex<TestApp>>,
+    tx_queue: Arc<Mutex<Vec<String>>>,  // 新增交易队列
 }
 
 impl Node {
@@ -37,6 +38,7 @@ impl Node {
         network: TcpNetwork,    // 使用TcpNetwork替代NodeNetwork
         init_app_state_updates: AppStateUpdates,
         init_validator_set_updates: ValidatorSetUpdates,
+        tx_queue: Arc<Mutex<Vec<String>>>,  // 新增参数：外部交易队列
     ) -> Self {
         let verifying_key: VerifyingKey = keypair.verifying_key().into();
         
@@ -69,8 +71,12 @@ impl Node {
         );
         
         // 5. 创建应用程序并保存引用
-        let app = TestApp::new(format!("node-{:?}", verifying_key.to_bytes()[0..4].to_vec()));
-        let app_handle = Arc::new(Mutex::new(app.clone()));
+        // let app = TestApp::new(format!("node-{:?}", verifying_key.to_bytes()[0..4].to_vec()));
+        let app = TestApp::new(
+            node_id,
+            tx_queue.clone()
+        );
+        // let app_handle = Arc::new(Mutex::new(app.clone()));
         
         // 6. 创建配置 - 使用与官方完全相同的参数
         let config = Configuration::builder()
@@ -271,7 +277,8 @@ impl Node {
             verifying_key,
             replica,
             node_id,
-            app_handle,  // 保存应用引用
+            // app_handle,  // 保存应用引用
+            tx_queue,  // 保存交易队列引用
         }
     }
 
@@ -298,21 +305,29 @@ impl Node {
             .expect("应该能够从区块树获取进入的最高View")
     }
 
-    /// 提交交易到Node
-    pub fn submit_transaction(&self, transaction: String) {
-        let mut app = self.app_handle.lock().unwrap();
-        app.add_transaction(transaction.clone());
-        crate::log_node(self.node_id, log::Level::Info, 
-                                  &format!("📝 接收交易: {}", transaction));
-    }
+    // /// 提交交易到Node
+    // pub fn submit_transaction(&self, transaction: String) {
+    //     let mut app = self.app_handle.lock().unwrap();
+    //     app.add_transaction(transaction.clone());
+    //     crate::log_node(self.node_id, log::Level::Info, 
+    //                               &format!("📝 接收交易: {}", transaction));
+    // }
 
     /// 批量提交交易
     pub fn submit_transactions(&self, transactions: Vec<String>) {
-        let mut app = self.app_handle.lock().unwrap();
-        for tx in &transactions {
-            app.add_transaction(tx.clone());
+        // 直接添加到共享队列
+        let mut queue = self.tx_queue.lock().unwrap();
+        for tx in transactions {
+            queue.push(tx.clone());
+            info!("📝 提交交易到共享队列: {}", tx);
         }
-        crate::log_node(self.node_id, log::Level::Info, 
-                                  &format!("📝 接收 {} 个交易", transactions.len()));
+
+        // let mut app = self.app_handle.lock().unwrap();
+        // for tx in &transactions {
+        //     app.add_transaction(tx.clone());
+        //     info!("📝 add_tx 提交交易: {} 到 pending tx", tx);
+        // }
+        // crate::log_node(self.node_id, log::Level::Info, 
+        //                           &format!("📝 接收 {} 个交易", transactions.len()));
     }
 }

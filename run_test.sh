@@ -17,6 +17,9 @@ if [ ! -d "hotstuff_runner" ]; then
     exit 1
 fi
 
+rm -rf ./logs
+mkdir -p ./logs
+
 # echo "✅ 目录结构检查通过"
 
 # 快速构建和启动
@@ -26,9 +29,14 @@ docker-compose up --build -d
 echo "⏳ 等待节点初始化..."
 sleep 15
 
+set -a
+source .env
+set +a
+
+end_id=$((NODE_LEAST_ID + NODE_NUM - 1))
 # 检查健康状态
 echo "🏥 检查节点健康状态..."
-for i in {0..3}; do
+for i in $(seq $NODE_LEAST_ID $end_id); do
     echo -n "  节点$i: "
     if docker ps --filter "name=hotstuff_node$i" --filter "status=running" | grep -q "hotstuff_node$i"; then
         echo "✅ 运行中"

@@ -10,18 +10,21 @@ services:
     hostname: node0
     environment:
       - NODE_ID=0
-      - NODE_PORT=8000
-      - RUST_LOG=info
+      - NODE_PORT=10000
+      - RUST_LOG=debug
+      - NODE_LEAST_ID=${NODE_LEAST_ID}
+      - NODE_NUM=${NODE_NUM}
     ports:
-      - "8000:8000"
+      - "10000:10000"
       - "9000:9000"
     volumes:
       - ./logs:/logs
+      - ./logs/node:/log
     networks:
       - hotstuff_network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "nc", "-z", "localhost", "8000"]
+      test: ["CMD", "nc", "-z", "localhost", "10000"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -35,22 +38,26 @@ services:
     hostname: node1
     environment:
       - NODE_ID=1
-      - NODE_PORT=8001
-      - RUST_LOG=info
+      - NODE_PORT=10001
+      - RUST_LOG=debug
+      - NODE_LEAST_ID=${NODE_LEAST_ID}
+      - NODE_NUM=${NODE_NUM}
     ports:
-      - "8001:8001"
+      - "10001:10001"
       - "9001:9001"
     volumes:
       - ./logs:/logs
+      - ./logs/node:/log
     networks:
       - hotstuff_network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "nc", "-z", "localhost", "8001"]
+      test: ["CMD", "nc", "-z", "localhost", "10001"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 30s
+    # command: sh -c "sleep 15 && docker_node"
 
   node2:
     build: 
@@ -60,23 +67,26 @@ services:
     hostname: node2
     environment:
       - NODE_ID=2
-      - NODE_PORT=8002
-      - RUST_LOG=info
+      - NODE_PORT=10002
+      - RUST_LOG=debug
+      - NODE_LEAST_ID=${NODE_LEAST_ID}
+      - NODE_NUM=${NODE_NUM}
     ports:
-      - "8002:8002"
+      - "10002:10002"
       - "9002:9002"
     volumes:
       - ./logs:/logs
+      - ./logs/node:/log
     networks:
       - hotstuff_network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "nc", "-z", "localhost", "8002"]
+      test: ["CMD", "nc", "-z", "localhost", "10002"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 30s
-
+    # command: sh -c "sleep 5 && docker_node"
   node3:
     build: 
       context: .
@@ -85,22 +95,199 @@ services:
     hostname: node3
     environment:
       - NODE_ID=3
-      - NODE_PORT=8003
-      - RUST_LOG=info
+      - NODE_PORT=10003
+      - RUST_LOG=debug
+      - NODE_LEAST_ID=${NODE_LEAST_ID}
+      - NODE_NUM=${NODE_NUM}
     ports:
-      - "8003:8003"
+      - "10003:10003"
       - "9003:9003"
     volumes:
       - ./logs:/logs
+      - ./logs/node:/log
     networks:
       - hotstuff_network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "nc", "-z", "localhost", "8003"]
+      test: ["CMD", "nc", "-z", "localhost", "10003"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 30s
+
+  # node4:
+  #   build: 
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: hotstuff_node4
+  #   hostname: node4
+  #   environment:
+  #     - NODE_ID=4
+  #     - NODE_PORT=10004
+  #     - RUST_LOG=debug
+  #     - NODE_LEAST_ID=${NODE_LEAST_ID}
+  #     - NODE_NUM=${NODE_NUM}
+  #   ports:
+  #     - "10004:10004"
+  #     - "9004:9004"
+  #   volumes:
+  #     - ./logs:/logs
+  #     - ./logs/node:/log
+  #   networks:
+  #     - hotstuff_network
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "nc", "-z", "localhost", "10004"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 30s
+    # command: sh -c "sleep 15 && docker_node"
+
+  # node5:
+  #   build: 
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: hotstuff_node5
+  #   hostname: node5
+  #   environment:
+  #     - NODE_ID=5
+  #     - NODE_PORT=10005
+  #     - RUST_LOG=debug
+  #     - NODE_LEAST_ID=${NODE_LEAST_ID}
+  #     - NODE_NUM=${NODE_NUM}
+  #   ports:
+  #     - "10005:10005"
+  #     - "9005:9005"
+  #   volumes:
+  #     - ./logs:/logs
+  #     - ./logs/node:/log
+  #   networks:
+  #     - hotstuff_network
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "nc", "-z", "localhost", "10005"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 30s
+  #   command: sh -c "sleep 5 && docker_node"
+  # node6:
+  #   build: 
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: hotstuff_node6
+  #   hostname: node6
+  #   environment:
+  #     - NODE_ID=6
+  #     - NODE_PORT=10006
+  #     - RUST_LOG=info
+  #     - NODE_LEAST_ID=${NODE_LEAST_ID}
+  #     - NODE_NUM=${NODE_NUM}
+  #   ports:
+  #     - "10006:10006"
+  #     - "9006:9006"
+  #   volumes:
+  #     - ./logs:/logs
+  #     - ./logs/node:/log
+  #   networks:
+  #     - hotstuff_network
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "nc", "-z", "localhost", "10006"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 30s
+  #   command: sh -c "sleep 8 && docker_node"
+
+  # node7:
+  #   build: 
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: hotstuff_node7
+  #   hostname: node7
+  #   environment:
+  #     - NODE_ID=7
+  #     - NODE_PORT=10007
+  #     - RUST_LOG=info
+  #     - NODE_LEAST_ID=${NODE_LEAST_ID}
+  #     - NODE_NUM=${NODE_NUM}
+  #   ports:
+  #     - "10007:10007"
+  #     - "9007:9007"
+  #   volumes:
+  #     - ./logs:/logs
+  #     - ./logs/node:/log
+  #   networks:
+  #     - hotstuff_network
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "nc", "-z", "localhost", "10007"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 30s
+  #   command: sh -c "sleep 10 && docker_node"
+
+  # node8:
+  #   build: 
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: hotstuff_node8
+  #   hostname: node8
+  #   environment:
+  #     - NODE_ID=8
+  #     - NODE_PORT=10008
+  #     - RUST_LOG=info
+  #     - NODE_LEAST_ID=${NODE_LEAST_ID}
+  #     - NODE_NUM=${NODE_NUM}
+  #   ports:
+  #     - "10008:10008"
+  #     - "9008:9008"
+  #   volumes:
+  #     - ./logs:/logs
+  #     - ./logs/node:/log
+  #   networks:
+  #     - hotstuff_network
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "nc", "-z", "localhost", "10008"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 30s
+
+  # node9:
+  #   build: 
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: hotstuff_node9
+  #   hostname: node9
+  #   environment:
+  #     - NODE_ID=9
+  #     - NODE_PORT=10009
+  #     - RUST_LOG=debug
+  #     - NODE_LEAST_ID=${NODE_LEAST_ID}
+  #     - NODE_NUM=${NODE_NUM}
+  #   ports:
+  #     - "10009:10009"
+  #     - "9009:9009"
+  #   volumes:
+  #     - ./logs:/logs
+  #     - ./logs/node:/log
+  #   networks:
+  #     - hotstuff_network
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "nc", "-z", "localhost", "10009"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 30s
+
+
+
 
   # 客户端节点 - 交互模式
   client:
@@ -114,8 +301,11 @@ services:
       - CLIENT_ID=client_1
       - CLIENT_MODE=interactive
       - RUST_LOG=info
+      - NODE_LEAST_ID=${NODE_LEAST_ID}
+      - NODE_NUM=${NODE_NUM}
     volumes:
       - ./logs:/logs
+      - ./logs/node:/log
     networks:
       - hotstuff_network
     depends_on:
@@ -124,6 +314,49 @@ services:
       - node2
       - node3
     restart: unless-stopped
+
+  perf_tester:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: hotstuff_perf_tester
+    hostname: perf_tester
+    command: ["client"]  # ← 这里指定运行 client_node 二进制文件
+    environment:
+      - CLIENT_ID=perf_tester_001
+      - CLIENT_MODE=load_test  # ← 这个环境变量很重要
+      - TARGET_TPS=100         # ← 目标 100 TPS
+      - TEST_DURATION=300      # ← 运行 5 分钟
+      - RUST_LOG=warn
+    profiles:
+      - perf_test
+
+  load_tester:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: hotstuff_load_tester
+    hostname: load_tester
+    command: ["client"]  # 覆盖默认命令
+    environment:
+      - CLIENT_ID=load_tester_001
+      - CLIENT_MODE=load_test
+      - TARGET_TPS=20
+      - TEST_DURATION=300
+      - RUST_LOG=info
+    volumes:
+      - ./logs:/logs
+      - ./logs/node:/log
+    networks:
+      - hotstuff_network
+    depends_on:
+      - node4
+      - node1
+      - node2
+      - node3
+    restart: "no"
+    profiles:
+      - load_test
 
 networks:
   hotstuff_network:

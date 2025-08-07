@@ -60,6 +60,7 @@ pub struct TcpNetworkConfig {
 pub struct TcpNetwork {
     config: TcpNetworkConfig,
     message_rx: Arc<Mutex<mpsc::Receiver<(VerifyingKey, Message)>>>,
+    message_tx: mpsc::Sender<(VerifyingKey, Message)>, // 添加这一行
     peer_connections: Arc<Mutex<HashMap<VerifyingKey, TcpStream>>>,
     _server_handle: thread::JoinHandle<()>,
 }
@@ -68,6 +69,7 @@ impl TcpNetwork {
     pub fn new(config: TcpNetworkConfig) -> Result<Self, Box<dyn std::error::Error>> {
         let (tx, rx) = mpsc::channel();
         let message_rx = Arc::new(Mutex::new(rx));
+        let message_tx = tx.clone(); // 添加这一行
         let peer_connections = Arc::new(Mutex::new(HashMap::new()));
         
         // 启动TCP服务器
@@ -86,6 +88,7 @@ impl TcpNetwork {
         let mut network = Self {
             config: config.clone(),
             message_rx,
+            message_tx, // 添加这一行
             peer_connections,
             _server_handle: server_handle,
         };
@@ -132,6 +135,8 @@ impl TcpNetwork {
         Ok(())
     }
 
+    
+
     // 将 Message 转换为字节的辅助函数
     fn message_to_bytes(message: &Message) -> Result<(MessageType, Vec<u8>), Box<dyn std::error::Error>> {
         // 根据消息类型判断 MessageType
@@ -157,7 +162,7 @@ impl TcpNetwork {
             format!("Message serialization failed: {}", e)
         })?;
         
-        debug!("✅ 序列化消息成功: {} bytes, 类型: {:?}", bytes.len(), message_type);
+        // debug!("✅ 序列化消息成功: {} bytes, 类型: {:?}", bytes.len(), message_type);
         Ok((message_type, bytes))
     }
 
@@ -168,12 +173,41 @@ impl TcpNetwork {
             error!("❌ 反序列化消息失败: {}", e);
             format!("Message deserialization failed: {}", e)
         })?;
-        
-        debug!("✅ 反序列化消息成功: {} bytes", bytes.len());
+
+        // 根据消息类型判断 MessageType
+        let message_type = match &message {
+            Message::ProgressMessage(progress_msg) => {
+                match progress_msg {
+                    ProgressMessage::HotStuffMessage(_) => MessageType::HotStuff,
+                    ProgressMessage::PacemakerMessage(_) => MessageType::Pacemaker,
+                    ProgressMessage::BlockSyncAdvertiseMessage(_) => MessageType::BlockSyncAdvertise,
+                }
+            }
+            Message::BlockSyncMessage(sync_msg) => {
+                match sync_msg {
+                    BlockSyncMessage::BlockSyncRequest(_) => MessageType::BlockSyncRequest,
+                    BlockSyncMessage::BlockSyncResponse(_) => MessageType::BlockSyncResponse,
+                }
+            }
+        };
+
+        debug!("✅ 反序列化消息成功: {} bytes，类型: {:?}", bytes.len(), message_type);
         Ok(message)
     }
 
     fn send_to_peer(&self, peer_key: &VerifyingKey, message: &Message) -> Result<(), Box<dyn std::error::Error>> {
+        // 🎯 添加这个检查
+        if *peer_key == self.config.my_key {
+            debug!("📨 发送消息给自己");
+            if let Err(e) = self.message_tx.send((self.config.my_key, message.clone())) {
+                error!("❌ 发送给自己失败: {}", e);
+                return Err(e.into());
+            }
+            debug!("✅ 成功发送消息给自己");
+            return Ok(());
+        }
+
+        // 获取对等节点的连接
         let mut connections = self.peer_connections.lock().unwrap();
         
         if let Some(stream) = connections.get_mut(peer_key) {
@@ -194,7 +228,7 @@ impl TcpNetwork {
             stream.write_all(&serialized)?;
             stream.flush()?;
             
-            debug!("📤 发送消息到 {:?}", peer_key.to_bytes()[0..4].to_vec());
+            // debug!("📤 发送消息到 {:?}", peer_key.to_bytes()[0..4].to_vec());
             Ok(())
         } else {
             // 尝试重新连接
@@ -225,6 +259,7 @@ impl Clone for TcpNetwork {
         Self {
             config: self.config.clone(),
             message_rx: self.message_rx.clone(),  // ✅ 共享同一个接收通道
+            message_tx: self.message_tx.clone(),
             peer_connections: self.peer_connections.clone(),
             _server_handle: thread::spawn(|| {}), // 注意：这不是真正的克隆，但满足类型要求
         }
@@ -243,24 +278,45 @@ impl Network for TcpNetwork {
               self.config.my_key.to_bytes()[0..4].to_vec());
     }
 
+    // fn broadcast(&mut self, message: Message) {
+    //     let peer_count = self.config.peer_addrs.len() - 1; // 排除自己
+    //     debug!("📡 TCP节点 {:?} 广播给 {} 个对等节点", 
+    //            self.config.my_key.to_bytes()[0..4].to_vec(), 
+    //            peer_count);
+        
+    //     let mut success_count = 0;
+    //     for peer_key in self.config.peer_addrs.keys() {
+    //         if *peer_key != self.config.my_key {
+    //             if let Err(e) = self.send_to_peer(peer_key, &message) {
+    //                 error!("广播发送失败到 {:?}: {}", peer_key.to_bytes()[0..4].to_vec(), e);
+    //             } else {
+    //                 success_count += 1;
+    //             }
+    //         }
+    //     }
+        
+    //     debug!("✅ 成功广播给 {}/{} 个对等节点", success_count, peer_count);
+    // }
+
     fn broadcast(&mut self, message: Message) {
-        let peer_count = self.config.peer_addrs.len() - 1; // 排除自己
-        debug!("📡 TCP节点 {:?} 广播给 {} 个对等节点", 
-               self.config.my_key.to_bytes()[0..4].to_vec(), 
-               peer_count);
+        let total_nodes = self.config.peer_addrs.len();
+        debug!("📡 TCP节点 {:?} 广播给 {} 个节点（包括自己）", 
+            self.config.my_key.to_bytes()[0..4].to_vec(), 
+            total_nodes);
         
         let mut success_count = 0;
+        
+        // 🎯 修复：发送给所有节点，包括自己
         for peer_key in self.config.peer_addrs.keys() {
-            if *peer_key != self.config.my_key {
-                if let Err(e) = self.send_to_peer(peer_key, &message) {
-                    error!("广播发送失败到 {:?}: {}", peer_key.to_bytes()[0..4].to_vec(), e);
-                } else {
-                    success_count += 1;
-                }
+            // ❌ 删除这个条件检查：if *peer_key != self.config.my_key
+            if let Err(e) = self.send_to_peer(peer_key, &message) {
+                error!("广播发送失败到 {:?}: {}", peer_key.to_bytes()[0..4].to_vec(), e);
+            } else {
+                success_count += 1;
             }
         }
         
-        debug!("✅ 成功广播给 {}/{} 个对等节点", success_count, peer_count);
+        debug!("✅ 成功广播给 {}/{} 个节点", success_count, total_nodes);
     }
 
     fn send(&mut self, peer: VerifyingKey, message: Message) {
@@ -271,16 +327,68 @@ impl Network for TcpNetwork {
         }
     }
 
+    // fn recv(&mut self) -> Option<(VerifyingKey, Message)> {
+    //     let receiver = self.message_rx.lock().unwrap();
+    //     match receiver.try_recv() {
+    //         Ok(msg) => {
+    //             debug!("📬 TCP节点接收消息来自 {:?}", msg.0.to_bytes()[0..4].to_vec());
+    //             Some(msg)
+    //         }
+    //         Err(mpsc::TryRecvError::Empty) => None,
+    //         Err(mpsc::TryRecvError::Disconnected) => {
+    //             error!("❌ TCP节点接收通道断开");
+    //             None
+    //         }
+    //     }
+    // }
+
     fn recv(&mut self) -> Option<(VerifyingKey, Message)> {
         let receiver = self.message_rx.lock().unwrap();
         match receiver.try_recv() {
-            Ok(msg) => {
-                debug!("📬 TCP节点接收消息来自 {:?}", msg.0.to_bytes()[0..4].to_vec());
-                Some(msg)
+            Ok((sender_key, message)) => {
+                let sender_id = format!("{:?}", &sender_key.to_bytes()[0..4]);
+                info!("🔄 [Network.recv] 从队列取出消息, 发送者: {}", sender_id);
+                
+                // 🔍 关键调试：检查Message内容
+                match &message {
+                    Message::ProgressMessage(progress_msg) => {
+                        match progress_msg {
+                            ProgressMessage::HotStuffMessage(hotstuff_msg) => {
+                                info!("  📋 消息类型: HotStuffMessage");
+                                
+                                // 🚨 这里需要检查 HotStuffMessage 是否包含区块数据
+                                // 根据 HotStuff 库的具体实现，检查消息内容
+                                debug!("  🔍 HotStuffMessage 内容检查...");
+                                
+                                // 如果是包含区块的消息，检查区块数据
+                                // 这里需要根据具体的 HotStuffMessage 结构来实现
+                            },
+                            ProgressMessage::PacemakerMessage(_) => {
+                                info!("  📋 消息类型: PacemakerMessage");
+                            },
+                            ProgressMessage::BlockSyncAdvertiseMessage(_) => {
+                                info!("  📋 消息类型: BlockSyncAdvertiseMessage");
+                            }
+                        }
+                    },
+                    Message::BlockSyncMessage(sync_msg) => {
+                        info!("  📋 消息类型: BlockSyncMessage");
+                        match sync_msg {
+                            BlockSyncMessage::BlockSyncRequest(_) => {
+                                info!("    具体类型: BlockSyncRequest");
+                            },
+                            BlockSyncMessage::BlockSyncResponse(_) => {
+                                info!("    具体类型: BlockSyncResponse");
+                            }
+                        }
+                    }
+                }
+                
+                Some((sender_key, message))
             }
             Err(mpsc::TryRecvError::Empty) => None,
             Err(mpsc::TryRecvError::Disconnected) => {
-                error!("❌ TCP节点接收通道断开");
+                error!("❌ TCP接收通道断开");
                 None
             }
         }
@@ -387,7 +495,7 @@ fn handle_client(
                 // 反序列化 HotStuff 消息
                 match TcpNetwork::bytes_to_message(net_msg.message_type, &net_msg.message_bytes) {
                     Ok(hotstuff_message) => {
-                        debug!("✅ 成功反序列化 HotStuff 消息");
+                        // debug!("✅ 成功反序列化 HotStuff 消息");
                         
                         // 发送到消息队列
                         if let Err(e) = message_tx.send((sender_key, hotstuff_message)) {
@@ -408,7 +516,7 @@ fn handle_client(
         }
     }
     
-    debug!("客户端连接处理结束: {}", peer_addr);
+    // debug!("客户端连接处理结束: {}", peer_addr);
     Ok(())
 }
 
