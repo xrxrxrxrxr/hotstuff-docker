@@ -1,3 +1,4 @@
+use borsh::BorshSerialize;
 // hotstuff_runner/src/app.rs
 use hotstuff_rs::{
     app::{App, ProduceBlockRequest, ProduceBlockResponse, ValidateBlockRequest, ValidateBlockResponse},
@@ -97,8 +98,9 @@ impl<K: KVStore> App<K> for TestApp {
         // 从共享队列获取并清空交易
         let transactions = {
             let mut queue = self.tx_queue.lock().unwrap();
-            let tx_count = queue.len().min(100); // 每个区块最多100个交易
-            
+            let tx_count = queue.len().min(500); // 每个区块最多500个交易
+            info!("Node {} [produce_block] 📊 queue.len = {}, tx_count = {}", self.node_id, queue.len(), tx_count);
+
             let mut batch = Vec::new();
             for _ in 0..tx_count {
                 if let Some(tx) = queue.pop() {
@@ -109,7 +111,7 @@ impl<K: KVStore> App<K> for TestApp {
         };
 
         let tx_count = transactions.len();
-        info!("Node {} [produce_block] 📊 从共享队列获取 {} 个交易", self.node_id, tx_count);
+        info!("Node {} [produce_block] 📊 从共享队列获取 tx_count = {} 个交易", self.node_id, tx_count);
 
 
         // 创建区块数据
@@ -122,7 +124,8 @@ impl<K: KVStore> App<K> for TestApp {
         data_vec.push(Datum::new(view_bytes));
         
         
-        // 添加交易计数
+        // 添加交易计数, 在data中作为第二个Datum
+        // 使用 u32 来存储交易计数
         let tx_count_bytes = (tx_count as u32).to_le_bytes().to_vec();
         data_vec.push(Datum::new(tx_count_bytes));
         
@@ -174,12 +177,24 @@ impl<K: KVStore> App<K> for TestApp {
     fn validate_block(&mut self, request: ValidateBlockRequest<K>) -> ValidateBlockResponse {
         let block = request.proposed_block();
         info!("[Node {}] Validating block at height {}", self.node_id, block.height);
+        let tx_count = if block.data.vec().len() >= 2 {
+            let tx_count_bytes = block.data.vec()[1].bytes();
+            if tx_count_bytes.len() >= 4 {
+                let mut bytes = [0u8; 4];
+                bytes.copy_from_slice(&tx_count_bytes[0..4]);
+                        u32::from_le_bytes(bytes)
+                    } else {
+                        0
+                    }
+                } else {
+                    0
+                };
 
         // 添加更详细的日志
         info!("Node {} [validate_block] 🔍 验证区块详情:",self.node_id);
         info!("Node {} [validate_block]  - 区块高度: {}",self.node_id, block.height);
-        info!("Node {} [validate_block]  - 数据长度: {}",self.node_id, block.data.len().int());
-        info!("Node {} [validate_block]  - 数据哈希: {:?}",self.node_id, &block.data_hash.bytes()[0..8]);
+        info!("Node {} [validate_block]  - 交易数量: {}",self.node_id, tx_count);
+        info!("Node {} [validate_block]  - 区块哈希: {:?}",self.node_id, &block.hash);
         info!("Node {} [validate_block]  - 当前节点区块计数: {}", self.node_id,self.block_count);
 
 
@@ -259,10 +274,16 @@ impl<K: KVStore> App<K> for TestApp {
         
         // 存储区块哈希（使用区块高度作为键）
         let block_hash_key = format!("block_height_{}", block.height);
+        let block_hash_key_clone=block_hash_key.clone();
         app_state_updates.insert(
             block_hash_key.into_bytes(), 
             block.data_hash.bytes().to_vec()
         );
+
+        // 检查insert的内容
+        app_state_updates.get_insert(&block_hash_key_clone.into_bytes()).map(|value| {
+            info!("[Node {}] Block hash stored in app state: {:?}", self.node_id, value);
+        });
 
         info!("[Node {}] Block validation passed", self.node_id);
         info!("[Node {}] ✅ 区块验证通过 - 高度: {}", self.node_id, block.height);

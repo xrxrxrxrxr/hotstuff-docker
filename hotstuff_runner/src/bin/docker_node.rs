@@ -104,11 +104,11 @@ fn setup_tracing_logger(node_id: usize) {
         .expect("无法打开节点日志文件");
     
     // 共享的 main.log 文件（直接使用 File，不用 Arc<Mutex>）
-    let main_log_file = File::options()
-        .create(true)
-        .append(true)
-        .open("logs/main.log")
-        .expect("无法打开 main.log 文件");
+    // let main_log_file = File::options()
+    //     .create(true)
+    //     .append(true)
+    //     .open("logs/main.log")
+    //     .expect("无法打开 main.log 文件");
     
     let result = tracing_subscriber::registry()
         .with(
@@ -125,13 +125,13 @@ fn setup_tracing_logger(node_id: usize) {
                 .with_thread_ids(true)
                 .with_ansi(false)
         )  // 节点文件输出
-        .with(
-            fmt::layer()
-                .with_writer(main_log_file)
-                .with_target(true)
-                .with_thread_ids(true)
-                .with_ansi(false)
-        )  // 主日志文件输出
+        // .with(
+        //     fmt::layer()
+        //         .with_writer(main_log_file)
+        //         .with_target(true)
+        //         .with_thread_ids(true)
+        //         .with_ansi(false)
+        // )  // 主日志文件输出
         .try_init();
     
     match result {
@@ -230,6 +230,8 @@ async fn handle_client_connection(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut length_buf = [0u8; 4];
     let mut tx_count = 0;
+
+    info!("🔗 Node {} 新的客户端连接建立", node_id);
     
     loop {
         match socket.read_exact(&mut length_buf).await {
@@ -237,6 +239,7 @@ async fn handle_client_connection(
                 let message_length = u32::from_be_bytes(length_buf) as usize;
                 
                 if message_length > 1024 * 1024 {
+                    warn!("⚠️ Node {} 消息过大: {}, 断开连接", node_id, message_length);
                     break;
                 }
                 
@@ -246,9 +249,11 @@ async fn handle_client_connection(
                 if let Ok(client_message) = serde_json::from_slice::<ClientMessage>(&message_buf) {
                     if let Some(transaction) = client_message.transaction {
                         tx_count += 1;
-                        
+
                         let tx_string = format!("{}:{}->{}:{}", transaction.id, transaction.from, transaction.to, transaction.amount);
-                        
+                        // info!("💰 Node {} 接收交易 #{} (连接内): ID={}, {}->{}:{}", 
+                            //   node_id, tx_count, transaction.id, transaction.from, transaction.to, transaction.amount);
+
                         // 使用 spawn_blocking 来处理同步的 Mutex 操作
                         let queue_clone = shared_tx_queue.clone();
                         let tx_string_clone = tx_string.clone();
@@ -268,24 +273,43 @@ async fn handle_client_connection(
                             let mut stats_guard = stats_clone.lock().unwrap();
                             stats_guard.record_submitted();
                         }).await.unwrap();
+
+                        // 验证交易确实被添加到队列
+                        let current_queue_size = tokio::task::spawn_blocking({
+                            let queue_clone = shared_tx_queue.clone();
+                            move || queue_clone.lock().unwrap().len()
+                        }).await.unwrap();
                         
-                        if tx_count % 10 == 0 {
+                        // info!("📝 Node {} 交易已添加到共享队列，当前队列大小: {}", node_id, current_queue_size);
+
+                        // 更新统计
+                        let stats_clone = stats.clone();
+                        tokio::task::spawn_blocking(move || {
+                            let mut stats_guard = stats_clone.lock().unwrap();
+                            stats_guard.record_submitted();
+                        }).await.unwrap();
+                        
+                        // 每个交易都显示统计（调试用）
+                        if tx_count % 5 == 0 {
                             let queue_clone = shared_tx_queue.clone();
                             let stats_clone = stats.clone();
                             
                             let (pool_size, current_tps) = tokio::task::spawn_blocking(move || {
                                 let pool_size = queue_clone.lock().unwrap().len();
                                 let current_stats = stats_clone.lock().unwrap();
-                                let tps = current_stats.submitted_count as f64 / 
-                                    current_stats.start_time.unwrap_or(std::time::Instant::now()).elapsed().as_secs_f64();
+                                let tps = if let Some(start) = current_stats.start_time {
+                                    current_stats.submitted_count as f64 / start.elapsed().as_secs_f64()
+                                } else {
+                                    0.0
+                                };
                                 (pool_size, tps)
                             }).await.unwrap();
 
-                            // info!("📊 Node {} 接收统计: {} 个交易, 交易池: {}, 提交TPS: {:.1}", 
-                            //       node_id, tx_count, pool_size, current_tps);
-                            info!("📊 Node {} 接收统计: {} 个交易, 交易池: {}", 
-                                  node_id, tx_count, pool_size);
+                            info!("📊 Node {} 接收统计: {} 个交易, 交易池: {}, TPS: {:.1}", 
+                                  node_id, tx_count, pool_size, current_tps);
                         }
+
+
                         
                         // 发送简单确认响应
                         // let response = serde_json::json!({
@@ -302,16 +326,25 @@ async fn handle_client_connection(
                         //     let _ = socket.flush().await;
                         // }
                     }
+                    else {
+                        warn!("⚠️ Node {} 收到的消息没有交易数据", node_id);
+                    }
+                }
+                else {
+                    error!("❌ Node {} JSON解析失败，消息长度: {}", node_id, message_length);
                 }
             }
-            Err(_) => {
+            Err(e) => {
                 if tx_count > 0 {
                     let pool_size = tokio::task::spawn_blocking({
                         let queue_clone = shared_tx_queue.clone();
                         move || queue_clone.lock().unwrap().len()
                     }).await.unwrap();
                     
-                    // info!("📋 Node {} 客户端断开，本次接收 {} 个交易，交易池: {}", node_id, tx_count, pool_size);
+                    info!("📋 Node {} 客户端断开 ({}), 本次接收 {} 个交易，最终队列: {}", 
+                          node_id, e, tx_count, pool_size);
+                } else {
+                    info!("🔌 Node {} 客户端断开 ({}), 本次未接收交易", node_id, e);
                 }
                 break;
             }
@@ -447,45 +480,148 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         shared_tx_queue.clone(),  // 直接使用共享队列
     );
 
-    let node_for_main_loop = Arc::new(_node);
-    let queue_for_main_loop = shared_tx_queue.clone();
-    let stats_for_main_loop = performance_stats.clone();
+    // let node_for_main_loop = Arc::new(_node);
+    // let queue_for_main_loop = shared_tx_queue.clone();
+    // let stats_for_main_loop = performance_stats.clone();
+    // 修正后的主循环：只做监控，不提取交易
+    let queue_for_monitoring = shared_tx_queue.clone();
+    let stats_for_monitoring = performance_stats.clone();
 
+    // 增强的主循环：详细追踪交易处理流程
+    let mut loop_counter = 0;
+    let mut last_queue_size = 0;
+    let mut total_processed = 0;
     
-    // 主循环：从共享队列中提取交易进行打包
     loop {
-        tokio::time::sleep(Duration::from_millis(500)).await;
+        tokio::time::sleep(Duration::from_secs(5)).await; // 改为5秒监控一次
+        loop_counter += 1;
         
-        // 使用 spawn_blocking 来处理同步操作
-        let transactions = tokio::task::spawn_blocking({
-            let queue_clone = queue_for_main_loop.clone();
+        // 只监控状态，不修改队列
+        let current_queue_size = tokio::task::spawn_blocking({
+            let queue_clone = queue_for_monitoring.clone();
+            move || queue_clone.lock().unwrap().len()
+        }).await.unwrap();
+        
+        let (current_tps, avg_tps, total_txs) = tokio::task::spawn_blocking({
+            let stats_clone = stats_for_monitoring.clone();
             move || {
-                let mut queue = queue_clone.lock().unwrap();
-                let batch_size = std::cmp::min(queue.len(), 100);
-                
-                let mut batch = Vec::new();
-                for _ in 0..batch_size {
-                    if let Some(tx) = queue.pop() {
-                        batch.push(tx);
-                    }
-                }
-                batch
+                let stats = stats_clone.lock().unwrap();
+                let current_tps = if let Some(start) = stats.start_time {
+                    stats.submitted_count as f64 / start.elapsed().as_secs_f64()
+                } else { 0.0 };
+                (current_tps, stats.get_tps(), stats.submitted_count)
             }
         }).await.unwrap();
         
-        if !transactions.is_empty() {
-            let tx_count = transactions.len();
-            
-            info!("📦 节点 {} 从共享队列提取了 {} 个交易进行打包", node_id, tx_count);
-            
-            // 更新统计
-            tokio::task::spawn_blocking({
-                let stats_clone = stats_for_main_loop.clone();
-                move || {
-                    let mut stats_guard = stats_clone.lock().unwrap();
-                    stats_guard.record_confirmed(tx_count as u64);
-                }
-            }).await.unwrap();
+        // 定期报告系统状态
+        if loop_counter % 2 == 0 { // 每10秒报告一次
+            info!("📊 Node {} 系统状态报告:", node_id);
+            info!("  🔄 运行时间: {} 循环", loop_counter);
+            info!("  📦 待处理交易队列: {}", current_queue_size);
+            info!("  📈 接收TPS: {:.1}", current_tps);
+            info!("  📊 总接收交易: {}", total_txs);
         }
+        
+        // 队列大小变化提醒
+        if current_queue_size != last_queue_size {
+            if current_queue_size > last_queue_size {
+                info!("📈 Node {} 队列增长: {} -> {} (+{})", 
+                      node_id, last_queue_size, current_queue_size, 
+                      current_queue_size - last_queue_size);
+            } else {
+                info!("📉 Node {} 队列减少: {} -> {} (-{})", 
+                      node_id, last_queue_size, current_queue_size, 
+                      last_queue_size - current_queue_size);
+            }
+            last_queue_size = current_queue_size;
+        }
+        
+        // 检查队列积压情况
+        if current_queue_size > 1000 {
+            warn!("⚠️ Node {} 交易队列积压严重: {} 个交易", node_id, current_queue_size);
+        }
+        
+        // 检查是否有交易处理停滞
+        static mut LAST_TOTAL_TXS: u64 = 0;
+        let last_total = unsafe { LAST_TOTAL_TXS };
+        if total_txs == last_total && current_queue_size > 0 {
+            warn!("⚠️ Node {} 可能出现交易处理停滞", node_id);
+        }
+        unsafe { LAST_TOTAL_TXS = total_txs; }
     }
+    
+    // 主循环：从共享队列中提取交易进行打包
+    // loop {
+    //     tokio::time::sleep(Duration::from_millis(500)).await;
+    //     loop_counter += 1;
+        
+    //     // 检查队列状态
+    //     let current_queue_size = tokio::task::spawn_blocking({
+    //         let queue_clone = queue_for_main_loop.clone();
+    //         move || queue_clone.lock().unwrap().len()
+    //     }).await.unwrap();
+        
+    //     // 定期报告队列状态（即使为空）
+    //     if loop_counter % 10 == 0 { // 每5秒报告一次
+    //         info!("🔄 Node {} 主循环状态 - 循环#{}, 队列大小: {}, 总处理: {}", 
+    //               node_id, loop_counter, current_queue_size, total_processed);
+    //     }
+        
+    //     // 如果队列大小发生变化，立即报告
+    //     if current_queue_size != last_queue_size {
+    //         info!("📈 Node {} 队列变化: {} -> {} ({}{})", 
+    //               node_id, 
+    //               last_queue_size, 
+    //               current_queue_size,
+    //               if current_queue_size > last_queue_size { "+" } else { "" },
+    //               current_queue_size as i32 - last_queue_size as i32);
+    //         last_queue_size = current_queue_size;
+    //     }
+        
+    //     // 从队列中提取交易
+    //     let transactions = tokio::task::spawn_blocking({
+    //         let queue_clone = queue_for_main_loop.clone();
+    //         move || {
+    //             let mut queue = queue_clone.lock().unwrap();
+    //             let batch_size = std::cmp::min(queue.len(), 100);
+                
+    //             let mut batch = Vec::new();
+    //             for _ in 0..batch_size {
+    //                 if let Some(tx) = queue.pop() {
+    //                     batch.push(tx);
+    //                 }
+    //             }
+    //             batch
+    //         }
+    //     }).await.unwrap();
+        
+    //     if !transactions.is_empty() {
+    //         let tx_count = transactions.len();
+    //         total_processed += tx_count;
+            
+    //         info!("📦 Node {} 从队列提取 {} 个交易进行处理 (总计: {})", 
+    //               node_id, tx_count, total_processed);
+            
+    //         // 显示前几个交易的内容
+    //         for (i, tx) in transactions.iter().enumerate().take(3) {
+    //             info!("   📄 交易[{}]: {}", i+1, tx);
+    //         }
+    //         if transactions.len() > 3 {
+    //             info!("   📄 ... 还有 {} 个交易", transactions.len() - 3);
+    //         }
+            
+    //         // 这里应该是交易被传递给共识算法的地方
+    //         // 重要：确认这些交易确实被应用程序获取并打包到区块中
+    //         info!("🔄 Node {} 将 {} 个交易提交给共识层处理", node_id, tx_count);
+            
+    //         // 更新统计
+    //         tokio::task::spawn_blocking({
+    //             let stats_clone = stats_for_main_loop.clone();
+    //             move || {
+    //                 let mut stats_guard = stats_clone.lock().unwrap();
+    //                 stats_guard.record_confirmed(tx_count as u64);
+    //             }
+    //         }).await.unwrap();
+    //     }
+    // }
 }
