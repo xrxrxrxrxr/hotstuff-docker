@@ -1,5 +1,4 @@
-// hotstuff_runner/src/bin/client_node.rs
-//! 客户端节点 - 用于发送测试交易
+// 修改后的高效客户端节点
 
 use std::collections::HashMap;
 use std::net::SocketAddr;
@@ -61,7 +60,6 @@ impl TransactionGenerator {
     pub fn generate_transaction(&mut self) -> TestTransaction {
         let mut rng = rand::thread_rng();
         
-        // 随机选择发送方和接收方
         let from_idx = rng.gen_range(0, self.accounts.len());
         let mut to_idx = rng.gen_range(0, self.accounts.len());
         while to_idx == from_idx {
@@ -87,13 +85,10 @@ impl TransactionGenerator {
             nonce: self.current_nonce,
         }
     }
-}
 
-pub struct ClientNode {
-    client_id: String,
-    node_connections: HashMap<usize, SocketAddr>,
-    tx_generator: TransactionGenerator,
-    stats: ClientStats,
+    pub fn generate_batch(&mut self, count: usize) -> Vec<TestTransaction> {
+        (0..count).map(|_| self.generate_transaction()).collect()
+    }
 }
 
 #[derive(Default)]
@@ -105,26 +100,26 @@ pub struct ClientStats {
 }
 
 impl ClientStats {
-    pub fn record_sent(&mut self) {
+    pub fn record_sent(&mut self, count: u64) {
         if self.start_time.is_none() {
             self.start_time = Some(Instant::now());
         }
-        self.total_sent += 1;
+        self.total_sent += count;
     }
 
-    pub fn record_confirmed(&mut self) {
-        self.total_confirmed += 1;
+    pub fn record_confirmed(&mut self, count: u64) {
+        self.total_confirmed += count;
     }
 
-    pub fn record_failed(&mut self) {
-        self.total_failed += 1;
+    pub fn record_failed(&mut self, count: u64) {
+        self.total_failed += count;
     }
 
     pub fn calculate_tps(&self) -> f64 {
         if let Some(start_time) = self.start_time {
             let elapsed = start_time.elapsed().as_secs_f64();
             if elapsed > 0.0 {
-                return self.total_confirmed as f64 / elapsed;
+                return self.total_sent as f64 / elapsed;
             }
         }
         0.0
@@ -149,6 +144,78 @@ impl ClientStats {
     }
 }
 
+// 新增：持久连接管理器
+pub struct PersistentConnection {
+    stream: TcpStream,
+    node_id: usize,
+    connected_at: Instant,
+}
+
+impl PersistentConnection {
+    pub async fn new(node_id: usize) -> Result<Self, Box<dyn std::error::Error>> {
+        let hostname = format!("node{}", node_id);
+        let port = 9000 + node_id as u16;
+        let addr_str = format!("{}:{}", hostname, port);
+
+        info!("🔗 建立持久连接到节点 {}: {}", node_id, addr_str);
+
+        let stream = TcpStream::connect(&addr_str).await?;
+        
+        info!("✅ 成功建立持久连接到节点 {}", node_id);
+
+        Ok(Self {
+            stream,
+            node_id,
+            connected_at: Instant::now(),
+        })
+    }
+
+    pub async fn send_transaction(&mut self, transaction: &TestTransaction, client_id: &str) -> Result<(), Box<dyn std::error::Error>> {
+        let client_message = ClientMessage {
+            message_type: "transaction".to_string(),
+            transaction: Some(transaction.clone()),
+            client_id: client_id.to_string(),
+        };
+
+        let serialized = serde_json::to_vec(&client_message)?;
+        let message_length = serialized.len() as u32;
+        
+        // 发送消息长度（4字节）+ 消息内容
+        self.stream.write_all(&message_length.to_be_bytes()).await?;
+        self.stream.write_all(&serialized).await?;
+        self.stream.flush().await?;
+
+        Ok(())
+    }
+
+    pub async fn send_batch(&mut self, transactions: &[TestTransaction], client_id: &str) -> Result<usize, Box<dyn std::error::Error>> {
+        let mut sent_count = 0;
+        
+        for transaction in transactions {
+            match self.send_transaction(transaction, client_id).await {
+                Ok(_) => sent_count += 1,
+                Err(e) => {
+                    warn!("发送交易 {} 到节点 {} 失败: {}", transaction.id, self.node_id, e);
+                    break;
+                }
+            }
+        }
+        info!("已成功发送 {} 个交易到节点 {}", sent_count, self.node_id);
+        Ok(sent_count)
+    }
+
+    pub fn uptime(&self) -> Duration {
+        self.connected_at.elapsed()
+    }
+}
+
+pub struct ClientNode {
+    client_id: String,
+    connections: HashMap<usize, PersistentConnection>,
+    tx_generator: TransactionGenerator,
+    stats: ClientStats,
+}
+
 impl ClientNode {
     pub fn new(client_id: String) -> Self {
         info!("🚀 初始化客户端: {}", client_id);
@@ -157,129 +224,149 @@ impl ClientNode {
 
         Self {
             client_id,
-            node_connections: HashMap::new(), // 不再预先存储连接
+            connections: HashMap::new(),
             tx_generator,
             stats: ClientStats::default(),
         }
     }
 
-    pub async fn send_transaction_to_node(
-        &mut self,
-        node_id: usize,
-        transaction: TestTransaction,
-    ) -> Result<(), Box<dyn std::error::Error>> {
-        // 使用容器主机名直接连接，而不是预解析的 SocketAddr
-        let hostname = format!("node{}", node_id);
-        let port = 9000 + node_id as u16;
-        let addr_str = format!("{}:{}", hostname, port);
+    // 建立到所有节点的持久连接
+    pub async fn establish_connections(&mut self, node_least_id: usize, node_num: usize) -> Result<(), Box<dyn std::error::Error>> {
+        info!("🌐 建立到所有节点的持久连接...");
 
-        info!("📤 发送交易 {} 到节点 {}: {} -> {} ({})", 
-              transaction.id, node_id, transaction.from, transaction.to, transaction.amount);
-
-        info!("🔗 尝试连接: {}", addr_str);
-
-        match TcpStream::connect(&addr_str).await {
-            Ok(mut stream) => {
-                info!("✅ 成功连接到节点 {}", node_id);
-                
-                let client_message = ClientMessage {
-                    message_type: "transaction".to_string(),
-                    transaction: Some(transaction.clone()),
-                    client_id: self.client_id.clone(),
-                };
-
-                let serialized = serde_json::to_vec(&client_message)?;
-                let message_length = serialized.len() as u32;
-                
-                // 发送消息长度（4字节）+ 消息内容
-                stream.write_all(&message_length.to_be_bytes()).await?;
-                stream.write_all(&serialized).await?;
-                stream.flush().await?;
-
-                self.stats.record_sent();
-                info!("✅ 交易 {} 已发送到节点 {}", transaction.id, node_id);
-
-                // info!("📝 暂时跳过响应等待");
-                // self.stats.record_confirmed();
-                
-                // 简单的响应处理（可选）
-                // let mut response_len_buf = [0u8; 4];
-                // if stream.read_exact(&mut response_len_buf).await.is_ok() {
-                //     let response_len = u32::from_be_bytes(response_len_buf) as usize;
-                //     if response_len < 1024 { // 安全检查
-                //         let mut response_buf = vec![0u8; response_len];
-                //         if stream.read_exact(&mut response_buf).await.is_ok() {
-                //             if let Ok(response) = serde_json::from_slice::<serde_json::Value>(&response_buf) {
-                //                 info!("📥 收到节点 {} 的响应: {:?}", node_id, response);
-                //                 self.stats.record_confirmed();
-                //             }
-                //         }
-                //     }
-                // } else {
-                //     // 没有响应也认为发送成功（异步处理）
-                //     self.stats.record_confirmed();
-                // }
-
-                Ok(())
+        for node_id in node_least_id..(node_least_id + node_num) {
+            match PersistentConnection::new(node_id).await {
+                Ok(conn) => {
+                    self.connections.insert(node_id, conn);
+                    info!("✅ 连接到节点 {} 成功", node_id);
+                }
+                Err(e) => {
+                    error!("❌ 连接到节点 {} 失败: {}", node_id, e);
+                    // 继续尝试连接其他节点
+                }
             }
-            Err(e) => {
-                error!("❌ 连接节点 {} ({}) 失败: {}", node_id, addr_str, e);
-                self.stats.record_failed();
-                Err(e.into())
+        }
+
+        info!("🎯 成功建立 {} 个持久连接", self.connections.len());
+        Ok(())
+    }
+
+    // 高效的批量发送
+    pub async fn send_batch_to_node(&mut self, node_id: usize, transactions: Vec<TestTransaction>) -> Result<usize, Box<dyn std::error::Error>> {
+        if let Some(connection) = self.connections.get_mut(&node_id) {
+            match connection.send_batch(&transactions, &self.client_id).await {
+                Ok(sent_count) => {
+                    self.stats.record_sent(sent_count as u64);
+                    self.stats.record_confirmed(sent_count as u64); // 假设都成功
+                    Ok(sent_count)
+                }
+                Err(e) => {
+                    error!("❌ 批量发送到节点 {} 失败: {}", node_id, e);
+                    self.stats.record_failed(transactions.len() as u64);
+                    
+                    // 尝试重新连接
+                    info!("🔄 尝试重新连接到节点 {}", node_id);
+                    match PersistentConnection::new(node_id).await {
+                        Ok(new_conn) => {
+                            self.connections.insert(node_id, new_conn);
+                            info!("✅ 重新连接到节点 {} 成功", node_id);
+                        }
+                        Err(reconnect_err) => {
+                            error!("❌ 重新连接到节点 {} 失败: {}", node_id, reconnect_err);
+                        }
+                    }
+                    
+                    Err(e)
+                }
             }
+        } else {
+            error!("❌ 没有到节点 {} 的连接", node_id);
+            Err("没有连接".into())
         }
     }
 
-    pub async fn run_load_test(&mut self, config: LoadTestConfig) {
-        info!("🚀 开始负载测试 - TPS目标: {}, 持续时间: {}秒", 
+    // 高效的负载测试 - 使用批量发送
+    pub async fn run_load_test(&mut self, config: LoadTestConfig, node_least_id: usize, node_num: usize) {
+        info!("🚀 开始高效负载测试 - TPS目标: {}, 持续时间: {}秒", 
               config.target_tps, config.duration_secs);
 
-        let interval = Duration::from_secs_f64(1.0 / config.target_tps as f64);
+        // 建立连接
+        if let Err(e) = self.establish_connections(node_least_id, node_num).await {
+            error!("❌ 建立连接失败: {}", e);
+            return;
+        }
+
+        let batch_size = std::cmp::max(1, config.target_tps / 10); // 每批次大小
+        let batch_interval = Duration::from_secs_f64(batch_size as f64 / config.target_tps as f64);
         let end_time = Instant::now() + Duration::from_secs(config.duration_secs);
 
-        let mut tx_counter = 0;
+        let mut total_sent = 0;
+        let mut batch_counter = 0;
+
         while Instant::now() < end_time {
-            let transaction = self.tx_generator.generate_transaction();
+            // 生成一批交易
+            let transactions = self.tx_generator.generate_batch(batch_size as usize);
             
             // 轮询发送到不同节点
-            let target_node = tx_counter % 4;
+            let target_node = (batch_counter % node_num) + node_least_id;
             
-            if let Err(e) = self.send_transaction_to_node(target_node, transaction).await {
-                warn!("发送交易失败: {}", e);
+            match self.send_batch_to_node(target_node, transactions).await {
+                Ok(sent_count) => {
+                    total_sent += sent_count;
+                    info!("📦 批次 {} 发送 {} 个交易到节点 {}", batch_counter + 1, sent_count, target_node);
+                }
+                Err(e) => {
+                    warn!("❌ 批次 {} 发送失败: {}", batch_counter + 1, e);
+                }
             }
 
-            tx_counter += 1;
+            batch_counter += 1;
 
-            // 每100个交易输出一次统计
-            if tx_counter % 100 == 0 {
+            // 每1000个交易输出一次统计
+            if total_sent >= 1000 && total_sent % 1000 == 0 {
                 self.stats.log_summary();
             }
 
-            tokio::time::sleep(interval).await;
+            tokio::time::sleep(batch_interval).await;
         }
 
-        info!("🏁 负载测试完成");
+        info!("🏁 高效负载测试完成，总计发送 {} 个交易", total_sent);
         self.stats.log_summary();
     }
 
-    pub async fn run_interactive_mode(&mut self,node_least_id: usize,node_num: usize) {
-        info!("🎮 进入交互模式 - 每10毫秒发送一个交易");
+    // 高效的交互模式 - 保持连接
+    pub async fn run_interactive_mode(&mut self, node_least_id: usize, node_num: usize) {
+        info!("🎮 进入高效交互模式");
 
+        // 建立连接
+        if let Err(e) = self.establish_connections(node_least_id, node_num).await {
+            error!("❌ 建立连接失败: {}", e);
+            return;
+        }
+
+        let mut tx_counter = 0;
+        
         loop {
-            let transaction = self.tx_generator.generate_transaction();
-            // let target_node = (transaction.id - 1) % 4;
-            let target_node = (transaction.id -1) as usize % node_num + node_least_id;
+            // 每次发送一小批交易（比如5个）来提高效率
+            let batch_size = 5;
+            let transactions = self.tx_generator.generate_batch(batch_size);
+            let target_node = (tx_counter / batch_size) % node_num + node_least_id;
 
-            if let Err(e) = self.send_transaction_to_node(target_node, transaction).await {
-                warn!("发送交易失败: {}", e);
+            match self.send_batch_to_node(target_node, transactions).await {
+                Ok(sent_count) => {
+                    tx_counter += sent_count;
+                }
+                Err(e) => {
+                    warn!("❌ 发送批次失败: {}", e);
+                }
             }
 
-            // 每10个交易输出一次统计
-            if self.tx_generator.current_tx_id % 10 == 0 {
-            self.stats.log_summary();
+            // 每100个交易输出一次统计
+            if tx_counter >= 100 && tx_counter % 100 == 0 {
+                self.stats.log_summary();
             }
 
-            tokio::time::sleep(Duration::from_millis(10)).await;
+            tokio::time::sleep(Duration::from_millis(50)).await; // 比之前快一些
         }
     }
 }
@@ -289,14 +376,24 @@ pub struct LoadTestConfig {
     pub duration_secs: u64,
 }
 
-fn setup_tracing_logger() {
+fn setup_tracing_logger(mode : &str) {
     create_dir_all("logs").expect("无法创建日志目录");
-    let _ = fs::remove_file(format!("logs/client.log"));
+
+    let path = match mode {
+        "interactive" => "client".to_string(),
+        "load_test" => "load_test".to_string(),
+        _ => {
+            warn!("⚠️ 未知模式，使用默认日志配置");
+            "default".to_string()
+        }
+    };
+
+    let _ = fs::remove_file(format!("logs/{}.log", path));
 
     let log_file = File::options()
         .create(true)
         .append(true)
-        .open("logs/client.log")
+        .open(format!("logs/{}.log", path))
         .expect("无法打开日志文件");
     
     let result = tracing_subscriber::registry()
@@ -324,12 +421,12 @@ fn setup_tracing_logger() {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    setup_tracing_logger();
-
     let client_id = env::var("CLIENT_ID").unwrap_or_else(|_| "client_1".to_string());
     let mode = env::var("CLIENT_MODE").unwrap_or_else(|_| "interactive".to_string());
+    setup_tracing_logger(mode.as_str());
+    
     let node_least_id: usize = env::var("NODE_LEAST_ID")
-        .unwrap_or_else(|_| "1".to_string())
+        .unwrap_or_else(|_| "0".to_string())
         .parse()
         .expect("NODE_LEAST_ID 必须是数字");
     let node_num: usize = env::var("NODE_NUM")
@@ -337,7 +434,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .parse()
         .expect("NODE_NUM 必须是数字");
 
-    info!("🏃 启动客户端节点: {}", client_id);
+    info!("🏃 启动高效客户端节点: {}", client_id);
 
     let mut client_node = ClientNode::new(client_id);
 
@@ -348,9 +445,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     match mode.as_str() {
         "load_test" => {
             let target_tps: u32 = env::var("TARGET_TPS")
-                .unwrap_or_else(|_| "10".to_string())
+                .unwrap_or_else(|_| "100".to_string())
                 .parse()
-                .unwrap_or(10);
+                .unwrap_or(100);
             
             let duration: u64 = env::var("TEST_DURATION")
                 .unwrap_or_else(|_| "60".to_string())
@@ -362,10 +459,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 duration_secs: duration,
             };
 
-            client_node.run_load_test(config).await;
+            client_node.run_load_test(config, node_least_id, node_num).await;
         }
         _ => {
-            client_node.run_interactive_mode(node_least_id,node_num).await;
+            client_node.run_interactive_mode(node_least_id, node_num).await;
         }
     }
 

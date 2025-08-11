@@ -314,6 +314,8 @@ services:
       - node2
       - node3
     restart: unless-stopped
+    profiles:
+      - interactive
 
   perf_tester:
     build: 
@@ -322,10 +324,12 @@ services:
     container_name: hotstuff_perf_tester
     hostname: perf_tester
     command: ["client"]  # ← 这里指定运行 client_node 二进制文件
+    volumes:
+      - ./logs:/logs
     environment:
       - CLIENT_ID=perf_tester_001
       - CLIENT_MODE=load_test  # ← 这个环境变量很重要
-      - TARGET_TPS=100         # ← 目标 100 TPS
+      - TARGET_TPS=1000         # ← 目标 400 TPS
       - TEST_DURATION=300      # ← 运行 5 分钟
       - RUST_LOG=warn
     profiles:
@@ -341,7 +345,7 @@ services:
     environment:
       - CLIENT_ID=load_tester_001
       - CLIENT_MODE=load_test
-      - TARGET_TPS=20
+      - TARGET_TPS=600
       - TEST_DURATION=300
       - RUST_LOG=info
     volumes:
@@ -350,7 +354,7 @@ services:
     networks:
       - hotstuff_network
     depends_on:
-      - node4
+      - node0
       - node1
       - node2
       - node3

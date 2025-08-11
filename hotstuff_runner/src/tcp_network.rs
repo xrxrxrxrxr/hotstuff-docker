@@ -191,7 +191,7 @@ impl TcpNetwork {
             }
         };
 
-        debug!("✅ 反序列化消息成功: {} bytes，类型: {:?}", bytes.len(), message_type);
+        // debug!("✅ 反序列化消息成功: {} bytes，类型: {:?}", bytes.len(), message_type);
         Ok(message)
     }
 
@@ -203,7 +203,7 @@ impl TcpNetwork {
                 error!("❌ 发送给自己失败: {}", e);
                 return Err(e.into());
             }
-            debug!("✅ 成功发送消息给自己");
+            // debug!("✅ 成功发送消息给自己");
             return Ok(());
         }
 
@@ -300,9 +300,9 @@ impl Network for TcpNetwork {
 
     fn broadcast(&mut self, message: Message) {
         let total_nodes = self.config.peer_addrs.len();
-        debug!("📡 TCP节点 {:?} 广播给 {} 个节点（包括自己）", 
-            self.config.my_key.to_bytes()[0..4].to_vec(), 
-            total_nodes);
+        // debug!("📡 TCP节点 {:?} 广播给 {} 个节点（包括自己）", 
+            // self.config.my_key.to_bytes()[0..4].to_vec(), 
+            // total_nodes);
         
         let mut success_count = 0;
         
@@ -316,7 +316,7 @@ impl Network for TcpNetwork {
             }
         }
         
-        debug!("✅ 成功广播给 {}/{} 个节点", success_count, total_nodes);
+        // debug!("✅ 成功广播给 {}/{} 个节点", success_count, total_nodes);
     }
 
     fn send(&mut self, peer: VerifyingKey, message: Message) {
@@ -347,38 +347,38 @@ impl Network for TcpNetwork {
         match receiver.try_recv() {
             Ok((sender_key, message)) => {
                 let sender_id = format!("{:?}", &sender_key.to_bytes()[0..4]);
-                info!("🔄 [Network.recv] 从队列取出消息, 发送者: {}", sender_id);
+                // info!("🔄 [Network.recv] 从队列取出消息, 发送者: {}", sender_id);
                 
                 // 🔍 关键调试：检查Message内容
                 match &message {
                     Message::ProgressMessage(progress_msg) => {
                         match progress_msg {
                             ProgressMessage::HotStuffMessage(hotstuff_msg) => {
-                                info!("  📋 消息类型: HotStuffMessage");
+                                // info!("  📋 消息类型: HotStuffMessage");
                                 
                                 // 🚨 这里需要检查 HotStuffMessage 是否包含区块数据
                                 // 根据 HotStuff 库的具体实现，检查消息内容
-                                debug!("  🔍 HotStuffMessage 内容检查...");
+                                // debug!("  🔍 HotStuffMessage 内容检查...");
                                 
                                 // 如果是包含区块的消息，检查区块数据
                                 // 这里需要根据具体的 HotStuffMessage 结构来实现
                             },
                             ProgressMessage::PacemakerMessage(_) => {
-                                info!("  📋 消息类型: PacemakerMessage");
+                                // info!("  📋 消息类型: PacemakerMessage");
                             },
                             ProgressMessage::BlockSyncAdvertiseMessage(_) => {
-                                info!("  📋 消息类型: BlockSyncAdvertiseMessage");
+                                // info!("  📋 消息类型: BlockSyncAdvertiseMessage");
                             }
                         }
                     },
                     Message::BlockSyncMessage(sync_msg) => {
-                        info!("  📋 消息类型: BlockSyncMessage");
+                        // info!("  📋 消息类型: BlockSyncMessage");
                         match sync_msg {
                             BlockSyncMessage::BlockSyncRequest(_) => {
-                                info!("    具体类型: BlockSyncRequest");
+                                // info!("    具体类型: BlockSyncRequest");
                             },
                             BlockSyncMessage::BlockSyncResponse(_) => {
-                                info!("    具体类型: BlockSyncResponse");
+                                // info!("    具体类型: BlockSyncResponse");
                             }
                         }
                     }
@@ -475,7 +475,7 @@ fn handle_client(
         // 反序列化网络消息
         match bincode::deserialize::<NetworkMessage>(&message_buf) {
             Ok(net_msg) => {
-                debug!("📨 收到网络消息 from {}, 消息类型: {:?}", peer_addr, net_msg.message_type);
+                // debug!("📨 收到网络消息 from {}, 消息类型: {:?}", peer_addr, net_msg.message_type);
                 
                 // 从字节重新构造 VerifyingKey
                 let sender_key: VerifyingKey = match net_msg.from.try_into() {
