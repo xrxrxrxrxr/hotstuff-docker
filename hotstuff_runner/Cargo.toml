@@ -1,9 +1,49 @@
 [package]
 name = "hotstuff_runner"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 [dependencies]
-hotstuff_rs = { path = "../hotstuff_rs" } # 确保路径正确
-log = "0.4" # 添加日志支持
-fern = "0.6" # 添加日志格式化支持
+hotstuff_rs = { path = "../hotstuff_rs" }
+log = "0.4"
+fern = "0.6"
+chrono = "0.4"
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+bincode = "1.3"
+anyhow = "1.0"
+# rand = "0.9.2"
+rand = "0.7"
+rand_core = { version = "0.6.4", features = ["getrandom"] }
+sha2 = "0.10"
+# borsh = "1.0"
+borsh = "0.10"
+ed25519-dalek = { version = "2.0.0", features = ["rand_core"] }
+tracing = "0.1"
+tracing-subscriber = "0.3"
+serde_json = "1.0"
+once_cell = "1.19"
+
+# [[bin]]
+# name = "hotstuff_runner"
+# path = "src/main.rs"
+
+[[bin]]
+name = "docker_nodes"
+path = "src/bin/docker_nodes.rs"
+
+# [[bin]]
+# name = "single_node"
+# path = "src/bin/single_node.rs"
+
+# [[bin]]
+# name = "single_node_test"
+# path = "src/bin/single_node_test.rs"
+
+[[bin]]
+name = "client"
+path = "src/bin/client.rs"
+
+[dev-dependencies]
+tempfile = "3"
+
