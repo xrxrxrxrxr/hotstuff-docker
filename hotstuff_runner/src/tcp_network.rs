@@ -198,7 +198,7 @@ impl TcpNetwork {
     fn send_to_peer(&self, peer_key: &VerifyingKey, message: &Message) -> Result<(), Box<dyn std::error::Error>> {
         // 🎯 添加这个检查
         if *peer_key == self.config.my_key {
-            debug!("📨 发送消息给自己");
+            // debug!("📨 发送消息给自己");
             if let Err(e) = self.message_tx.send((self.config.my_key, message.clone())) {
                 error!("❌ 发送给自己失败: {}", e);
                 return Err(e.into());
@@ -320,7 +320,7 @@ impl Network for TcpNetwork {
     }
 
     fn send(&mut self, peer: VerifyingKey, message: Message) {
-        debug!("📨 TCP节点发送消息给 {:?}", peer.to_bytes()[0..4].to_vec());
+        // debug!("📨 TCP节点发送消息给 {:?}", peer.to_bytes()[0..4].to_vec());
         
         if let Err(e) = self.send_to_peer(&peer, &message) {
             error!("❌ 发送失败给 {:?}: {}", peer.to_bytes()[0..4].to_vec(), e);

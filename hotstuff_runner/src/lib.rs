@@ -4,11 +4,13 @@ pub mod network;
 pub mod kv_store;
 pub mod tcp_network;
 pub mod tcp_node;
+pub mod stats;
 
 // 重新导出常用类型
 pub use app::TestApp;
 pub use network::{TestNetwork, NodeNetwork};
 pub use kv_store::MemoryKVStore;
+pub use stats::PerformanceStats;
 
 
 use std::io::Write;

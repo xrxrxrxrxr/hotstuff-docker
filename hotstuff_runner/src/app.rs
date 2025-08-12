@@ -98,7 +98,7 @@ impl<K: KVStore> App<K> for TestApp {
         // 从共享队列获取并清空交易
         let transactions = {
             let mut queue = self.tx_queue.lock().unwrap();
-            let tx_count = queue.len().min(500); // 每个区块最多500个交易
+            let tx_count = queue.len().min(300); // 每个区块最多300个交易
             info!("Node {} [produce_block] 📊 queue.len = {}, tx_count = {}", self.node_id, queue.len(), tx_count);
 
             let mut batch = Vec::new();
@@ -131,7 +131,7 @@ impl<K: KVStore> App<K> for TestApp {
         
         for tx in &transactions {
             data_vec.push(Datum::new(tx.as_bytes().to_vec()));
-            info!("Node {} [produce_block] 🔨  - 交易: {}", self.node_id, tx);
+            // info!("Node {} [produce_block] 🔨  - 交易: {}", self.node_id, tx);
         }
         
 
@@ -191,11 +191,11 @@ impl<K: KVStore> App<K> for TestApp {
                 };
 
         // 添加更详细的日志
-        info!("Node {} [validate_block] 🔍 验证区块详情:",self.node_id);
-        info!("Node {} [validate_block]  - 区块高度: {}",self.node_id, block.height);
-        info!("Node {} [validate_block]  - 交易数量: {}",self.node_id, tx_count);
-        info!("Node {} [validate_block]  - 区块哈希: {:?}",self.node_id, &block.hash);
-        info!("Node {} [validate_block]  - 当前节点区块计数: {}", self.node_id,self.block_count);
+        // info!("Node {} [validate_block] 🔍 验证区块详情:",self.node_id);
+        // info!("Node {} [validate_block]  - 区块高度: {}",self.node_id, block.height);
+        // info!("Node {} [validate_block]  - 交易数量: {}",self.node_id, tx_count);
+        // info!("Node {} [validate_block]  - 区块哈希: {:?}",self.node_id, &block.hash);
+        // info!("Node {} [validate_block]  - 当前节点区块计数: {}", self.node_id,self.block_count);
 
 
         // 基本验证逻辑
@@ -281,12 +281,12 @@ impl<K: KVStore> App<K> for TestApp {
         );
 
         // 检查insert的内容
-        app_state_updates.get_insert(&block_hash_key_clone.into_bytes()).map(|value| {
-            info!("[Node {}] Block hash stored in app state: {:?}", self.node_id, value);
-        });
+        // app_state_updates.get_insert(&block_hash_key_clone.into_bytes()).map(|value| {
+            // info!("[Node {}] Block hash stored in app state: {:?}", self.node_id, value);
+        // });
 
-        info!("[Node {}] Block validation passed", self.node_id);
-        info!("[Node {}] ✅ 区块验证通过 - 高度: {}", self.node_id, block.height);
+        info!("[Node {}] Block validation passed, height: {}, TxCount: {}", self.node_id, block.height, tx_count );
+        // info!("[Node {}] ✅ 区块验证通过 - 高度: {}", self.node_id, block.height);
 
         ValidateBlockResponse::Valid {
             app_state_updates: Some(app_state_updates),
