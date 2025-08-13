@@ -5,12 +5,16 @@ pub mod kv_store;
 pub mod tcp_network;
 pub mod tcp_node;
 pub mod stats;
+pub mod pompe;
+pub mod pompe_network;
+pub mod diagnose;
 
 // 重新导出常用类型
 pub use app::TestApp;
 pub use network::{TestNetwork, NodeNetwork};
 pub use kv_store::MemoryKVStore;
 pub use stats::PerformanceStats;
+pub use diagnose::PompeDiagnostic;
 
 
 use std::io::Write;

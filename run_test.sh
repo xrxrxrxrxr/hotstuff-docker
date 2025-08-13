@@ -4,7 +4,7 @@
 set -e
 
 # 默认启动客户端
-CLIENT_MODE="load_test"
+CLIENT_MODE="interactive"
 
 # 检查命令行参数
 if [ "$1" = "load_test" ] || [ "$1" = "load" ]; then
@@ -22,7 +22,7 @@ elif [ -n "$1" ]; then
     exit 1
 fi
 
-echo "🚀 HotStuff Docker集群快速启动 - $CLIENT_MODE 模式"
+echo "🚀 开始 Pompe BFT 功能测试 - $CLIENT_MODE 模式"
 echo "================================"
 
 # 检查是否在正确的目录
@@ -67,11 +67,11 @@ end_id=$((NODE_LEAST_ID + NODE_NUM - 1))
 # 检查健康状态
 echo "🏥 检查节点健康状态..."
 for i in $(seq $NODE_LEAST_ID $end_id); do
-    echo -n "  节点$i: "
+    echo -n "  Pompe node $i is: "
     if docker ps --filter "name=hotstuff_node$i" --filter "status=running" | grep -q "hotstuff_node$i"; then
-        echo "✅ 运行中"
+        echo "✅ running"
     else
-        echo "❌ 异常"
+        echo "❌ down"
     fi
 done
 
@@ -93,7 +93,7 @@ case $CLIENT_MODE in
         echo "💡 交互式客户端已启动，你可以手动发送交易"
         ;;
     "load_test")
-        echo "📊 负载测试已开始 (400 TPS, 持续 5 分钟)"
+        echo "📊 负载测试已开始 ($TARGET_TPS, 持续 5 分钟)"
         echo "   查看测试进度: docker-compose logs -f load_tester"
         ;;
     "perf_test")
@@ -102,12 +102,33 @@ case $CLIENT_MODE in
         ;;
 esac
 
+# echo ""
+# echo "💡 常用命令:"
+# echo "  查看实时日志: docker-compose logs -f"
+# echo "  查看客户端:   docker-compose logs -f $CLIENT_SERVICE"
+# echo "  查看特定节点: docker-compose logs -f node0"
+# echo "  重启集群:     docker-compose restart"
+# echo "  停止集群:     docker-compose down"
+# echo "  停止集群:     docker-compose --profile \"*\" down"
+# echo "  查看状态:     docker-compose ps"
+
+
+echo "⏱️ 运行 30 秒后检查结果..."
+sleep 30
+
+echo "📊 检查 Pompe 处理结果..."
+docker-compose logs | grep "进入共识" | head -10
+
+echo "🎯 检查交易排序结果..."
+docker-compose logs | grep "pompe:.*:" | head -5
+
+echo "📈 显示节点统计..."
+for i in {0..3}; do
+    echo "--- Node $i 统计 ---"
+    docker-compose logs node$i | grep "Pompe状态" | tail -3
+done
+
 echo ""
-echo "💡 常用命令:"
-echo "  查看实时日志: docker-compose logs -f"
-echo "  查看客户端:   docker-compose logs -f $CLIENT_SERVICE"
-echo "  查看特定节点: docker-compose logs -f node0"
-echo "  重启集群:     docker-compose restart"
-echo "  停止集群:     docker-compose down"
-echo "  停止集群:     docker-compose --profile \"*\" down"
-echo "  查看状态:     docker-compose ps"
+echo "🎉 Pompe 功能测试完成!"
+echo "📋 检查详细日志: docker-compose logs | grep Pompe"
+echo "🛑 停止测试: docker-compose --profile \"*\" down"

@@ -278,26 +278,6 @@ impl Network for TcpNetwork {
               self.config.my_key.to_bytes()[0..4].to_vec());
     }
 
-    // fn broadcast(&mut self, message: Message) {
-    //     let peer_count = self.config.peer_addrs.len() - 1; // 排除自己
-    //     debug!("📡 TCP节点 {:?} 广播给 {} 个对等节点", 
-    //            self.config.my_key.to_bytes()[0..4].to_vec(), 
-    //            peer_count);
-        
-    //     let mut success_count = 0;
-    //     for peer_key in self.config.peer_addrs.keys() {
-    //         if *peer_key != self.config.my_key {
-    //             if let Err(e) = self.send_to_peer(peer_key, &message) {
-    //                 error!("广播发送失败到 {:?}: {}", peer_key.to_bytes()[0..4].to_vec(), e);
-    //             } else {
-    //                 success_count += 1;
-    //             }
-    //         }
-    //     }
-        
-    //     debug!("✅ 成功广播给 {}/{} 个对等节点", success_count, peer_count);
-    // }
-
     fn broadcast(&mut self, message: Message) {
         let total_nodes = self.config.peer_addrs.len();
         // debug!("📡 TCP节点 {:?} 广播给 {} 个节点（包括自己）", 
@@ -519,48 +499,3 @@ fn handle_client(
     // debug!("客户端连接处理结束: {}", peer_addr);
     Ok(())
 }
-
-// // 新增：网络包装器
-// #[derive(Clone)]
-// pub struct SharedTcpNetwork {
-//     inner: Arc<Mutex<TcpNetwork>>,
-// }
-
-// impl SharedTcpNetwork {
-//     pub fn new(config: TcpNetworkConfig) -> Result<Self, Box<dyn std::error::Error>> {
-//         let tcp_network = TcpNetwork::new(config)?;
-//         Ok(Self {
-//             inner: Arc::new(Mutex::new(tcp_network)),
-//         })
-//     }
-// }
-
-// impl Network for SharedTcpNetwork {
-//     fn init_validator_set(&mut self, validator_set: ValidatorSet) {
-//         self.inner.lock().unwrap().init_validator_set(validator_set);
-//     }
-
-//     fn update_validator_set(&mut self, updates: ValidatorSetUpdates) {
-//         self.inner.lock().unwrap().update_validator_set(updates);
-//     }
-
-//     fn broadcast(&mut self, message: Message) {
-//         self.inner.lock().unwrap().broadcast(message);
-//     }
-
-//     fn send(&mut self, peer: VerifyingKey, message: Message) {
-//         self.inner.lock().unwrap().send(peer, message);
-//     }
-
-//     fn recv(&mut self) -> Option<(VerifyingKey, Message)> {
-//         self.inner.lock().unwrap().recv()
-//     }
-// }
-
-// impl Clone for SharedTcpNetwork {
-//     fn clone(&self) -> Self {
-//         Self {
-//             inner: Arc::clone(&self.inner),
-//         }
-//     }
-// }
