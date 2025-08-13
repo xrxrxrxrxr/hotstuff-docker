@@ -14,6 +14,7 @@ use serde::{Serialize, Deserialize};
 use tokio::net::TcpStream;
 use tokio::io::{AsyncWriteExt, AsyncReadExt};
 use rand::Rng;
+use hotstuff_runner::pompe::{PompeTransaction, send_pompe_transaction_to_node}; 
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TestTransaction {
@@ -170,9 +171,49 @@ impl PersistentConnection {
         })
     }
 
+    // ↓ 添加新的 Pompe 交易发送方法 ↓
+    // ↓ 修改 send_pompe_transaction 方法，添加更多调试信息 ↓
+    pub async fn send_pompe_transaction(&mut self, transaction: &TestTransaction, client_id: &str) -> Result<(), Box<dyn std::error::Error>> {
+        // 检查是否启用 Pompe
+        let pompe_enabled = std::env::var("POMPE_ENABLE")
+            .unwrap_or_else(|_| "false".to_string())
+            .parse()
+            .unwrap_or(false);
+        
+        info!("🔧 Pompe 启用状态: {}", pompe_enabled);
+            
+        if pompe_enabled {
+            info!("🎯 使用 Pompe 模式发送交易 ID: {}", transaction.id);
+            
+            // 构建客户端消息 - 使用特殊的消息类型标识
+            let client_message = ClientMessage {
+                message_type: "pompe_transaction".to_string(), // ← 关键标识
+                transaction: Some(transaction.clone()),
+                client_id: client_id.to_string(),
+            };
+
+            let serialized = serde_json::to_vec(&client_message)?;
+            let message_length = serialized.len() as u32;
+            
+            // 发送消息长度（4字节）+ 消息内容
+            self.stream.write_all(&message_length.to_be_bytes()).await?;
+            self.stream.write_all(&serialized).await?;
+            self.stream.flush().await?;
+
+            info!("📤 Pompe 交易已发送: ID={}, Size={}bytes", transaction.id, serialized.len());
+        } else {
+            info!("📨 使用标准模式发送交易 ID: {}", transaction.id);
+            // 使用原有方式发送
+            self.send_transaction(transaction, client_id).await?;
+        }
+        
+        Ok(())
+    }
+    // ↑ Pompe 交易发送方法结束 ↑
+
     pub async fn send_transaction(&mut self, transaction: &TestTransaction, client_id: &str) -> Result<(), Box<dyn std::error::Error>> {
         let client_message = ClientMessage {
-            message_type: "transaction".to_string(),
+            message_type: "pompe_transaction".to_string(),
             transaction: Some(transaction.clone()),
             client_id: client_id.to_string(),
         };
@@ -251,39 +292,36 @@ impl ClientNode {
         Ok(())
     }
 
-    // 高效的批量发送
+    // ↓ 修改批量发送方法以支持 Pompe ↓
     pub async fn send_batch_to_node(&mut self, node_id: usize, transactions: Vec<TestTransaction>) -> Result<usize, Box<dyn std::error::Error>> {
         if let Some(connection) = self.connections.get_mut(&node_id) {
-            match connection.send_batch(&transactions, &self.client_id).await {
-                Ok(sent_count) => {
-                    self.stats.record_sent(sent_count as u64);
-                    self.stats.record_confirmed(sent_count as u64); // 假设都成功
-                    Ok(sent_count)
-                }
-                Err(e) => {
-                    error!("❌ 批量发送到节点 {} 失败: {}", node_id, e);
-                    self.stats.record_failed(transactions.len() as u64);
-                    
-                    // 尝试重新连接
-                    info!("🔄 尝试重新连接到节点 {}", node_id);
-                    match PersistentConnection::new(node_id).await {
-                        Ok(new_conn) => {
-                            self.connections.insert(node_id, new_conn);
-                            info!("✅ 重新连接到节点 {} 成功", node_id);
-                        }
-                        Err(reconnect_err) => {
-                            error!("❌ 重新连接到节点 {} 失败: {}", node_id, reconnect_err);
-                        }
+            let mut sent_count = 0;
+            
+            for transaction in &transactions {
+                // ↓ 修改这里使用 Pompe 发送 ↓
+                match connection.send_pompe_transaction(transaction, &self.client_id).await {
+                    Ok(_) => sent_count += 1,
+                    Err(e) => {
+                        warn!("发送交易 {} 到节点 {} 失败: {}", transaction.id, node_id, e);
+                        break;
                     }
-                    
-                    Err(e)
                 }
+                // ↑ Pompe 发送结束 ↑
             }
+            
+            if sent_count > 0 {
+                self.stats.record_sent(sent_count as u64);
+                self.stats.record_confirmed(sent_count as u64);
+                info!("✅ 成功发送 {} 个交易到节点 {}", sent_count, node_id);
+            }
+            
+            Ok(sent_count)
         } else {
             error!("❌ 没有到节点 {} 的连接", node_id);
             Err("没有连接".into())
         }
     }
+    // ↑ 批量发送修改结束 ↑
 
     // 高效的负载测试 - 使用批量发送
     pub async fn run_load_test(&mut self, config: LoadTestConfig, node_least_id: usize, node_num: usize) {
@@ -346,18 +384,30 @@ impl ClientNode {
 
         let mut tx_counter = 0;
         
+        // ↓ 添加调试信息 ↓
+        info!("🚀 开始发送交易循环...");
+        
         loop {
             // 每次发送一小批交易（比如5个）来提高效率
             let batch_size = 5;
             let transactions = self.tx_generator.generate_batch(batch_size);
             let target_node = (tx_counter / batch_size) % node_num + node_least_id;
 
+            // ↓ 添加详细日志 ↓
+            info!("📤 准备发送批次到节点 {}, 包含 {} 个交易", target_node, transactions.len());
+            
             match self.send_batch_to_node(target_node, transactions).await {
                 Ok(sent_count) => {
                     tx_counter += sent_count;
+                    info!("✅ 成功发送 {} 个交易到节点 {}, 总计: {}", sent_count, target_node, tx_counter);
                 }
                 Err(e) => {
-                    warn!("❌ 发送批次失败: {}", e);
+                    error!("❌ 发送批次失败到节点 {}: {}", target_node, e);
+                    
+                    // ↓ 添加重试逻辑 ↓
+                    warn!("🔄 等待5秒后重试...");
+                    tokio::time::sleep(Duration::from_secs(5)).await;
+                    continue;
                 }
             }
 
@@ -366,9 +416,11 @@ impl ClientNode {
                 self.stats.log_summary();
             }
 
-            tokio::time::sleep(Duration::from_millis(50)).await; // 比之前快一些
+            // ↓ 修改等待时间，让日志更清晰 ↓
+            tokio::time::sleep(Duration::from_millis(1000)).await; // 改为1秒一批
         }
     }
+
 }
 
 pub struct LoadTestConfig {
@@ -460,6 +512,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             };
 
             client_node.run_load_test(config, node_least_id, node_num).await;
+            info!("✅ 负载测试完成，保持客户端运行状态...");
         }
         _ => {
             client_node.run_interactive_mode(node_least_id, node_num).await;

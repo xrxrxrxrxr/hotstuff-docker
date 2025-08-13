@@ -131,7 +131,7 @@ impl<K: KVStore> App<K> for TestApp {
         
         for tx in &transactions {
             data_vec.push(Datum::new(tx.as_bytes().to_vec()));
-            // info!("Node {} [produce_block] 🔨  - 交易: {}", self.node_id, tx);
+            info!("Node {} [produce_block] 🔨  - 交易: {}", self.node_id, tx);
         }
         
 

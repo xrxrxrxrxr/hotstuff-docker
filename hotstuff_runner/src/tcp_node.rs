@@ -363,64 +363,6 @@ impl Node {
                     crate::log_node(node_id, log::Level::Info, &msg);
                 }
             })
-            // === 网络和同步事件 ===
-            // .on_insert_block({
-            //     move |event| {
-            //         let block_hash = event.block.hash;
-            //         let tx_count = if event.block.data.vec().len() >= 2 {
-            //             let tx_count_bytes = event.block.data.vec()[1].bytes();
-            //             if tx_count_bytes.len() >= 4 {
-            //                 let mut bytes = [0u8; 4];
-            //                 bytes.copy_from_slice(&tx_count_bytes[0..4]);
-            //                         u32::from_le_bytes(bytes)
-            //                     } else {
-            //                         0
-            //                     }
-            //                 } else {
-            //                     0
-            //                 };
-            //         let msg = format!(
-            //                     "🔗 Node {} 插入区块事件 - 交易数: {}, 哈希: {:?}",
-            //                     node_id, tx_count, &block_hash
-            //                 );
-            //                 crate::log_node(node_id, log::Level::Info, &msg);
-                    
-            //         // 从 KV store 读取区块内容
-            //         match kv_clone_insert.block(&block_hash) {
-            //             Ok(Some(block)) => {
-            //                 let height = block.height.int();
-            //                 let data_items = block.data.len();
-                            
-            //                 // 解析交易数量
-            //                 let tx_count = if block.data.vec().len() >= 2 {
-            //                 let tx_count_bytes = block.data.vec()[1].bytes();
-            //                 if tx_count_bytes.len() >= 4 {
-            //                     let mut bytes = [0u8; 4];
-            //                     bytes.copy_from_slice(&tx_count_bytes[0..4]);
-            //                             u32::from_le_bytes(bytes)
-            //                         } else {
-            //                             0
-            //                         }
-            //                     } else {
-            //                         0
-            //                     };
-                             
-            //                 let msg = format!(
-            //                     "🔗 Node {} 插入区块kv_store - Height: {}, 交易数: {}, 数据项: {}, 哈希: {:?}",
-            //                     node_id, height, tx_count, data_items.int(), &block_hash
-            //                 );
-            //                 crate::log_node(node_id, log::Level::Info, &msg);
-            //             },
-            //             _ => {
-            //                 let msg = format!(
-            //                     "🔗 Node {} 插入区块kv_store - 哈希: {:?} (无法读取详情)",
-            //                     node_id, &block_hash.bytes()[0..8]
-            //                 );
-            //                 crate::log_node(node_id, log::Level::Warn, &msg);
-            //             }
-            //         }
-            //     }
-            // })
             .on_insert_block({
                 move |event| {
                     let msg = format!(
@@ -469,15 +411,6 @@ impl Node {
             .highest_view_entered()
             .expect("应该能够从区块树获取进入的最高View")
     }
-
-    // /// 提交交易到Node
-    // pub fn submit_transaction(&self, transaction: String) {
-    //     let mut app = self.app_handle.lock().unwrap();
-    //     app.add_transaction(transaction.clone());
-    //     crate::log_node(self.node_id, log::Level::Info, 
-    //                               &format!("📝 接收交易: {}", transaction));
-    // }
-
     /// 批量提交交易
     pub fn submit_transactions(&self, transactions: Vec<String>) {
         // 直接添加到共享队列
@@ -486,13 +419,5 @@ impl Node {
             queue.push(tx.clone());
             info!("📝 提交交易到共享队列: {}", tx);
         }
-
-        // let mut app = self.app_handle.lock().unwrap();
-        // for tx in &transactions {
-        //     app.add_transaction(tx.clone());
-        //     info!("📝 add_tx 提交交易: {} 到 pending tx", tx);
-        // }
-        // crate::log_node(self.node_id, log::Level::Info, 
-        //                           &format!("📝 接收 {} 个交易", transactions.len()));
     }
 }

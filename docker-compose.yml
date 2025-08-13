@@ -11,10 +11,15 @@ services:
     environment:
       - NODE_ID=0
       - NODE_PORT=10000
-      - RUST_LOG=debug
+      - RUST_LOG=info
       - NODE_LEAST_ID=${NODE_LEAST_ID}
       - NODE_NUM=${NODE_NUM}
+      - POMPE_ENABLE=${POMPE_ENABLE}
+      - POMPE_BATCH_SIZE=${POMPE_BATCH_SIZE}
+      - POMPE_STABLE_PERIOD_MS=${POMPE_STABLE_PERIOD_MS}
+      - POMPE_LEADER_NODE_ID=${POMPE_LEADER_NODE_ID}
     ports:
+      - "20000:20000"
       - "10000:10000"
       - "9000:9000"
     volumes:
@@ -39,10 +44,15 @@ services:
     environment:
       - NODE_ID=1
       - NODE_PORT=10001
-      - RUST_LOG=debug
+      - RUST_LOG=info
       - NODE_LEAST_ID=${NODE_LEAST_ID}
       - NODE_NUM=${NODE_NUM}
+      - POMPE_ENABLE=${POMPE_ENABLE}
+      - POMPE_BATCH_SIZE=${POMPE_BATCH_SIZE}
+      - POMPE_STABLE_PERIOD_MS=${POMPE_STABLE_PERIOD_MS}
+      - POMPE_LEADER_NODE_ID=${POMPE_LEADER_NODE_ID}
     ports:
+      - "20001:20001"
       - "10001:10001"
       - "9001:9001"
     volumes:
@@ -68,10 +78,15 @@ services:
     environment:
       - NODE_ID=2
       - NODE_PORT=10002
-      - RUST_LOG=debug
+      - RUST_LOG=info
       - NODE_LEAST_ID=${NODE_LEAST_ID}
       - NODE_NUM=${NODE_NUM}
+      - POMPE_ENABLE=${POMPE_ENABLE}
+      - POMPE_BATCH_SIZE=${POMPE_BATCH_SIZE}
+      - POMPE_STABLE_PERIOD_MS=${POMPE_STABLE_PERIOD_MS}
+      - POMPE_LEADER_NODE_ID=${POMPE_LEADER_NODE_ID}
     ports:
+      - "20002:20002"
       - "10002:10002"
       - "9002:9002"
     volumes:
@@ -96,10 +111,15 @@ services:
     environment:
       - NODE_ID=3
       - NODE_PORT=10003
-      - RUST_LOG=debug
+      - RUST_LOG=info
       - NODE_LEAST_ID=${NODE_LEAST_ID}
       - NODE_NUM=${NODE_NUM}
+      - POMPE_ENABLE=${POMPE_ENABLE}
+      - POMPE_BATCH_SIZE=${POMPE_BATCH_SIZE}
+      - POMPE_STABLE_PERIOD_MS=${POMPE_STABLE_PERIOD_MS}
+      - POMPE_LEADER_NODE_ID=${POMPE_LEADER_NODE_ID}
     ports:
+      - "20003:20003"
       - "10003:10003"
       - "9003:9003"
     volumes:
@@ -303,6 +323,7 @@ services:
       - RUST_LOG=info
       - NODE_LEAST_ID=${NODE_LEAST_ID}
       - NODE_NUM=${NODE_NUM}
+      - POMPE_ENABLE=${POMPE_ENABLE} # 启用 Pompe
     volumes:
       - ./logs:/logs
       - ./logs/node:/log
@@ -313,7 +334,7 @@ services:
       - node1
       - node2
       - node3
-    restart: unless-stopped
+    restart: no 
     profiles:
       - interactive
 
@@ -332,6 +353,7 @@ services:
       - TARGET_TPS=1000         # ← 目标 1000 TPS
       - TEST_DURATION=300      # ← 运行 5 分钟
       - RUST_LOG=warn
+      - POMPE_ENABLE=${POMPE_ENABLE} # 启用 Pompe
     profiles:
       - perf_test
 
@@ -345,9 +367,12 @@ services:
     environment:
       - CLIENT_ID=load_tester_001
       - CLIENT_MODE=load_test
-      - TARGET_TPS=300
+      - TARGET_TPS=${TARGET_TPS}
       - TEST_DURATION=300
       - RUST_LOG=info
+      - NODE_LEAST_ID=${NODE_LEAST_ID}  # 确保这些环境变量已设置
+      - NODE_NUM=${NODE_NUM}
+      - POMPE_ENABLE=${POMPE_ENABLE} # 启用 Pompe
     volumes:
       - ./logs:/logs
       - ./logs/node:/log
