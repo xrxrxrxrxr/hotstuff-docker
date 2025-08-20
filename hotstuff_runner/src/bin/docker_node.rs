@@ -15,7 +15,7 @@ use hotstuff_runner::{
     app::TestApp,
     stats::PerformanceStats,
     pompe::{PompeManager, load_pompe_config, LockFreeHotStuffAdapter},
-    lockfree_types::LockFreePerformanceStats
+    detailed_performance_metrics::PompeQueueMetrics,
 };
 use std::sync::Arc;
 use tokio::sync::{mpsc, broadcast, Notify};
@@ -33,6 +33,7 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use serde::{Serialize, Deserialize};
 use std::sync::atomic::{AtomicUsize, AtomicU64, Ordering};
 use crossbeam::queue::SegQueue;
+use std::time::Instant;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TestTransaction {
@@ -423,39 +424,82 @@ async fn handle_lockfree_client_connection(
     Ok(())
 }
 
-// Lock-free Pompe processor using crossbeam queues
-async fn start_lockfree_pompe_processor(
+// 增强的Pompe处理器，带详细性能监控
+async fn start_detailed_pompe_processor(
     node_id: usize,
     tx_processor: Arc<LockFreeTransactionProcessor>,
     pompe_manager: Arc<PompeManager>,
     event_tx: broadcast::Sender<SystemEvent>,
     lockfree_stats: Arc<LockFreeStats>,
+    pompe_metrics: Arc<PompeQueueMetrics>,
 ) {
-    info!("[Lock-free] Node {} Pompe processor started", node_id);
+    info!("[详细监控] Node {} Pompe处理器启动", node_id);
     
-    // Main processing loop: batch processing
-    let batch_size = 10;
-    let mut batch_interval = tokio::time::interval(Duration::from_millis(20));
+    let batch_size = 50;
+    let mut batch_interval = tokio::time::interval(Duration::from_millis(10));
     
     loop {
         batch_interval.tick().await;
         
-        // Lock-free batch extraction
-        let batch = tx_processor.process_batch(batch_size);
+        // 记录队列大小
+        let queue_size = tx_processor.get_queue_size();
+        pompe_metrics.record_queue_size(queue_size).await;
         
-        if !batch.is_empty() {
-            let queue_size = tx_processor.get_queue_size();
+        let mut total_processed = 0;
+        for _ in 0..3 {
+            let batch_start = Instant::now();
+            let batch = tx_processor.process_batch(batch_size);
+            
+            if batch.is_empty() {
+                break;
+            }
+            
+            pompe_metrics.record_transaction_submitted(batch.len());
+            
+            // 记录批处理延迟
+            let batch_processing_time = batch_start.elapsed();
+            pompe_metrics.batch_processing_tracker.record_processing(batch_processing_time).await;
+            
+            // 处理每个交易并记录各阶段延迟
+            let mut batch_processed = 0;
+            for transaction in batch {
+                let tx_start = Instant::now();
+                
+                match pompe_manager.process_raw_transaction(&transaction).await {
+                    Ok(_) => {
+                        let tx_processing_time = tx_start.elapsed();
+                        
+                        // 根据交易处理情况记录到不同阶段
+                        // 这里需要根据你的pompe_manager实际返回来判断处理到了哪个阶段
+                        if tx_processing_time < Duration::from_millis(1) {
+                            pompe_metrics.ordering1_tracker.record_processing(tx_processing_time).await;
+                        } else if tx_processing_time < Duration::from_millis(10) {
+                            pompe_metrics.ordering2_tracker.record_processing(tx_processing_time).await;
+                        } else {
+                            pompe_metrics.commit_tracker.record_processing(tx_processing_time).await;
+                        }
+                        
+                        batch_processed += 1;
+                    }
+                    Err(e) => {
+                        error!("[详细监控] Pompe处理交易失败: {}, 错误: {}", transaction, e);
+                    }
+                }
+            }
+            
+            pompe_metrics.record_transaction_completed(batch_processed);
+            total_processed += batch_processed;
+        }
+        
+        if total_processed > 0 {
             lockfree_stats.update_pompe_queue_size(queue_size);
             
-            let processed_count = process_lockfree_transaction_batch(&pompe_manager, batch).await;
+            info!("[详细监控] Node {} Pompe处理了 {} 个交易, 队列剩余: {}", 
+                  node_id, total_processed, queue_size);
             
-            if processed_count > 0 {
-                info!("[Lock-free] Node {} Pompe processed {} transactions", node_id, processed_count);
-                
-                let _ = event_tx.send(SystemEvent::TransactionProcessed {
-                    count: processed_count,
-                });
-            }
+            let _ = event_tx.send(SystemEvent::TransactionProcessed {
+                count: total_processed,
+            });
         }
     }
 }
@@ -524,7 +568,7 @@ async fn start_lockfree_hotstuff_monitor(
 async fn start_lockfree_performance_monitor(
     node_id: usize,
     mut event_rx: broadcast::Receiver<SystemEvent>,
-    lockfree_node_stats: Arc<LockFreePerformanceStats>, // Use our lock-free stats
+    lockfree_node_stats: Arc<std::sync::Mutex<PerformanceStats>>, // Use mutex-wrapped stats
     pompe_manager: Option<Arc<PompeManager>>,
     lockfree_stats: Arc<LockFreeStats>,
 ) {
@@ -543,25 +587,47 @@ async fn start_lockfree_performance_monitor(
                 interval.tick().await;
                 
                 // Get lock-free statistics
-                let submission_tps = lockfree_node_stats_clone.get_submission_tps();
-                let consensus_tps = lockfree_node_stats_clone.get_confirmation_tps();
+                let submission_tps = lockfree_node_stats_clone.lock().unwrap().get_submission_tps();
+                let pompe_tps = lockfree_node_stats_clone.lock().unwrap().calculate_pompe_tps();
                 let (total_rx, pompe_rx, hotstuff_size, pompe_size, hotstuff_consumed) = lockfree_stats_clone.get_stats();
                 
                 info!("[Lock-free performance monitor] =========================");
-                info!("  Submission speed: {:.2} TPS", submission_tps);
-                info!("  Confirmation speed: {:.2} TPS", consensus_tps);
-                info!("  Total received: {} (Pompe: {})", total_rx, pompe_rx);
-                info!("  HotStuff queue: {}", hotstuff_size);
-                info!("  Pompe queue: {}", pompe_size);
-                info!("  HotStuff consumed: {}", hotstuff_consumed);
+                info!("  提交速度: {:.2} TPS", submission_tps);
+                info!("  确认速度: {:.2} (Pompe) TPS", pompe_tps);
+                info!("  总接收: {} (Pompe: {})", total_rx, pompe_rx);
+                info!("  HotStuff队列: {}", hotstuff_size);
+                info!("  Pompe队列: {}", pompe_size);
+                info!("  HotStuff已消费: {}", hotstuff_consumed);
                 
-                // Bottleneck analysis
-                if hotstuff_size > 50 && consensus_tps < submission_tps * 0.5 {
-                    warn!("[Bottleneck analysis] HotStuff consumption slow, severe queue backlog");
-                } else if hotstuff_size < 10 && consensus_tps < 5.0 {
-                    warn!("[Bottleneck analysis] Pompe output slow, HotStuff lacks transactions to process");
-                } else {
-                    info!("[Bottleneck analysis] System running normally");
+                // 瓶颈分析和性能诊断
+                if pompe_size > 10 && hotstuff_size == 0 {
+                    warn!("🚨 [瓶颈分析] Pompe处理瓶颈检测:");
+                    warn!("   - Pompe队列积压: {} 个交易", pompe_size);
+                    warn!("   - HotStuff队列空闲: {} 个交易", hotstuff_size);
+                    warn!("   - 可能原因: Pompe BFT共识速度慢，需要优化网络或增加批处理大小");
+                    
+                    // 建议的优化措施
+                    if pompe_size > 50 {
+                        warn!("   - 建议: 考虑增加Pompe批处理大小或减少处理间隔");
+                    }
+                } else if hotstuff_size > 30 && pompe_tps < submission_tps * 0.3 {
+                    warn!("🚨 [瓶颈分析] HotStuff处理瓶颈检测:");
+                    warn!("   - HotStuff队列积压: {} 个交易", hotstuff_size);
+                    warn!("   - 确认TPS ({:.1}) 远低于提交TPS ({:.1})", pompe_tps, submission_tps);
+                    warn!("   - 可能原因: HotStuff共识网络延迟或区块大小限制");
+                } else if pompe_size < 5 && hotstuff_size < 5 && submission_tps > 10.0 && pompe_tps < 5.0 {
+                    warn!("🚨 [瓶颈分析] 整体处理延迟检测:");
+                    warn!("   - 两个队列都较空但TPS低: 提交({:.1}) vs 确认({:.1})", submission_tps, pompe_tps);
+                    warn!("   - 可能原因: 网络延迟、区块打包间隔长或验证开销大");
+                } else if total_rx > 100 {
+                    let processing_efficiency = (hotstuff_consumed as f64 / total_rx as f64) * 100.0;
+                    if processing_efficiency > 90.0 {
+                        info!("✅ [性能分析] 系统运行良好 - 处理效率: {:.1}%", processing_efficiency);
+                    } else if processing_efficiency < 70.0 {
+                        warn!("⚠️ [性能分析] 处理效率偏低: {:.1}% - 系统可能需要调优", processing_efficiency);
+                    } else {
+                        info!("📊 [性能分析] 处理效率正常: {:.1}%", processing_efficiency);
+                    }
                 }
                 
                 // Connection pool monitoring
@@ -608,8 +674,8 @@ async fn start_lockfree_performance_monitor(
                 match event {
                     SystemEvent::TransactionReceived { transaction: _, is_pompe } => {
                         if is_pompe {
-                            // Record submission in lock-free stats
-                            lockfree_node_stats.record_submitted();
+                            // Record submission in lock-free stats - use the lock-free stats instead
+                            lockfree_stats.increment_tx_received();
                         }
                     }
                     
@@ -777,26 +843,32 @@ async fn main() -> Result<(), String> {
    let node_lockfree_queue = node.get_transaction_queue();
    let node_lockfree_stats = node.get_lockfree_stats();
    
-   // Bridge transactions from external processor to Node's internal queue
+   // 优化：更快的交易桥接，减少积压
    let bridge_queue = Arc::clone(&node_lockfree_queue);
    let bridge_tx_processor = Arc::clone(&tx_processor);
    
    tokio::spawn(async move {
        info!("[Lock-free bridge] Transaction bridge started");
-       let mut bridge_interval = tokio::time::interval(Duration::from_millis(50));
+       let mut bridge_interval = tokio::time::interval(Duration::from_millis(20)); // 更频繁的桥接
        
        loop {
            bridge_interval.tick().await;
            
-           // Move transactions from external processor to node's internal queue
-           let transactions = bridge_tx_processor.process_batch(20);
+           // 优化：每次桥接更多交易以减少积压
+           let transactions = bridge_tx_processor.process_batch(50); // 增加批处理大小
            
            if !transactions.is_empty() {
-               let tx_count = transactions.len();
-               for tx in transactions {
-                   bridge_queue.push(tx);
+               for tx in &transactions {
+                   bridge_queue.push(tx.clone());
                }
-               info!("[Lock-free bridge] Bridged {} transactions to Node", tx_count);
+               info!("[Lock-free bridge] Bridged {} transactions to Node, Pompe queue remaining: {}", 
+                     transactions.len(), bridge_tx_processor.get_queue_size());
+           }
+           
+           // 警告：如果Pompe队列积压过多
+           let pompe_queue_size = bridge_tx_processor.get_queue_size();
+           if pompe_queue_size > 100 {
+               warn!("[Lock-free bridge] Pompe queue backlog: {} transactions - may need tuning", pompe_queue_size);
            }
        }
    });
@@ -814,7 +886,7 @@ async fn main() -> Result<(), String> {
            consumption_interval.tick().await;
            
            // Lock-free batch consumption
-           let batch = lockfree_hotstuff_queue_clone.drain_batch(20);
+           let batch = lockfree_hotstuff_queue_clone.drain_batch(20); // Point 4
            
            if !batch.is_empty() {
                let consumed_count = batch.len();
@@ -893,12 +965,13 @@ async fn main() -> Result<(), String> {
        let event_tx_clone = event_tx.clone();
        let lockfree_stats_clone = Arc::clone(&lockfree_stats);
        
-       tokio::spawn(start_lockfree_pompe_processor(
+       tokio::spawn(start_detailed_pompe_processor(
            node_id,
            tx_processor,
            pompe_clone,
            event_tx_clone,
            lockfree_stats_clone,
+           Arc::new(PompeQueueMetrics::new()),
        ));
    }
 
@@ -916,11 +989,10 @@ async fn main() -> Result<(), String> {
    // Start lock-free performance monitor
    let pompe_manager_clone = pompe_manager.clone();
    let lockfree_stats_clone = Arc::clone(&lockfree_stats);
-   let node_lockfree_stats_for_monitor = Arc::clone(&node_lockfree_stats);
    tokio::spawn(start_lockfree_performance_monitor(
        node_id,
        event_rx,
-       node_lockfree_stats_for_monitor,
+       original_performance_stats,
        pompe_manager_clone,
        lockfree_stats_clone,
    ));
