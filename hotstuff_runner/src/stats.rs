@@ -1,41 +1,3 @@
-// #[derive(Debug, Clone)]
-// struct PerformanceStats {
-//     submitted_count: u64,
-//     confirmed_count: u64,
-//     start_time: Option<std::time::Instant>,
-// }
-
-// impl PerformanceStats {
-//     pub fn new() -> Self {
-//         Self {
-//             submitted_count: 0,
-//             confirmed_count: 0,
-//             start_time: None,
-//         }
-//     }
-
-//     pub fn record_submitted(&mut self) {
-//         if self.start_time.is_none() {
-//             self.start_time = Some(std::time::Instant::now());
-//         }
-//         self.submitted_count += 1;
-//     }
-
-//     pub fn record_confirmed(&mut self, count: u64) {
-//         self.confirmed_count += count;
-//     }
-
-//     pub fn get_tps(&self) -> f64 {
-//         if let Some(start) = self.start_time {
-//             let elapsed = start.elapsed().as_secs_f64();
-//             if elapsed > 0.0 {
-//                 return self.confirmed_count as f64 / elapsed;
-//             }
-//         }
-//         0.0
-//     }
-// }
-
 #[derive(Debug, Clone)]
 pub struct PerformanceStats {
     submitted_count: u64,
@@ -44,6 +6,8 @@ pub struct PerformanceStats {
     start_time: Option<std::time::Instant>,
     first_commit_time: Option<std::time::Instant>, 
     last_commit_time: Option<std::time::Instant>,  // 新增：最后一次提交时间
+    pompe_confirmed_count: u64,
+    pompe_start_time: Option<std::time::Instant>,
 }
 
 impl PerformanceStats {
@@ -55,6 +19,8 @@ impl PerformanceStats {
             start_time: None,
             first_commit_time: None,
             last_commit_time: None,
+            pompe_confirmed_count: 0,
+            pompe_start_time: None,
         }
     }
 
@@ -158,5 +124,28 @@ impl PerformanceStats {
             }
         }
         self.get_pure_consensus_tps()
+    }
+
+    pub fn calculate_pompe_tps(&self) -> f64 {
+        if let Some(start) = self.start_time {
+            let elapsed = start.elapsed().as_secs_f64();
+            if elapsed > 0.0 {
+                // 只统计以"pompe:"开头的交易
+                self.pompe_confirmed_count as f64 / elapsed
+            } else {
+                0.0
+            }
+        } else {
+            0.0
+        }
+    }
+    
+    // 🚨 还需要添加字段来跟踪Pompe交易
+    pub fn record_pompe_confirmed(&mut self) {
+        self.pompe_confirmed_count += 1;
+    }
+    
+    pub fn get_pompe_confirmed_count(&self) -> u64 {
+        self.pompe_confirmed_count
     }
 }

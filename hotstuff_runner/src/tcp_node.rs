@@ -1,6 +1,9 @@
 // crate/src/node.rs
 use hotstuff_rs::{
-    block_tree::{pluggables::KVGet, variables::HIGHEST_COMMITTED_BLOCK}, events::*, replica::{self, Configuration, Replica, ReplicaSpec}, types::{
+    block_tree::{pluggables::KVGet, variables::HIGHEST_COMMITTED_BLOCK}, 
+    events::*, 
+    replica::{self, Configuration, Replica, ReplicaSpec}, 
+    types::{
         crypto_primitives::VerifyingKey,
         data_types::{BufferSize, ChainID, EpochLength, ViewNumber, Data},
         block::Block,
@@ -14,110 +17,99 @@ use crate::{
     tcp_network::TcpNetwork,
     kv_store::MemoryKVStore,
     stats::PerformanceStats,
+    lockfree_types::{LockFreeTransactionQueue, LockFreePerformanceStats, LockFreeQueueAdapter},
 };
 use std::time::Duration;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use ed25519_dalek::SigningKey;
-// use log::info;
 use tracing::{info, warn};
 
 pub struct Node {
     verifying_key: VerifyingKey,
     replica: Replica<MemoryKVStore>,
     node_id: usize,
-    // 添加对应用的引用以支持交易提交
-    // app_handle: Arc<Mutex<TestApp>>,
-    tx_queue: Arc<Mutex<Vec<String>>>,  // 新增交易队列
-    stats: Arc<Mutex<PerformanceStats>>,  // 新增性能统计
+    // Replace mutex-based queue with lock-free version
+    tx_queue: Arc<LockFreeTransactionQueue>,
+    // Replace mutex-based stats with lock-free version
+    lockfree_stats: Arc<LockFreePerformanceStats>,
 }
 
 impl Node {
-    /// 按照hotstuff_rs官方模式创建Node
     pub fn new(
-        node_id: usize,  // 添加NodeID参数
+        node_id: usize,
         keypair: SigningKey,
-        network: TcpNetwork,    // 使用TcpNetwork替代NodeNetwork
+        network: TcpNetwork,
         init_app_state_updates: AppStateUpdates,
         init_validator_set_updates: ValidatorSetUpdates,
-        tx_queue: Arc<Mutex<Vec<String>>>,  // 新增参数：外部交易队列
-        stats: Arc<Mutex<PerformanceStats>>,  // 新增性能统计
+        _compatible_queue: Arc<std::sync::Mutex<Vec<String>>>, // Keep for compatibility but don't use
+        original_stats: Arc<std::sync::Mutex<PerformanceStats>>, // Keep for compatibility
     ) -> Self {
         let verifying_key: VerifyingKey = keypair.verifying_key().into();
         
-        info!("创建Node，验证密钥: {:?}", verifying_key.to_bytes()[0..8].to_vec());
+        info!("Creating lock-free Node, verifying key: {:?}", verifying_key.to_bytes()[0..8].to_vec());
         
-        // 1. 从更新构造验证者集合
+        // Create lock-free replacements
+        let tx_queue = Arc::new(LockFreeTransactionQueue::new());
+        let lockfree_stats = Arc::new(LockFreePerformanceStats::new());
+        
+        // Setup validator set
         let mut initial_validator_set = ValidatorSet::new();
         initial_validator_set.apply_updates(&init_validator_set_updates);
         
-        info!("Node验证者集合: {} 个验证者，总权力: {}", 
+        info!("Node validator set: {} validators, total power: {}", 
              initial_validator_set.len(), 
              initial_validator_set.total_power().int());
         
-        // 2. 创建验证者集合状态
         let validator_set_state = ValidatorSetState::new(
             initial_validator_set.clone(),
             initial_validator_set.clone(),
             None,
-            true, // is_genesis
+            true,
         );
         
-        // 3. 创建KV存储
         let kv_store = MemoryKVStore::new();
         
-        // 4. 初始化副本存储
         Replica::initialize(
             kv_store.clone(),
             init_app_state_updates,
             validator_set_state,
         );
         
-        // 5. 创建应用程序并保存引用
-        // let app = TestApp::new(format!("node-{:?}", verifying_key.to_bytes()[0..4].to_vec()));
-        let app = TestApp::new(
-            node_id,
-            tx_queue.clone()
-        );
-        // let app_handle = Arc::new(Mutex::new(app.clone()));
+        let app = TestApp::new(node_id, Arc::clone(&tx_queue));
         
-        // 6. 创建配置 - 使用与官方完全相同的参数
         let config = Configuration::builder()
             .me(keypair)
             .chain_id(ChainID::new(0))
             .block_sync_request_limit(10)
-            .block_sync_server_advertise_time(Duration::new(10, 0))      // 官方: 10秒
-            .block_sync_response_timeout(Duration::new(3, 0))            // 官方: 3秒
-            .block_sync_blacklist_expiry_time(Duration::new(10, 0))      // 官方: 10秒
-            .block_sync_trigger_min_view_difference(2)                   // 官方: 2
-            .block_sync_trigger_timeout(Duration::new(60, 0))            // 官方: 60秒
+            .block_sync_server_advertise_time(Duration::new(10, 0))
+            .block_sync_response_timeout(Duration::new(3, 0))
+            .block_sync_blacklist_expiry_time(Duration::new(10, 0))
+            .block_sync_trigger_min_view_difference(2)
+            .block_sync_trigger_timeout(Duration::new(60, 0))
             .progress_msg_buffer_capacity(BufferSize::new(1024))
-            .epoch_length(EpochLength::new(50))                          // 官方: 50
-            .max_view_time(Duration::from_millis(2000))                  // 官方: 2000ms
-            .log_events(false)                                           // 官方: false
+            .epoch_length(EpochLength::new(50))
+            .max_view_time(Duration::from_millis(2000))
+            .log_events(false)
             .build();
 
         let kv_clone_commit = kv_store.clone();
-        // let kv_clone_insert = kv_store.clone();
-        // let kv_clone_receive = kv_store.clone();
-        let stats_for_commit = stats.clone();
+        let stats_for_commit = lockfree_stats.clone();
 
-        // 7. 启动副本 - 添加详细的事件处理器（类似官方）
         let replica = ReplicaSpec::builder()
             .app(app)
             .network(network)
             .kv_store(kv_store)
             .configuration(config)
-            // === 最关键的事件 ===
             .on_start_view({
                 move |event| {
-                    let msg = format!("🚀 Node {} 开始View {}", node_id, event.view);
+                    let msg = format!("🚀 Node {} started View {}", node_id, event.view);
                     crate::log_node(node_id, log::Level::Info, &msg);
                 }
             })
             .on_propose({
                 move |event| {
                     let msg = format!(
-                        "📤 Node {} 提议区块，View: {}, 高度: {:?}, hash: {:?}",
+                        "📤 Node {} proposed block, View: {}, height: {:?}, hash: {:?}",
                         node_id,
                         event.proposal.view,
                         event.proposal.block.height,
@@ -129,7 +121,7 @@ impl Node {
             .on_receive_proposal({
                 move |event| {
                     let msg = format!(
-                        "📥 Node {} 接收提议，来源: {:?}, View: {}",
+                        "📥 Node {} received proposal, from: {:?}, View: {}",
                         node_id,
                         event.origin.to_bytes()[0..4].to_vec(),
                         event.proposal.view
@@ -140,7 +132,7 @@ impl Node {
             .on_phase_vote({
                 move |event| {
                     let msg = format!(
-                        "🗳️ Node {} 阶段投票，View: {}, 阶段: {:?}",
+                        "🗳️ Node {} phase vote, View: {}, phase: {:?}",
                         node_id,
                         event.vote.view,
                         event.vote.phase
@@ -151,7 +143,7 @@ impl Node {
             .on_receive_phase_vote({
                 move |event| {
                     let msg = format!(
-                        "📨 Node {} 接收投票，来源: {:?}, View: {}, 阶段: {:?}",
+                        "📨 Node {} received vote, from: {:?}, View: {}, phase: {:?}",
                         node_id,
                         event.origin.to_bytes()[0..4].to_vec(),
                         event.phase_vote.view,
@@ -163,7 +155,7 @@ impl Node {
             .on_collect_pc({
                 move |event| {
                     let msg = format!(
-                        "🎯 Node {} 收集PC，View: {}, 签名数: {}",
+                        "🎯 Node {} collected PC, View: {}, signatures: {}",
                         node_id,
                         event.phase_certificate.view,
                         event.phase_certificate.signatures.iter().filter(|sig| sig.is_some()).count()
@@ -171,15 +163,6 @@ impl Node {
                     crate::log_node(node_id, log::Level::Info, &msg);
                 }
             })
-            // .on_commit_block({
-            //     move |event|{
-            //         let msg = format!(
-            //             "💎 Node {} Commit block, Hash: {:?}",
-            //             node_id, event.block
-            //         );
-            //         crate::log_node(node_id, log::Level::Info, &msg);
-            //     }
-            // })
             .on_commit_block({
                 move |event| {
                     let block_hash = event.block;
@@ -189,89 +172,58 @@ impl Node {
                         Ok(Some(block)) => {
                             let height = block.height.int();
                             
-                            // 关键修正：正确解析交易数量
+                            // Parse transaction count
                             let tx_count = if block.data.vec().len() >= 2 {
                                 let tx_count_bytes = block.data.vec()[1].bytes();
                                 if tx_count_bytes.len() >= 4 {
                                     let mut bytes = [0u8; 4];
                                     bytes.copy_from_slice(&tx_count_bytes[0..4]);
-                                            u32::from_le_bytes(bytes)
+                                    u32::from_le_bytes(bytes)
                                 } else {
-                                        0
-                                        }
-                            } else {
                                     0
-                                    };
-                            
-                            // 🎯 更新统计并获取多种TPS指标
-                            let (end_to_end_tps, pure_consensus_tps, submission_tps, total_confirmed_txs, total_confirmed_blocks, is_first_commit) = {
-                                let mut stats = stats_for_commit.lock().unwrap();
-                                
-                                // 检查是否是第一个确认
-                                let is_first = stats.get_confirmed_blocks() == 0;
-                                
-                                // 记录区块确认
-                                stats.record_block_committed(tx_count.into());
-
-                                (
-                                    stats.get_end_to_end_tps(),        // 端到端TPS
-                                    stats.get_pure_consensus_tps(),    // 纯共识TPS  
-                                    stats.get_submission_tps(),        // 提交TPS
-                                    stats.get_confirmed_transactions(),
-                                    stats.get_confirmed_blocks(),
-                                    is_first
-                                )
+                                }
+                            } else {
+                                0
                             };
-
                             
-                            // 主要的统计日志
+                            // Lock-free statistics update
+                            stats_for_commit.record_confirmed(tx_count as usize);
+                            
+                            let submission_tps = stats_for_commit.get_submission_tps();
+                            let confirmation_tps = stats_for_commit.get_confirmation_tps();
+                            let total_confirmed_txs = stats_for_commit.get_confirmed_transactions();
+                            let total_confirmed_blocks = stats_for_commit.get_confirmed_blocks();
+                            
                             let msg = format!(
-                                "💎 Node {} Commit block - Height: {}, TxCount: {}, E2E_TPS: {:.2}, Pure_TPS: {:.2}, Submit_TPS: {:.2}, TotalTxs: {}, TotalBlocks: {}",
-                                node_id, height, tx_count, end_to_end_tps, pure_consensus_tps, submission_tps, total_confirmed_txs, total_confirmed_blocks
+                                "💎 Node {} Commit block - Height: {}, TxCount: {}, Submit_TPS: {:.2}, Confirm_TPS: {:.2}, TotalTxs: {}, TotalBlocks: {}",
+                                node_id, height, tx_count, submission_tps, confirmation_tps, total_confirmed_txs, total_confirmed_blocks
                             );
                             crate::log_node(node_id, log::Level::Info, &msg);
 
-                            // 🎯 每10个区块显示详细分析
+                            // Periodic detailed analysis
                             if total_confirmed_blocks % 10 == 0 {
-                                let stats_guard = stats_for_commit.lock().unwrap();
-                                let recent_tps = stats_guard.get_recent_consensus_tps(30.0);
+                                info!("📊 Node {} consensus statistics report (block #{}):", node_id, total_confirmed_blocks);
+                                info!("  📥 Submission TPS: {:.2}", submission_tps);
+                                info!("  🎯 Confirmation TPS: {:.2}", confirmation_tps);
+                                info!("  📈 Confirmed transactions: {}", total_confirmed_txs);
+                                info!("  📦 Confirmed blocks: {}", total_confirmed_blocks);
                                 
-                                info!("📊 Node {} 共识统计报告 (第{}个区块):", node_id, total_confirmed_blocks);
-                                info!("  📥 提交TPS: {:.2} (客户端 → 队列)", submission_tps);
-                                info!("  🔄 端到端TPS: {:.2} (队列 → 确认)", end_to_end_tps);
-                                info!("  🎯 纯共识TPS: {:.2} (共识层性能)", pure_consensus_tps);
-                                info!("  ⏱️ 最近TPS: {:.2} (最近30秒)", recent_tps);
-                                info!("  📈 确认交易总数: {}", total_confirmed_txs);
-                                info!("  📦 确认区块总数: {}", total_confirmed_blocks);
-                                
-                                // 🚨 性能分析
-                                if submission_tps > end_to_end_tps * 1.2 {
-                                    warn!("⚠️ 检测到交易积压: 提交速度({:.1}) > 确认速度({:.1})", 
-                                        submission_tps, end_to_end_tps);
+                                if submission_tps > confirmation_tps * 1.2 {
+                                    warn!("⚠️ Transaction backlog detected: submission({:.1}) > confirmation({:.1})", 
+                                        submission_tps, confirmation_tps);
                                 }
-                                
-                                if pure_consensus_tps > 0.0 {
-                                    let queue_overhead = (end_to_end_tps / pure_consensus_tps - 1.0) * 100.0;
-                                    if queue_overhead > 10.0 {
-                                        warn!("⚠️ 排队开销较大: {:.1}%", queue_overhead);
-                                    } else {
-                                        info!("✅ 排队开销: {:.1}%", queue_overhead);
-                                    }
-                                }
-                                
-                                drop(stats_guard);
                             }
                         },
                         Ok(None) => {
                             let msg = format!(
-                                "💎 Node {} 提交区块 - 哈希: {:?} (区块详情未找到)",
+                                "💎 Node {} committed block - hash: {:?} (block details not found)",
                                 node_id, &block_hash.bytes()[0..8]
                             );
                             crate::log_node(node_id, log::Level::Warn, &msg);
                         },
                         Err(e) => {
                             let msg = format!(
-                                "💎 Node {} 提交区块 - 哈希: {:?} (读取错误: {:?})",
+                                "💎 Node {} committed block - hash: {:?} (read error: {:?})",
                                 node_id, &block_hash.bytes()[0..8], e
                             );
                             crate::log_node(node_id, log::Level::Error, &msg);
@@ -282,7 +234,7 @@ impl Node {
             .on_update_highest_pc({
                 move |event| {
                     let msg = format!(
-                        "📈 Node {} 更新最高PC，View: {}, 阶段: {:?}",
+                        "📈 Node {} updated highest PC, View: {}, phase: {:?}",
                         node_id,
                         event.highest_pc.view,
                         event.highest_pc.phase
@@ -290,11 +242,10 @@ impl Node {
                     crate::log_node(node_id, log::Level::Info, &msg);
                 }
             })
-            // === 超时和View变更事件 ===
             .on_view_timeout({
                 move |event| {
                     let msg = format!(
-                        "⏱️ Node {} View {} 超时！",
+                        "⏱️ Node {} View {} timeout!",
                         node_id,
                         event.view
                     );
@@ -304,7 +255,7 @@ impl Node {
             .on_timeout_vote({
                 move |event| {
                     let msg = format!(
-                        "⏰ Node {} 发送超时投票，View: {}",
+                        "⏰ Node {} sent timeout vote, View: {}",
                         node_id,
                         event.timeout_vote.view
                     );
@@ -314,7 +265,7 @@ impl Node {
             .on_receive_timeout_vote({
                 move |event| {
                     let msg = format!(
-                        "📩 Node {} 接收超时投票，来源: {:?}, View: {}",
+                        "📩 Node {} received timeout vote, from: {:?}, View: {}",
                         node_id,
                         event.origin.to_bytes()[0..4].to_vec(),
                         event.timeout_vote.view
@@ -325,7 +276,7 @@ impl Node {
             .on_collect_tc({
                 move |event| {
                     let msg = format!(
-                        "🔄 Node {} 收集TC，View: {}",
+                        "🔄 Node {} collected TC, View: {}",
                         node_id,
                         event.timeout_certificate.view
                     );
@@ -335,7 +286,7 @@ impl Node {
             .on_advance_view({
                 move |event| {
                     let msg = format!(
-                        "⏭️ Node {} 推进View到: {}",
+                        "⏭️ Node {} advanced view to: {}",
                         node_id,
                         event.advance_view.progress_certificate.view()
                     );
@@ -345,7 +296,7 @@ impl Node {
             .on_new_view({
                 move |event| {
                     let msg = format!(
-                        "🆕 Node {} 发送新View消息，View: {}",
+                        "🆕 Node {} sent new view message, View: {}",
                         node_id,
                         event.new_view.view
                     );
@@ -355,7 +306,7 @@ impl Node {
             .on_receive_new_view({
                 move |event| {
                     let msg = format!(
-                        "📬 Node {} 接收新View消息，来源: {:?}, View: {}",
+                        "📬 Node {} received new view message, from: {:?}, View: {}",
                         node_id,
                         event.origin.to_bytes()[0..4].to_vec(),
                         event.new_view.view
@@ -366,7 +317,7 @@ impl Node {
             .on_insert_block({
                 move |event| {
                     let msg = format!(
-                        "🔗 Node {} 插入区块, 高度: {}, 哈希: {:?}",
+                        "🔗 Node {} inserted block, height: {}, hash: {:?}",
                         node_id,
                         event.block.height.int(),
                         event.block.hash,
@@ -377,47 +328,53 @@ impl Node {
             .build()
             .start();
         
-        info!("✅ Node {} 已启动", node_id);
+        info!("✅ Lock-free Node {} started", node_id);
         
         Self {
             verifying_key,
             replica,
             node_id,
-            // app_handle,  // 保存应用引用
-            tx_queue,  // 保存交易队列引用
-            stats,
+            tx_queue,
+            lockfree_stats,
         }
     }
 
-    /// 查询Node的验证密钥
     pub fn verifying_key(&self) -> VerifyingKey {
         self.verifying_key
     }
 
-    /// 查询当前提交的验证者集合
     pub fn committed_validator_set(&self) -> ValidatorSet {
         self.replica
             .block_tree_camera()
             .snapshot()
             .committed_validator_set()
-            .expect("应该能够从区块树获取已提交的验证者集合")
+            .expect("Should be able to get committed validator set from block tree")
     }
 
-    /// 查询进入的最高View号
     pub fn highest_view_entered(&self) -> ViewNumber {
         self.replica
             .block_tree_camera()
             .snapshot()
             .highest_view_entered()
-            .expect("应该能够从区块树获取进入的最高View")
+            .expect("Should be able to get highest view entered from block tree")
     }
-    /// 批量提交交易
+
+    /// Submit transactions using lock-free queue
     pub fn submit_transactions(&self, transactions: Vec<String>) {
-        // 直接添加到共享队列
-        let mut queue = self.tx_queue.lock().unwrap();
         for tx in transactions {
-            queue.push(tx.clone());
-            info!("📝 提交交易到共享队列: {}", tx);
+            self.tx_queue.push(tx.clone());
+            self.lockfree_stats.record_submitted();
+            info!("📝 Submitted transaction to lock-free queue: {}", tx);
         }
+    }
+    
+    /// Get lock-free transaction queue for external access
+    pub fn get_transaction_queue(&self) -> Arc<LockFreeTransactionQueue> {
+        Arc::clone(&self.tx_queue)
+    }
+    
+    /// Get lock-free statistics
+    pub fn get_lockfree_stats(&self) -> Arc<LockFreePerformanceStats> {
+        Arc::clone(&self.lockfree_stats)
     }
 }

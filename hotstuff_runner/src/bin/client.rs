@@ -69,7 +69,7 @@ impl TransactionGenerator {
 
         let from = self.accounts[from_idx].clone();
         let to = self.accounts[to_idx].clone();
-        let amount = rng.gen_range(1, 1000);
+        let amount = rng.gen_range(1, 100000);
 
         self.current_tx_id += 1;
         self.current_nonce += 1;

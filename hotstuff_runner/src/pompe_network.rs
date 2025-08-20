@@ -19,6 +19,14 @@ pub struct PompeNetworkMessage {
     pub message_id: String, // 添加消息ID用于去重
 }
 
+// 🚨 新增：连接状态管理
+#[derive(Debug)]
+struct ConnectionState {
+    stream: TcpStream,
+    last_used: std::time::Instant,
+    send_count: usize,
+}
+
 pub struct PompeNetwork {
     node_id: usize,
     pompe_port: u16,
@@ -27,7 +35,9 @@ pub struct PompeNetwork {
     message_rx: Arc<Mutex<async_mpsc::UnboundedReceiver<(usize, PompeMessage)>>>,
     
     // 🚨 新增：连接池和重试机制
-    connection_pool: Arc<Mutex<HashMap<usize, Option<TcpStream>>>>,
+    // connection_pool: Arc<Mutex<HashMap<usize, Option<TcpStream>>>>,
+    // 🚨 优化：连接池管理
+    connections: Arc<tokio::sync::RwLock<HashMap<usize, ConnectionState>>>,
     sent_messages: Arc<Mutex<HashMap<String, u64>>>, // 消息去重
 }
 
@@ -44,15 +54,51 @@ impl PompeNetwork {
             warn!("⚠️ 当前节点 {} 不在对等节点列表中: {:?}", node_id, peer_node_ids);
         }
         
-        Self {
+        let network =Self {
             node_id,
             pompe_port,
             peer_node_ids,
             message_tx: tx,
             message_rx: Arc::new(Mutex::new(rx)),
-            connection_pool: Arc::new(Mutex::new(HashMap::new())),
+            connections: Arc::new(tokio::sync::RwLock::new(HashMap::new())),
+            // connection_pool: Arc::new(Mutex::new(HashMap::new())),
             sent_messages: Arc::new(Mutex::new(HashMap::new())),
-        }
+        };
+        // 🚨 启动连接维护任务
+        network.start_connection_maintenance();
+        network
+    }
+
+    // 🚨 新增：连接维护任务
+    fn start_connection_maintenance(&self) {
+        let connections = Arc::clone(&self.connections);
+        let node_id = self.node_id;
+        
+        tokio::spawn(async move {
+            let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(60)); // 每60秒清理一次
+            
+            loop {
+                interval.tick().await;
+                
+                let mut connections_guard = connections.write().await;
+                let mut to_remove = Vec::new();
+                
+                for (&target_node_id, conn_state) in connections_guard.iter() {
+                    // 清理超过10分钟未使用的连接
+                    if conn_state.last_used.elapsed() > tokio::time::Duration::from_secs(600) {
+                        to_remove.push(target_node_id);
+                    }
+                }
+                
+                if !to_remove.is_empty() {
+                    for node_id_to_remove in to_remove {
+                        connections_guard.remove(&node_id_to_remove);
+                        info!("🧹 [连接维护] Node {} 清理到节点 {} 的空闲连接", 
+                              node_id, node_id_to_remove);
+                    }
+                }
+            }
+        });
     }
 
     pub async fn start_server(&self) -> Result<(), String> {
@@ -119,60 +165,139 @@ impl PompeNetwork {
             message_id,
         };
 
-        // 🚨 重试机制：最多重试3次
-        let mut last_error_msg = String::new();
-        for attempt in 1..=3 {
-            match TcpStream::connect(&target_addr).await {
-                Ok(mut stream) => {
-                    let serialized = serde_json::to_vec(&network_msg).map_err(|e| format!("序列化失败: {}", e))?;
-                    let message_length = serialized.len() as u32;
-                    
-                    match stream.write_all(&message_length.to_be_bytes()).await {
-                        Ok(_) => {
-                            match stream.write_all(&serialized).await {
-                                Ok(_) => {
-                                    if let Err(e) = stream.flush().await {
-                                        warn!("⚠️ 刷新连接失败 {} (尝试 {}): {}", target_addr, attempt, e);
-                                        continue;
-                                    }
-                                    
-                                    debug!("📤 Node {} Pompe发送到节点 {} 成功 (尝试 {}, {}字节)", 
-                                           self.node_id, target_node_id, attempt, message_length);
-                                    return Ok(());
-                                }
-                                Err(e) => {
-                                    warn!("⚠️ 写入消息失败 {} (尝试 {}): {}", target_addr, attempt, e);
-                                    last_error_msg = format!("写入消息失败: {}", e);
-                                    continue;
-                                }
-                            }
-                        }
-                        Err(e) => {
-                            warn!("⚠️ 写入长度失败 {} (尝试 {}): {}", target_addr, attempt, e);
-                            last_error_msg = format!("写入长度失败: {}", e);
-                            continue;
-                        }
+        // 🚨 尝试使用连接池中的连接
+        let mut connection_used = false;
+        
+        // 先尝试使用现有连接
+        {
+            let mut connections = self.connections.write().await;
+            if let Some(conn_state) = connections.get_mut(&target_node_id) {
+                match self.send_message_on_stream(&mut conn_state.stream, &network_msg).await {
+                    Ok(_) => {
+                        conn_state.last_used = std::time::Instant::now();
+                        conn_state.send_count += 1;
+                        connection_used = true;
+                        
+                        debug!("📤 Node {} -> Node {} 复用连接发送成功", 
+                               self.node_id, target_node_id);
                     }
-                }
-                Err(e) => {
-                    warn!("⚠️ Node {} Pompe连接到节点 {} 失败 (尝试 {}): {}", 
-                          self.node_id, target_node_id, attempt, e);
-                    last_error_msg = format!("连接失败: {}", e);
-                    
-                    if attempt < 3 {
-                        // 等待一段时间再重试
-                        tokio::time::sleep(tokio::time::Duration::from_millis(100 * attempt as u64)).await;
+                    Err(_) => {
+                        // 连接可能已断开，移除它
+                        connections.remove(&target_node_id);
+                        warn!("⚠️ Node {} -> Node {} 连接断开，将重新建立", 
+                              self.node_id, target_node_id);
                     }
                 }
             }
         }
+
+        // 如果没有可用连接，建立新连接
+        if !connection_used {
+            let target_addr = format!("node{}:{}", target_node_id, 20000 + target_node_id);
+            
+            match TcpStream::connect(&target_addr).await {
+                Ok(mut stream) => {
+                    // 发送消息
+                    match self.send_message_on_stream(&mut stream, &network_msg).await {
+                        Ok(_) => {
+                            // 🚨 关键：保存连接到池中
+                            let mut connections = self.connections.write().await;
+                            connections.insert(target_node_id, ConnectionState {
+                                stream,
+                                last_used: std::time::Instant::now(),
+                                send_count: 1,
+                            });
+                            
+                            debug!("📤 Node {} -> Node {} 新连接发送成功并缓存", 
+                                   self.node_id, target_node_id);
+                        }
+                        Err(e) => {
+                            return Err(format!("新连接发送失败: {}", e));
+                        }
+                    }
+                }
+                Err(e) => {
+                    error!("❌ Node {} 连接到节点 {} 失败: {}", 
+                          self.node_id, target_node_id, e);
+                    return Err(format!("连接失败: {}", e));
+                }
+            }
+        }
         
-        error!("❌ Node {} Pompe发送到节点 {} 最终失败，已重试3次", self.node_id, target_node_id);
-        Err(last_error_msg.into())
+        Ok(())
+
+        // // 🚨 重试机制：最多重试3次
+        // let mut last_error_msg = String::new();
+        // for attempt in 1..=3 {
+        //     match TcpStream::connect(&target_addr).await {
+        //         Ok(mut stream) => {
+        //             let serialized = serde_json::to_vec(&network_msg).map_err(|e| format!("序列化失败: {}", e))?;
+        //             let message_length = serialized.len() as u32;
+                    
+        //             match stream.write_all(&message_length.to_be_bytes()).await {
+        //                 Ok(_) => {
+        //                     match stream.write_all(&serialized).await {
+        //                         Ok(_) => {
+        //                             if let Err(e) = stream.flush().await {
+        //                                 warn!("⚠️ 刷新连接失败 {} (尝试 {}): {}", target_addr, attempt, e);
+        //                                 continue;
+        //                             }
+                                    
+        //                             debug!("📤 Node {} Pompe发送到节点 {} 成功 (尝试 {}, {}字节)", 
+        //                                    self.node_id, target_node_id, attempt, message_length);
+        //                             return Ok(());
+        //                         }
+        //                         Err(e) => {
+        //                             warn!("⚠️ 写入消息失败 {} (尝试 {}): {}", target_addr, attempt, e);
+        //                             last_error_msg = format!("写入消息失败: {}", e);
+        //                             continue;
+        //                         }
+        //                     }
+        //                 }
+        //                 Err(e) => {
+        //                     warn!("⚠️ 写入长度失败 {} (尝试 {}): {}", target_addr, attempt, e);
+        //                     last_error_msg = format!("写入长度失败: {}", e);
+        //                     continue;
+        //                 }
+        //             }
+        //         }
+        //         Err(e) => {
+        //             warn!("⚠️ Node {} Pompe连接到节点 {} 失败 (尝试 {}): {}", 
+        //                   self.node_id, target_node_id, attempt, e);
+        //             last_error_msg = format!("连接失败: {}", e);
+                    
+        //             if attempt < 3 {
+        //                 // 等待一段时间再重试
+        //                 tokio::time::sleep(tokio::time::Duration::from_millis(100 * attempt as u64)).await;
+        //             }
+        //         }
+        //     }
+        // }
+        
+        // error!("❌ Node {} Pompe发送到节点 {} 最终失败，已重试3次", self.node_id, target_node_id);
+        // Err(last_error_msg.into())
+    }
+
+    // 🚨 新增：在指定流上发送消息的辅助方法
+    async fn send_message_on_stream(&self, stream: &mut TcpStream, network_msg: &PompeNetworkMessage) -> Result<(), String> {
+        let serialized = serde_json::to_vec(network_msg).map_err(|e| format!("序列化失败: {}", e))?;
+        let message_length = serialized.len() as u32;
+        
+        stream.write_all(&message_length.to_be_bytes()).await
+            .map_err(|e| format!("写入长度失败: {}", e))?;
+        
+        stream.write_all(&serialized).await
+            .map_err(|e| format!("写入消息失败: {}", e))?;
+        
+        stream.flush().await
+            .map_err(|e| format!("刷新失败: {}", e))?;
+        
+        Ok(())
     }
 
     // 🚨 改进的广播：确保发送到所有节点，包括自己
     pub async fn broadcast(&self, message: PompeMessage) -> Result<(), String> {
+        let start_time = std::time::Instant::now();
         info!("📡 Node {} Pompe广播消息: {:?} 到 {} 个节点", 
               self.node_id, std::mem::discriminant(&message), self.peer_node_ids.len());
         
@@ -181,12 +306,20 @@ impl PompeNetwork {
         
         // 🚨 关键修复：向所有节点发送，包括自己
         for &target_node_id in &self.peer_node_ids {
-            info!("📤 [广播详情] Node {} -> Node {} 开始发送", self.node_id, target_node_id);
+            // info!("📤 [广播详情] Node {} -> Node {} 开始发送", self.node_id, target_node_id);
+
+            let send_start = std::time::Instant::now();
             
             match self.send_to_node(target_node_id, message.clone()).await {
                 Ok(_) => {
                     success_count += 1;
-                    info!("✅ [广播详情] Node {} -> Node {} 成功", self.node_id, target_node_id);
+                    let send_duration = send_start.elapsed();
+                
+                    if send_duration > std::time::Duration::from_millis(100) {
+                    warn!("⚠️ [广播慢] Node {} -> Node {} 耗时: {:?}", 
+                          self.node_id, target_node_id, send_duration);
+                    }
+                    // info!("✅ [广播详情] Node {} -> Node {} 成功", self.node_id, target_node_id);
                 }
                 Err(e) => {
                     error!("❌ [广播详情] Node {} -> Node {} 失败: {}", self.node_id, target_node_id, e);
@@ -195,8 +328,10 @@ impl PompeNetwork {
             }
         }
         
-        info!("📊 Node {} Pompe广播完成: {}/{} 成功", 
-              self.node_id, success_count, self.peer_node_ids.len());
+        let total_duration = start_time.elapsed();
+        info!("📊 [广播完成] Node {} 广播完成: {}/{} 成功, 总耗时: {:?}", 
+            self.node_id, success_count, self.peer_node_ids.len(), total_duration);
+    
               
         if !failure_details.is_empty() {
             warn!("⚠️ Node {} Pompe广播部分失败: {:?}", self.node_id, failure_details);
@@ -237,6 +372,19 @@ impl PompeNetwork {
                 sent.remove(&message_id);
             }
         }
+    }
+    // 🚨 新增：获取连接池状态
+    pub async fn get_connection_stats(&self) -> (usize, usize) {
+        let connections = self.connections.read().await;
+        let active_connections = connections.len();
+        let total_messages: usize = connections.values().map(|c| c.send_count).sum();
+        
+        if active_connections > 0 {
+            info!("🔗 [连接池状态] Node {} 活跃连接: {}, 总发送数: {}", 
+                  self.node_id, active_connections, total_messages);
+        }
+        
+        (active_connections, total_messages)
     }
 }
 
@@ -314,7 +462,7 @@ impl Clone for PompeNetwork {
             peer_node_ids: self.peer_node_ids.clone(),
             message_tx: self.message_tx.clone(),
             message_rx: Arc::clone(&self.message_rx),
-            connection_pool: Arc::clone(&self.connection_pool),
+            connections: Arc::clone(&self.connections),
             sent_messages: Arc::clone(&self.sent_messages),
         }
     }
