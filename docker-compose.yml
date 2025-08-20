@@ -345,7 +345,7 @@ services:
     environment:
       - CLIENT_ID=load_tester_001
       - CLIENT_MODE=load_test
-      - TARGET_TPS=300
+      - TARGET_TPS=${TARGET_TPS}
       - TEST_DURATION=300
       - RUST_LOG=info
     volumes:

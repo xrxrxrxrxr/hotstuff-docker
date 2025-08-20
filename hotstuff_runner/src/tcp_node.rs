@@ -20,6 +20,8 @@ use std::sync::{Arc, Mutex};
 use ed25519_dalek::SigningKey;
 // use log::info;
 use tracing::{info, warn};
+use crossbeam::queue::SegQueue;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 pub struct Node {
     verifying_key: VerifyingKey,
@@ -27,8 +29,8 @@ pub struct Node {
     node_id: usize,
     // 添加对应用的引用以支持交易提交
     // app_handle: Arc<Mutex<TestApp>>,
-    tx_queue: Arc<Mutex<Vec<String>>>,  // 新增交易队列
-    stats: Arc<Mutex<PerformanceStats>>,  // 新增性能统计
+    tx_queue: Arc<SegQueue<String>>,     
+    stats: Arc<PerformanceStats>,       
 }
 
 impl Node {
@@ -39,8 +41,8 @@ impl Node {
         network: TcpNetwork,    // 使用TcpNetwork替代NodeNetwork
         init_app_state_updates: AppStateUpdates,
         init_validator_set_updates: ValidatorSetUpdates,
-        tx_queue: Arc<Mutex<Vec<String>>>,  // 新增参数：外部交易队列
-        stats: Arc<Mutex<PerformanceStats>>,  // 新增性能统计
+        tx_queue: Arc<SegQueue<String>>,  // 新增参数：外部交易队列
+        stats: Arc<PerformanceStats>,  // 新增性能统计
     ) -> Self {
         let verifying_key: VerifyingKey = keypair.verifying_key().into();
         
@@ -205,20 +207,20 @@ impl Node {
                             
                             // 🎯 更新统计并获取多种TPS指标
                             let (end_to_end_tps, pure_consensus_tps, submission_tps, total_confirmed_txs, total_confirmed_blocks, is_first_commit) = {
-                                let mut stats = stats_for_commit.lock().unwrap();
+                                // let mut stats = stats_for_commit.lock().unwrap();
                                 
                                 // 检查是否是第一个确认
-                                let is_first = stats.get_confirmed_blocks() == 0;
+                                let is_first = stats_for_commit.get_confirmed_blocks() == 0;
                                 
                                 // 记录区块确认
-                                stats.record_block_committed(tx_count.into());
+                                stats_for_commit.record_block_committed(tx_count.into());
 
                                 (
-                                    stats.get_end_to_end_tps(),        // 端到端TPS
-                                    stats.get_pure_consensus_tps(),    // 纯共识TPS  
-                                    stats.get_submission_tps(),        // 提交TPS
-                                    stats.get_confirmed_transactions(),
-                                    stats.get_confirmed_blocks(),
+                                    stats_for_commit.get_end_to_end_tps(),        // 端到端TPS
+                                    stats_for_commit.get_pure_consensus_tps(),    // 纯共识TPS
+                                    stats_for_commit.get_submission_tps(),        // 提交TPS
+                                    stats_for_commit.get_confirmed_transactions(),
+                                    stats_for_commit.get_confirmed_blocks(),
                                     is_first
                                 )
                             };
@@ -233,8 +235,8 @@ impl Node {
 
                             // 🎯 每10个区块显示详细分析
                             if total_confirmed_blocks % 10 == 0 {
-                                let stats_guard = stats_for_commit.lock().unwrap();
-                                let recent_tps = stats_guard.get_recent_consensus_tps(30.0);
+                                // let stats_guard = stats_for_commit.lock().unwrap();
+                                let recent_tps = stats_for_commit.get_recent_consensus_tps(30.0);
                                 
                                 info!("📊 Node {} 共识统计报告 (第{}个区块):", node_id, total_confirmed_blocks);
                                 info!("  📥 提交TPS: {:.2} (客户端 → 队列)", submission_tps);
@@ -259,7 +261,7 @@ impl Node {
                                     }
                                 }
                                 
-                                drop(stats_guard);
+                                // drop(stats_guard);
                             }
                         },
                         Ok(None) => {
@@ -481,9 +483,9 @@ impl Node {
     /// 批量提交交易
     pub fn submit_transactions(&self, transactions: Vec<String>) {
         // 直接添加到共享队列
-        let mut queue = self.tx_queue.lock().unwrap();
+        // let mut queue = self.tx_queue.lock().unwrap();
         for tx in transactions {
-            queue.push(tx.clone());
+            self.tx_queue.push(tx.clone());
             info!("📝 提交交易到共享队列: {}", tx);
         }
 

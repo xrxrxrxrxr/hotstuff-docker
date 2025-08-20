@@ -23,6 +23,15 @@ tracing = "0.1"
 tracing-subscriber = "0.3"
 serde_json = "1.0"
 once_cell = "1.19"
+# Lock-free data structures
+crossbeam = "0.8"
+parking_lot = "0.12"
+
+# Collections
+indexmap = "1.9"
+
+# Error handling
+thiserror = "1.0"
 
 # [[bin]]
 # name = "hotstuff_runner"

@@ -1,5 +1,5 @@
 // hotstuff_runner/src/tcp_network.rs
-//! 基于TCP的真实网络实现，用于Docker多进程部署
+//! 基于TCP的真实网络实现，用于Docker多进程部署 - 无锁版本
 
 use hotstuff_rs::{
     networking::{
@@ -12,17 +12,17 @@ use hotstuff_rs::{
         crypto_primitives::VerifyingKey,
     },
 };
-use std::sync::{Arc, Mutex, mpsc};
+use std::sync::{Arc, mpsc};
 use std::collections::HashMap;
 use std::net::{TcpListener, TcpStream, SocketAddr};
 use std::io::{Read, Write};
 use std::thread;
-// use log::{debug, info, error, warn};
 use tracing::{debug, info, error, warn};
 use serde::{Serialize, Deserialize};
-// 确保导入正确版本的 Borsh traits
 use borsh::{BorshSerialize, BorshDeserialize};
 use hotstuff_rs::block_sync::messages::BlockSyncMessage;
+use crossbeam::channel::{unbounded, Receiver, Sender};
+use parking_lot::RwLock; // 更高效的读写锁
 
 // 定义消息类型枚举
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -37,15 +37,14 @@ enum MessageType {
     BlockSyncAdvertise,
     BlockSyncRequest,
     BlockSyncResponse,
-    // 添加其他消息类型
 }
 
-// 网络消息包装器 - 直接传输字节
+// 网络消息包装器
 #[derive(Serialize, Deserialize, Clone)]
 struct NetworkMessage {
-    from: Vec<u8>,  // VerifyingKey bytes
-    message_type: MessageType, // 消息类型标识
-    message_bytes: Vec<u8>, // Message 的原始字节（使用其他方式序列化）
+    from: Vec<u8>,
+    message_type: MessageType,
+    message_bytes: Vec<u8>,
 }
 
 // TCP网络配置
@@ -56,21 +55,67 @@ pub struct TcpNetworkConfig {
     pub my_key: VerifyingKey,
 }
 
-// TCP网络实现
+// 连接管理器 - 使用无锁数据结构
+struct ConnectionManager {
+    connections: Arc<RwLock<HashMap<VerifyingKey, TcpStream>>>,
+    config: TcpNetworkConfig,
+}
+
+impl ConnectionManager {
+    fn new(config: TcpNetworkConfig) -> Self {
+        Self {
+            connections: Arc::new(RwLock::new(HashMap::new())),
+            config,
+        }
+    }
+
+    fn get_or_create_connection(&self, peer_key: &VerifyingKey) -> Option<TcpStream> {
+        // 先尝试读锁获取现有连接
+        {
+            let connections = self.connections.read();
+            if let Some(stream) = connections.get(peer_key) {
+                // 尝试克隆连接 - 注意这里可能需要重新设计
+                if let Ok(cloned) = stream.try_clone() {
+                    return Some(cloned);
+                }
+            }
+        }
+
+        // 如果没有连接或连接失效，创建新连接
+        if let Some(peer_addr) = self.config.peer_addrs.get(peer_key) {
+            match TcpStream::connect(peer_addr) {
+                Ok(stream) => {
+                    if let Ok(cloned) = stream.try_clone() {
+                        // 使用写锁更新连接
+                        let mut connections = self.connections.write();
+                        connections.insert(*peer_key, stream);
+                        return Some(cloned);
+                    }
+                }
+                Err(e) => {
+                    error!("连接失败 {}: {}", peer_addr, e);
+                }
+            }
+        }
+        None
+    }
+}
+
+// TCP网络实现 - 使用无锁通道
 pub struct TcpNetwork {
     config: TcpNetworkConfig,
-    message_rx: Arc<Mutex<mpsc::Receiver<(VerifyingKey, Message)>>>,
-    message_tx: mpsc::Sender<(VerifyingKey, Message)>, // 添加这一行
-    peer_connections: Arc<Mutex<HashMap<VerifyingKey, TcpStream>>>,
+    message_rx: Receiver<(VerifyingKey, Message)>,
+    message_tx: Sender<(VerifyingKey, Message)>,
+    connection_manager: Arc<ConnectionManager>,
     _server_handle: thread::JoinHandle<()>,
 }
 
 impl TcpNetwork {
     pub fn new(config: TcpNetworkConfig) -> Result<Self, Box<dyn std::error::Error>> {
-        let (tx, rx) = mpsc::channel();
-        let message_rx = Arc::new(Mutex::new(rx));
-        let message_tx = tx.clone(); // 添加这一行
-        let peer_connections = Arc::new(Mutex::new(HashMap::new()));
+        // 使用 crossbeam 的无锁通道
+        let (tx, rx) = unbounded();
+        
+        let connection_manager = Arc::new(ConnectionManager::new(config.clone()));
         
         // 启动TCP服务器
         let server_config = config.clone();
@@ -84,12 +129,12 @@ impl TcpNetwork {
         // 等待服务器启动
         thread::sleep(std::time::Duration::from_millis(500));
 
-        // 连接到对等节点
+        // 初始化连接
         let mut network = Self {
             config: config.clone(),
-            message_rx,
-            message_tx, // 添加这一行
-            peer_connections,
+            message_rx: rx,
+            message_tx: tx,
+            connection_manager,
             _server_handle: server_handle,
         };
 
@@ -99,47 +144,26 @@ impl TcpNetwork {
     }
 
     fn connect_to_peers(&mut self) -> Result<(), Box<dyn std::error::Error>> {
-        let mut connections = self.peer_connections.lock().unwrap();
-        
         for (peer_key, peer_addr) in &self.config.peer_addrs {
             if *peer_key == self.config.my_key {
                 continue;
             }
 
-            info!("🔗 尝试连接对等节点: {:?} -> {}", 
+            info!("尝试连接对等节点: {:?} -> {}", 
                   peer_key.to_bytes()[0..4].to_vec(), peer_addr);
             
-            // 添加重试机制
-            let mut connected = false;
-            for attempt in 1..=3 {
-                match TcpStream::connect(peer_addr) {
-                    Ok(stream) => {
-                        info!("✅ 成功连接到对等节点: {} (尝试 {})", peer_addr, attempt);
-                        connections.insert(*peer_key, stream);
-                        connected = true;
-                        break;
-                    }
-                    Err(e) => {
-                        if attempt < 3 {
-                            warn!("⚠️ 连接尝试 {}/3 失败 {}: {}", attempt, peer_addr, e);
-                            thread::sleep(std::time::Duration::from_millis(1000));
-                        } else {
-                            warn!("⚠️ 所有连接尝试失败 {}: {} (节点可能还未启动)", peer_addr, e);
-                        }
-                    }
-                }
+            // 使用连接管理器建立初始连接
+            if self.connection_manager.get_or_create_connection(peer_key).is_some() {
+                info!("成功连接到对等节点: {}", peer_addr);
+            } else {
+                warn!("初始连接失败: {}", peer_addr);
             }
         }
         
-        info!("🌐 建立了 {} 个对等连接", connections.len());
         Ok(())
     }
 
-    
-
-    // 将 Message 转换为字节的辅助函数
     fn message_to_bytes(message: &Message) -> Result<(MessageType, Vec<u8>), Box<dyn std::error::Error>> {
-        // 根据消息类型判断 MessageType
         let message_type = match message {
             Message::ProgressMessage(progress_msg) => {
                 match progress_msg {
@@ -156,61 +180,31 @@ impl TcpNetwork {
             }
         };
         
-        // 使用 Borsh 序列化 - 使用静态方法调用
         let bytes = message.try_to_vec().map_err(|e| {
-            error!("❌ 序列化消息失败: {}", e);
+            error!("序列化消息失败: {}", e);
             format!("Message serialization failed: {}", e)
         })?;
         
-        // debug!("✅ 序列化消息成功: {} bytes, 类型: {:?}", bytes.len(), message_type);
         Ok((message_type, bytes))
     }
 
-    // 从字节重建 Message 的辅助函数
     fn bytes_to_message(_message_type: MessageType, bytes: &[u8]) -> Result<Message, Box<dyn std::error::Error>> {
-        // 使用 BorshDeserialize trait 方法
         let message = Message::try_from_slice(bytes).map_err(|e| {
-            error!("❌ 反序列化消息失败: {}", e);
+            error!("反序列化消息失败: {}", e);
             format!("Message deserialization failed: {}", e)
         })?;
-
-        // 根据消息类型判断 MessageType
-        let message_type = match &message {
-            Message::ProgressMessage(progress_msg) => {
-                match progress_msg {
-                    ProgressMessage::HotStuffMessage(_) => MessageType::HotStuff,
-                    ProgressMessage::PacemakerMessage(_) => MessageType::Pacemaker,
-                    ProgressMessage::BlockSyncAdvertiseMessage(_) => MessageType::BlockSyncAdvertise,
-                }
-            }
-            Message::BlockSyncMessage(sync_msg) => {
-                match sync_msg {
-                    BlockSyncMessage::BlockSyncRequest(_) => MessageType::BlockSyncRequest,
-                    BlockSyncMessage::BlockSyncResponse(_) => MessageType::BlockSyncResponse,
-                }
-            }
-        };
-
-        // debug!("✅ 反序列化消息成功: {} bytes，类型: {:?}", bytes.len(), message_type);
         Ok(message)
     }
 
     fn send_to_peer(&self, peer_key: &VerifyingKey, message: &Message) -> Result<(), Box<dyn std::error::Error>> {
-        // 🎯 添加这个检查
+        // 发送给自己的消息直接放入通道
         if *peer_key == self.config.my_key {
-            // debug!("📨 发送消息给自己");
-            if let Err(e) = self.message_tx.send((self.config.my_key, message.clone())) {
-                error!("❌ 发送给自己失败: {}", e);
-                return Err(e.into());
-            }
-            // debug!("✅ 成功发送消息给自己");
+            self.message_tx.send((self.config.my_key, message.clone()))?;
             return Ok(());
         }
 
-        // 获取对等节点的连接
-        let mut connections = self.peer_connections.lock().unwrap();
-        
-        if let Some(stream) = connections.get_mut(peer_key) {
+        // 获取连接并发送
+        if let Some(mut stream) = self.connection_manager.get_or_create_connection(peer_key) {
             let (message_type, message_bytes) = Self::message_to_bytes(message)?;
             
             let net_msg = NetworkMessage {
@@ -222,34 +216,14 @@ impl TcpNetwork {
             let serialized = bincode::serialize(&net_msg)?;
             let length = serialized.len() as u32;
             
-            // 发送长度前缀
+            // 发送消息
             stream.write_all(&length.to_be_bytes())?;
-            // 发送消息内容
             stream.write_all(&serialized)?;
             stream.flush()?;
             
-            // debug!("📤 发送消息到 {:?}", peer_key.to_bytes()[0..4].to_vec());
             Ok(())
         } else {
-            // 尝试重新连接
-            if let Some(peer_addr) = self.config.peer_addrs.get(peer_key) {
-                match TcpStream::connect(peer_addr) {
-                    Ok(stream) => {
-                        info!("🔄 重新连接到对等节点: {}", peer_addr);
-                        connections.insert(*peer_key, stream);
-                        // 递归调用发送
-                        drop(connections); // 释放锁
-                        return self.send_to_peer(peer_key, message);
-                    }
-                    Err(e) => {
-                        error!("❌ 重新连接失败 {}: {}", peer_addr, e);
-                        return Err(Box::new(e));
-                    }
-                }
-            } else {
-                error!("❌ 找不到对等节点地址: {:?}", peer_key.to_bytes()[0..4].to_vec());
-                return Err("未知对等节点".into());
-            }
+            Err("无法建立连接".into())
         }
     }
 }
@@ -258,150 +232,220 @@ impl Clone for TcpNetwork {
     fn clone(&self) -> Self {
         Self {
             config: self.config.clone(),
-            message_rx: self.message_rx.clone(),  // ✅ 共享同一个接收通道
+            message_rx: self.message_rx.clone(),
             message_tx: self.message_tx.clone(),
-            peer_connections: self.peer_connections.clone(),
-            _server_handle: thread::spawn(|| {}), // 注意：这不是真正的克隆，但满足类型要求
+            connection_manager: self.connection_manager.clone(),
+            _server_handle: thread::spawn(|| {}),
         }
+    }
+}
+
+impl TcpNetwork {
+    /// 批量广播消息到所有节点
+    pub fn broadcast_batch(&mut self, messages: Vec<Message>) -> Result<(), Box<dyn std::error::Error>> {
+        if messages.is_empty() {
+            return Ok(());
+        }
+
+        let total_nodes = self.config.peer_addrs.len();
+        let message_count = messages.len();
+        
+        debug!("开始批量广播 {} 个消息到 {} 个节点", message_count, total_nodes);
+
+        // 批量序列化所有消息
+        let mut serialized_messages = Vec::with_capacity(messages.len());
+        for message in &messages {
+            let (message_type, message_bytes) = Self::message_to_bytes(message)?;
+            
+            let net_msg = NetworkMessage {
+                from: self.config.my_key.to_bytes().to_vec(),
+                message_type,
+                message_bytes,
+            };
+            
+            let serialized = bincode::serialize(&net_msg)?;
+            serialized_messages.push(serialized);
+        }
+
+        let mut success_count = 0;
+        let mut total_bytes_sent = 0;
+
+        // 批量发送到每个节点
+        for peer_key in self.config.peer_addrs.keys() {
+            match self.send_batch_to_peer(peer_key, &serialized_messages) {
+                Ok(bytes_sent) => {
+                    success_count += 1;
+                    total_bytes_sent += bytes_sent;
+                }
+                Err(e) => {
+                    error!("批量发送失败到 {:?}: {}", peer_key.to_bytes()[0..4].to_vec(), e);
+                }
+            }
+        }
+
+        debug!("批量广播完成: {}/{} 节点成功, {} 字节总计", 
+               success_count, total_nodes, total_bytes_sent);
+        
+        Ok(())
+    }
+
+    /// 批量发送消息到单个节点
+    fn send_batch_to_peer(&self, peer_key: &VerifyingKey, serialized_messages: &[Vec<u8>]) 
+        -> Result<usize, Box<dyn std::error::Error>> {
+        
+        // 发送给自己的消息直接放入通道
+        if *peer_key == self.config.my_key {
+            // 对于发送给自己的消息，需要反序列化后放入接收队列
+            for serialized in serialized_messages {
+                if let Ok(net_msg) = bincode::deserialize::<NetworkMessage>(serialized) {
+                    if let Ok(message) = Self::bytes_to_message(net_msg.message_type, &net_msg.message_bytes) {
+                        let _ = self.message_tx.send((self.config.my_key, message));
+                    }
+                }
+            }
+            return Ok(serialized_messages.iter().map(|m| m.len()).sum());
+        }
+
+        // 获取连接
+        if let Some(mut stream) = self.connection_manager.get_or_create_connection(peer_key) {
+            let mut total_bytes = 0;
+
+            // 计算总数据大小，为批量写入做准备
+            let batch_size: usize = serialized_messages.iter()
+                .map(|msg| 4 + msg.len()) // 4字节长度前缀 + 消息内容
+                .sum();
+
+            // 创建批量数据缓冲区
+            let mut batch_buffer = Vec::with_capacity(batch_size);
+
+            // 将所有消息打包到一个缓冲区
+            for serialized in serialized_messages {
+                let length = serialized.len() as u32;
+                batch_buffer.extend_from_slice(&length.to_be_bytes());
+                batch_buffer.extend_from_slice(serialized);
+            }
+
+            // 一次性发送所有数据
+            stream.write_all(&batch_buffer)?;
+            stream.flush()?;
+
+            total_bytes = batch_buffer.len();
+            
+            debug!("批量发送到 {:?}: {} 消息, {} 字节", 
+                   peer_key.to_bytes()[0..4].to_vec(), 
+                   serialized_messages.len(), 
+                   total_bytes);
+
+            Ok(total_bytes)
+        } else {
+            Err("无法建立连接".into())
+        }
+    }
+
+    /// 发送多个消息到指定节点列表
+    pub fn send_batch_to_peers(&mut self, targets: Vec<(VerifyingKey, Message)>) 
+        -> Result<(), Box<dyn std::error::Error>> {
+        
+        if targets.is_empty() {
+            return Ok(());
+        }
+
+        // 按目标节点分组消息
+        let mut peer_messages: HashMap<VerifyingKey, Vec<Message>> = HashMap::new();
+        
+        for (peer_key, message) in targets {
+            peer_messages.entry(peer_key)
+                .or_insert_with(Vec::new)
+                .push(message);
+        }
+
+        let mut total_success = 0;
+        let total_peers = peer_messages.len();
+
+        // 对每个节点批量发送其消息
+        for (peer_key, messages) in peer_messages {
+            // 批量序列化该节点的所有消息
+            let mut serialized_messages = Vec::with_capacity(messages.len());
+            let mut serialization_failed = false;
+
+            for message in &messages {
+                match Self::message_to_bytes(&message) {
+                    Ok((message_type, message_bytes)) => {
+                        let net_msg = NetworkMessage {
+                            from: self.config.my_key.to_bytes().to_vec(),
+                            message_type,
+                            message_bytes,
+                        };
+                        
+                        match bincode::serialize(&net_msg) {
+                            Ok(serialized) => serialized_messages.push(serialized),
+                            Err(e) => {
+                                error!("序列化失败: {}", e);
+                                serialization_failed = true;
+                                break;
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        error!("消息转换失败: {}", e);
+                        serialization_failed = true;
+                        break;
+                    }
+                }
+            }
+
+            if !serialization_failed {
+                match self.send_batch_to_peer(&peer_key, &serialized_messages) {
+                    Ok(_) => total_success += 1,
+                    Err(e) => error!("批量发送到 {:?} 失败: {}", 
+                                   peer_key.to_bytes()[0..4].to_vec(), e),
+                }
+            }
+        }
+
+        debug!("批量发送完成: {}/{} 节点成功", total_success, total_peers);
+        Ok(())
     }
 }
 
 impl Network for TcpNetwork {
     fn init_validator_set(&mut self, validator_set: ValidatorSet) {
-        info!("🏗️ TCP节点 {:?} 初始化验证者集合: {} 个验证者", 
+        info!("TCP节点 {:?} 初始化验证者集合: {} 个验证者", 
               self.config.my_key.to_bytes()[0..4].to_vec(),
               validator_set.len());
     }
 
     fn update_validator_set(&mut self, _updates: ValidatorSetUpdates) {
-        info!("🔄 TCP节点 {:?} 更新验证者集合", 
+        info!("TCP节点 {:?} 更新验证者集合", 
               self.config.my_key.to_bytes()[0..4].to_vec());
     }
 
-    // fn broadcast(&mut self, message: Message) {
-    //     let peer_count = self.config.peer_addrs.len() - 1; // 排除自己
-    //     debug!("📡 TCP节点 {:?} 广播给 {} 个对等节点", 
-    //            self.config.my_key.to_bytes()[0..4].to_vec(), 
-    //            peer_count);
-        
-    //     let mut success_count = 0;
-    //     for peer_key in self.config.peer_addrs.keys() {
-    //         if *peer_key != self.config.my_key {
-    //             if let Err(e) = self.send_to_peer(peer_key, &message) {
-    //                 error!("广播发送失败到 {:?}: {}", peer_key.to_bytes()[0..4].to_vec(), e);
-    //             } else {
-    //                 success_count += 1;
-    //             }
-    //         }
-    //     }
-        
-    //     debug!("✅ 成功广播给 {}/{} 个对等节点", success_count, peer_count);
-    // }
-
     fn broadcast(&mut self, message: Message) {
-        let total_nodes = self.config.peer_addrs.len();
-        // debug!("📡 TCP节点 {:?} 广播给 {} 个节点（包括自己）", 
-            // self.config.my_key.to_bytes()[0..4].to_vec(), 
-            // total_nodes);
-        
-        let mut success_count = 0;
-        
-        // 🎯 修复：发送给所有节点，包括自己
-        for peer_key in self.config.peer_addrs.keys() {
-            // ❌ 删除这个条件检查：if *peer_key != self.config.my_key
-            if let Err(e) = self.send_to_peer(peer_key, &message) {
-                error!("广播发送失败到 {:?}: {}", peer_key.to_bytes()[0..4].to_vec(), e);
-            } else {
-                success_count += 1;
-            }
+        // 使用批量广播优化单消息广播
+        if let Err(e) = self.broadcast_batch(vec![message]) {
+            error!("广播失败: {}", e);
         }
-        
-        // debug!("✅ 成功广播给 {}/{} 个节点", success_count, total_nodes);
     }
 
     fn send(&mut self, peer: VerifyingKey, message: Message) {
-        // debug!("📨 TCP节点发送消息给 {:?}", peer.to_bytes()[0..4].to_vec());
-        
         if let Err(e) = self.send_to_peer(&peer, &message) {
-            error!("❌ 发送失败给 {:?}: {}", peer.to_bytes()[0..4].to_vec(), e);
+            error!("发送失败给 {:?}: {}", peer.to_bytes()[0..4].to_vec(), e);
         }
     }
 
-    // fn recv(&mut self) -> Option<(VerifyingKey, Message)> {
-    //     let receiver = self.message_rx.lock().unwrap();
-    //     match receiver.try_recv() {
-    //         Ok(msg) => {
-    //             debug!("📬 TCP节点接收消息来自 {:?}", msg.0.to_bytes()[0..4].to_vec());
-    //             Some(msg)
-    //         }
-    //         Err(mpsc::TryRecvError::Empty) => None,
-    //         Err(mpsc::TryRecvError::Disconnected) => {
-    //             error!("❌ TCP节点接收通道断开");
-    //             None
-    //         }
-    //     }
-    // }
-
     fn recv(&mut self) -> Option<(VerifyingKey, Message)> {
-        let receiver = self.message_rx.lock().unwrap();
-        match receiver.try_recv() {
-            Ok((sender_key, message)) => {
-                let sender_id = format!("{:?}", &sender_key.to_bytes()[0..4]);
-                // info!("🔄 [Network.recv] 从队列取出消息, 发送者: {}", sender_id);
-                
-                // 🔍 关键调试：检查Message内容
-                match &message {
-                    Message::ProgressMessage(progress_msg) => {
-                        match progress_msg {
-                            ProgressMessage::HotStuffMessage(hotstuff_msg) => {
-                                // info!("  📋 消息类型: HotStuffMessage");
-                                
-                                // 🚨 这里需要检查 HotStuffMessage 是否包含区块数据
-                                // 根据 HotStuff 库的具体实现，检查消息内容
-                                // debug!("  🔍 HotStuffMessage 内容检查...");
-                                
-                                // 如果是包含区块的消息，检查区块数据
-                                // 这里需要根据具体的 HotStuffMessage 结构来实现
-                            },
-                            ProgressMessage::PacemakerMessage(_) => {
-                                // info!("  📋 消息类型: PacemakerMessage");
-                            },
-                            ProgressMessage::BlockSyncAdvertiseMessage(_) => {
-                                // info!("  📋 消息类型: BlockSyncAdvertiseMessage");
-                            }
-                        }
-                    },
-                    Message::BlockSyncMessage(sync_msg) => {
-                        // info!("  📋 消息类型: BlockSyncMessage");
-                        match sync_msg {
-                            BlockSyncMessage::BlockSyncRequest(_) => {
-                                // info!("    具体类型: BlockSyncRequest");
-                            },
-                            BlockSyncMessage::BlockSyncResponse(_) => {
-                                // info!("    具体类型: BlockSyncResponse");
-                            }
-                        }
-                    }
-                }
-                
-                Some((sender_key, message))
-            }
-            Err(mpsc::TryRecvError::Empty) => None,
-            Err(mpsc::TryRecvError::Disconnected) => {
-                error!("❌ TCP接收通道断开");
-                None
-            }
-        }
+        // 使用非阻塞接收
+        self.message_rx.try_recv().ok()
     }
 }
 
-// TCP服务器运行函数
+// TCP服务器运行函数 - 使用无锁通道
 fn run_tcp_server(
     config: TcpNetworkConfig,
-    message_tx: mpsc::Sender<(VerifyingKey, Message)>,
+    message_tx: Sender<(VerifyingKey, Message)>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let listener = TcpListener::bind(config.my_addr)?;
-    info!("🎧 TCP服务器监听: {}", config.my_addr);
+    info!("TCP服务器监听: {}", config.my_addr);
     
     for stream in listener.incoming() {
         match stream {
@@ -422,13 +466,13 @@ fn run_tcp_server(
     Ok(())
 }
 
-// 处理客户端连接
+// 处理客户端连接 - 使用无锁通道
 fn handle_client(
     mut stream: TcpStream,
-    message_tx: mpsc::Sender<(VerifyingKey, Message)>,
+    message_tx: Sender<(VerifyingKey, Message)>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let peer_addr = stream.peer_addr()?;
-    debug!("📞 新连接来自: {}", peer_addr);
+    debug!("新连接来自: {}", peer_addr);
     
     loop {
         // 读取消息长度
@@ -447,7 +491,6 @@ fn handle_client(
         
         let length = u32::from_be_bytes(length_buf) as usize;
         
-        // 防止过大的消息
         if length > 10 * 1024 * 1024 { // 10MB limit
             error!("消息太大: {} bytes from {}", length, peer_addr);
             break;
@@ -475,19 +518,17 @@ fn handle_client(
         // 反序列化网络消息
         match bincode::deserialize::<NetworkMessage>(&message_buf) {
             Ok(net_msg) => {
-                // debug!("📨 收到网络消息 from {}, 消息类型: {:?}", peer_addr, net_msg.message_type);
-                
                 // 从字节重新构造 VerifyingKey
                 let sender_key: VerifyingKey = match net_msg.from.try_into() {
                     Ok(bytes_array) => match VerifyingKey::from_bytes(&bytes_array) {
                         Ok(key) => key,
                         Err(_) => {
-                            error!("❌ 无法从字节构造 VerifyingKey");
+                            error!("无法从字节构造 VerifyingKey");
                             continue;
                         }
                     },
                     Err(_) => {
-                        error!("❌ 字节数组长度不正确");
+                        error!("字节数组长度不正确");
                         continue;
                     }
                 };
@@ -495,72 +536,22 @@ fn handle_client(
                 // 反序列化 HotStuff 消息
                 match TcpNetwork::bytes_to_message(net_msg.message_type, &net_msg.message_bytes) {
                     Ok(hotstuff_message) => {
-                        // debug!("✅ 成功反序列化 HotStuff 消息");
-                        
-                        // 发送到消息队列
+                        // 使用无锁通道发送消息
                         if let Err(e) = message_tx.send((sender_key, hotstuff_message)) {
-                            error!("❌ 发送消息到队列失败: {}", e);
-                            break; // 如果队列断开，退出循环
+                            error!("发送消息到队列失败: {}", e);
+                            break;
                         }
                     }
                     Err(e) => {
-                        error!("❌ 反序列化 HotStuff 消息失败: {}", e);
-                        // 继续处理下一个消息，不退出
+                        error!("反序列化 HotStuff 消息失败: {}", e);
                     }
                 }
             }
             Err(e) => {
-                error!("❌ 反序列化网络消息失败 from {}: {}", peer_addr, e);
-                // 继续处理下一个消息，不退出
+                error!("反序列化网络消息失败 from {}: {}", peer_addr, e);
             }
         }
     }
     
-    // debug!("客户端连接处理结束: {}", peer_addr);
     Ok(())
 }
-
-// // 新增：网络包装器
-// #[derive(Clone)]
-// pub struct SharedTcpNetwork {
-//     inner: Arc<Mutex<TcpNetwork>>,
-// }
-
-// impl SharedTcpNetwork {
-//     pub fn new(config: TcpNetworkConfig) -> Result<Self, Box<dyn std::error::Error>> {
-//         let tcp_network = TcpNetwork::new(config)?;
-//         Ok(Self {
-//             inner: Arc::new(Mutex::new(tcp_network)),
-//         })
-//     }
-// }
-
-// impl Network for SharedTcpNetwork {
-//     fn init_validator_set(&mut self, validator_set: ValidatorSet) {
-//         self.inner.lock().unwrap().init_validator_set(validator_set);
-//     }
-
-//     fn update_validator_set(&mut self, updates: ValidatorSetUpdates) {
-//         self.inner.lock().unwrap().update_validator_set(updates);
-//     }
-
-//     fn broadcast(&mut self, message: Message) {
-//         self.inner.lock().unwrap().broadcast(message);
-//     }
-
-//     fn send(&mut self, peer: VerifyingKey, message: Message) {
-//         self.inner.lock().unwrap().send(peer, message);
-//     }
-
-//     fn recv(&mut self) -> Option<(VerifyingKey, Message)> {
-//         self.inner.lock().unwrap().recv()
-//     }
-// }
-
-// impl Clone for SharedTcpNetwork {
-//     fn clone(&self) -> Self {
-//         Self {
-//             inner: Arc::clone(&self.inner),
-//         }
-//     }
-// }

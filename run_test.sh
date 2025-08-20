@@ -93,11 +93,11 @@ case $CLIENT_MODE in
         echo "💡 交互式客户端已启动，你可以手动发送交易"
         ;;
     "load_test")
-        echo "📊 负载测试已开始 (400 TPS, 持续 5 分钟)"
+        echo "📊 负载测试已开始 ($TARGET_TPS TPS, 持续 5 分钟)"
         echo "   查看测试进度: docker-compose logs -f load_tester"
         ;;
     "perf_test")
-        echo "🚀 性能测试已开始 (400 TPS, 持续 5 分钟)"
+        echo "🚀 性能测试已开始 ($TARGET_TPS TPS, 持续 5 分钟)"
         echo "   查看测试进度: docker-compose logs -f perf_tester"
         ;;
 esac
