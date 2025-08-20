@@ -4,7 +4,7 @@
 set -e
 
 # 默认启动客户端
-CLIENT_MODE="interactive"
+CLIENT_MODE="load_test"
 
 # 检查命令行参数
 if [ "$1" = "load_test" ] || [ "$1" = "load" ]; then
@@ -117,16 +117,16 @@ echo "⏱️ 运行 30 秒后检查结果..."
 sleep 30
 
 echo "📊 检查 Pompe 处理结果..."
-docker-compose logs | grep "进入共识" | head -10
+docker-compose logs | grep "到HotStuff队列" | head -10
 
 echo "🎯 检查交易排序结果..."
 docker-compose logs | grep "pompe:.*:" | head -5
 
-echo "📈 显示节点统计..."
-for i in {0..3}; do
-    echo "--- Node $i 统计 ---"
-    docker-compose logs node$i | grep "Pompe状态" | tail -3
-done
+# echo "📈 显示节点统计..."
+# for i in {0..3}; do
+#     echo "--- Node $i 统计 ---"
+#     docker-compose logs node$i | grep "Pompe状态" | tail -3
+# done
 
 echo ""
 echo "🎉 Pompe 功能测试完成!"
