@@ -82,12 +82,21 @@ impl<K: KVStore> App<K> for TestApp {
         // 从无锁队列获取交易 - 无需锁定
         let mut transactions = Vec::new();
         let max_tx_count = 500; // 每个区块最多300个交易
+
+        // 先检查队列大小，避免无效循环
+        let queue_size = self.tx_queue.len();
+        let actual_max = std::cmp::min(max_tx_count, queue_size);
         
-        for _ in 0..max_tx_count {
-            if let Some(tx) = self.tx_queue.pop() {
-                transactions.push(tx);
-            } else {
-                break; // 队列为空
+        if actual_max > 0 {
+            transactions.reserve(actual_max); // 预分配容量
+            
+            // 使用更紧凑的循环
+            while transactions.len() < max_tx_count {
+                if let Some(tx) = self.tx_queue.pop() {
+                    transactions.push(tx);
+                } else {
+                    break;
+                }
             }
         }
 

@@ -22,7 +22,7 @@ use serde::{Serialize, Deserialize};
 use borsh::{BorshSerialize, BorshDeserialize};
 use hotstuff_rs::block_sync::messages::BlockSyncMessage;
 use crossbeam::channel::{unbounded, Receiver, Sender};
-use parking_lot::RwLock; // 更高效的读写锁
+use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard}; // 更高效的读写锁
 
 // 定义消息类型枚举
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -73,11 +73,8 @@ impl ConnectionManager {
         // 先尝试读锁获取现有连接
         {
             let connections = self.connections.read();
-            if let Some(stream) = connections.get(peer_key) {
-                // 尝试克隆连接 - 注意这里可能需要重新设计
-                if let Ok(cloned) = stream.try_clone() {
-                    return Some(cloned);
-                }
+            if let Some(existing_connection) = connections.get(peer_key).and_then(|s| s.try_clone().ok()) {
+                return Some(existing_connection);
             }
         }
 
@@ -427,16 +424,35 @@ impl Network for TcpNetwork {
         }
     }
 
+    // fn broadcast(&mut self, message: Message) {
+    //     // 回退到单消息发送
+    //     for peer_key in self.config.peer_addrs.keys() {
+    //         if let Err(e) = self.send_to_peer(peer_key, &message) {
+    //             error!("发送失败: {}", e);
+    //         }
+    //     }
+    // }
+
     fn send(&mut self, peer: VerifyingKey, message: Message) {
         if let Err(e) = self.send_to_peer(&peer, &message) {
             error!("发送失败给 {:?}: {}", peer.to_bytes()[0..4].to_vec(), e);
         }
     }
 
+    // fn recv(&mut self) -> Option<(VerifyingKey, Message)> {
+    //     // 使用非阻塞接收
+    //     self.message_rx.try_recv().ok()
+    // }
     fn recv(&mut self) -> Option<(VerifyingKey, Message)> {
-        // 使用非阻塞接收
-        self.message_rx.try_recv().ok()
+    match self.message_rx.try_recv() {
+        Ok(msg) => Some(msg),
+        Err(crossbeam::channel::TryRecvError::Empty) => None,
+        Err(crossbeam::channel::TryRecvError::Disconnected) => {
+            error!("接收通道已断开");
+            None
+        }
     }
+}
 }
 
 // TCP服务器运行函数 - 使用无锁通道
@@ -490,6 +506,7 @@ fn handle_client(
         }
         
         let length = u32::from_be_bytes(length_buf) as usize;
+        info!("******* 收到消息长度: {} bytes from {}", length, peer_addr);
         
         if length > 10 * 1024 * 1024 { // 10MB limit
             error!("消息太大: {} bytes from {}", length, peer_addr);

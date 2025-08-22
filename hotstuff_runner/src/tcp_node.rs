@@ -94,7 +94,7 @@ impl Node {
             .block_sync_trigger_timeout(Duration::new(60, 0))            // 官方: 60秒
             .progress_msg_buffer_capacity(BufferSize::new(1024))
             .epoch_length(EpochLength::new(50))                          // 官方: 50
-            .max_view_time(Duration::from_millis(2000))                  // 官方: 2000ms
+            .max_view_time(Duration::from_millis(3000))                  // 官方: 2000ms
             .log_events(false)                                           // 官方: false
             .build();
 

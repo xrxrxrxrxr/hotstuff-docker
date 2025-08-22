@@ -130,11 +130,42 @@ impl PerformanceStats {
     }
 
     /// 获取最近时间段的TPS
+    // pub fn get_recent_consensus_tps(&self, seconds: f64) -> f64 {
+    //     let confirmed = self.confirmed_transactions.load(Ordering::Relaxed);
+    //     let last_confirm = self.last_confirm_time_ms.load(Ordering::Relaxed);
+        
+    //     if confirmed == 0 || last_confirm == 0 {
+    //         return 0.0;
+    //     }
+        
+    //     let now_ms = SystemTime::now()
+    //         .duration_since(UNIX_EPOCH)
+    //         .unwrap()
+    //         .as_millis() as u64;
+            
+    //     let window_ms = (seconds * 1000.0) as u64;
+    //     let recent_period_start = now_ms.saturating_sub(window_ms);
+        
+    //     // 简化实现：假设交易在最近时间段内均匀分布
+    //     if last_confirm > recent_period_start {
+    //         let actual_window = now_ms.saturating_sub(last_confirm.min(recent_period_start));
+    //         if actual_window > 0 {
+    //             // 估算最近时间段的交易数量
+    //             let recent_ratio = (actual_window as f64) / (window_ms as f64);
+    //             let estimated_recent_txs = (confirmed as f64) * recent_ratio.min(1.0);
+    //             return estimated_recent_txs / (actual_window as f64 / 1000.0);
+    //         }
+    //     }
+        
+    //     0.0
+    // }
+
     pub fn get_recent_consensus_tps(&self, seconds: f64) -> f64 {
         let confirmed = self.confirmed_transactions.load(Ordering::Relaxed);
+        let first_confirm = self.first_confirm_time_ms.load(Ordering::Relaxed);
         let last_confirm = self.last_confirm_time_ms.load(Ordering::Relaxed);
         
-        if confirmed == 0 || last_confirm == 0 {
+        if confirmed == 0 || first_confirm == 0 || last_confirm == 0 {
             return 0.0;
         }
         
@@ -144,20 +175,33 @@ impl PerformanceStats {
             .as_millis() as u64;
             
         let window_ms = (seconds * 1000.0) as u64;
-        let recent_period_start = now_ms.saturating_sub(window_ms);
+        let window_start = now_ms.saturating_sub(window_ms);
         
-        // 简化实现：假设交易在最近时间段内均匀分布
-        if last_confirm > recent_period_start {
-            let actual_window = now_ms.saturating_sub(last_confirm.min(recent_period_start));
-            if actual_window > 0 {
-                // 估算最近时间段的交易数量
-                let recent_ratio = (actual_window as f64) / (window_ms as f64);
-                let estimated_recent_txs = (confirmed as f64) * recent_ratio.min(1.0);
-                return estimated_recent_txs / (actual_window as f64 / 1000.0);
-            }
+        // 如果所有确认都在窗口外，返回0
+        if last_confirm < window_start {
+            return 0.0;
         }
         
-        0.0
+        // 计算窗口内的有效时间范围
+        let effective_start = window_start.max(first_confirm);
+        let effective_end = last_confirm.min(now_ms);
+        
+        if effective_end <= effective_start {
+            return 0.0;
+        }
+        
+        // 估算窗口内的交易数（假设均匀分布）
+        let total_duration = last_confirm.saturating_sub(first_confirm);
+        if total_duration == 0 {
+            return confirmed as f64 / (seconds); // 如果只有瞬时确认
+        }
+        
+        let window_duration = effective_end - effective_start;
+        let ratio = window_duration as f64 / total_duration as f64;
+        let estimated_txs = (confirmed as f64) * ratio;
+        
+        // 返回TPS
+        estimated_txs / (window_duration as f64 / 1000.0)
     }
 
     /// 获取最近TPS（简化版本）

@@ -148,18 +148,19 @@ async fn handle_client_connection(
     shared_tx_queue: Arc<SegQueue<String>>, // 无锁队列
     stats: Arc<PerformanceStats>
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let mut length_buf = [0u8; 4];
+
     let mut tx_count = 0;
 
     info!("Node {} 新的客户端连接建立", node_id);
     
     loop {
+        let mut length_buf = [0u8; 4];
         match socket.read_exact(&mut length_buf).await {
             Ok(_) => {
                 let message_length = u32::from_be_bytes(length_buf) as usize;
-                
+
                 if message_length > 1024 * 1024 {
-                    warn!("Node {} 消息过大: {}, 断开连接", node_id, message_length);
+                    error!("Node {} 消息过大: {}, 断开连接", node_id, message_length);
                     break;
                 }
                 
@@ -176,7 +177,7 @@ async fn handle_client_connection(
                         shared_tx_queue.push(tx_string);
                         
                         // 限制队列大小
-                        if shared_tx_queue.len() > 10000 {
+                        if shared_tx_queue.len() > 100000 {
                             let _ = shared_tx_queue.pop(); // 移除最老的交易
                         }
                         
@@ -387,33 +388,33 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
 
         // 每50个循环进行深度系统检查
-        if loop_counter % 50 == 0 {
-            info!("Node {} 系统资源深度检查 (第{}次):", node_id, loop_counter);
+        // if loop_counter % 50 == 0 {
+        //     info!("Node {} 系统资源深度检查 (第{}次):", node_id, loop_counter);
             
-            let pid = std::process::id();
-            info!("  进程ID: {}", pid);
+        //     let pid = std::process::id();
+        //     info!("  进程ID: {}", pid);
             
-            if let Ok(status) = std::fs::read_to_string("/proc/self/status") {
-                for line in status.lines() {
-                    if line.starts_with("VmRSS:") || line.starts_with("VmSize:") {
-                        info!("  {}", line);
-                    }
-                }
-            }
+        //     if let Ok(status) = std::fs::read_to_string("/proc/self/status") {
+        //         for line in status.lines() {
+        //             if line.starts_with("VmRSS:") || line.starts_with("VmSize:") {
+        //                 info!("  {}", line);
+        //             }
+        //         }
+        //     }
             
-            if let Ok(fd_count) = std::fs::read_dir("/proc/self/fd") {
-                let fd_num = fd_count.count();
-                info!("  文件描述符: {}", fd_num);
+        //     if let Ok(fd_count) = std::fs::read_dir("/proc/self/fd") {
+        //         let fd_num = fd_count.count();
+        //         info!("  文件描述符: {}", fd_num);
                 
-                if fd_num > 100 {
-                    warn!("文件描述符数量异常: {}", fd_num);
-                }
-            }
+        //         if fd_num > 100 {
+        //             warn!("文件描述符数量异常: {}", fd_num);
+        //         }
+        //     }
             
-            info!("  运行时长: {} 秒", loop_counter * 5);
-            info!("  平均区块速度: {:.2} 区块/分钟", 
-                total_confirmed_blocks as f64 / (loop_counter * 5) as f64 * 60.0);
-        }
+        //     info!("  运行时长: {} 秒", loop_counter * 5);
+        //     info!("  平均区块速度: {:.2} 区块/分钟", 
+        //         total_confirmed_blocks as f64 / (loop_counter * 5) as f64 * 60.0);
+        // }
         
         // 检查队列积压情况
         if current_queue_size > 1000 {
