@@ -229,20 +229,64 @@ impl PersistentConnection {
         Ok(())
     }
 
-    pub async fn send_batch(&mut self, transactions: &[TestTransaction], client_id: &str) -> Result<usize, Box<dyn std::error::Error>> {
-        let mut sent_count = 0;
+    // pub async fn send_batch(&mut self, transactions: &[TestTransaction], client_id: &str) -> Result<usize, Box<dyn std::error::Error>> {
+    //     let mut sent_count = 0;
         
-        for transaction in transactions {
-            match self.send_transaction(transaction, client_id).await {
-                Ok(_) => sent_count += 1,
-                Err(e) => {
-                    warn!("发送交易 {} 到节点 {} 失败: {}", transaction.id, self.node_id, e);
-                    break;
-                }
+    //     for transaction in transactions {
+    //         match self.send_transaction(transaction, client_id).await {
+    //             Ok(_) => sent_count += 1,
+    //             Err(e) => {
+    //                 warn!("发送交易 {} 到节点 {} 失败: {}", transaction.id, self.node_id, e);
+    //                 break;
+    //             }
+    //         }
+    //     }
+    //     info!("已成功发送 {} 个交易到节点 {}", sent_count, self.node_id);
+    //     Ok(sent_count)
+    // }
+
+    // Pompe mode
+    pub async fn send_batch(&mut self, transactions: &[TestTransaction], client_id: &str) -> Result<usize, Box<dyn std::error::Error>> {
+        // 预先序列化所有交易到一个缓冲区
+        let mut batch_buffer = Vec::new();
+        let is_pompe = false; /////// 调试修改点
+
+        if is_pompe {
+            for transaction in transactions {
+                let client_message = ClientMessage {
+                    message_type: "pompe_transaction".to_string(),
+                    transaction: Some(transaction.clone()),
+                    client_id: client_id.to_string(),
+                };
+            
+                let serialized = serde_json::to_vec(&client_message)?;
+                let message_length = serialized.len() as u32;
+                info!("📦 ******* 客户端发送消息，长度: {} bytes", message_length);
+
+                batch_buffer.extend_from_slice(&message_length.to_be_bytes());
+                batch_buffer.extend_from_slice(&serialized);
+            }
+        } else {
+            for transaction in transactions {
+                let client_message = ClientMessage {
+                    message_type: "transaction".to_string(),
+                    transaction: Some(transaction.clone()),
+                    client_id: client_id.to_string(),
+                };
+            
+                let serialized = serde_json::to_vec(&client_message)?;
+                let message_length = serialized.len() as u32;
+                info!("📦 ******* 客户端发送消息，长度: {} bytes", message_length);
+
+                batch_buffer.extend_from_slice(&message_length.to_be_bytes());
+                batch_buffer.extend_from_slice(&serialized);
             }
         }
-        info!("已成功发送 {} 个交易到节点 {}", sent_count, self.node_id);
-        Ok(sent_count)
+        // 一次性发送所有数据
+        self.stream.write_all(&batch_buffer).await?;
+        self.stream.flush().await?;
+        
+        Ok(transactions.len())
     }
 
     pub fn uptime(&self) -> Duration {
@@ -292,85 +336,171 @@ impl ClientNode {
         Ok(())
     }
 
-    // ↓ 修改批量发送方法以支持 Pompe ↓
     pub async fn send_batch_to_node(&mut self, node_id: usize, transactions: Vec<TestTransaction>) -> Result<usize, Box<dyn std::error::Error>> {
         if let Some(connection) = self.connections.get_mut(&node_id) {
-            let mut sent_count = 0;
-            
-            for transaction in &transactions {
-                // ↓ 修改这里使用 Pompe 发送 ↓
-                match connection.send_pompe_transaction(transaction, &self.client_id).await {
-                    Ok(_) => sent_count += 1,
-                    Err(e) => {
-                        warn!("发送交易 {} 到节点 {} 失败: {}", transaction.id, node_id, e);
-                        break;
-                    }
+            match connection.send_batch(&transactions, &self.client_id).await {
+                Ok(sent_count) => {
+                    self.stats.record_sent(sent_count as u64);
+                    self.stats.record_confirmed(sent_count as u64); // 假设都成功
+                    Ok(sent_count)
                 }
-                // ↑ Pompe 发送结束 ↑
+                Err(e) => {
+                    error!("❌ 批量发送到节点 {} 失败: {}", node_id, e);
+                    self.stats.record_failed(transactions.len() as u64);
+                    
+                    // 尝试重新连接
+                    info!("🔄 尝试重新连接到节点 {}", node_id);
+                    match PersistentConnection::new(node_id).await {
+                        Ok(new_conn) => {
+                            self.connections.insert(node_id, new_conn);
+                            info!("✅ 重新连接到节点 {} 成功", node_id);
+                        }
+                        Err(reconnect_err) => {
+                            error!("❌ 重新连接到节点 {} 失败: {}", node_id, reconnect_err);
+                        }
+                    }
+                    
+                    Err(e)
+                }
             }
-            
-            if sent_count > 0 {
-                self.stats.record_sent(sent_count as u64);
-                self.stats.record_confirmed(sent_count as u64);
-                info!("✅ 成功发送 {} 个交易到节点 {}", sent_count, node_id);
-            }
-            
-            Ok(sent_count)
         } else {
             error!("❌ 没有到节点 {} 的连接", node_id);
             Err("没有连接".into())
         }
     }
+
+    // ↓ 修改批量发送方法以支持 Pompe ↓
+    // pub async fn send_batch_to_node(&mut self, node_id: usize, transactions: Vec<TestTransaction>) -> Result<usize, Box<dyn std::error::Error>> {
+    //     if let Some(connection) = self.connections.get_mut(&node_id) {
+    //         let mut sent_count = 0;
+            
+    //         for transaction in &transactions {
+    //             // ↓ 修改这里使用 Pompe 发送 ↓
+    //             match connection.send_pompe_transaction(transaction, &self.client_id).await {
+    //                 Ok(_) => sent_count += 1,
+    //                 Err(e) => {
+    //                     warn!("发送交易 {} 到节点 {} 失败: {}", transaction.id, node_id, e);
+    //                     break;
+    //                 }
+    //             }
+    //             // ↑ Pompe 发送结束 ↑
+    //         }
+            
+    //         if sent_count > 0 {
+    //             self.stats.record_sent(sent_count as u64);
+    //             self.stats.record_confirmed(sent_count as u64);
+    //             info!("✅ 成功发送 {} 个交易到节点 {}", sent_count, node_id);
+    //         }
+            
+    //         Ok(sent_count)
+    //     } else {
+    //         error!("❌ 没有到节点 {} 的连接", node_id);
+    //         Err("没有连接".into())
+    //     }
+    // }
     // ↑ 批量发送修改结束 ↑
 
     // 高效的负载测试 - 使用批量发送
+    // pub async fn run_load_test(&mut self, config: LoadTestConfig, node_least_id: usize, node_num: usize) {
+    //     info!("🚀 开始高效负载测试 - TPS目标: {}, 持续时间: {}秒", 
+    //           config.target_tps, config.duration_secs);
+
+    //     // 建立连接
+    //     if let Err(e) = self.establish_connections(node_least_id, node_num).await {
+    //         error!("❌ 建立连接失败: {}", e);
+    //         return;
+    //     }
+
+    //     let batch_size = std::cmp::max(1, config.target_tps / 10); // 每批次大小
+    //     let batch_interval = Duration::from_secs_f64(batch_size as f64 / config.target_tps as f64);
+    //     let end_time = Instant::now() + Duration::from_secs(config.duration_secs);
+
+    //     let mut total_sent = 0;
+    //     let mut batch_counter = 0;
+
+    //     while Instant::now() < end_time {
+    //         // 生成一批交易
+    //         let transactions = self.tx_generator.generate_batch(batch_size as usize);
+            
+    //         // 轮询发送到不同节点
+    //         let target_node = (batch_counter % node_num) + node_least_id;
+            
+    //         match self.send_batch_to_node(target_node, transactions).await {
+    //             Ok(sent_count) => {
+    //                 total_sent += sent_count;
+    //                 info!("📦 批次 {} 发送 {} 个交易到节点 {}", batch_counter + 1, sent_count, target_node);
+    //             }
+    //             Err(e) => {
+    //                 warn!("❌ 批次 {} 发送失败: {}", batch_counter + 1, e);
+    //             }
+    //         }
+
+    //         batch_counter += 1;
+
+    //         // 每1000个交易输出一次统计
+    //         if total_sent >= 1000 && total_sent % 1000 == 0 {
+    //             self.stats.log_summary();
+    //         }
+
+    //         tokio::time::sleep(batch_interval).await;
+    //     }
+
+    //     info!("🏁 高效负载测试完成，总计发送 {} 个交易", total_sent);
+    //     self.stats.log_summary();
+    // }
+
+    // 关键修改：对每个节点并发发送交易
     pub async fn run_load_test(&mut self, config: LoadTestConfig, node_least_id: usize, node_num: usize) {
-        info!("🚀 开始高效负载测试 - TPS目标: {}, 持续时间: {}秒", 
-              config.target_tps, config.duration_secs);
+        info!("开始负载测试 - TPS目标: {}, 持续时间: {}秒", 
+            config.target_tps, config.duration_secs);
 
         // 建立连接
         if let Err(e) = self.establish_connections(node_least_id, node_num).await {
-            error!("❌ 建立连接失败: {}", e);
+            error!("建立连接失败: {}", e);
             return;
         }
 
-        let batch_size = std::cmp::max(1, config.target_tps / 10); // 每批次大小
-        let batch_interval = Duration::from_secs_f64(batch_size as f64 / config.target_tps as f64);
+        let batch_size = std::cmp::max(100, config.target_tps / 5);
+        let batch_interval = Duration::from_millis(200);
         let end_time = Instant::now() + Duration::from_secs(config.duration_secs);
+        // let batch_size = std::cmp::max(50, config.target_tps / 10); // 每批次大小
+    //     let batch_interval = Duration::from_secs_f64(batch_size as f64 / config.target_tps as f64);
+    //     let end_time = Instant::now() + Duration::from_secs(config.duration_secs);
+
 
         let mut total_sent = 0;
         let mut batch_counter = 0;
 
         while Instant::now() < end_time {
-            // 生成一批交易
-            let transactions = self.tx_generator.generate_batch(batch_size as usize);
-            
-            // 轮询发送到不同节点
-            let target_node = (batch_counter % node_num) + node_least_id;
-            
-            match self.send_batch_to_node(target_node, transactions).await {
-                Ok(sent_count) => {
-                    total_sent += sent_count;
-                    info!("📦 批次 {} 发送 {} 个交易到节点 {}", batch_counter + 1, sent_count, target_node);
-                }
-                Err(e) => {
-                    warn!("❌ 批次 {} 发送失败: {}", batch_counter + 1, e);
+            // 为每个节点顺序发送，避免并发借用问题
+            for node_offset in 0..node_num {
+                let node_id = node_least_id + node_offset;
+                let transactions = self.tx_generator.generate_batch(batch_size as usize);
+                
+                match self.send_batch_to_node(node_id, transactions).await {
+                    Ok(sent_count) => {
+                        total_sent += sent_count;
+                        info!("批次 {} 发送 {} 个交易到节点 {}", batch_counter + 1, sent_count, node_id);
+                    }
+                    Err(e) => {
+                        warn!("批次 {} 发送到节点 {} 失败: {}", batch_counter + 1, node_id, e);
+                    }
                 }
             }
 
             batch_counter += 1;
 
-            // 每1000个交易输出一次统计
-            if total_sent >= 1000 && total_sent % 1000 == 0 {
+            if total_sent >= 5000 && total_sent % 5000 == 0 {
                 self.stats.log_summary();
             }
 
             tokio::time::sleep(batch_interval).await;
         }
 
-        info!("🏁 高效负载测试完成，总计发送 {} 个交易", total_sent);
+        info!("负载测试完成，总计发送 {} 个交易", total_sent);
         self.stats.log_summary();
     }
+
 
     // 高效的交互模式 - 保持连接
     pub async fn run_interactive_mode(&mut self, node_least_id: usize, node_num: usize) {

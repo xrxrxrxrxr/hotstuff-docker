@@ -26,6 +26,7 @@ once_cell = "1.19"
 futures = "0.3.31"
 dashmap = "5.5"
 crossbeam = "0.8"
+parking_lot = "0.12"
 
 # [[bin]]
 # name = "hotstuff_runner"
