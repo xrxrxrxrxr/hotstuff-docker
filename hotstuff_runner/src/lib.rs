@@ -15,8 +15,7 @@ pub use app::TestApp;
 pub use network::{TestNetwork, NodeNetwork};
 pub use kv_store::MemoryKVStore;
 pub use stats::PerformanceStats;
-pub use diagnose::PompeDiagnostic;
-
+pub mod detailed_performance_metrics;
 
 use std::io::Write;
 
