@@ -886,6 +886,33 @@ impl PompeManager {
         
         info!("🚀 [Ordering2-2-LockFree] Node {} 处理请求: {}", node_id, &tx_hash[0..8]);
 
+        // 检查stable_point (localAcceptThresholdTS)
+        let current_stable_point = {
+            let stable_point = state.stable_point.read().unwrap();
+            *stable_point
+        };
+        
+        if median_timestamp < current_stable_point {
+            error!("❌ [Ordering2-Stable检查] Node {} 网络异常检测: median_timestamp({}) < stable_point({})", 
+                node_id, median_timestamp, current_stable_point);
+            
+            // 发送错误响应
+            let error_response = PompeMessage::Ordering2Response {
+                tx_hash,
+                timestamp: 0, // 使用0表示错误
+                node_id,
+            };
+            
+            let network_clone = Arc::clone(network);
+            tokio::spawn(async move {
+                if let Err(e) = network_clone.send_to_node(initiator_node_id, error_response).await {
+                    error!("❌ [Ordering2-错误响应] 发送失败: {}", e);
+                }
+            });
+            
+            return;
+        }
+
         // 🚨 快速获取交易：使用DashMap的原子操作
         let transaction = match state.transaction_store.get(&tx_hash) {
             Some(tx_ref) => tx_ref.clone(),

@@ -23,7 +23,7 @@ use serde::{Serialize, Deserialize};
 use borsh::{BorshSerialize, BorshDeserialize};
 use hotstuff_rs::block_sync::messages::BlockSyncMessage;
 use crossbeam::channel::{unbounded, Receiver, Sender};
-use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard}; // 更高效的读写锁
+use parking_lot::RwLock; // 更高效的读写锁
 
 // 定义消息类型枚举
 #[derive(Serialize, Deserialize, Clone, Debug)]
