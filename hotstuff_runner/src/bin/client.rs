@@ -249,7 +249,7 @@ impl PersistentConnection {
     pub async fn send_batch(&mut self, transactions: &[TestTransaction], client_id: &str) -> Result<usize, Box<dyn std::error::Error>> {
         // 预先序列化所有交易到一个缓冲区
         let mut batch_buffer = Vec::new();
-        let is_pompe = false; /////// 调试修改点
+        let is_pompe = true; /////// 调试修改点
 
         if is_pompe {
             for transaction in transactions {
