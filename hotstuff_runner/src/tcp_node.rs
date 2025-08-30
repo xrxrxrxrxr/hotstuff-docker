@@ -14,12 +14,14 @@ use crate::{
     tcp_network::TcpNetwork,
     kv_store::MemoryKVStore,
     stats::PerformanceStats,
+    event::SystemEvent,
 };
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use std::sync::{Arc};
 use ed25519_dalek::SigningKey;
+use tokio::sync::broadcast;
 // use log::info;
-use tracing::{info, warn};
+use tracing::{info, warn, error};
 use crossbeam::queue::SegQueue;
 use std::sync::atomic::{AtomicU64, Ordering};
 
@@ -31,6 +33,7 @@ pub struct Node {
     // app_handle: Arc<Mutex<TestApp>>,
     tx_queue: Arc<SegQueue<String>>,     
     stats: Arc<PerformanceStats>,       
+    event_tx: broadcast::Sender<SystemEvent>, // 新增：事件发送器
 }
 
 impl Node {
@@ -43,6 +46,7 @@ impl Node {
         init_validator_set_updates: ValidatorSetUpdates,
         tx_queue: Arc<SegQueue<String>>,  // 新增参数：外部交易队列
         stats: Arc<PerformanceStats>,  // 新增性能统计
+        event_tx: broadcast::Sender<SystemEvent>, // /* 🎯 */
     ) -> Self {
         let verifying_key: VerifyingKey = keypair.verifying_key().into();
         
@@ -98,6 +102,7 @@ impl Node {
             .log_events(false)                                           // 官方: false
             .build();
 
+        let event_tx_for_commit = event_tx.clone(); // 克隆事件发送器
         let kv_clone_commit = kv_store.clone();
         // let kv_clone_insert = kv_store.clone();
         // let kv_clone_receive = kv_store.clone();
@@ -233,6 +238,24 @@ impl Node {
                             );
                             crate::log_node(node_id, log::Level::Info, &msg);
 
+                            // 🔥 关键：发送 HotStuff 提交事件，触发客户端 Consensus 响应
+                            // 提取交易 ID（关键：用于客户端响应）
+                            let extract_transaction_ids_from_block_start = Instant::now();
+                            let tx_ids: Vec<u64> = extract_transaction_ids_from_block(&block)
+                                .into_iter()
+                                .filter(|tx_id| *tx_id % 100 == 0)// 只发送tx_id%100==0的交易
+                                .collect();
+                            info!("!!!!! 提取tx_ids耗时: {} ms", extract_transaction_ids_from_block_start.elapsed().as_millis());
+                            if !tx_ids.is_empty() {
+                                if let Err(e) = event_tx_for_commit.send(SystemEvent::HotStuffCommitted {
+                                    block_height: height,
+                                    tx_ids: tx_ids.clone(),
+                                }) {
+                                    error!("❌ Node {} 发送 HotStuff 提交事件失败: {}", node_id, e);
+                                }
+                            }
+                            // 🔥 关键：发送 HotStuff 提交事件，触发客户端 Consensus 响应
+
                             // 🎯 每10个区块显示详细分析
                             if total_confirmed_blocks % 10 == 0 {
                                 // let stats_guard = stats_for_commit.lock().unwrap();
@@ -365,64 +388,6 @@ impl Node {
                     crate::log_node(node_id, log::Level::Info, &msg);
                 }
             })
-            // === 网络和同步事件 ===
-            // .on_insert_block({
-            //     move |event| {
-            //         let block_hash = event.block.hash;
-            //         let tx_count = if event.block.data.vec().len() >= 2 {
-            //             let tx_count_bytes = event.block.data.vec()[1].bytes();
-            //             if tx_count_bytes.len() >= 4 {
-            //                 let mut bytes = [0u8; 4];
-            //                 bytes.copy_from_slice(&tx_count_bytes[0..4]);
-            //                         u32::from_le_bytes(bytes)
-            //                     } else {
-            //                         0
-            //                     }
-            //                 } else {
-            //                     0
-            //                 };
-            //         let msg = format!(
-            //                     "🔗 Node {} 插入区块事件 - 交易数: {}, 哈希: {:?}",
-            //                     node_id, tx_count, &block_hash
-            //                 );
-            //                 crate::log_node(node_id, log::Level::Info, &msg);
-                    
-            //         // 从 KV store 读取区块内容
-            //         match kv_clone_insert.block(&block_hash) {
-            //             Ok(Some(block)) => {
-            //                 let height = block.height.int();
-            //                 let data_items = block.data.len();
-                            
-            //                 // 解析交易数量
-            //                 let tx_count = if block.data.vec().len() >= 2 {
-            //                 let tx_count_bytes = block.data.vec()[1].bytes();
-            //                 if tx_count_bytes.len() >= 4 {
-            //                     let mut bytes = [0u8; 4];
-            //                     bytes.copy_from_slice(&tx_count_bytes[0..4]);
-            //                             u32::from_le_bytes(bytes)
-            //                         } else {
-            //                             0
-            //                         }
-            //                     } else {
-            //                         0
-            //                     };
-                             
-            //                 let msg = format!(
-            //                     "🔗 Node {} 插入区块kv_store - Height: {}, 交易数: {}, 数据项: {}, 哈希: {:?}",
-            //                     node_id, height, tx_count, data_items.int(), &block_hash
-            //                 );
-            //                 crate::log_node(node_id, log::Level::Info, &msg);
-            //             },
-            //             _ => {
-            //                 let msg = format!(
-            //                     "🔗 Node {} 插入区块kv_store - 哈希: {:?} (无法读取详情)",
-            //                     node_id, &block_hash.bytes()[0..8]
-            //                 );
-            //                 crate::log_node(node_id, log::Level::Warn, &msg);
-            //             }
-            //         }
-            //     }
-            // })
             .on_insert_block({
                 move |event| {
                     let msg = format!(
@@ -446,6 +411,7 @@ impl Node {
             // app_handle,  // 保存应用引用
             tx_queue,  // 保存交易队列引用
             stats,
+            event_tx, // 保存事件发送器引用
         }
     }
 
@@ -497,4 +463,130 @@ impl Node {
         // crate::log_node(self.node_id, log::Level::Info, 
         //                           &format!("📝 接收 {} 个交易", transactions.len()));
     }
+}
+
+// 🔥 关键函数：从区块中提取交易 ID
+// 🔥 改进交易 ID 提取逻辑，添加调试信息
+fn extract_transaction_ids_from_block(block: &Block) -> Vec<u64> {
+    let mut tx_ids = Vec::new();
+    
+    // debug!("🔍 [调试] 提取交易 ID，区块数据长度: {}", block.data.vec().len());
+    
+    // 🔥 关键修改：遍历所有数据项，而不只是第一个
+    for (index, data_item) in block.data.vec().iter().enumerate() {
+        let tx_data_bytes = data_item.bytes();
+        // debug!("🔍 [调试] 数据项 {} 字节长度: {}", index, tx_data_bytes.len());
+        
+        // 跳过太短的数据项（如8字节的空白数据）
+        if tx_data_bytes.len() <= 10 {
+            // debug!("🔍 [调试] 数据项 {} 太短，跳过", index);
+            continue;
+        }
+        
+        if let Ok(tx_data_str) = std::str::from_utf8(tx_data_bytes) {
+            let preview = &tx_data_str[0..std::cmp::min(100, tx_data_str.len())];
+            // debug!("🔍 [调试] 数据项 {} 字符串: {}", index, preview);
+            
+            // 跳过空白或无效数据
+            if tx_data_str.trim().is_empty() {
+                // debug!("🔍 [调试] 数据项 {} 为空白，跳过", index);
+                continue;
+            }
+            
+            // 🔥 解析这个数据项中的交易
+            let item_tx_ids = parse_transaction_data_item(tx_data_str, index);
+            tx_ids.extend(item_tx_ids);
+            
+        } else {
+            // debug!("🔍 [调试] 数据项 {} 不是有效的 UTF-8", index);
+        }
+    }
+    
+    // debug!("🔍 [调试] 最终提取到 {} 个交易 ID: {:?}", tx_ids.len(), 
+        //   &tx_ids[0..std::cmp::min(5, tx_ids.len())]);
+    tx_ids
+}
+
+// 🔥 新增：解析单个数据项中的交易
+fn parse_transaction_data_item(tx_data_str: &str, data_index: usize) -> Vec<u64> {
+    let mut tx_ids = Vec::new();
+    
+    // 方法1: 按行分割处理多个交易
+    let lines: Vec<&str> = tx_data_str.lines().collect();
+    if lines.len() > 1 {
+        // debug!("🔍 [调试] 数据项 {} 包含 {} 行", data_index, lines.len());
+        
+        for (line_idx, line) in lines.iter().enumerate() {
+            if line.trim().is_empty() {
+                continue;
+            }
+            
+            if let Some(tx_id) = parse_transaction_string(line) {
+                tx_ids.push(tx_id);
+                // debug!("🔍 [调试] 数据项 {} 行 {} 解析到交易 ID: {} 从: {}", 
+                    //   data_index, line_idx, tx_id, line);
+            } else {
+                // warn!("⚠️ [调试] 数据项 {} 行 {} 无法解析: {}", data_index, line_idx, line);
+            }
+        }
+    } 
+    // 方法2: 尝试作为单个交易字符串解析
+    else if let Some(tx_id) = parse_transaction_string(tx_data_str) {
+        tx_ids.push(tx_id);
+        // debug!("🔍 [调试] 数据项 {} 解析到单个交易 ID: {}", data_index, tx_id);
+    }
+    // 方法3: 尝试作为JSON数组解析
+    else if let Ok(transactions) = serde_json::from_str::<Vec<String>>(tx_data_str) {
+        // debug!("🔍 [调试] 数据项 {} JSON数组解析，包含 {} 个交易", data_index, transactions.len());
+        
+        for tx_str in transactions {
+            if let Some(tx_id) = parse_transaction_string(&tx_str) {
+                tx_ids.push(tx_id);
+            }
+        }
+    } 
+    // 方法4: 如果包含逗号，尝试逗号分割
+    else if tx_data_str.contains(',') {
+        // debug!("🔍 [调试] 数据项 {} 尝试逗号分割", data_index);
+        
+        for part in tx_data_str.split(',') {
+            if let Some(tx_id) = parse_transaction_string(part.trim()) {
+                tx_ids.push(tx_id);
+            }
+        }
+    }
+    else {
+        // warn!("⚠️ [调试] 数据项 {} 无法识别格式", data_index);
+    }
+    
+    // debug!("🔍 [调试] 数据项 {} 提取到 {} 个交易 ID", data_index, tx_ids.len());
+    tx_ids
+}
+
+// 保持原有的 parse_transaction_string 函数
+fn parse_transaction_string(tx_str: &str) -> Option<u64> {
+    let trimmed = tx_str.trim();
+    
+    // 格式1: pompe:timestamp:tx_id:from->to:amount
+    let parts: Vec<&str> = trimmed.split(':').collect();
+    if parts.len() >= 4 && parts[0] == "pompe" {
+        return parts[2].parse::<u64>().ok();
+    }
+    
+    // 格式2: tx_id:from->to:amount (常规交易)
+    if parts.len() >= 3 {
+        return parts[0].parse::<u64>().ok();
+    }
+    
+    // 格式3: "tx_123"
+    if trimmed.starts_with("tx_") {
+        return trimmed[3..].parse::<u64>().ok();
+    }
+    
+    // 格式4: 直接是数字
+    if let Ok(id) = trimmed.parse::<u64>() {
+        return Some(id);
+    }
+    
+    None
 }

@@ -9,12 +9,7 @@ use hotstuff_rs::{
     },
 };
 use hotstuff_runner::{
-    tcp_node::Node,  // Changed from tcp_node to node
-    tcp_network::{TcpNetworkConfig, TcpNetwork},
-    app::TestApp,
-    stats::PerformanceStats,
-    pompe::{PompeManager, load_pompe_config, LockFreeHotStuffAdapter},
-    detailed_performance_metrics::PompeQueueMetrics,
+    app::TestApp, detailed_performance_metrics::PompeQueueMetrics, event::{self, ResponseCommand, SystemEvent, TestTransaction}, pompe::{load_pompe_config, LockFreeHotStuffAdapter, PompeManager}, stats::PerformanceStats, tcp_network::{TcpNetwork, TcpNetworkConfig}, tcp_node::Node
 };
 use std::sync::Arc;
 use tokio::sync::{mpsc, broadcast, Notify};
@@ -34,48 +29,12 @@ use std::sync::atomic::{AtomicUsize, AtomicU64, Ordering};
 use crossbeam::queue::SegQueue;
 use std::time::Instant;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct TestTransaction {
-    pub id: u64,
-    pub from: String,
-    pub to: String,
-    pub amount: u64,
-    pub timestamp: u64,
-    pub nonce: u64,
-}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ClientMessage {
     pub message_type: String,
     pub transaction: Option<TestTransaction>,
     pub client_id: String,
-}
-
-// Completely lock-free event system
-#[derive(Debug, Clone)]
-pub enum SystemEvent {
-    TransactionReceived {
-        transaction: TestTransaction,
-        is_pompe: bool,
-    },
-    TransactionProcessed {
-        count: usize,
-    },
-    PompeOutputReady {
-        transactions: Vec<String>,
-    },
-    HotStuffConsumed {
-        count: usize,
-    },
-    NetworkStatsUpdate {
-        connections: usize,
-        messages: usize,
-    },
-    PerformanceUpdate {
-        submission_tps: f64,
-        consensus_tps: f64,
-        pompe_tps: f64,
-    },
 }
 
 // Completely lock-free statistical counters
@@ -271,59 +230,116 @@ async fn start_lockfree_client_listener(
     regular_tx_processor: Arc<RegularTransactionProcessor>,
     lockfree_stats: Arc<LockFreeStats>,
     node_stats: Arc<PerformanceStats>,
+    event_for_response_tx: broadcast::Sender<SystemEvent>,
 ) -> Result<(), String> {
     let addr = format!("0.0.0.0:{}", port);
     let listener = TcpListener::bind(&addr).await.map_err(|e| format!("Bind failed: {}", e))?;
     
     info!("[Lock-free] Node {} listening for client connections: {}", node_id, addr);
     
-    loop {
-        match listener.accept().await {
-            Ok((mut socket, _client_addr)) => {
-                let event_tx_clone = event_tx.clone();
-                let pompe_tx_processor_clone = Arc::clone(&pompe_tx_processor);
-                let regular_tx_processor_clone = Arc::clone(&regular_tx_processor);
-                let lockfree_stats_clone = Arc::clone(&lockfree_stats);
-                let node_stats_clone = Arc::clone(&node_stats);
-                
-                tokio::spawn(async move {
-                    if let Err(e) = handle_lockfree_client_connection(
-                        node_id, 
-                        &mut socket, 
-                        event_tx_clone,
-                        pompe_tx_processor_clone,
-                        regular_tx_processor_clone,
-                        lockfree_stats_clone,
-                        node_stats_clone,
-                    ).await {
-                        error!("Node {} client connection handling failed: {}", node_id, e);
-                    }
-                });
-            }
-            Err(e) => {
-                error!("Node {} accepting client connection failed: {}", node_id, e);
-            }
+    match listener.accept().await {
+        Ok((socket, _client_addr)) => {
+            let event_tx_clone = event_tx.clone();
+            let pompe_tx_processor_clone = Arc::clone(&pompe_tx_processor);
+            let regular_tx_processor_clone = Arc::clone(&regular_tx_processor);
+            let lockfree_stats_clone = Arc::clone(&lockfree_stats);
+            let node_stats_clone = Arc::clone(&node_stats);
+            let event_for_response_rx = event_for_response_tx.subscribe();
+            tokio::spawn(async move {
+                if let Err(e) = handle_lockfree_client_connection(
+                    node_id,
+                    socket,
+                    event_tx_clone,
+                    pompe_tx_processor_clone,
+                    regular_tx_processor_clone,
+                    lockfree_stats_clone,
+                    node_stats_clone,
+                    event_for_response_rx,
+                ).await {
+                    error!("Node {} client connection handling failed: {}", node_id, e);
+                }
+            });
+        }
+        Err(e) => {
+            error!("Node {} accepting client connection failed: {}", node_id, e);
         }
     }
+    Ok(())
 }
 
 // Lock-free connection handling
 async fn handle_lockfree_client_connection(
     node_id: usize, 
-    socket: &mut TcpStream,
+    socket:  TcpStream,
     event_tx: broadcast::Sender<SystemEvent>,
     pompe_tx_processor: Arc<LockFreeTransactionProcessor>,
     regular_tx_processor: Arc<RegularTransactionProcessor>,
     lockfree_stats: Arc<LockFreeStats>,
     node_stats: Arc<PerformanceStats>,
+    mut event_for_response_rx: broadcast::Receiver<SystemEvent>,
 ) -> Result<(), String> {
     let mut length_buf = [0u8; 4];
     let mut connection_tx_count = 0;
 
     info!("[Lock-free] Node {} new client connection established", node_id);
+    let (mut read_half, mut write_half) = socket.into_split();
+    
+    // 响应发送任务
+    let write_task = tokio::spawn(async move {
+        let mut response_count = 0;
+        
+        while let Ok(response_cmd) = event_for_response_rx.recv().await {
+            let response_json = match response_cmd {
+                SystemEvent::PompeOrdering1Completed { tx_id } => {
+                    let tx_ids = vec![tx_id];
+                    response_count += tx_ids.len();
+                    serde_json::json!({
+                        "message_type": "pompe_ordering1_response",
+                        "tx_ids": tx_ids,
+                        "node_id": node_id
+                    })
+                }
+                SystemEvent::HotStuffCommitted { block_height, tx_ids } => {
+                    response_count += tx_ids.len();
+                    serde_json::json!({
+                        "message_type": "consensus_response", 
+                        "tx_ids": tx_ids,
+                        "node_id": node_id
+                    })
+                }
+                // SystemEvent::Error { tx_ids, error_msg } => {
+                //     serde_json::json!({
+                //         "message_type": "error_response",
+                //         "tx_ids": tx_ids,
+                //         "error_msg": error_msg,
+                //         "node_id": node_id
+                //     })
+                // }
+                _ => {
+                    // For all other variants, skip sending a response and continue the loop
+                    continue;
+                }
+            };
+            
+            let serialized = serde_json::to_vec(&response_json).unwrap();
+            let message_length = serialized.len() as u32;
+            
+            if write_half.write_all(&message_length.to_be_bytes()).await.is_err() ||
+               write_half.write_all(&serialized).await.is_err() ||
+               write_half.flush().await.is_err() {
+                error!("Node {} 响应发送失败", node_id);
+                break;
+            }
+            debug!("***** Node {} 向客户端发送响应: {:?} tx_id:{:?}", node_id, response_json.get("message_type"), response_json.get("tx_ids"));
+            // 🔥 减少日志频率
+            if response_count % 50 == 0 {
+                info!("Node {} 已发送 {} 个响应", node_id, response_count);
+            }
+        }
+    });
     
     loop {
-        match socket.read_exact(&mut length_buf).await {
+        match read_half.read_exact(&mut length_buf).await {
             Ok(_) => {
                 let message_length = u32::from_be_bytes(length_buf) as usize;
                 
@@ -333,7 +349,7 @@ async fn handle_lockfree_client_connection(
                 }
                 
                 let mut message_buf = vec![0u8; message_length];
-                socket.read_exact(&mut message_buf).await.map_err(|e| format!("Reading message failed: {}", e))?;
+                read_half.read_exact(&mut message_buf).await.map_err(|e| format!("Reading message failed: {}", e))?;
                 
                 if let Ok(client_message) = serde_json::from_slice::<ClientMessage>(&message_buf) {
                     if let Some(transaction) = client_message.transaction {
@@ -638,6 +654,28 @@ async fn start_lockfree_performance_monitor(
     }
 }
 
+async fn send_response_to_client(node_id: usize, mut event_rx: broadcast::Receiver<SystemEvent>) {
+    info!("[Lock-free] Node {} response sender started", node_id);
+    
+    loop {
+        match event_rx.recv().await {
+            Ok(event) => {
+                match event {
+                    SystemEvent::PompeOrdering1Completed { tx_id } => {
+                        info!("[Lock-free] Node {} processed {} transactions", node_id, tx_id);
+                        // Here you can implement sending responses back to clients if needed
+                    }
+                    _ => {}
+                }
+            }
+            Err(e) => {
+                error!("[Lock-free] Node {} event reception failed: {}", node_id, e);
+            }
+        }
+    }
+
+}
+
 #[tokio::main]
 async fn main() -> Result<(), String> {
     let node_id: usize = env::var("NODE_ID")
@@ -724,7 +762,9 @@ async fn main() -> Result<(), String> {
    
    // Completely lock-free event-driven architecture
    let (event_tx, event_rx) = broadcast::channel::<SystemEvent>(1000);
-   
+   let (event_for_response_tx, event_for_response_rx) = broadcast::channel::<SystemEvent>(1000);
+
+   let event_for_response_rx_clone=event_for_response_rx;
    // Lock-free transaction processors for different paths
    let pompe_tx_processor = Arc::new(LockFreeTransactionProcessor::new());
    
@@ -744,6 +784,7 @@ async fn main() -> Result<(), String> {
    let regular_tx_processor_clone = Arc::clone(&regular_tx_processor);
    let lockfree_stats_clone = Arc::clone(&lockfree_stats);
    let node_stats_clone = Arc::clone(&node_stats);
+   let event_for_response_tx_clone = event_for_response_tx.clone();
    
    tokio::spawn(async move {
        if let Err(e) = start_lockfree_client_listener(
@@ -754,6 +795,7 @@ async fn main() -> Result<(), String> {
            regular_tx_processor_clone,
            lockfree_stats_clone,
            node_stats_clone,
+           event_for_response_tx_clone, /* 🎯 */
        ).await {
            error!("Lock-free client listener failed: {}", e);
        }
@@ -773,6 +815,7 @@ async fn main() -> Result<(), String> {
        init_validator_set_updates.clone(),
        shared_tx_queue.clone(),
        node_stats.clone(),
+       event_for_response_tx.clone() /* 🎯 */
    );
 
    // Optimized transaction bridge to reduce backlog - now only for Pompe transactions
@@ -885,7 +928,11 @@ async fn main() -> Result<(), String> {
            all_node_ids,
            pompe_config,
            tcp_network.clone(),
+           event_for_response_tx.clone() /* pompe event sender 🎯 */
        );
+
+       /* event handling 🎯 */
+    //    tokio::spawn(send_response_to_client(node_id,event_for_response_rx)); /* pompe/hotstuff event receiver 🎯 */
 
        // Use connected mode lock-free adapter
        let mut lockfree_adapter = LockFreeHotStuffAdapter::new();

@@ -1,4 +1,5 @@
-// 修改后的高效客户端节点
+// 修改后的高效客户端节点 - 分离状态架构
+// hotstuff_runner/src/bin/client.rs
 
 use std::collections::HashMap;
 use std::net::SocketAddr;
@@ -14,7 +15,8 @@ use serde::{Serialize, Deserialize};
 use tokio::net::TcpStream;
 use tokio::io::{AsyncWriteExt, AsyncReadExt};
 use rand::Rng;
-use hotstuff_runner::pompe::{PompeTransaction, send_pompe_transaction_to_node}; 
+use std::sync::Arc;
+use std::collections::HashSet;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TestTransaction {
@@ -33,6 +35,401 @@ pub struct ClientMessage {
     pub client_id: String,
 }
 
+// 分离状态：核心业务逻辑（无需共享）
+pub struct ClientNode {
+    client_id: String,
+    connections: HashMap<usize, PersistentConnection>,
+    tx_generator: TransactionGenerator,
+    stats: ClientStats,
+    response_tx: Option<tokio::sync::mpsc::UnboundedSender<ResponseCommand>>, 
+}
+
+// 分离状态：延迟跟踪器（独立运行）
+pub struct LatencyTracker {
+    send_timestamps: HashMap<u64, Instant>,
+    ordering_latencies: Vec<u128>,
+    consensus_latencies: Vec<u128>,
+    ordering_recorded: HashSet<u64>, 
+    consensus_recorded: HashSet<u64>
+}
+
+// 分离状态：统计报告器（独立运行）
+pub struct StatsReporter {
+    total_responses: usize,
+}
+
+// 响应命令枚举：延迟跟踪器处理响应
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub enum ResponseCommand {
+    Ordering1Response { tx_ids: Vec<u64> },
+    HotStuffCommitted { tx_ids: Vec<u64> },
+    Error { tx_ids: Vec<u64>, error_msg: String },
+}
+
+// #[derive(Serialize, Deserialize, Debug, Clone)]
+// pub enum ResponseMessageContent {
+//     Ordering1Response {
+//         tx_id: u64,
+//         timestamp_us: u64,
+//         node_id: usize,
+//     },
+//     HotStuffCommitted {
+//         tx_id: u64,
+//         timestamp_us: u64,
+//         node_id: usize,
+//     },
+//     Error {
+//         tx_id: u64,
+//         error_msg: String,
+//     },
+// }
+
+// #[derive(Serialize, Deserialize, Debug, Clone)]
+// pub struct ResponseMessage {
+//     pub message_type: String,
+//     pub response: Option<ResponseMessageContent>,
+//     pub node_id: usize,
+// }
+
+impl LatencyTracker {
+    pub fn new() -> Self {
+        Self {
+            send_timestamps: HashMap::new(),
+            ordering_latencies: Vec::new(),
+            consensus_latencies: Vec::new(),
+            ordering_recorded: HashSet::new(),
+            consensus_recorded: HashSet::new(),
+        }
+    }
+
+    pub fn record_send_time(&mut self, tx_id: u64) {
+        self.send_timestamps.insert(tx_id, Instant::now());
+    }
+
+    // 🔥 修改：支持批量处理 ordering 响应
+    pub fn handle_ordering_response(&mut self, tx_ids: Vec<u64>) {
+        for tx_id in tx_ids {
+            // 只记录第一次
+            if self.ordering_recorded.contains(&tx_id) {
+                continue;
+            }
+            if let Some(send_time) = self.send_timestamps.get(&tx_id) {
+                let latency = send_time.elapsed().as_micros();
+                let latency_ms=latency as f64 / 1000.0;
+                self.ordering_latencies.push(latency);
+                self.ordering_recorded.insert(tx_id);
+                info!("📊 交易 {} ordering延迟: {}ms", tx_id, latency_ms);
+            }
+        }
+    }
+
+    // 🔥 修改：支持批量处理 consensus 响应
+    pub fn handle_consensus_response(&mut self, tx_ids: Vec<u64>) {
+        for tx_id in tx_ids {
+            if self.consensus_recorded.contains(&tx_id) {
+                continue;
+            }
+            if let Some(send_time) = self.send_timestamps.remove(&tx_id) {
+                let latency = send_time.elapsed().as_micros();
+                let latency_ms=latency as f64 / 1000.0;
+                self.consensus_latencies.push(latency);
+                self.consensus_recorded.insert(tx_id);
+                info!("📊 交易 {} consensus延迟: {}ms", tx_id, latency_ms);
+            }
+        }
+    }
+
+    pub fn get_stats(&self) -> (usize, usize) {
+        (self.ordering_latencies.len(), self.consensus_latencies.len())
+    }
+
+    pub fn print_ordering_stats(&self) {
+        if self.ordering_latencies.is_empty() { return; }
+        
+        let mut sorted = self.ordering_latencies.clone();
+        sorted.sort();
+        
+        let avg = sorted.iter().sum::<u128>() as f64 / sorted.len() as f64;
+        let p50 = sorted[sorted.len() / 2];
+        let p95 = sorted[sorted.len() * 95 / 100];
+        let p99 = sorted[sorted.len() * 99 / 100];
+        
+        info!("📈 Ordering延迟统计 (样本: {}):", sorted.len());
+        info!("  平均值: {:.2} ms", avg as f64 / 1000.0);
+        info!("  P50: {} ms", p50 as f64 / 1000.0);
+        info!("  P95: {} ms", p95 as f64 / 1000.0);
+        info!("  P99: {} ms", p99 as f64 / 1000.0);
+    }
+
+    pub fn print_consensus_stats(&self) {
+        if self.consensus_latencies.is_empty() { return; }
+        
+        let mut sorted = self.consensus_latencies.clone();
+        sorted.sort();
+        
+        let avg = sorted.iter().sum::<u128>() as f64 / sorted.len() as f64;
+        let p50 = sorted[sorted.len() / 2];
+        let p95 = sorted[sorted.len() * 95 / 100];
+        let p99 = sorted[sorted.len() * 99 / 100];
+        
+        info!("📈 Consensus延迟统计 (样本: {}):", sorted.len());
+        info!("  平均值: {:.2} ms", avg as f64 / 1000.0);
+        info!("  P50: {} ms", p50 as f64 / 1000.0);
+        info!("  P95: {} ms", p95 as f64 / 1000.0);
+        info!("  P99: {} ms", p99 as f64 / 1000.0);
+    }
+
+    pub fn print_comprehensive_stats(&self) {
+        info!("📊 ============= 综合延迟统计报告 =============");
+        self.print_ordering_stats();
+        self.print_consensus_stats();
+        
+        if !self.ordering_latencies.is_empty() && !self.consensus_latencies.is_empty() {
+            let avg_ordering_ms = self.ordering_latencies.iter().sum::<u128>() as f64 / self.ordering_latencies.len() as f64 / 1000.0;
+            let avg_consensus_ms = self.consensus_latencies.iter().sum::<u128>() as f64 / self.consensus_latencies.len() as f64 / 1000.0;
+            
+            info!("📊 延迟对比分析:");
+            info!("  Ordering平均延迟: {:.2} ms", avg_ordering_ms);
+            info!("  Consensus平均延迟: {:.2} ms", avg_consensus_ms);
+            info!("  Consensus/Ordering比值: {:.2}x", avg_consensus_ms / avg_ordering_ms);
+        }
+        info!("📊 ==========================================");
+    }
+
+    pub fn save_latency_data(&self, ordering_file: &str, consensus_file: &str) -> Result<(), Box<dyn std::error::Error>> {
+        use std::io::Write;
+        
+        if !self.ordering_latencies.is_empty() {
+            let mut file = File::create(ordering_file)?;
+            writeln!(file, "latency_us")?;
+            for latency in &self.ordering_latencies {
+                writeln!(file, "{}", latency)?;
+            }
+            info!("💾 Ordering延迟数据已保存到: {}", ordering_file);
+        }
+
+        if !self.consensus_latencies.is_empty() {
+            let mut file = File::create(consensus_file)?;
+            writeln!(file, "latency_us")?;
+            for latency in &self.consensus_latencies {
+                writeln!(file, "{}", latency)?;
+            }
+            info!("💾 Consensus延迟数据已保存到: {}", consensus_file);
+        }
+
+        Ok(())
+    }
+}
+
+impl StatsReporter {
+    pub fn new() -> Self {
+        Self { total_responses: 0 }
+    }
+
+    pub fn record_response(&mut self) {
+        self.total_responses += 1;
+    }
+
+    pub fn should_print_stats(&self) -> bool {
+        self.total_responses > 0 && self.total_responses % 100 == 0
+    }
+}
+
+// 命令枚举：业务逻辑与延迟跟踪通信
+#[derive(Debug)]
+pub enum ClientCommand {
+    SendBatch {
+        node_id: usize,
+        transactions: Vec<TestTransaction>,
+        reply_tx: tokio::sync::oneshot::Sender<Result<usize, Box<dyn std::error::Error + Send>>>,
+    },
+    RecordSendTimes {
+        tx_ids: Vec<u64>,
+    },
+    PrintStats,
+    GetConnectionCount {
+        reply_tx: tokio::sync::oneshot::Sender<usize>,
+    },
+}
+
+
+impl ClientNode {
+    pub fn new(client_id: String) -> Self {
+        info!("🚀 初始化客户端核心: {}", client_id);
+        
+        let tx_generator = TransactionGenerator::new(client_id.clone());
+
+        Self {
+            client_id,
+            connections: HashMap::new(),
+            tx_generator,
+            stats: ClientStats::default(),
+            response_tx: None,
+        }
+    }
+    pub fn set_response_sender(&mut self, response_tx: tokio::sync::mpsc::UnboundedSender<ResponseCommand>) {
+        self.response_tx = Some(response_tx);
+    }
+
+    pub async fn establish_connections(
+        &mut self, 
+        node_least_id: usize, 
+        node_num: usize,
+        response_tx: tokio::sync::mpsc::UnboundedSender<ResponseCommand>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        info!("🌐 建立到所有节点的持久连接...");
+        self.response_tx = Some(response_tx.clone());
+         
+
+        for node_id in node_least_id..(node_least_id + node_num) {
+            match PersistentConnection::new(node_id,response_tx.clone()).await {
+                Ok(conn) => {
+                    self.connections.insert(node_id, conn);
+                    info!("✅ 连接到节点 {} 成功", node_id);
+                }
+                Err(e) => {
+                    error!("❌ 连接到节点 {} 失败: {}", node_id, e);
+                }
+            }
+        }
+
+        info!("🎯 成功建立 {} 个持久连接", self.connections.len());
+        Ok(())
+    }
+
+    pub async fn send_batch_to_node(
+        &mut self, 
+        node_id: usize, 
+        transactions: Vec<TestTransaction>,
+    ) -> Result<usize, Box<dyn std::error::Error>> {
+        if let Some(connection) = self.connections.get_mut(&node_id) {
+            match connection.send_batch(&transactions, &self.client_id).await {
+                Ok(sent_count) => {
+                    self.stats.record_sent(sent_count as u64);
+                    self.stats.record_confirmed(sent_count as u64);
+                    Ok(sent_count)
+                }
+                Err(e) => {
+                    error!("❌ 批量发送到节点 {} 失败: {}", node_id, e);
+                    self.stats.record_failed(transactions.len() as u64);
+                    
+                    // 尝试重新连接
+                    if let Some(response_tx) = &self.response_tx {
+                    info!("🔄 尝试重新连接到节点 {}", node_id);
+                        match PersistentConnection::new(node_id,response_tx.clone()).await {
+                            Ok(new_conn) => {
+                                self.connections.insert(node_id, new_conn);
+                                info!("✅ 重新连接到节点 {} 成功", node_id);
+                            }
+                            Err(reconnect_err) => {
+                                error!("❌ 重新连接到节点 {} 失败: {}", node_id, reconnect_err);
+                            }
+                        }
+                    }
+                    Err(e)
+                }
+            }
+        } else {
+            error!("❌ 没有到节点 {} 的连接", node_id);
+            Err("没有连接".into())
+        }
+    }
+
+    pub fn get_connection_count(&self) -> usize {
+        self.connections.len()
+    }
+
+    pub async fn run_load_test(
+        &mut self, 
+        config: LoadTestConfig, 
+        node_least_id: usize, 
+        node_num: usize, 
+        cmd_tx: tokio::sync::mpsc::UnboundedSender<ClientCommand>,
+    ) {
+        info!("🚀 开始负载测试 - TPS目标: {}, 持续时间: {}秒", 
+            config.target_tps, config.duration_secs);
+
+        let batch_size = std::cmp::max(100, config.target_tps / 5);
+        let batch_interval = Duration::from_millis(200);
+        let end_time = Instant::now() + Duration::from_secs(config.duration_secs);
+
+        let mut total_sent = 0;
+        let mut batch_counter = 0;
+
+        while Instant::now() < end_time {
+            for node_offset in 0..node_num {
+                let node_id = node_least_id + node_offset;
+                let transactions = self.tx_generator.generate_batch(batch_size as usize);
+                
+                // 先通知延迟跟踪器记录发送时间
+                let tx_ids: Vec<u64> = transactions.iter().map(|tx| tx.id).collect();
+                let _ = cmd_tx.send(ClientCommand::RecordSendTimes { tx_ids });
+
+                match self.send_batch_to_node(node_id, transactions).await {
+                    Ok(sent_count) => {
+                        total_sent += sent_count;
+                        info!("📦 批次 {} 发送 {} 个交易到节点 {}", batch_counter + 1, sent_count, node_id);
+                    }
+                    Err(e) => {
+                        warn!("批次 {} 发送到节点 {} 失败: {}", batch_counter + 1, node_id, e);
+                    }
+                }
+            }
+
+            batch_counter += 1;
+
+            if total_sent >= 5000 && total_sent % 5000 == 0 {
+                self.stats.log_summary();
+            }
+
+            tokio::time::sleep(batch_interval).await;
+        }
+
+        info!("🏁 负载测试完成，总计发送 {} 个交易", total_sent);
+        self.stats.log_summary();
+    }
+
+    pub async fn run_interactive_mode(
+        &mut self, 
+        node_least_id: usize, 
+        node_num: usize, 
+        cmd_tx: tokio::sync::mpsc::UnboundedSender<ClientCommand>, 
+    ) {
+        info!("🎮 进入交互模式");
+
+        let mut tx_counter = 0;
+        
+        loop {
+            let batch_size = 5;
+            let transactions = self.tx_generator.generate_batch(batch_size);
+            let target_node = (tx_counter / batch_size) % node_num + node_least_id;
+
+            // 先通知延迟跟踪器记录发送时间
+            let tx_ids: Vec<u64> = transactions.iter().map(|tx| tx.id).collect();
+            let _ = cmd_tx.send(ClientCommand::RecordSendTimes { tx_ids });
+
+            match self.send_batch_to_node(target_node, transactions).await {
+                Ok(sent_count) => {
+                    tx_counter += sent_count;
+                    info!("✅ 成功发送 {} 个交易到节点 {}, 总计: {}", sent_count, target_node, tx_counter);
+                }
+                Err(e) => {
+                    error!("❌ 发送批次失败到节点 {}: {}", target_node, e);
+                    tokio::time::sleep(Duration::from_secs(5)).await;
+                    continue;
+                }
+            }
+
+            if tx_counter >= 100 && tx_counter % 100 == 0 {
+                self.stats.log_summary();
+            }
+
+            tokio::time::sleep(Duration::from_millis(1000)).await;
+        }
+    }
+}
+
+// 其他结构体保持不变...
 pub struct TransactionGenerator {
     current_tx_id: u64,
     current_nonce: u64,
@@ -145,15 +542,18 @@ impl ClientStats {
     }
 }
 
-// 新增：持久连接管理器
 pub struct PersistentConnection {
-    stream: TcpStream,
+    // stream: TcpStream,
+    write_stream: tokio::net::tcp::OwnedWriteHalf, // 🔥 只保存写流
     node_id: usize,
     connected_at: Instant,
 }
 
 impl PersistentConnection {
-    pub async fn new(node_id: usize) -> Result<Self, Box<dyn std::error::Error>> {
+    pub async fn new(
+        node_id: usize,
+        response_tx: tokio::sync::mpsc::UnboundedSender<ResponseCommand>,
+    ) -> Result<Self, Box<dyn std::error::Error>> {
         let hostname = format!("node{}", node_id);
         let port = 9000 + node_id as u16;
         let addr_str = format!("{}:{}", hostname, port);
@@ -161,94 +561,27 @@ impl PersistentConnection {
         info!("🔗 建立持久连接到节点 {}: {}", node_id, addr_str);
 
         let stream = TcpStream::connect(&addr_str).await?;
-        
+    
+        // 🔥 关键：分离读写流
+        let (read_half, write_half) = stream.into_split();
+
+        tokio::spawn(async move {
+            if let Err(e) = handle_node_responses(node_id, read_half, response_tx).await {
+                error!("❌ 节点 {} 响应接收失败: {}", node_id, e);
+            }
+        });
         info!("✅ 成功建立持久连接到节点 {}", node_id);
 
         Ok(Self {
-            stream,
+            write_stream: write_half,
             node_id,
             connected_at: Instant::now(),
         })
     }
 
-    // ↓ 添加新的 Pompe 交易发送方法 ↓
-    // ↓ 修改 send_pompe_transaction 方法，添加更多调试信息 ↓
-    pub async fn send_pompe_transaction(&mut self, transaction: &TestTransaction, client_id: &str) -> Result<(), Box<dyn std::error::Error>> {
-        // 检查是否启用 Pompe
-        let pompe_enabled = std::env::var("POMPE_ENABLE")
-            .unwrap_or_else(|_| "false".to_string())
-            .parse()
-            .unwrap_or(false);
-        
-        info!("🔧 Pompe 启用状态: {}", pompe_enabled);
-            
-        if pompe_enabled {
-            info!("🎯 使用 Pompe 模式发送交易 ID: {}", transaction.id);
-            
-            // 构建客户端消息 - 使用特殊的消息类型标识
-            let client_message = ClientMessage {
-                message_type: "pompe_transaction".to_string(), // ← 关键标识
-                transaction: Some(transaction.clone()),
-                client_id: client_id.to_string(),
-            };
-
-            let serialized = serde_json::to_vec(&client_message)?;
-            let message_length = serialized.len() as u32;
-            
-            // 发送消息长度（4字节）+ 消息内容
-            self.stream.write_all(&message_length.to_be_bytes()).await?;
-            self.stream.write_all(&serialized).await?;
-            self.stream.flush().await?;
-
-            info!("📤 Pompe 交易已发送: ID={}, Size={}bytes", transaction.id, serialized.len());
-        } else {
-            info!("📨 使用标准模式发送交易 ID: {}", transaction.id);
-            // 使用原有方式发送
-            self.send_transaction(transaction, client_id).await?;
-        }
-        
-        Ok(())
-    }
-    // ↑ Pompe 交易发送方法结束 ↑
-
-    pub async fn send_transaction(&mut self, transaction: &TestTransaction, client_id: &str) -> Result<(), Box<dyn std::error::Error>> {
-        let client_message = ClientMessage {
-            message_type: "pompe_transaction".to_string(),
-            transaction: Some(transaction.clone()),
-            client_id: client_id.to_string(),
-        };
-
-        let serialized = serde_json::to_vec(&client_message)?;
-        let message_length = serialized.len() as u32;
-        
-        // 发送消息长度（4字节）+ 消息内容
-        self.stream.write_all(&message_length.to_be_bytes()).await?;
-        self.stream.write_all(&serialized).await?;
-        self.stream.flush().await?;
-
-        Ok(())
-    }
-
-    // pub async fn send_batch(&mut self, transactions: &[TestTransaction], client_id: &str) -> Result<usize, Box<dyn std::error::Error>> {
-    //     let mut sent_count = 0;
-        
-    //     for transaction in transactions {
-    //         match self.send_transaction(transaction, client_id).await {
-    //             Ok(_) => sent_count += 1,
-    //             Err(e) => {
-    //                 warn!("发送交易 {} 到节点 {} 失败: {}", transaction.id, self.node_id, e);
-    //                 break;
-    //             }
-    //         }
-    //     }
-    //     info!("已成功发送 {} 个交易到节点 {}", sent_count, self.node_id);
-    //     Ok(sent_count)
-    // }
-
-    // Pompe mode
     pub async fn send_batch(&mut self, transactions: &[TestTransaction], client_id: &str) -> Result<usize, Box<dyn std::error::Error>> {
-        // 预先序列化所有交易到一个缓冲区
         let mut batch_buffer = Vec::new();
+
         let is_pompe = true; /////// 调试修改点
 
         if is_pompe {
@@ -282,10 +615,10 @@ impl PersistentConnection {
                 batch_buffer.extend_from_slice(&serialized);
             }
         }
-        // 一次性发送所有数据
-        self.stream.write_all(&batch_buffer).await?;
-        self.stream.flush().await?;
-        
+
+        self.write_stream.write_all(&batch_buffer).await?;
+        self.write_stream.flush().await?;
+
         Ok(transactions.len())
     }
 
@@ -294,271 +627,12 @@ impl PersistentConnection {
     }
 }
 
-pub struct ClientNode {
-    client_id: String,
-    connections: HashMap<usize, PersistentConnection>,
-    tx_generator: TransactionGenerator,
-    stats: ClientStats,
-}
-
-impl ClientNode {
-    pub fn new(client_id: String) -> Self {
-        info!("🚀 初始化客户端: {}", client_id);
-        
-        let tx_generator = TransactionGenerator::new(client_id.clone());
-
-        Self {
-            client_id,
-            connections: HashMap::new(),
-            tx_generator,
-            stats: ClientStats::default(),
-        }
-    }
-
-    // 建立到所有节点的持久连接
-    pub async fn establish_connections(&mut self, node_least_id: usize, node_num: usize) -> Result<(), Box<dyn std::error::Error>> {
-        info!("🌐 建立到所有节点的持久连接...");
-
-        for node_id in node_least_id..(node_least_id + node_num) {
-            match PersistentConnection::new(node_id).await {
-                Ok(conn) => {
-                    self.connections.insert(node_id, conn);
-                    info!("✅ 连接到节点 {} 成功", node_id);
-                }
-                Err(e) => {
-                    error!("❌ 连接到节点 {} 失败: {}", node_id, e);
-                    // 继续尝试连接其他节点
-                }
-            }
-        }
-
-        info!("🎯 成功建立 {} 个持久连接", self.connections.len());
-        Ok(())
-    }
-
-    pub async fn send_batch_to_node(&mut self, node_id: usize, transactions: Vec<TestTransaction>) -> Result<usize, Box<dyn std::error::Error>> {
-        if let Some(connection) = self.connections.get_mut(&node_id) {
-            match connection.send_batch(&transactions, &self.client_id).await {
-                Ok(sent_count) => {
-                    self.stats.record_sent(sent_count as u64);
-                    self.stats.record_confirmed(sent_count as u64); // 假设都成功
-                    Ok(sent_count)
-                }
-                Err(e) => {
-                    error!("❌ 批量发送到节点 {} 失败: {}", node_id, e);
-                    self.stats.record_failed(transactions.len() as u64);
-                    
-                    // 尝试重新连接
-                    info!("🔄 尝试重新连接到节点 {}", node_id);
-                    match PersistentConnection::new(node_id).await {
-                        Ok(new_conn) => {
-                            self.connections.insert(node_id, new_conn);
-                            info!("✅ 重新连接到节点 {} 成功", node_id);
-                        }
-                        Err(reconnect_err) => {
-                            error!("❌ 重新连接到节点 {} 失败: {}", node_id, reconnect_err);
-                        }
-                    }
-                    
-                    Err(e)
-                }
-            }
-        } else {
-            error!("❌ 没有到节点 {} 的连接", node_id);
-            Err("没有连接".into())
-        }
-    }
-
-    // ↓ 修改批量发送方法以支持 Pompe ↓
-    // pub async fn send_batch_to_node(&mut self, node_id: usize, transactions: Vec<TestTransaction>) -> Result<usize, Box<dyn std::error::Error>> {
-    //     if let Some(connection) = self.connections.get_mut(&node_id) {
-    //         let mut sent_count = 0;
-            
-    //         for transaction in &transactions {
-    //             // ↓ 修改这里使用 Pompe 发送 ↓
-    //             match connection.send_pompe_transaction(transaction, &self.client_id).await {
-    //                 Ok(_) => sent_count += 1,
-    //                 Err(e) => {
-    //                     warn!("发送交易 {} 到节点 {} 失败: {}", transaction.id, node_id, e);
-    //                     break;
-    //                 }
-    //             }
-    //             // ↑ Pompe 发送结束 ↑
-    //         }
-            
-    //         if sent_count > 0 {
-    //             self.stats.record_sent(sent_count as u64);
-    //             self.stats.record_confirmed(sent_count as u64);
-    //             info!("✅ 成功发送 {} 个交易到节点 {}", sent_count, node_id);
-    //         }
-            
-    //         Ok(sent_count)
-    //     } else {
-    //         error!("❌ 没有到节点 {} 的连接", node_id);
-    //         Err("没有连接".into())
-    //     }
-    // }
-    // ↑ 批量发送修改结束 ↑
-
-    // 高效的负载测试 - 使用批量发送
-    // pub async fn run_load_test(&mut self, config: LoadTestConfig, node_least_id: usize, node_num: usize) {
-    //     info!("🚀 开始高效负载测试 - TPS目标: {}, 持续时间: {}秒", 
-    //           config.target_tps, config.duration_secs);
-
-    //     // 建立连接
-    //     if let Err(e) = self.establish_connections(node_least_id, node_num).await {
-    //         error!("❌ 建立连接失败: {}", e);
-    //         return;
-    //     }
-
-    //     let batch_size = std::cmp::max(1, config.target_tps / 10); // 每批次大小
-    //     let batch_interval = Duration::from_secs_f64(batch_size as f64 / config.target_tps as f64);
-    //     let end_time = Instant::now() + Duration::from_secs(config.duration_secs);
-
-    //     let mut total_sent = 0;
-    //     let mut batch_counter = 0;
-
-    //     while Instant::now() < end_time {
-    //         // 生成一批交易
-    //         let transactions = self.tx_generator.generate_batch(batch_size as usize);
-            
-    //         // 轮询发送到不同节点
-    //         let target_node = (batch_counter % node_num) + node_least_id;
-            
-    //         match self.send_batch_to_node(target_node, transactions).await {
-    //             Ok(sent_count) => {
-    //                 total_sent += sent_count;
-    //                 info!("📦 批次 {} 发送 {} 个交易到节点 {}", batch_counter + 1, sent_count, target_node);
-    //             }
-    //             Err(e) => {
-    //                 warn!("❌ 批次 {} 发送失败: {}", batch_counter + 1, e);
-    //             }
-    //         }
-
-    //         batch_counter += 1;
-
-    //         // 每1000个交易输出一次统计
-    //         if total_sent >= 1000 && total_sent % 1000 == 0 {
-    //             self.stats.log_summary();
-    //         }
-
-    //         tokio::time::sleep(batch_interval).await;
-    //     }
-
-    //     info!("🏁 高效负载测试完成，总计发送 {} 个交易", total_sent);
-    //     self.stats.log_summary();
-    // }
-
-    // 关键修改：对每个节点并发发送交易
-    pub async fn run_load_test(&mut self, config: LoadTestConfig, node_least_id: usize, node_num: usize) {
-        info!("开始负载测试 - TPS目标: {}, 持续时间: {}秒", 
-            config.target_tps, config.duration_secs);
-
-        // 建立连接
-        if let Err(e) = self.establish_connections(node_least_id, node_num).await {
-            error!("建立连接失败: {}", e);
-            return;
-        }
-
-        let batch_size = std::cmp::max(100, config.target_tps / 5);
-        let batch_interval = Duration::from_millis(200);
-        let end_time = Instant::now() + Duration::from_secs(config.duration_secs);
-        // let batch_size = std::cmp::max(50, config.target_tps / 10); // 每批次大小
-    //     let batch_interval = Duration::from_secs_f64(batch_size as f64 / config.target_tps as f64);
-    //     let end_time = Instant::now() + Duration::from_secs(config.duration_secs);
-
-
-        let mut total_sent = 0;
-        let mut batch_counter = 0;
-
-        while Instant::now() < end_time {
-            // 为每个节点顺序发送，避免并发借用问题
-            for node_offset in 0..node_num {
-                let node_id = node_least_id + node_offset;
-                let transactions = self.tx_generator.generate_batch(batch_size as usize);
-                
-                match self.send_batch_to_node(node_id, transactions).await {
-                    Ok(sent_count) => {
-                        total_sent += sent_count;
-                        info!("批次 {} 发送 {} 个交易到节点 {}", batch_counter + 1, sent_count, node_id);
-                    }
-                    Err(e) => {
-                        warn!("批次 {} 发送到节点 {} 失败: {}", batch_counter + 1, node_id, e);
-                    }
-                }
-            }
-
-            batch_counter += 1;
-
-            if total_sent >= 5000 && total_sent % 5000 == 0 {
-                self.stats.log_summary();
-            }
-
-            tokio::time::sleep(batch_interval).await;
-        }
-
-        info!("负载测试完成，总计发送 {} 个交易", total_sent);
-        self.stats.log_summary();
-    }
-
-
-    // 高效的交互模式 - 保持连接
-    pub async fn run_interactive_mode(&mut self, node_least_id: usize, node_num: usize) {
-        info!("🎮 进入高效交互模式");
-
-        // 建立连接
-        if let Err(e) = self.establish_connections(node_least_id, node_num).await {
-            error!("❌ 建立连接失败: {}", e);
-            return;
-        }
-
-        let mut tx_counter = 0;
-        
-        // ↓ 添加调试信息 ↓
-        info!("🚀 开始发送交易循环...");
-        
-        loop {
-            // 每次发送一小批交易（比如5个）来提高效率
-            let batch_size = 5;
-            let transactions = self.tx_generator.generate_batch(batch_size);
-            let target_node = (tx_counter / batch_size) % node_num + node_least_id;
-
-            // ↓ 添加详细日志 ↓
-            info!("📤 准备发送批次到节点 {}, 包含 {} 个交易", target_node, transactions.len());
-            
-            match self.send_batch_to_node(target_node, transactions).await {
-                Ok(sent_count) => {
-                    tx_counter += sent_count;
-                    info!("✅ 成功发送 {} 个交易到节点 {}, 总计: {}", sent_count, target_node, tx_counter);
-                }
-                Err(e) => {
-                    error!("❌ 发送批次失败到节点 {}: {}", target_node, e);
-                    
-                    // ↓ 添加重试逻辑 ↓
-                    warn!("🔄 等待5秒后重试...");
-                    tokio::time::sleep(Duration::from_secs(5)).await;
-                    continue;
-                }
-            }
-
-            // 每100个交易输出一次统计
-            if tx_counter >= 100 && tx_counter % 100 == 0 {
-                self.stats.log_summary();
-            }
-
-            // ↓ 修改等待时间，让日志更清晰 ↓
-            tokio::time::sleep(Duration::from_millis(1000)).await; // 改为1秒一批
-        }
-    }
-
-}
-
 pub struct LoadTestConfig {
     pub target_tps: u32,
     pub duration_secs: u64,
 }
 
-fn setup_tracing_logger(mode : &str) {
+fn setup_tracing_logger(mode: &str) {
     create_dir_all("logs").expect("无法创建日志目录");
 
     let path = match mode {
@@ -601,6 +675,92 @@ fn setup_tracing_logger(mode : &str) {
     }
 }
 
+// 🔥 修改网络响应解析，支持批量消息
+async fn handle_node_responses(
+    node_id: usize,
+    mut read_half: tokio::net::tcp::OwnedReadHalf,
+    response_tx: tokio::sync::mpsc::UnboundedSender<ResponseCommand>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let mut length_buf = [0u8; 4];
+    
+    info!("🎧 启动节点 {} 的响应接收器", node_id);
+    
+    loop {
+        match read_half.read_exact(&mut length_buf).await {
+            Ok(_) => {
+                let message_length = u32::from_be_bytes(length_buf) as usize;
+                
+                if message_length > 1024 * 1024 {
+                    warn!("⚠️ 从节点 {} 收到过大响应: {}", node_id, message_length);
+                    continue;
+                }
+                
+                let mut message_buf = vec![0u8; message_length];
+                read_half.read_exact(&mut message_buf).await?;
+                
+                // 🔥 解析响应消息，支持批量 tx_ids
+                if let Ok(response_json) = serde_json::from_slice::<serde_json::Value>(&message_buf) {
+                    if let Some(message_type) = response_json.get("message_type").and_then(|v| v.as_str()) {
+                        
+                        // 🔥 支持单个 tx_id 或 tx_ids 数组
+                        let tx_ids = if let Some(tx_ids_array) = response_json.get("tx_ids") {
+                            // 批量交易 ID
+                            serde_json::from_value::<Vec<u64>>(tx_ids_array.clone())
+                                .unwrap_or_else(|_| Vec::new())
+                        } else if let Some(tx_id) = response_json.get("tx_id").and_then(|v| v.as_u64()) {
+                            // 单个交易 ID（向后兼容）
+                            vec![tx_id]
+                        } else {
+                            warn!("⚠️ 响应消息中没有 tx_id 或 tx_ids");
+                            continue;
+                        };
+                        
+                        if tx_ids.is_empty() {
+                            warn!("⚠️ 响应消息中 tx_ids 为空");
+                            continue;
+                        }
+                        
+                        let tx_ids_len = tx_ids.len(); // Store length before moving tx_ids
+                        
+                        let response_cmd = match message_type {
+                            "pompe_ordering1_response" => {
+                                ResponseCommand::Ordering1Response { tx_ids }
+                            }
+                            "consensus_response" => {
+                                ResponseCommand::HotStuffCommitted { tx_ids }
+                            }
+                            "error_response" => {
+                                let error_msg = response_json.get("error_msg")
+                                    .and_then(|v| v.as_str())
+                                    .unwrap_or("未知错误")
+                                    .to_string();
+                                ResponseCommand::Error { tx_ids, error_msg }
+                            }
+                            _ => {
+                                warn!("⚠️ 未知响应类型: {}", message_type);
+                                continue;
+                            }
+                        };
+                        
+                        // 发送批量响应命令
+                        let _ = response_tx.send(response_cmd);
+                        info!("✅ 从节点 {} 处理批量响应: {} {} 个交易", 
+                              node_id, message_type, tx_ids_len);
+                    }
+                } else {
+                    warn!("⚠️ 无法解析从节点 {} 收到的响应", node_id);
+                }
+            }
+            Err(e) => {
+                info!("🔌 节点 {} 连接断开: {}", node_id, e);
+                break;
+            }
+        }
+    }
+    
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client_id = env::var("CLIENT_ID").unwrap_or_else(|_| "client_1".to_string());
@@ -616,14 +776,76 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .parse()
         .expect("NODE_NUM 必须是数字");
 
-    info!("🏃 启动高效客户端节点: {}", client_id);
+    info!("🏃 启动分离状态客户端: {}", client_id);
 
-    let mut client_node = ClientNode::new(client_id);
+    // 创建通道
+    let (cmd_tx, mut cmd_rx) = tokio::sync::mpsc::unbounded_channel::<ClientCommand>();
+    let (response_tx, mut response_rx) = tokio::sync::mpsc::unbounded_channel::<ResponseCommand>();
+
+    // 启动延迟跟踪器任务
+    let latency_cmd_tx = cmd_tx.clone();
+    tokio::spawn(async move {
+        let mut latency_tracker = LatencyTracker::new();
+        let mut stats_reporter = StatsReporter::new();
+
+        loop {
+            tokio::select! {
+                Some(cmd) = cmd_rx.recv() => {
+                    match cmd {
+                        ClientCommand::RecordSendTimes { tx_ids } => {
+                            for tx_id in tx_ids {
+                                latency_tracker.record_send_time(tx_id);
+                            }
+                        }
+                        ClientCommand::PrintStats => {
+                            latency_tracker.print_comprehensive_stats();
+                        }
+                        _ => {} // 其他命令由主任务处理
+                    }
+                }
+                Some(response_cmd) = response_rx.recv() => {
+                    match response_cmd {
+                        // 🔥 修改：处理批量 ordering 响应
+                        ResponseCommand::Ordering1Response { tx_ids } => {
+                            info!("🎉 收到 {} 个 Ordering1 响应 for {:?}", tx_ids.len(), tx_ids);
+                            latency_tracker.handle_ordering_response(tx_ids);
+                        }
+                        // 🔥 修改：处理批量 consensus 响应
+                        ResponseCommand::HotStuffCommitted { tx_ids } => { 
+                            info!("🎉 收到 {} 个 Consensus 响应", tx_ids.len());
+                            latency_tracker.handle_consensus_response(tx_ids);
+                        }
+                        ResponseCommand::Error { tx_ids, error_msg } => {
+                            error!("❌ {} 个交易处理失败: {}", tx_ids.len(), error_msg);
+                            for tx_id in tx_ids {
+                                error!("❌ 交易 {} 失败", tx_id);
+                            }
+                        }
+                    }
+                    
+                    stats_reporter.record_response();
+                    if stats_reporter.should_print_stats() {
+                        latency_tracker.print_comprehensive_stats();
+                    }
+                }
+            }
+        }
+    });
+
+    // 创建并启动客户端核心
+    let mut client_core = ClientNode::new(client_id);
 
     // 等待共识节点启动
     info!("⏳ 等待共识节点启动...");
     tokio::time::sleep(Duration::from_secs(15)).await;
 
+    // 建立连接
+    if let Err(e) = client_core.establish_connections(node_least_id, node_num, response_tx.clone()).await {
+        error!("❌ 建立连接失败: {}", e);
+        return Err(e);
+    }
+
+    // 运行主要逻辑
     match mode.as_str() {
         "load_test" => {
             let target_tps: u32 = env::var("TARGET_TPS")
@@ -641,11 +863,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 duration_secs: duration,
             };
 
-            client_node.run_load_test(config, node_least_id, node_num).await;
-            info!("✅ 负载测试完成，保持客户端运行状态...");
+            client_core.run_load_test(config, node_least_id, node_num, cmd_tx.clone()).await;
+
+            info!("✅ 负载测试完成，等待响应处理...");
+            tokio::time::sleep(Duration::from_secs(30)).await;
+            
+            // 请求打印最终报告
+            let _ = cmd_tx.send(ClientCommand::PrintStats);
+            tokio::time::sleep(Duration::from_secs(2)).await;
         }
         _ => {
-            client_node.run_interactive_mode(node_least_id, node_num).await;
+            client_core.run_interactive_mode(node_least_id, node_num, cmd_tx.clone()).await;
         }
     }
 

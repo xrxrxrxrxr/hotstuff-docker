@@ -9,6 +9,7 @@ pub mod pompe;
 pub mod pompe_network;
 pub mod diagnose;
 pub mod lockfree_types;
+pub mod event;
 
 // 重新导出常用类型
 pub use app::TestApp;
