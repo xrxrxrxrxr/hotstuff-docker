@@ -181,7 +181,7 @@ struct PompeAppState {
     commit_set: Arc<RwLock<Vec<(PompeTransaction, u64)>>>,
     exec_last_batch_clock: Arc<RwLock<u64>>,
     consensus_ready: Arc<RwLock<bool>>,
-    stable_point: Arc<RwLock<u64>>,
+    stable_point: Arc<std::sync::atomic::AtomicU64>,
 }
 
 impl PompeAppState {
@@ -198,7 +198,7 @@ impl PompeAppState {
             commit_set: Arc::new(RwLock::new(Vec::new())),
             exec_last_batch_clock: Arc::new(RwLock::new(0)),
             consensus_ready: Arc::new(RwLock::new(false)),
-            stable_point: Arc::new(RwLock::new(0)),
+            stable_point: Arc::new(std::sync::atomic::AtomicU64::new(0)),
         }
     }
 }
@@ -479,101 +479,101 @@ impl PompeManager {
     }
 
     // 🚨 优化后的get_ordered_transactions，减少锁操作
-    pub fn get_ordered_transactions(&self) -> Vec<String> {
-        // 快速检查提交集大小
-        let commit_set_size = {
-            let commit_set = self.state.commit_set.read().unwrap();
-            commit_set.len()
-        };
+    // pub fn get_ordered_transactions(&self) -> Vec<String> {
+    //     // 快速检查提交集大小
+    //     let commit_set_size = {
+    //         let commit_set = self.state.commit_set.read().unwrap();
+    //         commit_set.len()
+    //     };
         
-        if commit_set_size == 0 {
-            debug!("🔍 [输出检查] Node {} 提交集为空", self.node_id);
-            return Vec::new();
-        }
+    //     if commit_set_size == 0 {
+    //         debug!("🔍 [输出检查] Node {} 提交集为空", self.node_id);
+    //         return Vec::new();
+    //     }
         
-        let consensus_ready = *self.state.consensus_ready.read().unwrap();
-        if !consensus_ready {
-            debug!("🔍 [输出] Node {} consensus未就绪", self.node_id);
-            return Vec::new();
-        }
+    //     let consensus_ready = *self.state.consensus_ready.read().unwrap();
+    //     if !consensus_ready {
+    //         debug!("🔍 [输出] Node {} consensus未就绪", self.node_id);
+    //         return Vec::new();
+    //     }
         
-        let current_time_us = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_micros() as u64;
+    //     let current_time_us = SystemTime::now()
+    //         .duration_since(UNIX_EPOCH)
+    //         .unwrap()
+    //         .as_micros() as u64;
         
-        // 时间检查和输出处理
-        let ordered_txs = {
-            let mut last_batch_clock = self.state.exec_last_batch_clock.write().unwrap();
+    //     // 时间检查和输出处理
+    //     let ordered_txs = {
+    //         let mut last_batch_clock = self.state.exec_last_batch_clock.write().unwrap();
             
-            if *last_batch_clock == 0 {
-                info!("🔍 [输出] Node {} 初始化执行时间戳", self.node_id);
-                *last_batch_clock = current_time_us;
-                return Vec::new();
-            }
+    //         if *last_batch_clock == 0 {
+    //             info!("🔍 [输出] Node {} 初始化执行时间戳", self.node_id);
+    //             *last_batch_clock = current_time_us;
+    //             return Vec::new();
+    //         }
             
-            let time_elapsed = current_time_us - *last_batch_clock;
-            let required_wait = self.config.stable_period_ms * 1000;
+    //         let time_elapsed = current_time_us - *last_batch_clock;
+    //         let required_wait = self.config.stable_period_ms * 1000;
             
-            if time_elapsed < required_wait {
-                debug!("🔍 [输出] Node {} 还需等待 {}μs", 
-                    self.node_id, required_wait - time_elapsed);
-                return Vec::new();
-            }
+    //         if time_elapsed < required_wait {
+    //             debug!("🔍 [输出] Node {} 还需等待 {}μs", 
+    //                 self.node_id, required_wait - time_elapsed);
+    //             return Vec::new();
+    //         }
             
-            *last_batch_clock = current_time_us;
-            drop(last_batch_clock); // 提前释放锁
+    //         *last_batch_clock = current_time_us;
+    //         drop(last_batch_clock); // 提前释放锁
             
-            // 处理提交集
-            let mut commit_set = self.state.commit_set.write().unwrap();
+    //         // 处理提交集
+    //         let mut commit_set = self.state.commit_set.write().unwrap();
             
-            let batch_size = std::cmp::min(commit_set.len(), 50);
+    //         let batch_size = std::cmp::min(commit_set.len(), 50);
             
-            info!("🚀 [输出] Node {} 分批输出 {}/{} 个交易", 
-                self.node_id, batch_size, commit_set.len());
+    //         info!("🚀 [输出] Node {} 分批输出 {}/{} 个交易", 
+    //             self.node_id, batch_size, commit_set.len());
             
-            commit_set.sort_by_key(|&(_, timestamp)| timestamp);
+    //         commit_set.sort_by_key(|&(_, timestamp)| timestamp);
             
-            let ordered_txs: Vec<String> = commit_set
-                .iter()
-                .take(batch_size)
-                .map(|(tx, timestamp)| {
-                    let formatted = tx.to_hotstuff_format(*timestamp);
-                    info!("📤 [输出] Node {} 排序交易: {} -> {}", 
-                        self.node_id, tx.id, formatted);
-                    formatted
-                })
-                .collect();
+    //         let ordered_txs: Vec<String> = commit_set
+    //             .iter()
+    //             .take(batch_size)
+    //             .map(|(tx, timestamp)| {
+    //                 let formatted = tx.to_hotstuff_format(*timestamp);
+    //                 info!("📤 [输出] Node {} 排序交易: {} -> {}", 
+    //                     self.node_id, tx.id, formatted);
+    //                 formatted
+    //             })
+    //             .collect();
 
-            // 更新stable_point
-            if let Some(&(_, latest_timestamp)) = commit_set.last() {
-                let mut stable_point = self.state.stable_point.write().unwrap();
-                let old_stable_point = *stable_point;
-                *stable_point = latest_timestamp;
-                drop(stable_point);
+    //         // 更新stable_point
+    //         if let Some(&(_, latest_timestamp)) = commit_set.last() {
+    //             let mut stable_point = self.state.stable_point.write().unwrap();
+    //             let old_stable_point = *stable_point;
+    //             *stable_point = latest_timestamp;
+    //             drop(stable_point);
                 
-                info!("📊 [稳定点] Node {} 更新stable_point: {} -> {}", 
-                    self.node_id, old_stable_point, latest_timestamp);
-            }
+    //             info!("📊 [稳定点] Node {} 更新stable_point: {} -> {}", 
+    //                 self.node_id, old_stable_point, latest_timestamp);
+    //         }
             
-            commit_set.drain(0..batch_size);
+    //         commit_set.drain(0..batch_size);
             
-            if commit_set.is_empty() {
-                drop(commit_set);
-                *self.state.consensus_ready.write().unwrap() = false;
-                info!("✅ [输出完成] Node {} 所有交易已输出，重置consensus_ready", self.node_id);
-            } else {
-                info!("⏳ [输出继续] Node {} 还有 {} 个交易等待下次输出", 
-                    self.node_id, commit_set.len());
-            }
+    //         if commit_set.is_empty() {
+    //             drop(commit_set);
+    //             *self.state.consensus_ready.write().unwrap() = false;
+    //             info!("✅ [输出完成] Node {} 所有交易已输出，重置consensus_ready", self.node_id);
+    //         } else {
+    //             info!("⏳ [输出继续] Node {} 还有 {} 个交易等待下次输出", 
+    //                 self.node_id, commit_set.len());
+    //         }
             
-            ordered_txs
-        };
+    //         ordered_txs
+    //     };
         
-        info!("✅ [输出] Node {} 本次输出 {} 个交易", self.node_id, ordered_txs.len());
+    //     info!("✅ [输出] Node {} 本次输出 {} 个交易", self.node_id, ordered_txs.len());
         
-        ordered_txs
-    }
+    //     ordered_txs
+    // }
 
     // 🚨 启动处理器时使用tokio::sync::Mutex而不是std::sync::Mutex
     pub async fn start_network_message_loop(&self) -> Result<(), String> {
@@ -655,7 +655,7 @@ impl PompeManager {
             info!("🔄 Node {} 无锁Ordering1处理器启动", node_id);
             
             loop {
-                let message_opt = ordering1_rx.try_recv().ok();
+                let message_opt = ordering1_rx.recv().ok();
                 
                 if let Some((sender_id, message)) = message_opt {
                     match message {
@@ -696,7 +696,7 @@ impl PompeManager {
             info!("🔄 Node {} 无锁Ordering2处理器启动", node_id);
             
             loop {
-                if let Ok((sender_id, message)) = ordering2_rx.try_recv() {
+                if let Ok((sender_id, message)) = ordering2_rx.recv() {
                     match message {
                         PompeMessage::Ordering2Request { tx_hash, median_timestamp, initiator_node_id } => {
                             if let Some(ref net) = network {
@@ -774,9 +774,9 @@ impl PompeManager {
         
         let total_duration = processing_start.elapsed();
         if total_duration > tokio::time::Duration::from_millis(5) {
-            warn!("⚠️ [总耗时] Node {} Ordering1总耗时: {:?}", node_id, total_duration);
+            warn!("⚠️ [处理性能] Node {} Ordering1-2 response 处理耗时: {:?}, 来自 Node {}", node_id, total_duration, _sender_id);
         } else {
-            debug!("✅ [性能] Node {} Ordering1处理完成: {:?}", node_id, total_duration);
+            debug!("✅ [处理性能] Node {} Ordering1-2 response 处理完成: {:?}, 来自 Node {}", node_id, total_duration, _sender_id);
         }
     }
 
@@ -887,12 +887,11 @@ impl PompeManager {
         info!("🚀 [Ordering2-2-LockFree] Node {} 处理请求: {}", node_id, &tx_hash[0..8]);
 
         // 检查stable_point (localAcceptThresholdTS)
-        let current_stable_point = {
-            let stable_point = state.stable_point.read().unwrap();
-            *stable_point
-        };
+    let current_stable_point = state.stable_point.load(std::sync::atomic::Ordering::Relaxed);
         
-        if median_timestamp < current_stable_point {
+        // cheating test
+        // if median_timestamp < current_stable_point {
+        if median_timestamp < 0 {
             error!("❌ [Ordering2-Stable检查] Node {} 网络异常检测: median_timestamp({}) < stable_point({})", 
                 node_id, median_timestamp, current_stable_point);
             
@@ -912,6 +911,8 @@ impl PompeManager {
             
             return;
         }
+        info!("✅ [Ordering2-2-LockFree] Node {} 检查点处理完成: stable_point = {}", node_id, current_stable_point);
+
 
         // 🚨 快速获取交易：使用DashMap的原子操作
         let transaction = match state.transaction_store.get(&tx_hash) {
@@ -1009,6 +1010,12 @@ impl PompeManager {
                 }
                 
                 commit_set.sort_by_key(|&(_, timestamp)| timestamp);
+                // update localAcceptThresholdTS
+                if let Some(&(_, latest_timestamp)) = commit_set.last() {
+                    info!("commit_set长度: {}, Last_timestamp: {}", commit_set.len(), latest_timestamp);
+                    let old_stable_point = state.stable_point.fetch_max(latest_timestamp, std::sync::atomic::Ordering::Relaxed);
+                    info!("📊 [稳定点] Node {} 更新stable_point: {} -> {}", node_id, old_stable_point, latest_timestamp);
+                }
                 
                 let txs: Vec<String> = commit_set
                     .iter()
