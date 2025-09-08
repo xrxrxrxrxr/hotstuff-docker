@@ -70,82 +70,82 @@ impl ConnectionManager {
         }
     }
 
-    // fn get_or_create_connection(&self, peer_key: &VerifyingKey) -> Option<TcpStream> {
-    //     // 先尝试读锁获取现有连接
-    //     {
-    //         let connections = self.connections.read();
-    //         if let Some(existing_connection) = connections.get(peer_key).and_then(|s| s.try_clone().ok()) {
-    //             return Some(existing_connection);
-    //         }
-    //     }
-
-    //     // 如果没有连接或连接失效，创建新连接
-    //     if let Some(peer_addr) = self.config.peer_addrs.get(peer_key) {
-    //         match TcpStream::connect(peer_addr) {
-    //             Ok(stream) => {
-    //                 if let Ok(cloned) = stream.try_clone() {
-    //                     // 使用写锁更新连接
-    //                     let mut connections = self.connections.write();
-    //                     connections.insert(*peer_key, stream);
-    //                     return Some(cloned);
-    //                 }
-    //             }
-    //             Err(e) => {
-    //                 error!("连接失败 {}: {}", peer_addr, e);
-    //             }
-    //         }
-    //     }
-    //     None
-    // }
-
     fn get_or_create_connection(&self, peer_key: &VerifyingKey) -> Option<TcpStream> {
-        // 1. 先检查现有连接的健康状态
+        // 先尝试读锁获取现有连接
         {
             let connections = self.connections.read();
-            if let Some(existing_connection) = connections.get(peer_key) {
-                if let Ok(cloned) = existing_connection.try_clone() {
-                    // 关键：检查连接是否还活着
-                    if self.is_connection_alive(&cloned) {
-                        return Some(cloned);
-                    }
-                }
+            if let Some(existing_connection) = connections.get(peer_key).and_then(|s| s.try_clone().ok()) {
+                return Some(existing_connection);
             }
         }
 
-        // 2. 清理失效连接
-        {
-            let mut connections = self.connections.write();
-            connections.remove(peer_key);
-        }
-
-        // 3. 创建新连接，带重试
+        // 如果没有连接或连接失效，创建新连接
         if let Some(peer_addr) = self.config.peer_addrs.get(peer_key) {
-            for attempt in 1..=3 {
-                match TcpStream::connect(peer_addr) {
-                    Ok(stream) => {
-                        // 4. 设置TCP选项
-                        let _ = stream.set_nodelay(true);
-                        let _ = stream.set_read_timeout(Some(Duration::from_secs(10)));
-                        let _ = stream.set_write_timeout(Some(Duration::from_secs(5)));
-                        
-                        if let Ok(cloned) = stream.try_clone() {
-                            let mut connections = self.connections.write();
-                            connections.insert(*peer_key, stream);
-                            return Some(cloned);
-                        }
+            match TcpStream::connect(peer_addr) {
+                Ok(stream) => {
+                    if let Ok(cloned) = stream.try_clone() {
+                        // 使用写锁更新连接
+                        let mut connections = self.connections.write();
+                        connections.insert(*peer_key, stream);
+                        return Some(cloned);
                     }
-                    Err(e) => {
-                        if attempt < 3 {
-                            std::thread::sleep(Duration::from_millis(100));
-                        } else {
-                            error!("连接失败 {} (所有 {} 次尝试): {}", peer_addr, attempt, e);
-                        }
-                    }
+                }
+                Err(e) => {
+                    error!("连接失败 {}: {}", peer_addr, e);
                 }
             }
         }
         None
     }
+
+    // fn get_or_create_connection(&self, peer_key: &VerifyingKey) -> Option<TcpStream> {
+    //     // 1. 先检查现有连接的健康状态
+    //     {
+    //         let connections = self.connections.read();
+    //         if let Some(existing_connection) = connections.get(peer_key) {
+    //             if let Ok(cloned) = existing_connection.try_clone() {
+    //                 // 关键：检查连接是否还活着
+    //                 if self.is_connection_alive(&cloned) {
+    //                     return Some(cloned);
+    //                 }
+    //             }
+    //         }
+    //     }
+
+    //     // 2. 清理失效连接
+    //     {
+    //         let mut connections = self.connections.write();
+    //         connections.remove(peer_key);
+    //     }
+
+    //     // 3. 创建新连接，带重试
+    //     if let Some(peer_addr) = self.config.peer_addrs.get(peer_key) {
+    //         for attempt in 1..=3 {
+    //             match TcpStream::connect(peer_addr) {
+    //                 Ok(stream) => {
+    //                     // 4. 设置TCP选项
+    //                     let _ = stream.set_nodelay(true);
+    //                     let _ = stream.set_read_timeout(Some(Duration::from_secs(10)));
+    //                     let _ = stream.set_write_timeout(Some(Duration::from_secs(5)));
+                        
+    //                     if let Ok(cloned) = stream.try_clone() {
+    //                         let mut connections = self.connections.write();
+    //                         connections.insert(*peer_key, stream);
+    //                         return Some(cloned);
+    //                     }
+    //                 }
+    //                 Err(e) => {
+    //                     if attempt < 3 {
+    //                         std::thread::sleep(Duration::from_millis(100));
+    //                     } else {
+    //                         error!("连接失败 {} (所有 {} 次尝试): {}", peer_addr, attempt, e);
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     None
+    // }
 
     // 添加连接健康检查
     fn is_connection_alive(&self, stream: &TcpStream) -> bool {
@@ -565,7 +565,8 @@ fn handle_client(
         }
         
         let length = u32::from_be_bytes(length_buf) as usize;
-        info!("******* 收到消息长度: {} bytes from {}", length, peer_addr);
+        // info!("******* 收到消息长度: {} bytes from {}", length, peer_addr);
+        
         
         if length > 10 * 1024 * 1024 { // 10MB limit
             error!("消息太大: {} bytes from {}", length, peer_addr);
