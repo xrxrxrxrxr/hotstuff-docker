@@ -349,8 +349,11 @@ impl ClientNode {
         info!("🚀 开始负载测试 - TPS目标: {}, 持续时间: {}秒", 
             config.target_tps, config.duration_secs);
 
-        let batch_size = std::cmp::max(100, config.target_tps / 5);
-        let batch_interval = Duration::from_millis(200);
+        // let batch_size = std::cmp::max(100, config.target_tps / 5);
+        // let batch_interval = Duration::from_millis(200);
+        // 参数调整点：降低发送频率测latency
+        let batch_size = 1;
+        let batch_interval = Duration::from_millis(1000);
         let end_time = Instant::now() + Duration::from_secs(config.duration_secs);
 
         let mut total_sent = 0;
@@ -594,7 +597,7 @@ impl PersistentConnection {
             
                 let serialized = serde_json::to_vec(&client_message)?;
                 let message_length = serialized.len() as u32;
-                info!("📦 ******* 客户端发送消息，长度: {} bytes", message_length);
+                info!("📦 ******* 客户端发送pompe消息，长度: {} bytes", message_length);
 
                 batch_buffer.extend_from_slice(&message_length.to_be_bytes());
                 batch_buffer.extend_from_slice(&serialized);
@@ -837,7 +840,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 等待共识节点启动
     info!("⏳ 等待共识节点启动...");
-    tokio::time::sleep(Duration::from_secs(15)).await;
+    tokio::time::sleep(Duration::from_secs(20)).await;
 
     // 建立连接
     if let Err(e) = client_core.establish_connections(node_least_id, node_num, response_tx.clone()).await {

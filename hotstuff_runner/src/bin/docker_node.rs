@@ -147,9 +147,10 @@ impl RegularTransactionProcessor {
     }
     
     fn push_transaction(&self, transaction: String) {
+        let tx_clone = transaction.clone();
         self.direct_queue.push(transaction);
         self.size_counter.fetch_add(1, Ordering::Relaxed);
-        
+        info!("Tx {} pushed to HotStuff queue.", tx_clone);
         // Limit queue size to prevent memory issues
         if self.get_queue_size() > 100000 {
             let _ = self.direct_queue.pop(); // Remove oldest transaction
@@ -226,42 +227,47 @@ async fn start_lockfree_client_listener(
     node_id: usize, 
     port: u16, 
     event_tx: broadcast::Sender<SystemEvent>,
-    pompe_tx_processor: Arc<LockFreeTransactionProcessor>,
+    // pompe_tx_processor: Arc<LockFreeTransactionProcessor>,
     regular_tx_processor: Arc<RegularTransactionProcessor>,
     lockfree_stats: Arc<LockFreeStats>,
     node_stats: Arc<PerformanceStats>,
     event_for_response_tx: broadcast::Sender<SystemEvent>,
+    pompe_manager: Option<Arc<PompeManager>>, 
 ) -> Result<(), String> {
     let addr = format!("0.0.0.0:{}", port);
     let listener = TcpListener::bind(&addr).await.map_err(|e| format!("Bind failed: {}", e))?;
     
     info!("[Lock-free] Node {} listening for client connections: {}", node_id, addr);
-    
-    match listener.accept().await {
-        Ok((socket, _client_addr)) => {
-            let event_tx_clone = event_tx.clone();
-            let pompe_tx_processor_clone = Arc::clone(&pompe_tx_processor);
-            let regular_tx_processor_clone = Arc::clone(&regular_tx_processor);
-            let lockfree_stats_clone = Arc::clone(&lockfree_stats);
-            let node_stats_clone = Arc::clone(&node_stats);
-            let event_for_response_rx = event_for_response_tx.subscribe();
-            tokio::spawn(async move {
-                if let Err(e) = handle_lockfree_client_connection(
-                    node_id,
-                    socket,
-                    event_tx_clone,
-                    pompe_tx_processor_clone,
-                    regular_tx_processor_clone,
-                    lockfree_stats_clone,
-                    node_stats_clone,
-                    event_for_response_rx,
-                ).await {
-                    error!("Node {} client connection handling failed: {}", node_id, e);
-                }
-            });
-        }
-        Err(e) => {
-            error!("Node {} accepting client connection failed: {}", node_id, e);
+
+    loop {
+        match listener.accept().await {
+            Ok((socket, _client_addr)) => {
+                let event_tx_clone = event_tx.clone();
+                // let pompe_tx_processor_clone = Arc::clone(&pompe_tx_processor);
+                let regular_tx_processor_clone = Arc::clone(&regular_tx_processor);
+                let lockfree_stats_clone = Arc::clone(&lockfree_stats);
+                let node_stats_clone = Arc::clone(&node_stats);
+                let event_for_response_rx = event_for_response_tx.subscribe();
+                let pompe_manager_clone = pompe_manager.clone();
+                tokio::spawn(async move {
+                    if let Err(e) = handle_lockfree_client_connection(
+                        node_id,
+                        socket,
+                        event_tx_clone,
+                        // pompe_tx_processor_clone,
+                        regular_tx_processor_clone,
+                        lockfree_stats_clone,
+                        node_stats_clone,
+                        event_for_response_rx,
+                        pompe_manager_clone,
+                    ).await {
+                        error!("Node {} client connection handling failed: {}", node_id, e);
+                    }
+                });
+            }
+            Err(e) => {
+                error!("Node {} accepting client connection failed: {}", node_id, e);
+            }
         }
     }
     Ok(())
@@ -272,11 +278,12 @@ async fn handle_lockfree_client_connection(
     node_id: usize, 
     socket:  TcpStream,
     event_tx: broadcast::Sender<SystemEvent>,
-    pompe_tx_processor: Arc<LockFreeTransactionProcessor>,
+    // pompe_tx_processor: Arc<LockFreeTransactionProcessor>,
     regular_tx_processor: Arc<RegularTransactionProcessor>,
     lockfree_stats: Arc<LockFreeStats>,
     node_stats: Arc<PerformanceStats>,
     mut event_for_response_rx: broadcast::Receiver<SystemEvent>,
+    pompe_manager: Option<Arc<PompeManager>>,
 ) -> Result<(), String> {
     let mut length_buf = [0u8; 4];
     let mut connection_tx_count = 0;
@@ -300,6 +307,7 @@ async fn handle_lockfree_client_connection(
                     })
                 }
                 SystemEvent::HotStuffCommitted { block_height, tx_ids } => {
+                    info!("[Event received] Node {} HotStuffCommitted: block_height={}, tx_ids={:?}", node_id, block_height, tx_ids);
                     response_count += tx_ids.len();
                     serde_json::json!({
                         "message_type": "consensus_response", 
@@ -371,9 +379,21 @@ async fn handle_lockfree_client_connection(
                         let tx_string = format!("{}:{}->{}:{}", transaction.id, transaction.from, transaction.to, transaction.amount);
                         
                         if is_pompe {
+                            if let Some(ref pompe) = pompe_manager {
+                                match pompe.process_raw_transaction(&tx_string).await {
+                                    Ok(_) => {
+                                        info!("[Lock-free] Node {} Pompe transaction processed directly: {}", node_id, tx_string);
+                                    }
+                                    Err(e) => {
+                                        error!("Pompe 交易处理失败: {}, 错误: {}", tx_string, e);
+                                    }
+                                }
+                            } else {
+                                warn!("Pompe 管理器未启用，跳过交易: {}", tx_string);
+                            }
                             // Pompe transactions go through Pompe processor
-                            pompe_tx_processor.push_input(tx_string.clone());
-                            info!("[Lock-free] Node {} Pompe transaction queued: {}", node_id, tx_string);
+                            // pompe_tx_processor.push_input(tx_string.clone());
+                            // info!("[Lock-free] Node {} Pompe transaction queued: {}", node_id, tx_string);
                         } else {
                             // Regular transactions go directly to HotStuff queue (following second code logic)
                             regular_tx_processor.push_transaction(tx_string.clone());
@@ -437,83 +457,83 @@ async fn handle_lockfree_client_connection(
 }
 
 // Enhanced Pompe processor with detailed performance monitoring
-async fn start_detailed_pompe_processor(
-    node_id: usize,
-    tx_processor: Arc<LockFreeTransactionProcessor>,
-    pompe_manager: Arc<PompeManager>,
-    event_tx: broadcast::Sender<SystemEvent>,
-    lockfree_stats: Arc<LockFreeStats>,
-    pompe_metrics: Arc<PompeQueueMetrics>,
-) {
-    info!("[Detailed monitoring] Node {} Pompe processor started", node_id);
+// async fn start_detailed_pompe_processor(
+//     node_id: usize,
+//     pompe_tx_processor: Arc<LockFreeTransactionProcessor>,
+//     pompe_manager: Arc<PompeManager>,
+//     event_tx: broadcast::Sender<SystemEvent>,
+//     lockfree_stats: Arc<LockFreeStats>,
+//     pompe_metrics: Arc<PompeQueueMetrics>,
+// ) {
+//     info!("[Detailed monitoring] Node {} Pompe processor started", node_id);
     
-    let batch_size = 50;
-    let mut batch_interval = tokio::time::interval(Duration::from_millis(10));
+//     let batch_size = 50;
+//     let mut batch_interval = tokio::time::interval(Duration::from_millis(10));
     
-    loop {
-        batch_interval.tick().await;
+//     loop {
+//         batch_interval.tick().await;
         
-        // Record queue size
-        let queue_size = tx_processor.get_queue_size();
-        pompe_metrics.record_queue_size(queue_size).await;
+//         // Record queue size
+//         let queue_size = pompe_tx_processor.get_queue_size();
+//         pompe_metrics.record_queue_size(queue_size).await;
         
-        let mut total_processed = 0;
-        for _ in 0..3 {
-            let batch_start = Instant::now();
-            let batch = tx_processor.process_batch(batch_size);
+//         let mut total_processed = 0;
+//         for _ in 0..3 {
+//             let batch_start = Instant::now();
+//             let batch = pompe_tx_processor.process_batch(batch_size);
             
-            if batch.is_empty() {
-                break;
-            }
+//             if batch.is_empty() {
+//                 break;
+//             }
             
-            pompe_metrics.record_transaction_submitted(batch.len());
+//             pompe_metrics.record_transaction_submitted(batch.len());
             
-            // Record batch processing latency
-            let batch_processing_time = batch_start.elapsed();
-            pompe_metrics.batch_processing_tracker.record_processing(batch_processing_time).await;
+//             // Record batch processing latency
+//             let batch_processing_time = batch_start.elapsed();
+//             pompe_metrics.batch_processing_tracker.record_processing(batch_processing_time).await;
             
-            // Process each transaction and record stage latencies
-            let mut batch_processed = 0;
-            for transaction in batch {
-                let tx_start = Instant::now();
+//             // Process each transaction and record stage latencies
+//             let mut batch_processed = 0;
+//             for transaction in batch {
+//                 let tx_start = Instant::now();
                 
-                match pompe_manager.process_raw_transaction(&transaction).await {
-                    Ok(_) => {
-                        let tx_processing_time = tx_start.elapsed();
+//                 match pompe_manager.process_raw_transaction(&transaction).await {
+//                     Ok(_) => {
+//                         let tx_processing_time = tx_start.elapsed();
                         
-                        // Record to different stages based on processing time
-                        if tx_processing_time < Duration::from_millis(1) {
-                            pompe_metrics.ordering1_tracker.record_processing(tx_processing_time).await;
-                        } else if tx_processing_time < Duration::from_millis(10) {
-                            pompe_metrics.ordering2_tracker.record_processing(tx_processing_time).await;
-                        } else {
-                            pompe_metrics.commit_tracker.record_processing(tx_processing_time).await;
-                        }
+//                         // Record to different stages based on processing time
+//                         if tx_processing_time < Duration::from_millis(1) {
+//                             pompe_metrics.ordering1_tracker.record_processing(tx_processing_time).await;
+//                         } else if tx_processing_time < Duration::from_millis(10) {
+//                             pompe_metrics.ordering2_tracker.record_processing(tx_processing_time).await;
+//                         } else {
+//                             pompe_metrics.commit_tracker.record_processing(tx_processing_time).await;
+//                         }
                         
-                        batch_processed += 1;
-                    }
-                    Err(e) => {
-                        error!("[Detailed monitoring] Pompe transaction processing failed: {}, error: {}", transaction, e);
-                    }
-                }
-            }
+//                         batch_processed += 1;
+//                     }
+//                     Err(e) => {
+//                         error!("[Detailed monitoring] Pompe transaction processing failed: {}, error: {}", transaction, e);
+//                     }
+//                 }
+//             }
             
-            pompe_metrics.record_transaction_completed(batch_processed);
-            total_processed += batch_processed;
-        }
+//             pompe_metrics.record_transaction_completed(batch_processed);
+//             total_processed += batch_processed;
+//         }
         
-        if total_processed > 0 {
-            lockfree_stats.update_pompe_queue_size(queue_size);
+//         if total_processed > 0 {
+//             lockfree_stats.update_pompe_queue_size(queue_size);
             
-            info!("[Detailed monitoring] Node {} Pompe processed {} transactions, queue remaining: {}", 
-                  node_id, total_processed, queue_size);
+//             info!("[Detailed monitoring] Node {} Pompe processed {} transactions, queue remaining: {}", 
+//                   node_id, total_processed, queue_size);
             
-            let _ = event_tx.send(SystemEvent::TransactionProcessed {
-                count: total_processed,
-            });
-        }
-    }
-}
+//             let _ = event_tx.send(SystemEvent::TransactionProcessed {
+//                 count: total_processed,
+//             });
+//         }
+//     }
+// }
 
 // Lock-free performance monitor
 async fn start_lockfree_performance_monitor(
@@ -654,27 +674,56 @@ async fn start_lockfree_performance_monitor(
     }
 }
 
-async fn send_response_to_client(node_id: usize, mut event_rx: broadcast::Receiver<SystemEvent>) {
-    info!("[Lock-free] Node {} response sender started", node_id);
+// async fn preheat_connections(tcp_network: &TcpNetwork, node_id: usize) -> Result<(), String> {
+//     info!("Node {} 开始预热网络连接...", node_id);
     
-    loop {
-        match event_rx.recv().await {
-            Ok(event) => {
-                match event {
-                    SystemEvent::PompeOrdering1Completed { tx_id } => {
-                        info!("[Lock-free] Node {} processed {} transactions", node_id, tx_id);
-                        // Here you can implement sending responses back to clients if needed
-                    }
-                    _ => {}
-                }
-            }
-            Err(e) => {
-                error!("[Lock-free] Node {} event reception failed: {}", node_id, e);
-            }
-        }
-    }
+//     // 发送ping消息到所有节点
+//     for attempt in 1..=3 {
+//         let mut success_count = 0;
+        
+//         // 尝试连接所有peer节点
+//         for peer_id in 1..=4 {
+//             if peer_id != node_id {
+//                 // 发送简单的心跳消息
+//                 if tcp_network.test_connection(peer_id).await.is_ok() {
+//                     success_count += 1;
+//                 }
+//             }
+//         }
+        
+//         if success_count >= 2 { // 至少连接到2个节点
+//             info!("Node {} 网络预热成功，连接到{}个节点", node_id, success_count);
+//             return Ok(());
+//         }
+        
+//         warn!("Node {} 第{}次预热尝试，只连接到{}个节点", node_id, attempt, success_count);
+//         tokio::time::sleep(Duration::from_secs(2)).await;
+//     }
+    
+//     Err("网络预热失败".to_string())
+// }
 
-}
+// async fn send_response_to_client(node_id: usize, mut event_rx: broadcast::Receiver<SystemEvent>) {
+//     info!("[Lock-free] Node {} response sender started", node_id);
+    
+//     loop {
+//         match event_rx.recv().await {
+//             Ok(event) => {
+//                 match event {
+//                     SystemEvent::PompeOrdering1Completed { tx_id } => {
+//                         info!("[SystemEvent::PompeOrdering1Completed] Node {} processed {} transactions", node_id, tx_id);
+//                         // Here you can implement sending responses back to clients if needed
+//                     }
+//                     _ => {}
+//                 }
+//             }
+//             Err(e) => {
+//                 error!("[Lock-free] Node {} event reception failed: {}", node_id, e);
+//             }
+//         }
+//     }
+
+// }
 
 #[tokio::main]
 async fn main() -> Result<(), String> {
@@ -720,7 +769,7 @@ async fn main() -> Result<(), String> {
        peer_addrs.insert(peer_verifying_key, addr);
        all_verifying_keys.push(peer_verifying_key);
        
-       info!("Node {}: {:?} -> {}", 
+       info!("Node {} peer_verifying_key: {:?} -> {}", 
              i, 
              peer_verifying_key.to_bytes()[0..4].to_vec(), 
              addr);
@@ -785,24 +834,10 @@ async fn main() -> Result<(), String> {
    let lockfree_stats_clone = Arc::clone(&lockfree_stats);
    let node_stats_clone = Arc::clone(&node_stats);
    let event_for_response_tx_clone = event_for_response_tx.clone();
-   
-   tokio::spawn(async move {
-       if let Err(e) = start_lockfree_client_listener(
-           client_listener_node_id,
-           client_listener_port,
-           event_tx_clone,
-           pompe_tx_processor_clone,
-           regular_tx_processor_clone,
-           lockfree_stats_clone,
-           node_stats_clone,
-           event_for_response_tx_clone, /* 🎯 */
-       ).await {
-           error!("Lock-free client listener failed: {}", e);
-       }
-   });
+
    
    info!("Waiting for other nodes to start...");
-   tokio::time::sleep(Duration::from_secs(10)).await;
+   tokio::time::sleep(Duration::from_secs(15)).await;
 
    info!("Creating HotStuff node...");
    
@@ -818,41 +853,76 @@ async fn main() -> Result<(), String> {
        event_for_response_tx.clone() /* 🎯 */
    );
 
-   // Optimized transaction bridge to reduce backlog - now only for Pompe transactions
-   let bridge_queue = Arc::clone(&shared_tx_queue);
-   let bridge_pompe_processor = Arc::clone(&pompe_tx_processor);
-   
-   tokio::spawn(async move {
-       info!("[Lock-free bridge] Pompe transaction bridge started");
-       let mut bridge_interval = tokio::time::interval(Duration::from_millis(20)); // More frequent bridging
-       
-       loop {
-           bridge_interval.tick().await;
-           
-           // Process Pompe transactions through the bridge to HotStuff
-           let pompe_transactions = bridge_pompe_processor.process_batch(50);
-           
-           if !pompe_transactions.is_empty() {
-               for tx in &pompe_transactions {
-                   bridge_queue.push(tx.clone());
-               }
-               info!("[Lock-free bridge] Bridged {} Pompe transactions to HotStuff, Pompe queue remaining: {}", 
-                     pompe_transactions.len(), bridge_pompe_processor.get_queue_size());
-           }
-           
-           // Warning: if Pompe queue backlogs too much
-           let pompe_queue_size = bridge_pompe_processor.get_queue_size();
-           if pompe_queue_size > 100 {
-               warn!("[Lock-free bridge] Pompe queue backlog: {} transactions - may need tuning", pompe_queue_size);
-           }
-       }
-   });
-
    // Add monitoring for regular transaction queue size (similar to second code)
    let regular_tx_monitor = Arc::clone(&regular_tx_processor);
    let stats_for_monitor = Arc::clone(&node_stats);
    let lockfree_stats_for_monitor = Arc::clone(&lockfree_stats);
+
+   // Create completely lock-free Pompe manager
+   let pompe_config = load_pompe_config();
+   let pompe_manager = if pompe_config.enable {
+       info!("Enabling completely lock-free Pompe BFT, batch size: {}", pompe_config.batch_size);
+
+       let all_node_ids: Vec<usize> = (node_least_id..=(node_least_id+node_num-1)).collect();
+       info!("Pompe network node list: {:?}", all_node_ids);
+
+       let mut pompe = PompeManager::new_with_complete_network(
+           node_id,
+           all_node_ids,
+           pompe_config,
+           tcp_network.clone(),
+           event_for_response_tx.clone() /* pompe event sender 🎯 */
+       );
+
+       // Use connected mode lock-free adapter
+       let mut lockfree_adapter = LockFreeHotStuffAdapter::new();
+       lockfree_adapter.connect_to_queue(shared_tx_queue.clone());
+       let lockfree_adapter = Arc::new(lockfree_adapter);
+       pompe.set_lockfree_adapter(Arc::clone(&lockfree_adapter));
+       
+       let pompe_arc = Arc::new(pompe);
+       let pompe_clone = Arc::clone(&pompe_arc);
+       
+       // Start Pompe network loop
+       tokio::spawn(async move {
+           if let Err(e) = pompe_clone.start_network_message_loop().await {
+               error!("Completely lock-free Pompe network loop startup failed: {}", e);
+           }
+       });
    
+       Some(pompe_arc)
+   } else {
+       info!("Pompe BFT disabled");
+       None
+   };
+
+   let pompe_manager_clone = pompe_manager.clone();
+
+    tokio::spawn(async move {
+       if let Err(e) = start_lockfree_client_listener(
+           client_listener_node_id,
+           client_listener_port,
+           event_tx_clone,
+        //    pompe_tx_processor_clone,
+           regular_tx_processor_clone,
+           lockfree_stats_clone,
+           node_stats_clone,
+           event_for_response_tx_clone, /* 🎯 */
+           pompe_manager.clone(),
+       ).await {
+           error!("Lock-free client listener failed: {}", e);
+       }
+   });
+    
+   let lockfree_stats_clone = Arc::clone(&lockfree_stats);
+   tokio::spawn(start_lockfree_performance_monitor(
+       node_id,
+       event_rx,
+       node_stats.clone(),
+       pompe_manager_clone,
+       lockfree_stats_clone,
+   ));
+
    tokio::spawn(async move {
        info!("[Regular tx monitor] Regular transaction monitor started");
        let mut monitor_interval = tokio::time::interval(Duration::from_secs(5));
@@ -915,247 +985,11 @@ async fn main() -> Result<(), String> {
        }
    });
 
-   // Create completely lock-free Pompe manager
-   let pompe_config = load_pompe_config();
-   let pompe_manager = if pompe_config.enable {
-       info!("Enabling completely lock-free Pompe BFT, batch size: {}", pompe_config.batch_size);
-
-       let all_node_ids: Vec<usize> = (node_least_id..=(node_least_id+node_num-1)).collect();
-       info!("Pompe network node list: {:?}", all_node_ids);
-
-       let mut pompe = PompeManager::new_with_complete_network(
-           node_id,
-           all_node_ids,
-           pompe_config,
-           tcp_network.clone(),
-           event_for_response_tx.clone() /* pompe event sender 🎯 */
-       );
-
-       /* event handling 🎯 */
-    //    tokio::spawn(send_response_to_client(node_id,event_for_response_rx)); /* pompe/hotstuff event receiver 🎯 */
-
-       // Use connected mode lock-free adapter
-       let mut lockfree_adapter = LockFreeHotStuffAdapter::new();
-       lockfree_adapter.connect_to_queue(shared_tx_queue.clone());
-       let lockfree_adapter = Arc::new(lockfree_adapter);
-       pompe.set_lockfree_adapter(Arc::clone(&lockfree_adapter));
-       
-       let pompe_arc = Arc::new(pompe);
-       let pompe_clone = Arc::clone(&pompe_arc);
-       
-       // Start Pompe network loop
-       tokio::spawn(async move {
-           if let Err(e) = pompe_clone.start_network_message_loop().await {
-               error!("Completely lock-free Pompe network loop startup failed: {}", e);
-           }
-       });
-       
-       // Periodic cleanup
-       let pompe_for_cleanup = Arc::clone(&pompe_arc);
-       tokio::spawn(async move {
-           let mut cleanup_interval = tokio::time::interval(Duration::from_secs(30));
-           
-           loop {
-               cleanup_interval.tick().await;
-               
-               pompe_for_cleanup.cleanup_expired_states();
-               info!("[Periodic cleanup] Node {} executed Pompe state cleanup", node_id);
-           }
-       });
-   
-       Some(pompe_arc)
-   } else {
-       info!("Pompe BFT disabled");
-       None
-   };
-
-   // Start completely lock-free Pompe processor
-   if let Some(ref pompe) = pompe_manager {
-       let pompe_clone = Arc::clone(pompe);
-       let event_tx_clone = event_tx.clone();
-       let lockfree_stats_clone = Arc::clone(&lockfree_stats);
-       
-       tokio::spawn(start_detailed_pompe_processor(
-           node_id,
-           pompe_tx_processor, // Use pompe_tx_processor instead of tx_processor
-           pompe_clone,
-           event_tx_clone,
-           lockfree_stats_clone,
-           Arc::new(PompeQueueMetrics::new()),
-       ));
-   }
-
-   // Start lock-free performance monitor
-   let pompe_manager_clone = pompe_manager.clone();
-   let lockfree_stats_clone = Arc::clone(&lockfree_stats);
-   tokio::spawn(start_lockfree_performance_monitor(
-       node_id,
-       event_rx,
-       node_stats.clone(),
-       pompe_manager_clone,
-       lockfree_stats_clone,
-   ));
-
    info!("[Dual-path lock-free] Node {} all components started, entering dual-path event loop", node_id);
-   
-   // Main loop: completely event-driven, no polling, lock-free with dual-path monitoring
-   let mut heartbeat_interval = tokio::time::interval(Duration::from_secs(30));
-   
-   loop {
-       tokio::select! {
-           // Heartbeat detection: ensure dual-path system is alive
-           _ = heartbeat_interval.tick() => {
-               let (total_rx, pompe_rx, hotstuff_size, pompe_size, hotstuff_consumed) = lockfree_stats.get_stats();
-               let regular_queue_size = shared_tx_queue.len();
-               let regular_tx_count = total_rx - pompe_rx;
-               
-               info!("[Dual-path heartbeat] Node {} system running normally", node_id);
-               info!("   Total received: {} (Pompe: {}, Regular: {})", total_rx, pompe_rx, regular_tx_count);
-               info!("   Queue status: HotStuff={}, Pompe={}, Regular={}, consumed={}", 
-                     hotstuff_size, pompe_size, regular_queue_size, hotstuff_consumed);
-               
-               // Health check
-               if let Some(ref pompe) = pompe_manager {
-                   match pompe.get_network_stats().await {
-                       Some(stats) => {
-                           let (connections, messages) = stats;
-                           info!("   Pompe network: {} connections, {} messages", connections, messages);
-                           
-                           if connections == 0 && messages == 0 {
-                               warn!("[Health check] Pompe network connection abnormal, may need restart");
-                           }
-                       }
-                       None => {
-                           debug!("   Pompe network stats not available for health check");
-                       }
-                   }
-                   
-                   let (batch_count, ordering1_count, commit_count, consensus_ready, _, tx_store_count, _) = pompe.get_detailed_stats();
-                   
-                   if tx_store_count > 1000 || ordering1_count > 100 {
-                       warn!("[Health check] Pompe status abnormal: store={}, ordering1={}", tx_store_count, ordering1_count);
-                       
-                       // Trigger cleanup
-                       pompe.cleanup_expired_states();
-                       info!("[Health check] Emergency cleanup executed");
-                   }
-                   
-                   if commit_count > 500 {
-                       warn!("[Health check] Pompe commit set backlog: {}", commit_count);
-                   }
-               }
-               
-               // Dual-path queue health check
-               if regular_queue_size > 100 {
-                   warn!("[Health check] Regular transaction queue severe backlog: {}", regular_queue_size);
-               }
-               if hotstuff_size > 100 {
-                   warn!("[Health check] HotStuff queue severe backlog: {}", hotstuff_size);
-               } else if pompe_size > 1000 {
-                   warn!("[Health check] Pompe input queue severe backlog: {}", pompe_size);
-               }
-               
-               // Dual-path throughput analysis
-               if total_rx > 0 {
-                   let processing_rate = (hotstuff_consumed as f64 / total_rx as f64) * 100.0;
-                   info!("   Overall processing rate: {:.1}%", processing_rate);
-                   
-                   if processing_rate < 80.0 {
-                       warn!("[Performance warning] Processing rate low: {:.1}%", processing_rate);
-                   }
-                   
-                   // Path-specific analysis
-                   if pompe_rx > 0 && regular_tx_count > 0 {
-                       let pompe_ratio = (pompe_rx as f64 / total_rx as f64) * 100.0;
-                       info!("   Transaction path distribution: Pompe={:.1}%, Regular={:.1}%", 
-                             pompe_ratio, 100.0 - pompe_ratio);
-                   }
-               }
-           }
-           
-           // Graceful shutdown signal handling with dual-path reporting
-           _ = tokio::signal::ctrl_c() => {
-               info!("[Graceful shutdown] Received Ctrl+C signal, starting dual-path shutdown process");
-               
-               // Final dual-path statistics report
-               let (total_rx, pompe_rx, hotstuff_size, pompe_size, hotstuff_consumed) = lockfree_stats.get_stats();
-               let final_regular_queue_size = shared_tx_queue.len();
-               let regular_tx_count = total_rx - pompe_rx;
-               
-               info!("[Final dual-path statistics] =========================");
-               info!("  Total received transactions: {}", total_rx);
-               info!("  Transaction path breakdown:");
-               info!("    Pompe transactions: {}", pompe_rx);
-               info!("    Regular transactions: {}", regular_tx_count);
-               info!("  Final queue status:");
-               info!("    HotStuff queue: {}", hotstuff_size);
-               info!("    Pompe queue: {}", pompe_size);
-               info!("    Regular queue: {}", final_regular_queue_size);
-               info!("  HotStuff consumed: {}", hotstuff_consumed);
-               
-               if total_rx > 0 {
-                   let processing_rate = (hotstuff_consumed as f64 / total_rx as f64) * 100.0;
-                   info!("  Overall processing rate: {:.1}%", processing_rate);
-                   
-                   // Path-specific efficiency analysis
-                   if pompe_rx > 0 && regular_tx_count > 0 {
-                       let pompe_usage = (pompe_rx as f64 / total_rx as f64) * 100.0;
-                       let regular_usage = (regular_tx_count as f64 / total_rx as f64) * 100.0;
-                       info!("  Path usage analysis:");
-                       info!("    Pompe path: {:.1}% of total transactions", pompe_usage);
-                       info!("    Regular path: {:.1}% of total transactions", regular_usage);
-                       
-                       // Queue efficiency analysis
-                       if final_regular_queue_size < regular_tx_count / 2 {
-                           info!("    Regular path efficiency: High (low queue backlog)");
-                       } else {
-                           warn!("    Regular path efficiency: Low (significant queue backlog)");
-                       }
-                   }
-               }
-               
-               if let Some(ref pompe) = pompe_manager {
-                   let (batch_count, ordering1_count, commit_count, consensus_ready, _, tx_store_count, initiator_count) = pompe.get_detailed_stats();
-                   
-                   info!("  Pompe final status:");
-                   info!("     Batch records: {}", batch_count);
-                   info!("     Ordering1 in progress: {}", ordering1_count);
-                   info!("     Commit set size: {}", commit_count);
-                   info!("     Consensus ready: {}", consensus_ready);
-                   info!("     Transaction storage: {}", tx_store_count);
-                   info!("     Initiator records: {}", initiator_count);
-                   
-                   if let Some((connections, messages)) = pompe.get_network_stats().await {
-                       info!("     Network connections: {}", connections);
-                       info!("     Network messages: {}", messages);
-                   }
-               }
-               
-               // Dual-path performance statistics
-               info!("  Performance statistics:");
-               let submission_tps = node_stats.get_submission_tps();
-               let end_to_end_tps = node_stats.get_end_to_end_tps();
-               let pure_consensus_tps = node_stats.get_pure_consensus_tps();
-               let confirmed_txs = node_stats.get_confirmed_transactions();
-               let confirmed_blocks = node_stats.get_confirmed_blocks();
-               
-               info!("     Submission TPS: {:.2}", submission_tps);
-               info!("     End-to-end TPS: {:.2}", end_to_end_tps);
-               info!("     Pure consensus TPS: {:.2}", pure_consensus_tps);
-               info!("     Confirmed transactions: {}", confirmed_txs);
-               info!("     Confirmed blocks: {}", confirmed_blocks);
-               
-               // Final architecture summary
-               info!("  Dual-path architecture summary:");
-               info!("     - Pompe transactions: Processed via BFT consensus → HotStuff");
-               info!("     - Regular transactions: Processed directly → HotStuff");
-               info!("     - Both paths: Lock-free, event-driven, high-performance");
-               
-               info!("[Graceful shutdown] Node {} dual-path lock-free architecture shutdown complete", node_id);
-               break;
-           }
-       }
-   }
+
+   info!("Node {} 所有组件启动完成", node_id);
+    tokio::signal::ctrl_c().await.map_err(|e| format!("信号处理失败: {}", e))?;
+    info!("Node {} 收到退出信号，正常关闭", node_id);
    
    Ok(())
 }

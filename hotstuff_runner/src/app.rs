@@ -86,6 +86,7 @@ impl<K: KVStore> App<K> for TestApp {
         // 先检查队列大小，避免无效循环
         let queue_size = self.tx_queue.len();
         let actual_max = std::cmp::min(max_tx_count, queue_size);
+        info!("Node {} [produce_block] 当前队列大小: {}, 本区块将尝试获取最多 {} 个交易", self.node_id, queue_size, actual_max);
         
         if actual_max > 0 {
             transactions.reserve(actual_max); // 预分配容量
@@ -93,6 +94,7 @@ impl<K: KVStore> App<K> for TestApp {
             // 使用更紧凑的循环
             while transactions.len() < max_tx_count {
                 if let Some(tx) = self.tx_queue.pop() {
+                    info!("Node {} [produce_block] 🔨 从队列获取交易: {}", self.node_id, &tx);
                     transactions.push(tx);
                 } else {
                     break;
@@ -233,7 +235,7 @@ impl<K: KVStore> App<K> for TestApp {
         let mut app_state_updates = AppStateUpdates::new();
         
         // 更新区块计数
-        self.block_count += 1;
+        self.block_count += 1; 
         let block_count_key = format!("block_count_{}", self.node_id);
         let block_count_value = self.block_count.to_string();
         app_state_updates.insert(

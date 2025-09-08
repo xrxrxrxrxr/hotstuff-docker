@@ -93,12 +93,13 @@ impl Node {
             .block_sync_request_limit(10)
             .block_sync_server_advertise_time(Duration::new(10, 0))      // 官方: 10秒
             .block_sync_response_timeout(Duration::new(3, 0))            // 官方: 3秒
+            // .block_sync_response_timeout(Duration::from_millis(500)) 
             .block_sync_blacklist_expiry_time(Duration::new(10, 0))      // 官方: 10秒
             .block_sync_trigger_min_view_difference(2)                   // 官方: 2
             .block_sync_trigger_timeout(Duration::new(60, 0))            // 官方: 60秒
             .progress_msg_buffer_capacity(BufferSize::new(1024))
             .epoch_length(EpochLength::new(50))                          // 官方: 50
-            .max_view_time(Duration::from_millis(3000))                  // 官方: 2000ms
+            .max_view_time(Duration::from_millis(2000))                  // 官方: 2000ms
             .log_events(false)                                           // 官方: false
             .build();
 
@@ -240,12 +241,12 @@ impl Node {
 
                             // 🔥 关键：发送 HotStuff 提交事件，触发客户端 Consensus 响应
                             // 提取交易 ID（关键：用于客户端响应）
-                            let extract_transaction_ids_from_block_start = Instant::now();
-                            let tx_ids: Vec<u64> = extract_transaction_ids_from_block(&block)
-                                .into_iter()
-                                .filter(|tx_id| *tx_id % 100 == 0)// 只发送tx_id%100==0的交易
-                                .collect();
-                            info!("!!!!! 提取tx_ids耗时: {} ms", extract_transaction_ids_from_block_start.elapsed().as_millis());
+                            // let extract_transaction_ids_from_block_start = Instant::now();
+                            let tx_ids: Vec<u64> = extract_transaction_ids_from_block(&block);
+                                // .into_iter()
+                                // .filter(|tx_id| *tx_id % 10 == 0)// 只发送tx_id%100==0的交易
+                                // .collect();
+                            // info!("!!!!! 提取tx_ids耗时: {} ms", extract_transaction_ids_from_block_start.elapsed().as_millis());
                             if !tx_ids.is_empty() {
                                 if let Err(e) = event_tx_for_commit.send(SystemEvent::HotStuffCommitted {
                                     block_height: height,
@@ -254,6 +255,7 @@ impl Node {
                                     error!("❌ Node {} 发送 HotStuff 提交事件失败: {}", node_id, e);
                                 }
                             }
+                            info!("[Event sent] Node {} HotStuffCommitted: block_height={}, tx_ids={:?}", node_id, height, tx_ids);
                             // 🔥 关键：发送 HotStuff 提交事件，触发客户端 Consensus 响应
 
                             // 🎯 每10个区块显示详细分析
@@ -275,14 +277,14 @@ impl Node {
                                         submission_tps, end_to_end_tps);
                                 }
                                 
-                                if pure_consensus_tps > 0.0 {
-                                    let queue_overhead = (end_to_end_tps / pure_consensus_tps - 1.0) * 100.0;
-                                    if queue_overhead > 10.0 {
-                                        warn!("⚠️ 排队开销较大: {:.1}%", queue_overhead);
-                                    } else {
-                                        info!("✅ 排队开销: {:.1}%", queue_overhead);
-                                    }
-                                }
+                                // if pure_consensus_tps > 0.0 {
+                                //     let queue_overhead = (end_to_end_tps / pure_consensus_tps - 1.0) * 100.0;
+                                //     if queue_overhead > 10.0 {
+                                //         warn!("⚠️ 排队开销较大: {:.1}%", queue_overhead);
+                                //     } else {
+                                //         info!("✅ 排队开销: {:.1}%", queue_overhead);
+                                //     }
+                                // }
                                 
                                 // drop(stats_guard);
                             }
