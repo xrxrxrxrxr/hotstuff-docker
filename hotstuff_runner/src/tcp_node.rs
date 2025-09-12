@@ -11,11 +11,11 @@ use hotstuff_rs::{
 use crate::{
     app::TestApp,
     network::NodeNetwork,
-    tcp_network::TcpNetwork,
     kv_store::MemoryKVStore,
     stats::PerformanceStats,
     event::SystemEvent,
 };
+use hotstuff_rs::networking::network::Network;
 use std::time::{Duration, Instant};
 use std::sync::{Arc};
 use ed25519_dalek::SigningKey;
@@ -38,10 +38,10 @@ pub struct Node {
 
 impl Node {
     /// 按照hotstuff_rs官方模式创建Node
-    pub fn new(
+    pub fn new<N: Network + 'static>(
         node_id: usize,  // 添加NodeID参数
         keypair: SigningKey,
-        network: TcpNetwork,    // 使用TcpNetwork替代NodeNetwork
+        network: N,    // 泛化网络实现，兼容 Tokio/TCP/mock
         init_app_state_updates: AppStateUpdates,
         init_validator_set_updates: ValidatorSetUpdates,
         tx_queue: Arc<SegQueue<String>>,  // 新增参数：外部交易队列
@@ -86,20 +86,29 @@ impl Node {
         );
         // let app_handle = Arc::new(Mutex::new(app.clone()));
         
-        // 6. 创建配置 - 使用与官方完全相同的参数
+        // 6. 创建配置 - 使用与官方完全相同的参数，并允许通过环境变量调优
+        let max_view_time_ms: u64 = std::env::var("HS_MAX_VIEW_TIME_MS")
+            .ok()
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(500);
+        let progress_buf_cap: usize = std::env::var("HS_PROGRESS_BUF_CAP")
+            .ok()
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(1024);
         let config = Configuration::builder()
             .me(keypair)
             .chain_id(ChainID::new(0))
             .block_sync_request_limit(10)
-            .block_sync_server_advertise_time(Duration::new(10, 0))      // 官方: 10秒
+            .block_sync_server_advertise_time(Duration::new(2, 0))      // 官方: 10秒
             .block_sync_response_timeout(Duration::new(3, 0))            // 官方: 3秒
             // .block_sync_response_timeout(Duration::from_millis(500)) 
             .block_sync_blacklist_expiry_time(Duration::new(10, 0))      // 官方: 10秒
             .block_sync_trigger_min_view_difference(2)                   // 官方: 2
             .block_sync_trigger_timeout(Duration::new(60, 0))            // 官方: 60秒
-            .progress_msg_buffer_capacity(BufferSize::new(1024))
-            .epoch_length(EpochLength::new(50))                          // 官方: 50
-            .max_view_time(Duration::from_millis(2000))                  // 官方: 2000ms
+            .progress_msg_buffer_capacity(BufferSize::new(progress_buf_cap.try_into().unwrap()))
+            .epoch_length(EpochLength::new(20))                          // 官方: 50
+            // 可通过 HS_MAX_VIEW_TIME_MS 调整视图超时
+            .max_view_time(Duration::from_millis(max_view_time_ms))
             .log_events(false)                                           // 官方: false
             .build();
 
@@ -120,6 +129,9 @@ impl Node {
                 move |event| {
                     let msg = format!("🚀 Node {} 开始View {}", node_id, event.view);
                     crate::log_node(node_id, log::Level::Info, &msg);
+                    // EWNL: 视图关键路径起点
+                    let ewnl_start = format!("[EWNL] START view={}", event.view.int());
+                    warn!(target = "hotstuff_runner::ewnl", "{}", ewnl_start);
                 }
             })
             .on_propose({
@@ -137,46 +149,47 @@ impl Node {
             .on_receive_proposal({
                 move |event| {
                     let msg = format!(
-                        "📥 Node {} 接收提议，来源: {:?}, View: {}",
+                        "📥 Node {} 接收提议 View: {}",
                         node_id,
-                        event.origin.to_bytes()[0..4].to_vec(),
                         event.proposal.view
                     );
-                    crate::log_node(node_id, log::Level::Info, &msg);
+                    crate::log_node(node_id, log::Level::Debug, &msg);
                 }
             })
             .on_phase_vote({
                 move |event| {
                     let msg = format!(
-                        "🗳️ Node {} 阶段投票，View: {}, 阶段: {:?}",
+                        "🗳️ Node {} 阶段投票 View: {}, 阶段: {:?}",
                         node_id,
                         event.vote.view,
                         event.vote.phase
                     );
-                    crate::log_node(node_id, log::Level::Info, &msg);
+                    crate::log_node(node_id, log::Level::Debug, &msg);
                 }
             })
             .on_receive_phase_vote({
                 move |event| {
                     let msg = format!(
-                        "📨 Node {} 接收投票，来源: {:?}, View: {}, 阶段: {:?}",
+                        "📨 Node {} 接收投票 View: {}, 阶段: {:?}",
                         node_id,
-                        event.origin.to_bytes()[0..4].to_vec(),
                         event.phase_vote.view,
                         event.phase_vote.phase
                     );
-                    crate::log_node(node_id, log::Level::Info, &msg);
+                    crate::log_node(node_id, log::Level::Debug, &msg);
                 }
             })
             .on_collect_pc({
                 move |event| {
                     let msg = format!(
-                        "🎯 Node {} 收集PC，View: {}, 签名数: {}",
+                        "🎯 Node {} 收集PC View: {}, 签名数: {}",
                         node_id,
                         event.phase_certificate.view,
                         event.phase_certificate.signatures.iter().filter(|sig| sig.is_some()).count()
                     );
                     crate::log_node(node_id, log::Level::Info, &msg);
+                    // EWNL: 视图关键路径终点
+                    let ewnl_end = format!("[EWNL] END view={}", event.phase_certificate.view.int());
+                    warn!(target = "hotstuff_runner::ewnl", "{}", ewnl_end);
                 }
             })
             // .on_commit_block({
@@ -315,15 +328,18 @@ impl Node {
                         event.highest_pc.phase
                     );
                     crate::log_node(node_id, log::Level::Info, &msg);
+                    warn!("[on_update_highest_pc] Node {} 更新最高PC: view = {}", node_id, event.highest_pc.view);
                 }
             })
             // === 超时和View变更事件 ===
             .on_view_timeout({
+                let node_id_copy = node_id;
                 move |event| {
+                    warn!("Node {} View {} 超时，可能导致延迟累积", node_id_copy, event.view);
                     let msg = format!(
                         "⏱️ Node {} View {} 超时！",
                         node_id,
-                        event.view
+                        event.view.int()
                     );
                     crate::log_node(node_id, log::Level::Info, &msg);
                 }
@@ -361,22 +377,30 @@ impl Node {
             })
             .on_advance_view({
                 move |event| {
+                    // 注意：这里的 view 来自进度证书（PC/TC）的视图，不等价于本地“进入的当前视图”。
+                    let pc_view = event.advance_view.progress_certificate.view();
                     let msg = format!(
-                        "⏭️ Node {} 推进View到: {}",
+                        "📨 Node {} 收到 AdvanceView: PC.view={}",
                         node_id,
-                        event.advance_view.progress_certificate.view()
+                        pc_view
                     );
                     crate::log_node(node_id, log::Level::Info, &msg);
                 }
             })
             .on_new_view({
                 move |event| {
+                    // 语义澄清：NewView 事件表示“为当前(旧)视图发送 NewView 消息给下一任领导”，
+                    // 并非“进入新视图”。真正进入新视图请看 StartView 事件。
+                    let cur_view = event.new_view.view.int();
+                    let next_view = cur_view + 1;
                     let msg = format!(
-                        "🆕 Node {} 发送新View消息，View: {}",
+                        "🆕 Node {} 发送 NewView：cur_view={}, next_view(预期)={}",
                         node_id,
-                        event.new_view.view
+                        cur_view,
+                        next_view
                     );
                     crate::log_node(node_id, log::Level::Info, &msg);
+                    warn!("[on_new_view] Node {} 广播 NewView for 旧视图 {} (即将进入 {})", node_id, cur_view, next_view);
                 }
             })
             .on_receive_new_view({

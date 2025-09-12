@@ -9,7 +9,7 @@ use hotstuff_rs::{
     },
 };
 use hotstuff_runner::{
-    app::TestApp, detailed_performance_metrics::PompeQueueMetrics, event::{self, ResponseCommand, SystemEvent, TestTransaction}, pompe::{load_pompe_config, LockFreeHotStuffAdapter, PompeManager}, stats::PerformanceStats, tcp_network::{TcpNetwork, TcpNetworkConfig}, tcp_node::Node
+    app::TestApp, detailed_performance_metrics::PompeQueueMetrics, event::{self, ResponseCommand, SystemEvent, TestTransaction}, pompe::{load_pompe_config, LockFreeHotStuffAdapter, PompeManager}, stats::PerformanceStats, tokio_network::TokioNetwork, tcp_network::TcpNetworkConfig, tcp_node::Node
 };
 use std::sync::Arc;
 use tokio::sync::{mpsc, broadcast, Notify};
@@ -19,7 +19,7 @@ use std::env;
 use std::fs;
 use std::fs::{File, create_dir_all};
 use tracing::{info, error, warn, debug};
-use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt};
+use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt,EnvFilter};
 use std::time::Duration;
 use ed25519_dalek::SigningKey;
 use tokio::net::{TcpListener, TcpStream};
@@ -174,6 +174,7 @@ fn setup_tracing_logger(node_id: usize) {
         .expect("Cannot open node log file");
     
     let result = tracing_subscriber::registry()
+        .with(EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("warn")))
         .with(
             fmt::layer()
                 .with_writer(std::io::stdout)
@@ -456,84 +457,6 @@ async fn handle_lockfree_client_connection(
     Ok(())
 }
 
-// Enhanced Pompe processor with detailed performance monitoring
-// async fn start_detailed_pompe_processor(
-//     node_id: usize,
-//     pompe_tx_processor: Arc<LockFreeTransactionProcessor>,
-//     pompe_manager: Arc<PompeManager>,
-//     event_tx: broadcast::Sender<SystemEvent>,
-//     lockfree_stats: Arc<LockFreeStats>,
-//     pompe_metrics: Arc<PompeQueueMetrics>,
-// ) {
-//     info!("[Detailed monitoring] Node {} Pompe processor started", node_id);
-    
-//     let batch_size = 50;
-//     let mut batch_interval = tokio::time::interval(Duration::from_millis(10));
-    
-//     loop {
-//         batch_interval.tick().await;
-        
-//         // Record queue size
-//         let queue_size = pompe_tx_processor.get_queue_size();
-//         pompe_metrics.record_queue_size(queue_size).await;
-        
-//         let mut total_processed = 0;
-//         for _ in 0..3 {
-//             let batch_start = Instant::now();
-//             let batch = pompe_tx_processor.process_batch(batch_size);
-            
-//             if batch.is_empty() {
-//                 break;
-//             }
-            
-//             pompe_metrics.record_transaction_submitted(batch.len());
-            
-//             // Record batch processing latency
-//             let batch_processing_time = batch_start.elapsed();
-//             pompe_metrics.batch_processing_tracker.record_processing(batch_processing_time).await;
-            
-//             // Process each transaction and record stage latencies
-//             let mut batch_processed = 0;
-//             for transaction in batch {
-//                 let tx_start = Instant::now();
-                
-//                 match pompe_manager.process_raw_transaction(&transaction).await {
-//                     Ok(_) => {
-//                         let tx_processing_time = tx_start.elapsed();
-                        
-//                         // Record to different stages based on processing time
-//                         if tx_processing_time < Duration::from_millis(1) {
-//                             pompe_metrics.ordering1_tracker.record_processing(tx_processing_time).await;
-//                         } else if tx_processing_time < Duration::from_millis(10) {
-//                             pompe_metrics.ordering2_tracker.record_processing(tx_processing_time).await;
-//                         } else {
-//                             pompe_metrics.commit_tracker.record_processing(tx_processing_time).await;
-//                         }
-                        
-//                         batch_processed += 1;
-//                     }
-//                     Err(e) => {
-//                         error!("[Detailed monitoring] Pompe transaction processing failed: {}, error: {}", transaction, e);
-//                     }
-//                 }
-//             }
-            
-//             pompe_metrics.record_transaction_completed(batch_processed);
-//             total_processed += batch_processed;
-//         }
-        
-//         if total_processed > 0 {
-//             lockfree_stats.update_pompe_queue_size(queue_size);
-            
-//             info!("[Detailed monitoring] Node {} Pompe processed {} transactions, queue remaining: {}", 
-//                   node_id, total_processed, queue_size);
-            
-//             let _ = event_tx.send(SystemEvent::TransactionProcessed {
-//                 count: total_processed,
-//             });
-//         }
-//     }
-// }
 
 // Lock-free performance monitor
 async fn start_lockfree_performance_monitor(
@@ -674,55 +597,25 @@ async fn start_lockfree_performance_monitor(
     }
 }
 
-// async fn preheat_connections(tcp_network: &TcpNetwork, node_id: usize) -> Result<(), String> {
-//     info!("Node {} 开始预热网络连接...", node_id);
-    
-//     // 发送ping消息到所有节点
-//     for attempt in 1..=3 {
-//         let mut success_count = 0;
-        
-//         // 尝试连接所有peer节点
-//         for peer_id in 1..=4 {
-//             if peer_id != node_id {
-//                 // 发送简单的心跳消息
-//                 if tcp_network.test_connection(peer_id).await.is_ok() {
-//                     success_count += 1;
+// async fn handle_block_production_events(
+//     mut event_rx: broadcast::Receiver<SystemEvent>,
+//     node: Arc<Node>,
+// ) {
+//     while let Ok(event) = event_rx.recv().await {
+//         match event {
+//             SystemEvent::TriggerBlockProduction { view } => {
+//                 if let Err(e) = node.produce_block_for_view(view).await {
+//                     error!("区块生产失败: {}", e);
 //                 }
 //             }
-//         }
-        
-//         if success_count >= 2 { // 至少连接到2个节点
-//             info!("Node {} 网络预热成功，连接到{}个节点", node_id, success_count);
-//             return Ok(());
-//         }
-        
-//         warn!("Node {} 第{}次预热尝试，只连接到{}个节点", node_id, attempt, success_count);
-//         tokio::time::sleep(Duration::from_secs(2)).await;
-//     }
-    
-//     Err("网络预热失败".to_string())
-// }
-
-// async fn send_response_to_client(node_id: usize, mut event_rx: broadcast::Receiver<SystemEvent>) {
-//     info!("[Lock-free] Node {} response sender started", node_id);
-    
-//     loop {
-//         match event_rx.recv().await {
-//             Ok(event) => {
-//                 match event {
-//                     SystemEvent::PompeOrdering1Completed { tx_id } => {
-//                         info!("[SystemEvent::PompeOrdering1Completed] Node {} processed {} transactions", node_id, tx_id);
-//                         // Here you can implement sending responses back to clients if needed
-//                     }
-//                     _ => {}
-//                 }
+            
+//             SystemEvent::SyncPacemakerView { new_view } => {
+//                 info!("Node {} 收到Pacemaker同步事件，目标view: {}", node.node_id, new_view);
 //             }
-//             Err(e) => {
-//                 error!("[Lock-free] Node {} event reception failed: {}", node_id, e);
-//             }
+            
+//             _ => {}
 //         }
 //     }
-
 // }
 
 #[tokio::main]
@@ -798,16 +691,16 @@ async fn main() -> Result<(), String> {
        my_key: my_verifying_key,
    };
    
-   info!("Creating TCP network...");
-   let tcp_network = match TcpNetwork::new(tcp_config) {
+   info!("Creating Tokio TCP network...");
+   let tcp_network = match TokioNetwork::new(tcp_config) {
        Ok(network) => network,
        Err(e) => {
-           error!("TCP network creation failed: {}", e);
-           return Err(format!("TCP network creation failed: {}", e));
+           error!("Tokio network creation failed: {}", e);
+           return Err(format!("Tokio network creation failed: {}", e));
        }
    };
    
-   info!("TCP network created successfully");
+   info!("Tokio network created successfully");
    
    // Completely lock-free event-driven architecture
    let (event_tx, event_rx) = broadcast::channel::<SystemEvent>(1000);
@@ -852,6 +745,17 @@ async fn main() -> Result<(), String> {
        node_stats.clone(),
        event_for_response_tx.clone() /* 🎯 */
    );
+
+    // let node_arc = Arc::new(node);  // 包装到Arc中
+        
+    //     // 启动区块生产事件处理器
+    //     let node_clone = node_arc.clone();
+    //     let event_rx_for_production = event_for_response_tx.subscribe();
+        
+    //     tokio::spawn(handle_block_production_events(
+    //         event_rx_for_production,
+    //         node_clone,
+    //     ));
 
    // Add monitoring for regular transaction queue size (similar to second code)
    let regular_tx_monitor = Arc::clone(&regular_tx_processor);
@@ -922,6 +826,16 @@ async fn main() -> Result<(), String> {
        pompe_manager_clone,
        lockfree_stats_clone,
    ));
+
+   tokio::time::sleep(Duration::from_secs(5)).await;
+    info!("网络连通性测试:");
+    for i in 0..4 { // 假设4个节点
+        let addr = format!("127.0.0.1:{}", 20000 + i);
+        match tokio::net::TcpStream::connect(&addr).await {
+            Ok(_) => info!("节点 {} 端口可达", i),
+            Err(e) => error!("节点 {} 端口不可达: {}", i, e),
+        }
+    }
 
    tokio::spawn(async move {
        info!("[Regular tx monitor] Regular transaction monitor started");

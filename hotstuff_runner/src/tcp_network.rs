@@ -25,6 +25,16 @@ use hotstuff_rs::block_sync::messages::BlockSyncMessage;
 use crossbeam::channel::{unbounded, Receiver, Sender};
 use parking_lot::RwLock; // 更高效的读写锁
 
+// 简单的帧同步头，避免长度错位造成“超大消息”误判
+const NET_MAGIC: u32 = 0x48534E57; // 'HSNW'
+const MAX_MSG_SIZE: usize = 10 * 1024 * 1024; // 10MB
+
+// 每个 peer 的异步发送队列
+#[derive(Clone)]
+struct PeerWriter {
+    tx: crossbeam::channel::Sender<Vec<u8>>, // 有界队列
+}
+
 // 定义消息类型枚举
 #[derive(Serialize, Deserialize, Clone, Debug)]
 enum MessageType {
@@ -83,6 +93,10 @@ impl ConnectionManager {
         if let Some(peer_addr) = self.config.peer_addrs.get(peer_key) {
             match TcpStream::connect(peer_addr) {
                 Ok(stream) => {
+                    // 降低小包延迟并设置合理超时
+                    let _ = stream.set_nodelay(true);
+                    let _ = stream.set_read_timeout(Some(Duration::from_secs(10)));
+                    let _ = stream.set_write_timeout(Some(Duration::from_secs(10)));
                     if let Ok(cloned) = stream.try_clone() {
                         // 使用写锁更新连接
                         let mut connections = self.connections.write();
@@ -146,6 +160,20 @@ impl ConnectionManager {
     //     }
     //     None
     // }
+    
+    pub fn cleanup_stale_connections(&self) {
+        let mut connections = self.connections.write();
+        let initial_count = connections.len();
+        
+        connections.retain(|_, stream| {
+            stream.peer_addr().is_ok() // 保留有效连接
+        });
+        
+        let cleaned_count = initial_count - connections.len();
+        if cleaned_count > 0 {
+            info!("清理了 {} 个失效连接", cleaned_count);
+        }
+    }
 
     // 添加连接健康检查
     fn is_connection_alive(&self, stream: &TcpStream) -> bool {
@@ -164,6 +192,7 @@ pub struct TcpNetwork {
     message_tx: Sender<(VerifyingKey, Message)>,
     connection_manager: Arc<ConnectionManager>,
     _server_handle: thread::JoinHandle<()>,
+    writer_queues: Arc<RwLock<HashMap<VerifyingKey, PeerWriter>>>,
 }
 
 impl TcpNetwork {
@@ -173,6 +202,15 @@ impl TcpNetwork {
         
         let connection_manager = Arc::new(ConnectionManager::new(config.clone()));
         
+        // 添加定期清理任务
+        let cleanup_manager = connection_manager.clone();
+        thread::spawn(move || {
+            loop {
+                thread::sleep(Duration::from_secs(30));
+                cleanup_manager.cleanup_stale_connections();
+            }
+        });
+
         // 启动TCP服务器
         let server_config = config.clone();
         let server_tx = tx.clone();
@@ -192,11 +230,64 @@ impl TcpNetwork {
             message_tx: tx,
             connection_manager,
             _server_handle: server_handle,
+            writer_queues: Arc::new(RwLock::new(HashMap::new())),
         };
 
         network.connect_to_peers()?;
+        network.spawn_peer_writers();
         
         Ok(network)
+    }
+
+    fn spawn_peer_writers(&mut self) {
+        // 发送队列容量
+        let cap: usize = std::env::var("HS_PEER_QUEUE_CAP").ok().and_then(|s| s.parse().ok()).unwrap_or(1024);
+        for (peer_key, _addr) in &self.config.peer_addrs {
+            if *peer_key == self.config.my_key { continue; }
+            let (tx, rx) = crossbeam::channel::bounded::<Vec<u8>>(cap);
+            self.writer_queues.write().insert(*peer_key, PeerWriter { tx });
+
+            let peer = *peer_key;
+            let cm = self.connection_manager.clone();
+            thread::spawn(move || {
+                // 简单 ping 周期
+                let ping_interval = std::time::Duration::from_secs(10);
+                let mut last_ping = std::time::Instant::now();
+                loop {
+                    // 定期发送空帧作为 ping
+                    if last_ping.elapsed() >= ping_interval {
+                        if let Some(mut s) = cm.get_or_create_connection(&peer) {
+                            let _ = s.write_all(&NET_MAGIC.to_be_bytes());
+                            let _ = s.write_all(&0u32.to_be_bytes()); // 长度0
+                            let _ = s.flush();
+                        }
+                        last_ping = std::time::Instant::now();
+                    }
+
+                    match rx.recv_timeout(std::time::Duration::from_millis(50)) {
+                        Ok(buf) => {
+                            // 写入，失败则重连再写一次
+                            let mut try_write = |stream: &mut TcpStream, data: &[u8]| -> std::io::Result<()> {
+                                stream.write_all(data)?; stream.flush()?; Ok(())
+                            };
+                            if let Some(mut s) = cm.get_or_create_connection(&peer) {
+                                if let Err(e) = try_write(&mut s, &buf) {
+                                    warn!("peer {:?} 写失败: {}，重连重试", &peer.to_bytes()[0..4].to_vec(), e);
+                                    drop(s);
+                                    if let Some(mut s2) = cm.get_or_create_connection(&peer) {
+                                        if let Err(e2) = try_write(&mut s2, &buf) {
+                                            error!("peer {:?} 写重试失败: {}", &peer.to_bytes()[0..4].to_vec(), e2);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        Err(crossbeam::channel::RecvTimeoutError::Timeout) => { /* loop ping */ }
+                        Err(crossbeam::channel::RecvTimeoutError::Disconnected) => break,
+                    }
+                }
+            });
+        }
     }
 
     fn connect_to_peers(&mut self) -> Result<(), Box<dyn std::error::Error>> {
@@ -252,6 +343,19 @@ impl TcpNetwork {
         Ok(message)
     }
 
+    pub fn get_connection_stats(&self) -> (usize, usize) {
+        let connections = self.connection_manager.connections.read();
+        let active_count = connections.len();
+        let total_attempts = connections.values().len(); // 简化统计
+        
+        if active_count > 20 {
+            warn!("连接池过大: {} 个活跃连接", active_count);
+        }
+        
+        (active_count, total_attempts)
+    }
+
+
     fn send_to_peer(&self, peer_key: &VerifyingKey, message: &Message) -> Result<(), Box<dyn std::error::Error>> {
         // 发送给自己的消息直接放入通道
         if *peer_key == self.config.my_key {
@@ -259,27 +363,40 @@ impl TcpNetwork {
             return Ok(());
         }
 
-        // 获取连接并发送
-        if let Some(mut stream) = self.connection_manager.get_or_create_connection(peer_key) {
-            let (message_type, message_bytes) = Self::message_to_bytes(message)?;
-            
-            let net_msg = NetworkMessage {
-                from: self.config.my_key.to_bytes().to_vec(),
-                message_type,
-                message_bytes,
-            };
-            
-            let serialized = bincode::serialize(&net_msg)?;
-            let length = serialized.len() as u32;
-            
-            // 发送消息
-            stream.write_all(&length.to_be_bytes())?;
-            stream.write_all(&serialized)?;
-            stream.flush()?;
-            
-            Ok(())
+        // 构造帧并入 per-peer writer 队列
+        let (message_type, message_bytes) = Self::message_to_bytes(message)?;
+        let net_msg = NetworkMessage {
+            from: self.config.my_key.to_bytes().to_vec(),
+            message_type,
+            message_bytes,
+        };
+        let serialized = bincode::serialize(&net_msg)?;
+        let length = serialized.len() as u32;
+        let mut frame = Vec::with_capacity(8 + serialized.len());
+        frame.extend_from_slice(&NET_MAGIC.to_be_bytes());
+        frame.extend_from_slice(&length.to_be_bytes());
+        frame.extend_from_slice(&serialized);
+
+        if let Some(writer) = self.writer_queues.read().get(peer_key).cloned() {
+            use std::time::Duration;
+            match writer.tx.send_timeout(frame, Duration::from_millis(100)) {
+                Ok(_) => Ok(()),
+                Err(crossbeam::channel::SendTimeoutError::Timeout(frame)) => {
+                    warn!("peer {:?} 发送队列堵塞>100ms，继续等待并重试一次", peer_key.to_bytes()[0..4].to_vec());
+                    // 再尝试一次阻塞发送，避免丢关键共识消息
+                    if writer.tx.send(frame).is_err() {
+                        error!("peer {:?} 发送队列断开，消息丢弃", peer_key.to_bytes()[0..4].to_vec());
+                    }
+                    Ok(())
+                }
+                Err(crossbeam::channel::SendTimeoutError::Disconnected(_)) => {
+                    error!("peer {:?} 发送队列断开", peer_key.to_bytes()[0..4].to_vec());
+                    Err("writer disconnected".into())
+                }
+            }
         } else {
-            Err("无法建立连接".into())
+            warn!("peer {:?} 无 writer 队列", peer_key.to_bytes()[0..4].to_vec());
+            Err("无 writer 队列".into())
         }
     }
 }
@@ -292,6 +409,7 @@ impl Clone for TcpNetwork {
             message_tx: self.message_tx.clone(),
             connection_manager: self.connection_manager.clone(),
             _server_handle: thread::spawn(|| {}),
+            writer_queues: self.writer_queues.clone(),
         }
     }
 }
@@ -362,39 +480,33 @@ impl TcpNetwork {
             return Ok(serialized_messages.iter().map(|m| m.len()).sum());
         }
 
-        // 获取连接
-        if let Some(mut stream) = self.connection_manager.get_or_create_connection(peer_key) {
-            let mut total_bytes = 0;
-
-            // 计算总数据大小，为批量写入做准备
-            let batch_size: usize = serialized_messages.iter()
-                .map(|msg| 4 + msg.len()) // 4字节长度前缀 + 消息内容
-                .sum();
-
-            // 创建批量数据缓冲区
-            let mut batch_buffer = Vec::with_capacity(batch_size);
-
-            // 将所有消息打包到一个缓冲区
+        // 由 per-peer writer 逐条发送
+        let mut total_bytes = 0usize;
+        if let Some(writer) = self.writer_queues.read().get(peer_key).cloned() {
             for serialized in serialized_messages {
                 let length = serialized.len() as u32;
-                batch_buffer.extend_from_slice(&length.to_be_bytes());
-                batch_buffer.extend_from_slice(serialized);
+                let mut frame = Vec::with_capacity(8 + serialized.len());
+                frame.extend_from_slice(&NET_MAGIC.to_be_bytes());
+                frame.extend_from_slice(&length.to_be_bytes());
+                frame.extend_from_slice(serialized);
+                total_bytes += frame.len();
+                use std::time::Duration;
+                if let Err(e) = writer.tx.send_timeout(frame, Duration::from_millis(100)) {
+                    match e {
+                        crossbeam::channel::SendTimeoutError::Timeout(frame) => {
+                            warn!("peer {:?} 批量队列堵塞>100ms，阻塞重试", peer_key.to_bytes()[0..4].to_vec());
+                            let _ = writer.tx.send(frame);
+                        }
+                        crossbeam::channel::SendTimeoutError::Disconnected(_) => {
+                            error!("peer {:?} 批量队列断开", peer_key.to_bytes()[0..4].to_vec());
+                        }
+                    }
+                }
             }
-
-            // 一次性发送所有数据
-            stream.write_all(&batch_buffer)?;
-            stream.flush()?;
-
-            total_bytes = batch_buffer.len();
-            
-            debug!("批量发送到 {:?}: {} 消息, {} 字节", 
-                   peer_key.to_bytes()[0..4].to_vec(), 
-                   serialized_messages.len(), 
-                   total_bytes);
-
             Ok(total_bytes)
         } else {
-            Err("无法建立连接".into())
+            warn!("peer {:?} 无 writer 队列", peer_key.to_bytes()[0..4].to_vec());
+            Err("无 writer 队列".into())
         }
     }
 
@@ -503,16 +615,18 @@ impl Network for TcpNetwork {
     //     self.message_rx.try_recv().ok()
     // }
     fn recv(&mut self) -> Option<(VerifyingKey, Message)> {
-    match self.message_rx.try_recv() {
-        Ok(msg) => Some(msg),
-        Err(crossbeam::channel::TryRecvError::Empty) => None,
-        Err(crossbeam::channel::TryRecvError::Disconnected) => {
-            error!("接收通道已断开");
-            None
+        match self.message_rx.try_recv() {
+            Ok(msg) => Some(msg),
+            Err(crossbeam::channel::TryRecvError::Empty) => None,
+            Err(crossbeam::channel::TryRecvError::Disconnected) => {
+                error!("接收通道已断开");
+                None
+            }
         }
     }
 }
-}
+
+// remove_connection 已移至 ConnectionManager
 
 // TCP服务器运行函数 - 使用无锁通道
 fn run_tcp_server(
@@ -524,7 +638,10 @@ fn run_tcp_server(
     
     for stream in listener.incoming() {
         match stream {
-            Ok(stream) => {
+            Ok(mut stream) => {
+                // 禁用Nagle，降低延迟抖动
+                let _ = stream.set_nodelay(true);
+                let _ = stream.set_read_timeout(Some(Duration::from_secs(30)));
                 let tx = message_tx.clone();
                 thread::spawn(move || {
                     if let Err(e) = handle_client(stream, tx) {
@@ -550,12 +667,27 @@ fn handle_client(
     debug!("新连接来自: {}", peer_addr);
     
     loop {
+    // 先读取 magic/或旧版长度（兼容旧协议：若非 NET_MAGIC，则将其解释为长度）
+    let mut magic_or_len = [0u8; 4];
+    match stream.read_exact(&mut magic_or_len) {
+        Ok(_) => {},
+        Err(ref e) if e.kind() == std::io::ErrorKind::UnexpectedEof => {
+            debug!("连接正常关闭: {}", peer_addr);
+            break;
+        }
+        Err(e) => {
+            error!("读取帧头失败 from {}: {}", peer_addr, e);
+            break;
+        }
+    }
+    let magic = u32::from_be_bytes(magic_or_len);
+    let length: usize = if magic == NET_MAGIC {
         // 读取消息长度
         let mut length_buf = [0u8; 4];
         match stream.read_exact(&mut length_buf) {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(ref e) if e.kind() == std::io::ErrorKind::UnexpectedEof => {
-                debug!("连接正常关闭: {}", peer_addr);
+                debug!("连接在读取长度时关闭: {}", peer_addr);
                 break;
             }
             Err(e) => {
@@ -563,14 +695,62 @@ fn handle_client(
                 break;
             }
         }
+        u32::from_be_bytes(length_buf) as usize
+    } else {
+        // 兼容旧协议：magic_or_len 实际就是长度
+        u32::from_be_bytes(magic_or_len) as usize
+    };
         
-        let length = u32::from_be_bytes(length_buf) as usize;
-        // info!("******* 收到消息长度: {} bytes from {}", length, peer_addr);
         
-        
-        if length > 10 * 1024 * 1024 { // 10MB limit
-            error!("消息太大: {} bytes from {}", length, peer_addr);
-            break;
+        if length == 0 {
+            // ping 帧，继续下一条
+            continue;
+        }
+        if length > MAX_MSG_SIZE {
+            // 可能帧错位：尝试扫描 magic 重新同步
+            warn!("收到异常长度 {} from {}，尝试帧重同步", length, peer_addr);
+            let mut window: [u8; 4] = [0; 4];
+            let mut found = false;
+            // 最多扫描 64KB
+            for _ in 0..(64 * 1024) {
+                let mut b = [0u8;1];
+                if let Err(_) = stream.read_exact(&mut b) { break; }
+                window[0] = window[1];
+                window[1] = window[2];
+                window[2] = window[3];
+                window[3] = b[0];
+                if u32::from_be_bytes(window) == NET_MAGIC {
+                    // 读取长度
+                    let mut len_buf = [0u8;4];
+                    if stream.read_exact(&mut len_buf).is_ok() {
+                        let new_len = u32::from_be_bytes(len_buf) as usize;
+                        if new_len <= MAX_MSG_SIZE {
+                            // 读取消息体
+                            let mut message_buf = vec![0u8; new_len];
+                            if stream.read_exact(&mut message_buf).is_ok() {
+                                // 正常处理
+                                match bincode::deserialize::<NetworkMessage>(&message_buf) {
+                                    Ok(net_msg) => {
+                                        // 从字节重新构造 VerifyingKey
+                                        let sender_key: VerifyingKey = match net_msg.from.try_into() {
+                                            Ok(bytes_array) => match VerifyingKey::from_bytes(&bytes_array) { Ok(key) => key, Err(_) => continue },
+                                            Err(_) => continue,
+                                        };
+                                        if let Ok(hotstuff_message) = TcpNetwork::bytes_to_message(net_msg.message_type, &net_msg.message_bytes) {
+                                            let _ = message_tx.send((sender_key, hotstuff_message));
+                                        }
+                                    }
+                                    Err(_) => {}
+                                }
+                                found = true;
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+            if !found { error!("帧重同步失败 from {}", peer_addr); break; }
+            continue;
         }
         
         if length == 0 {

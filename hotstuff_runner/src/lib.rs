@@ -3,6 +3,7 @@ pub mod app;
 pub mod network;
 pub mod kv_store;
 pub mod tcp_network;
+pub mod tokio_network;
 pub mod tcp_node;
 pub mod stats;
 pub mod pompe;
