@@ -77,6 +77,8 @@ impl PompeNetwork {
     fn start_connection_maintenance(&self) {
         let connections = Arc::clone(&self.connections);
         let node_id = self.node_id;
+        // Also keep a handle to sent_messages for periodic cleanup
+        let sent_messages = Arc::clone(&self.sent_messages);
         
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(60)); // 每60秒清理一次
@@ -99,6 +101,21 @@ impl PompeNetwork {
                         connections_guard.remove(&node_id_to_remove);
                         info!("🧹 [连接维护] Node {} 清理到节点 {} 的空闲连接", 
                               node_id, node_id_to_remove);
+                    }
+                }
+
+                // Periodically cleanup dedup records to prevent unbounded growth
+                {
+                    let mut sent = sent_messages.lock().unwrap();
+                    let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs();
+                    sent.retain(|_, ts| now.saturating_sub(*ts) < 300);
+                    if sent.len() > 2000 {
+                        // trim older half if too many
+                        let mut entries: Vec<_> = sent.iter().map(|(k, &v)| (k.clone(), v)).collect();
+                        entries.sort_by_key(|(_, v)| *v);
+                        for (k, _) in entries.into_iter().take( sent.len() / 2 ) {
+                            sent.remove(&k);
+                        }
                     }
                 }
             }

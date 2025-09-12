@@ -7,7 +7,7 @@ use std::env;
 use std::fs::{File, create_dir_all};
 use std::time::{Duration, Instant};
 use tracing::{info, warn, error};
-use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt};
+use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 use std::thread;
 use std::fs;
 use ed25519_dalek::SigningKey;
@@ -656,6 +656,7 @@ fn setup_tracing_logger(mode: &str) {
         .expect("无法打开日志文件");
     
     let result = tracing_subscriber::registry()
+        // .with(EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("warn")))
         .with(
             fmt::layer()
                 .with_writer(std::io::stdout)
