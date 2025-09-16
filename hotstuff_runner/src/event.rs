@@ -20,6 +20,10 @@ pub enum SystemEvent {
         transaction: TestTransaction,
         is_pompe: bool,
     },
+    // HotStuff 开始新视图（用于让 Pompe 计算当前视图的 leader）
+    StartView {
+        view: u64,
+    },
     /// Pompe Ordering1 阶段完成
     PompeOrdering1Completed {
         tx_id: u64,
@@ -59,4 +63,3 @@ pub enum ResponseCommand {
     HotStuffCommitted { tx_ids: Vec<u64> },
     Error { tx_ids: Vec<u64>, error_msg: String },
 }
-

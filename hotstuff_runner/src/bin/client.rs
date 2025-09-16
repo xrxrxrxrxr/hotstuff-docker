@@ -349,11 +349,18 @@ impl ClientNode {
         info!("🚀 开始负载测试 - TPS目标: {}, 持续时间: {}秒", 
             config.target_tps, config.duration_secs);
 
-        // let batch_size = std::cmp::max(100, config.target_tps / 5);
-        // let batch_interval = Duration::from_millis(200);
         // 参数调整点：降低发送频率测latency
-        let batch_size = 1;
-        let batch_interval = Duration::from_millis(1000);
+        let is_latency = true;
+
+        let mut batch_size = std::cmp::max(100, config.target_tps / 5);
+        let mut batch_interval = Duration::from_millis(200);
+
+        if is_latency {
+            batch_size = 1;
+            batch_interval = Duration::from_millis(1000);
+        }
+        // let batch_size = 1;
+        // let batch_interval = Duration::from_millis(1000);
         let end_time = Instant::now() + Duration::from_secs(config.duration_secs);
 
         let mut total_sent = 0;
@@ -597,7 +604,8 @@ impl PersistentConnection {
             
                 let serialized = serde_json::to_vec(&client_message)?;
                 let message_length = serialized.len() as u32;
-                info!("📦 ******* 客户端发送pompe消息，长度: {} bytes", message_length);
+                // 平均消息长度 170 bytes
+                // info!("📦 ******* 客户端发送pompe消息，长度: {} bytes", message_length);
 
                 batch_buffer.extend_from_slice(&message_length.to_be_bytes());
                 batch_buffer.extend_from_slice(&serialized);
@@ -612,7 +620,7 @@ impl PersistentConnection {
             
                 let serialized = serde_json::to_vec(&client_message)?;
                 let message_length = serialized.len() as u32;
-                info!("📦 ******* 客户端发送消息，长度: {} bytes", message_length);
+                // info!("📦 ******* 客户端发送消息，长度: {} bytes", message_length);
 
                 batch_buffer.extend_from_slice(&message_length.to_be_bytes());
                 batch_buffer.extend_from_slice(&serialized);
@@ -748,8 +756,8 @@ async fn handle_node_responses(
                         
                         // 发送批量响应命令
                         let _ = response_tx.send(response_cmd);
-                        info!("✅ 从节点 {} 处理批量响应: {} {} 个交易", 
-                              node_id, message_type, tx_ids_len);
+                        // info!("✅ 从节点 {} 处理批量响应: {} {} 个交易", 
+                        //       node_id, message_type, tx_ids_len);
                     }
                 } else {
                     warn!("⚠️ 无法解析从节点 {} 收到的响应", node_id);
@@ -811,12 +819,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     match response_cmd {
                         // 🔥 修改：处理批量 ordering 响应
                         ResponseCommand::Ordering1Response { tx_ids } => {
-                            info!("🎉 收到 {} 个 Ordering1 响应 for {:?}", tx_ids.len(), tx_ids);
+                            // info!("🎉 收到 {} 个 Ordering1 响应 for {:?}", tx_ids.len(), tx_ids);
                             latency_tracker.handle_ordering_response(tx_ids);
                         }
                         // 🔥 修改：处理批量 consensus 响应
                         ResponseCommand::HotStuffCommitted { tx_ids } => { 
-                            info!("🎉 收到 {} 个 Consensus 响应", tx_ids.len());
+                            // info!("🎉 收到 {} 个 Consensus 响应", tx_ids.len());
                             latency_tracker.handle_consensus_response(tx_ids);
                         }
                         ResponseCommand::Error { tx_ids, error_msg } => {

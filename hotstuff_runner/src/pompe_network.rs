@@ -12,6 +12,7 @@ use tracing::{debug, info, error, warn};
 use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
 use std::time::Duration;
+use tokio::runtime::{Builder, Runtime};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct PompeNetworkMessage {
@@ -30,6 +31,7 @@ struct ConnectionState {
     send_count: usize,
 }
 
+// #[derive(Clone)]
 pub struct PompeNetwork {
     node_id: usize,
     pompe_port: u16,
@@ -43,12 +45,39 @@ pub struct PompeNetwork {
     // 避免在 await 期间持有写锁：每个连接状态单独放入 AsyncMutex 中
     connections: Arc<tokio::sync::RwLock<HashMap<usize, Arc<tokio::sync::Mutex<ConnectionState>>>>>,
     sent_messages: Arc<Mutex<HashMap<String, u64>>>, // 消息去重
+    // 独立运行时，用于隔离 Pompe 网络与其他任务
+    rt: Arc<Runtime>,
 }
 
 impl PompeNetwork {
     pub fn new(node_id: usize, peer_node_ids: Vec<usize>) -> Self {
-        let pompe_port = 20000 + node_id as u16;
+        // 支持通过环境变量配置 Pompe 端口：
+        // 1) POMPE_PORT=端口号（优先）
+        // 2) 或 POMPE_PORT_BASE=基准端口（默认20000），按 base + node_id 计算
+        let pompe_port: u16 = std::env::var("POMPE_PORT")
+            .ok()
+            .and_then(|s| s.parse().ok())
+            .unwrap_or_else(|| {
+                let base: u16 = std::env::var("POMPE_PORT_BASE")
+                    .ok()
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(20000);
+                base + node_id as u16
+            });
         let (tx, rx) = async_mpsc::unbounded_channel();
+        // 创建独立的 Tokio 运行时（线程数可由环境变量 POMPE_RT_THREADS 配置，默认 2）
+        let rt_threads: usize = std::env::var("POMPE_RT_THREADS")
+            .ok()
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(2);
+        let rt = Arc::new(
+            Builder::new_multi_thread()
+                .worker_threads(rt_threads)
+                .enable_all()
+                .thread_name(&format!("pompe-net-{}", node_id))
+                .build()
+                .expect("Failed to build Pompe runtime"),
+        );
         
         info!("🌐 创建Pompe网络，节点 {}, 端口: {}", node_id, pompe_port);
         info!("🔍 对等节点列表: {:?}", peer_node_ids);
@@ -67,6 +96,7 @@ impl PompeNetwork {
             connections: Arc::new(tokio::sync::RwLock::new(HashMap::new())),
             // connection_pool: Arc::new(Mutex::new(HashMap::new())),
             sent_messages: Arc::new(Mutex::new(HashMap::new())),
+            rt,
         };
         // 🚨 启动连接维护任务
         network.start_connection_maintenance();
@@ -80,7 +110,8 @@ impl PompeNetwork {
         // Also keep a handle to sent_messages for periodic cleanup
         let sent_messages = Arc::clone(&self.sent_messages);
         
-        tokio::spawn(async move {
+        let rt = self.rt.clone();
+        rt.spawn(async move {
             let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(60)); // 每60秒清理一次
             
             loop {
@@ -122,31 +153,37 @@ impl PompeNetwork {
         });
     }
 
-    pub async fn start_server(&self) -> Result<(), String> {
+    pub fn start_server(&self) -> Result<(), String> {
         let addr = format!("0.0.0.0:{}", self.pompe_port);
-        let listener = TcpListener::bind(&addr).await.map_err(|e| format!("绑定地址失败: {}", e))?;
         let message_tx = self.message_tx.clone();
         let node_id = self.node_id;
-        
-        info!("🎧 Node {} Pompe服务器监听: {}", node_id, addr);
-        
-        tokio::spawn(async move {
-            while let Ok((mut socket, addr)) = listener.accept().await {
-                debug!("📞 Node {} Pompe连接来自: {}", node_id, addr);
-                // 关闭Nagle，降低延迟抖动
-                if let Err(e) = socket.set_nodelay(true) {
-                    warn!("⚠️ 设置TCP_NODELAY失败: {}", e);
-                }
-                
-                let tx = message_tx.clone();
-                tokio::spawn(async move {
-                    if let Err(e) = handle_pompe_connection(&mut socket, tx).await {
-                        debug!("Pompe连接处理结束: {}", e);
+        let rt = self.rt.clone();
+        rt.spawn(async move {
+            match TcpListener::bind(&addr).await {
+                Ok(listener) => {
+                    info!("🎧 Node {} Pompe服务器监听: {}", node_id, addr);
+                    loop {
+                        match listener.accept().await {
+                            Ok((mut socket, peer)) => {
+                                debug!("📞 Node {} Pompe连接来自: {}", node_id, peer);
+                                if let Err(e) = socket.set_nodelay(true) {
+                                    warn!("⚠️ 设置TCP_NODELAY失败: {}", e);
+                                }
+                                let tx = message_tx.clone();
+                                tokio::spawn(async move {
+                                    let _ = handle_pompe_connection(&mut socket, tx).await;
+                                });
+                            }
+                            Err(e) => {
+                                warn!("Node {} Pompe accept 错误: {}", node_id, e);
+                                tokio::time::sleep(Duration::from_millis(100)).await;
+                            }
+                        }
                     }
-                });
+                }
+                Err(e) => error!("Node {} 绑定Pompe地址失败 {}: {}", node_id, addr, e),
             }
         });
-        
         Ok(())
     }
 
@@ -154,13 +191,21 @@ impl PompeNetwork {
     pub fn warm_up_connections(&self) {
         let peers: Vec<usize> = self.peer_node_ids.iter().cloned().filter(|nid| *nid != self.node_id).collect();
         let net = self.clone();
-        tokio::spawn(async move {
+        let rt = self.rt.clone();
+        rt.spawn(async move {
             for nid in peers {
                 let _ = net.send_to_node(nid, PompeMessage::Ordering2Response { tx_hash: "warmup".to_string(), timestamp: 0, node_id: net.node_id }).await;
                 // 即使失败也忽略，连接池会在后续尝试建立
             }
             info!("🔌 Node {} 连接预热任务完成", net.node_id);
         });
+    }
+
+    pub fn spawn<F>(&self, fut: F)
+    where
+        F: std::future::Future<Output = ()> + Send + 'static,
+    {
+        let _ = self.rt.spawn(fut);
     }
 
     // 🚨 改进的单节点发送，支持重试和连接池
@@ -368,6 +413,7 @@ impl PompeNetwork {
             if target_node_id == self.node_id { continue; }
             let net = self.clone();
             let msg = message.clone();
+            // 在 Pompe 独立运行时上并行发送，避免与其他任务争抢全局 RT
             let handle = tokio::spawn(async move {
                 let res = net.send_to_node(target_node_id, msg).await;
                 (target_node_id, res)
@@ -527,6 +573,7 @@ impl Clone for PompeNetwork {
             message_rx: Arc::clone(&self.message_rx),
             connections: Arc::clone(&self.connections),
             sent_messages: Arc::clone(&self.sent_messages),
+            rt: Arc::clone(&self.rt),
         }
     }
 }

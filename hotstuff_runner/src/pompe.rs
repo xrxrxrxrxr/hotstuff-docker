@@ -3,6 +3,7 @@
 
 use std::collections::{HashMap, VecDeque, BTreeMap};
 use std::sync::{Arc, RwLock};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use dashmap::DashMap;
 use std::time::{SystemTime, UNIX_EPOCH, Duration, Instant};
 use serde::{Serialize, Deserialize};
@@ -265,6 +266,11 @@ pub struct PompeManager {
     config: PompeConfig,
     state: Arc<PompeAppState>,
     nfaulty: usize,
+    // 所有节点列表（顺序需一致，用于按视图轮换 leader）
+    all_node_ids: Vec<usize>,
+    // 当前视图号与是否为当前视图 leader
+    current_view: Arc<AtomicU64>,
+    is_current_leader: Arc<AtomicBool>,
     
     ordering1_tx: async_mpsc::Sender<(usize, PompeMessage)>,
     ordering1_rx: Arc<tokio::sync::Mutex<async_mpsc::Receiver<(usize, PompeMessage)>>>,
@@ -275,9 +281,9 @@ pub struct PompeManager {
     general_tx: async_mpsc::Sender<(usize, PompeMessage)>,
     general_rx: Arc<tokio::sync::Mutex<async_mpsc::Receiver<(usize, PompeMessage)>>>,
     
-    // 新增：专用广播通道
-    broadcast_tx: mpsc::Sender<PompeMessage>,
-    broadcast_rx: Arc<tokio::sync::Mutex<Option<mpsc::Receiver<PompeMessage>>>>,
+    // 新增：专用广播通道（Tokio mpsc，避免阻塞 runtime 线程）
+    broadcast_tx: async_mpsc::Sender<PompeMessage>,
+    broadcast_rx: Arc<tokio::sync::Mutex<Option<async_mpsc::Receiver<PompeMessage>>>>,
     
     pub network: Option<Arc<crate::pompe_network::PompeNetwork>>,
     lockfree_adapter: Option<Arc<LockFreeHotStuffAdapter>>,
@@ -339,15 +345,18 @@ impl PompeManager {
 
         let (ord1_tx, ord1_rx) = async_mpsc::channel(config.queue_capacity);
         let (ord2_tx, ord2_rx) = async_mpsc::channel(config.queue_capacity);
-        let (broadcast_tx, broadcast_rx) = mpsc::channel(config.queue_capacity);
+        let (broadcast_tx, broadcast_rx) = async_mpsc::channel(config.queue_capacity);
         
-        let network = Arc::new(PompeNetwork::new(node_id, all_node_ids));
+        let network = Arc::new(PompeNetwork::new(node_id, all_node_ids.clone()));
         
         Self {
             node_id,
             config,
             state: Arc::new(PompeAppState::new()),
             nfaulty,
+            all_node_ids: all_node_ids.clone(),
+            current_view: Arc::new(AtomicU64::new(0)),
+            is_current_leader: Arc::new(AtomicBool::new(false)),
             ordering1_tx: ord1_tx,
             ordering1_rx: Arc::new(tokio::sync::Mutex::new(ord1_rx)),
             ordering2_tx: ord2_tx,
@@ -452,7 +461,7 @@ impl PompeManager {
         if let Some(ref network) = self.network {
             info!("🚀 Node {} 启动Pompe网络", self.node_id);
             
-            if let Err(e) = network.start_server().await {
+            if let Err(e) = network.start_server() {
                 return Err(format!("启动Pompe服务器失败: {}", e));
             }
             // 预热连接，降低首次发送延迟
@@ -465,12 +474,38 @@ impl PompeManager {
             };
             
             if let Some(mut rx) = broadcast_rx {
-                let network_for_broadcast = Arc::clone(network);
-                tokio::spawn(async move {
+                let net = Arc::clone(network);
+                network.spawn(async move {
                     info!("📡 启动专用广播处理器");
                     while let Some(msg) = rx.recv().await {
-                        if let Err(e) = network_for_broadcast.broadcast(msg).await {
+                        if let Err(e) = net.broadcast(msg).await {
                             error!("❌ 专用广播失败: {}", e);
+                        }
+                    }
+                });
+            }
+
+            // 监听 HotStuff 视图开始事件，计算当前视图 leader（保留非固定 leader 模式）
+            {
+                let mut ev_rx = self.event_tx.subscribe();
+                let ids = self.all_node_ids.clone();
+                let is_leader = self.is_current_leader.clone();
+                let cur_view = self.current_view.clone();
+                let my_id = self.node_id;
+                tokio::spawn(async move {
+                    loop {
+                        match ev_rx.recv().await {
+                            Ok(SystemEvent::StartView { view }) => {
+                                cur_view.store(view, Ordering::SeqCst);
+                                if !ids.is_empty() {
+                                    let idx = (view as usize) % ids.len();
+                                    let leader = ids[idx];
+                                    let am_leader = leader == my_id;
+                                    is_leader.store(am_leader, Ordering::SeqCst);
+                                }
+                            }
+                            Ok(_) => {}
+                            Err(_) => break,
                         }
                     }
                 });
@@ -482,7 +517,7 @@ impl PompeManager {
             let ordering2_tx = self.ordering2_tx.clone();
             let general_tx = self.general_tx.clone();
             
-            tokio::spawn(async move {
+            network.spawn(async move {
                 info!("🌐 Node {} Pompe消息接收循环启动", node_id);
                 let mut total_messages = 0;
                 let mut ordering1_count = 0;
@@ -546,13 +581,18 @@ impl PompeManager {
             let lockfree_adapter = self.lockfree_adapter.clone();
             let config = self.config.clone();
             let network_for_flush = self.network.as_ref().map(|n| Arc::clone(n));
+            let is_leader_flag = self.is_current_leader.clone();
             tokio::spawn(async move {
                 let mut interval = tokio::time::interval(tokio::time::Duration::from_millis(config.stable_period_ms));
                 loop {
                     interval.tick().await;
                     // 使用与检查路径相同的逻辑
                     if let Some(net) = &network_for_flush {
-                        Self::check_and_output_to_hotstuff_lockfree(node_id, &state, &lockfree_adapter, &config, net).await;
+                        if is_leader_flag.load(Ordering::SeqCst) {
+                            Self::check_and_output_to_hotstuff_lockfree(
+                                node_id, &state, &lockfree_adapter, &config, net, is_leader_flag.clone()
+                            ).await;
+                        }
                     }
                 }
             });
@@ -612,6 +652,7 @@ impl PompeManager {
         let lockfree_adapter = self.lockfree_adapter.clone();
         let config = self.config.clone();
         let event_tx = self.event_tx.clone();
+        let is_leader_flag_for_o2 = self.is_current_leader.clone();
         
         tokio::spawn(async move {
             info!("🔄 Node {} 无锁Ordering2处理器启动", node_id);
@@ -627,7 +668,8 @@ impl PompeManager {
                             if let Some(ref net) = network {
                                 Self::handle_ordering2_request_lockfree(
                                     node_id, &state, &net, &lockfree_adapter, &config,
-                                    sender_id, tx_hash, median_timestamp, initiator_node_id, &event_tx
+                                    sender_id, tx_hash, median_timestamp, initiator_node_id, &event_tx,
+                                    is_leader_flag_for_o2.clone()
                                 ).await;
                             }
                         }
@@ -685,6 +727,7 @@ impl PompeManager {
             false
         } else {
             state.transaction_store.insert(tx_hash.clone(), transaction);
+            // warn!("⚠️ [首次Ordering1] Node {} 记录新交易: hash = {}", node_id, &tx_hash[0..8]);
             state.ordering1_responses.insert(tx_hash.clone(), Vec::new());
             state.ordering1_count.insert(tx_hash.clone(), 0);
             true
@@ -692,7 +735,7 @@ impl PompeManager {
         
         let check_duration = processing_start.elapsed();
         if check_duration > tokio::time::Duration::from_millis(1) {
-            warn!("⚠️ [检查耗时] Node {} Ordering1检查耗时: {:?}", node_id, check_duration);
+            debug!("⚠️ [检查耗时] Node {} Ordering1检查耗时: {:?}", node_id, check_duration);
         }
         
         if !should_respond {
@@ -724,7 +767,7 @@ impl PompeManager {
         
         let total_duration = processing_start.elapsed();
         if total_duration > tokio::time::Duration::from_millis(5) {
-            warn!("⚠️ [性能] Node {} handle_ordering1_request总耗时: {:?}, hash = {}", node_id, total_duration, tx_hash_clone);
+            debug!("⚠️ [性能] Node {} handle_ordering1_request总耗时: {:?}, hash = {}", node_id, total_duration, tx_hash_clone);
         } else {
             debug!("✅ [性能] Node {} handle_ordering1_request处理完成: {:?}, hash = {}", node_id, total_duration, tx_hash_clone);
         }
@@ -793,7 +836,7 @@ impl PompeManager {
 
         let processing_duration = processing_start.elapsed();
         if processing_duration > tokio::time::Duration::from_millis(2) {
-            warn!("⚠️ [处理性能] Node {} handle_ordering1_response 处理耗时: {:?}, 来自 Node {}, hash = {}", node_id, processing_duration, sender_node_id, tx_hash);
+            debug!("⚠️ [处理性能] Node {} handle_ordering1_response 处理耗时: {:?}, 来自 Node {}, hash = {}", node_id, processing_duration, sender_node_id, tx_hash);
         } else {
             debug!("✅ [处理性能] Node {} handle_ordering1_response 处理完成: {:?}, 来自 Node {}, hash = {}", node_id, processing_duration, sender_node_id, tx_hash);
         }
@@ -826,7 +869,8 @@ impl PompeManager {
         tx_hash: String,
         median_timestamp: u64,
         initiator_node_id: usize,
-        event_tx: &tokio::sync::broadcast::Sender<SystemEvent>, 
+        event_tx: &tokio::sync::broadcast::Sender<SystemEvent>,
+        is_leader: Arc<AtomicBool>, 
     ) {
         let processing_start = std::time::Instant::now();
         
@@ -861,7 +905,7 @@ impl PompeManager {
         let transaction = match state.transaction_store.get(&tx_hash) {
             Some(tx_ref) => tx_ref.clone(),
             None => {
-                warn!("⚠️ [Ordering2-2-LockFree] Node {} 找不到交易: {}", node_id, &tx_hash[0..8]);
+                // warn!("⚠️ [Ordering2-2-LockFree] Node {} 找不到交易: {}", node_id, &tx_hash[0..8]);
                 return;
             }
         };
@@ -880,7 +924,7 @@ impl PompeManager {
 
         let processing_duration = processing_start.elapsed();
         if processing_duration > tokio::time::Duration::from_millis(1) {
-            warn!("⚠️ [处理耗时] Node {} Ordering2处理耗时: {:?}, tx_id={}, hash={}", node_id, processing_duration, tx_id, tx_hash);
+            debug!("⚠️ [处理耗时] Node {} Ordering2处理耗时: {:?}, tx_id={}, hash={}", node_id, processing_duration, tx_id, tx_hash);
         } else {
             debug!("✅ [处理耗时] Node {} Ordering2处理耗时: {:?}, tx_id={}, hash={}", node_id, processing_duration, tx_id, tx_hash);
         }
@@ -910,8 +954,12 @@ impl PompeManager {
         let lockfree_adapter_clone = lockfree_adapter.clone();
         let config_clone = config.clone();
         let network_clone_for_flush = Arc::clone(network);
-        // 即刻尝试一次输出检查（有周期性 flusher 兜底）
-        Self::check_and_output_to_hotstuff_lockfree(node_id, &state_clone, &lockfree_adapter_clone, &config_clone, &network_clone_for_flush).await;
+        // 即刻尝试一次输出检查（有周期性 flusher 兜底），仅在我是当前视图 leader 时执行
+        if is_leader.load(Ordering::SeqCst) {
+            Self::check_and_output_to_hotstuff_lockfree(
+                node_id, &state_clone, &lockfree_adapter_clone, &config_clone, &network_clone_for_flush, is_leader.clone()
+            ).await;
+        }
     }
 
     async fn check_and_output_to_hotstuff_lockfree(
@@ -920,7 +968,10 @@ impl PompeManager {
         lockfree_adapter: &Option<Arc<LockFreeHotStuffAdapter>>,
         config: &PompeConfig,
         network: &Arc<crate::pompe_network::PompeNetwork>,
+        is_leader: Arc<AtomicBool>,
     ) {
+        // 非 leader 直接返回
+        if !is_leader.load(Ordering::SeqCst) { return; }
         let check_start = std::time::Instant::now();
         
         let commit_set_len = {
@@ -1006,11 +1057,14 @@ impl PompeManager {
                     let lockfree_adapter_clone = lockfree_adapter.clone();
                     let config_clone = config.clone();
                     let network_clone = Arc::clone(network);
+                    let leader_flag = is_leader.clone();
                     info!("⏳ [Flusher] Node {} 安排定时刷新，剩余 {:?}us", node_id, remaining_us);
                     tokio::spawn(async move {
                         tokio::time::sleep(tokio::time::Duration::from_micros(remaining_us)).await;
                         // 到点执行一次刷新
-                        Self::flush_commit_set_to_hotstuff(node_id, &state_clone, &lockfree_adapter_clone, &config_clone, Some(network_clone)).await;
+                        Self::flush_commit_set_to_hotstuff(
+                            node_id, &state_clone, &lockfree_adapter_clone, &config_clone, Some(network_clone), leader_flag.clone()
+                        ).await;
                         state_clone.flusher_scheduled.store(false, std::sync::atomic::Ordering::SeqCst);
                     });
                 }
@@ -1020,23 +1074,17 @@ impl PompeManager {
 
         let processing_duration = check_start.elapsed();
         if processing_duration > tokio::time::Duration::from_millis(2) {
-            warn!("⚠️ [输出耗时] Node {} 输出检查耗时: {:?}", node_id, processing_duration);
+            debug!("⚠️ [输出耗时] Node {} 输出检查耗时: {:?}", node_id, processing_duration);
         }
         
         if !ordered_txs.is_empty() {
-            // 仅由配置的 Leader 注入到 HotStuff，避免重复注入导致的队列膨胀和重复交易
-            if node_id == config.leader_node_id {
-                if let Some(ref adapter) = lockfree_adapter {
-                    adapter.push_batch(ordered_txs.clone());
-                    info!("⚡ [Leader输出] Node {} 注入 {} 个已排序交易到 HotStuff 队列", 
-                        node_id, ordered_txs.len());
-                } else {
-                    warn!("⚠️ [Leader输出] Node {} 无锁适配器未设置，丢失 {} 个交易", 
-                        node_id, ordered_txs.len());
-                }
-                // Leader 不再通过 Pompe 网络再分发到其他节点，避免重复
+            // 修改：所有节点均可注入到本地 HotStuff 队列，避免非 leader 产生空块
+            if let Some(ref adapter) = lockfree_adapter {
+                let cnt = ordered_txs.len();
+                adapter.push_batch(ordered_txs.clone());
+                info!("⚡ [输出] Node {} 注入 {} 个已排序交易到 HotStuff 队列", node_id, cnt);
             } else {
-                info!("↪️ [Follower跳过] Node {} 非Leader(leader={})，跳过本地注入，避免重复", node_id, config.leader_node_id);
+                warn!("⚠️ [输出] Node {} 无锁适配器未设置，丢失 {} 个交易", node_id, ordered_txs.len());
             }
         }
     }
@@ -1047,7 +1095,9 @@ impl PompeManager {
         lockfree_adapter: &Option<Arc<LockFreeHotStuffAdapter>>,
         config: &PompeConfig,
         network: Option<Arc<crate::pompe_network::PompeNetwork>>,
+        is_leader: Arc<AtomicBool>,
     ) {
+        if !is_leader.load(Ordering::SeqCst) { return; }
         let now_us = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros() as u64;
         let mut last_batch_clock = state.exec_last_batch_clock.write().unwrap();
         *last_batch_clock = now_us;
@@ -1067,18 +1117,13 @@ impl PompeManager {
         drop(commit_set);
         *state.consensus_ready.write().unwrap() = false;
 
-        // 仅 Leader 注入到 HotStuff 队列；Follower 不注入且不转发，避免重复
-        if node_id == config.leader_node_id {
-            if let Some(ref adapter) = lockfree_adapter {
-                let count = txs.len();
-                adapter.push_batch(txs.clone());
-                info!("⚡ [Leader定时输出] Node {} 刷新输出 {} 个交易", node_id, count);
-            } else {
-                warn!("⚠️ [Leader定时输出] Node {} 无锁适配器未设置，丢失 {} 个交易", node_id, txs.len());
-            }
-            // Leader 不再通过 Pompe 网络分发到其他节点
+        // 修改：所有节点均注入本地 HotStuff 队列，减少空块概率
+        if let Some(ref adapter) = lockfree_adapter {
+            let count = txs.len();
+            adapter.push_batch(txs.clone());
+            info!("⚡ [定时输出] Node {} 刷新输出 {} 个交易", node_id, count);
         } else {
-            info!("↪️ [Follower定时跳过] Node {} 非Leader(leader={})，跳过本地注入", node_id, config.leader_node_id);
+            warn!("⚠️ [定时输出] Node {} 无锁适配器未设置，丢失 {} 个交易", node_id, txs.len());
         }
     }
 
@@ -1116,6 +1161,9 @@ impl PompeManager {
             config: self.config.clone(),
             state: Arc::clone(&self.state),
             nfaulty: self.nfaulty,
+            all_node_ids: self.all_node_ids.clone(),
+            current_view: Arc::clone(&self.current_view),
+            is_current_leader: Arc::clone(&self.is_current_leader),
             ordering1_tx: self.ordering1_tx.clone(),
             ordering1_rx: Arc::clone(&self.ordering1_rx),
             ordering2_tx: self.ordering2_tx.clone(),
