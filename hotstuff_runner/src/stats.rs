@@ -67,7 +67,7 @@ impl PerformanceStats {
         // 更新最后确认时间
         self.last_confirm_time_ms.store(now_ms, Ordering::Relaxed);
     }
-    // 👈 纯粹的共识TPS：基于确认时间段
+    // 共识TPS：基于确认时间段
     pub fn get_pure_consensus_tps(&self) -> f64 {
         let confirmed = self.confirmed_transactions.load(Ordering::Relaxed);
         let first_confirm = self.first_confirm_time_ms.load(Ordering::Relaxed);
@@ -100,6 +100,7 @@ impl PerformanceStats {
     // 👈 端到端TPS：从提交到确认的总体性能
     pub fn get_end_to_end_tps(&self) -> f64 {
         let confirmed = self.confirmed_transactions.load(Ordering::Relaxed);
+        // 第一笔交易提交提交的时间
         let first_submit = self.first_submit_time_ms.load(Ordering::Relaxed);
         
         if confirmed == 0 || first_submit == 0 {

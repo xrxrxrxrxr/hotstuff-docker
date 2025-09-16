@@ -72,21 +72,18 @@ impl TestApp {
 
 impl<K: KVStore> App<K> for TestApp {
     fn produce_block(&mut self, request: ProduceBlockRequest<K>) -> ProduceBlockResponse {
-        thread::sleep(Duration::from_millis(25));
+        // thread::sleep(Duration::from_millis(25));
         let view_number = request.cur_view().int();
         let produce_start = std::time::Instant::now();
-        warn!("[produce_block] Node {} Producing block for view {} (only current view)", self.node_id, view_number);
-
-        // 提示：应用侧本地计数（block_count）与 HotStuff 视图/高度并非一一对应，
-        // 这里不再比较两者以避免误导性的“不匹配”告警。
+        // warn!("[produce_block] Node {} Producing block for view {} (only current view)", self.node_id, view_number);
 
         // 从无锁队列获取交易 - 无需锁定
         let mut transactions = Vec::new();
-        // 每个区块最多交易数，可通过 APP_BLOCK_MAX_TX 配置，默认 200
+        // 每个区块最多交易数，可通过 APP_BLOCK_MAX_TX 配置，默认 500
         let max_tx_count: usize = std::env::var("APP_BLOCK_MAX_TX")
             .ok()
             .and_then(|s| s.parse().ok())
-            .unwrap_or(200);
+            .unwrap_or(500);
 
         // 先检查队列大小，避免无效循环
         let queue_size = self.tx_queue.len();
@@ -162,8 +159,8 @@ impl<K: KVStore> App<K> for TestApp {
         info!("Node {} [produce_block]  - 本区块数据哈希: {:?}", self.node_id, &data_hash.bytes()[0..8]);
 
         let produce_elapsed = produce_start.elapsed();
-        warn!("[produce_block] Node {} cost {:?} (tx={})", self.node_id, produce_elapsed, tx_count);
-        info!("[Node {}] Produced block at view {} with {} transactions", self.node_id, request.cur_view().int(), tx_count);
+        // warn!("[produce_block] Node {} cost {:?} (tx={})", self.node_id, produce_elapsed, tx_count);
+        warn!("[Node {}] Produced block at view {} with {} transactions", self.node_id, request.cur_view().int(), tx_count);
 
         ProduceBlockResponse {
             data_hash,
@@ -251,7 +248,7 @@ impl<K: KVStore> App<K> for TestApp {
         }
 
         let validate_elapsed = validate_start.elapsed();
-        warn!("[validate_block] Node {} cost {:?}", self.node_id, validate_elapsed);
+        // warn!("[validate_block] Node {} cost {:?}", self.node_id, validate_elapsed);
 
         // 统一键空间：仅写入由区块元数据唯一决定的键值（各副本一致）
         let mut app_state_updates = AppStateUpdates::new();
@@ -281,7 +278,7 @@ impl<K: KVStore> App<K> for TestApp {
     }
 
     fn validate_block(&mut self, request: ValidateBlockRequest<K>) -> ValidateBlockResponse {
-        thread::sleep(Duration::from_millis(25));
+        // thread::sleep(Duration::from_millis(25));
         self.validate_block_for_sync(request)
     }
 }

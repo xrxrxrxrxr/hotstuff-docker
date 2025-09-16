@@ -87,10 +87,19 @@ impl Node {
         // let app_handle = Arc::new(Mutex::new(app.clone()));
         
         // 6. 创建配置 - 使用与官方完全相同的参数，并允许通过环境变量调优
+        // 将 HotStuff 视图超时与 Pompe 稳定期对齐（若未显式配置 HS_MAX_VIEW_TIME_MS）
+        // let hs_view_env: Option<u64> = std::env::var("HS_MAX_VIEW_TIME_MS").ok().and_then(|s| s.parse().ok());
+        // let pompe_stable_env: Option<u64> = std::env::var("POMPE_STABLE_PERIOD_MS").ok().and_then(|s| s.parse().ok());
+        // let max_view_time_ms: u64 = match (hs_view_env, pompe_stable_env) {
+        //     (Some(hs), _) => hs,
+        //     (None, Some(stable)) => stable,
+        //     (None, None) => 500,
+        // };
         let max_view_time_ms: u64 = std::env::var("HS_MAX_VIEW_TIME_MS")
             .ok()
             .and_then(|s| s.parse().ok())
-            .unwrap_or(500);
+            .unwrap_or(700);
+        warn!("Node {} 视图超时设置为 {} ms", node_id, max_view_time_ms);
         let progress_buf_cap: usize = std::env::var("HS_PROGRESS_BUF_CAP")
             .ok()
             .and_then(|s| s.parse().ok())
@@ -106,7 +115,7 @@ impl Node {
             .block_sync_trigger_min_view_difference(2)                   // 官方: 2
             .block_sync_trigger_timeout(Duration::new(60, 0))            // 官方: 60秒
             .progress_msg_buffer_capacity(BufferSize::new(progress_buf_cap.try_into().unwrap()))
-            .epoch_length(EpochLength::new(20))                          // 官方: 50
+            .epoch_length(EpochLength::new(50))                          // 官方: 50
             // 可通过 HS_MAX_VIEW_TIME_MS 调整视图超时
             .max_view_time(Duration::from_millis(max_view_time_ms))
             .log_events(false)                                           // 官方: false
@@ -126,70 +135,69 @@ impl Node {
             .configuration(config)
             // === 最关键的事件 ===
             .on_start_view({
+                let event_tx_start_view = event_tx.clone();
                 move |event| {
                     let msg = format!("🚀 Node {} 开始View {}", node_id, event.view);
                     crate::log_node(node_id, log::Level::Info, &msg);
-                    // EWNL: 视图关键路径起点
-                    let ewnl_start = format!("[EWNL] START view={}", event.view.int());
-                    warn!(target = "hotstuff_runner::ewnl", "{}", ewnl_start);
+                    let _ = event_tx_start_view.send(crate::event::SystemEvent::StartView { view: event.view.int() });
                 }
             })
             .on_propose({
                 move |event| {
-                    let msg = format!(
-                        "📤 Node {} 提议区块，View: {}, 高度: {:?}, hash: {:?}",
-                        node_id,
-                        event.proposal.view,
-                        event.proposal.block.height,
-                        event.proposal.block.hash
-                    );
-                    crate::log_node(node_id, log::Level::Info, &msg);
+                    // let msg = format!(
+                    //     "📤 Node {} 提议区块，View: {}, 高度: {:?}, hash: {:?}",
+                    //     node_id,
+                    //     event.proposal.view,
+                    //     event.proposal.block.height,
+                    //     event.proposal.block.hash
+                    // );
+                    // crate::log_node(node_id, log::Level::Info, &msg);
                 }
             })
             .on_receive_proposal({
                 move |event| {
-                    let msg = format!(
-                        "📥 Node {} 接收提议 View: {}",
-                        node_id,
-                        event.proposal.view
-                    );
-                    crate::log_node(node_id, log::Level::Debug, &msg);
+                    // let msg = format!(
+                    //     "📥 Node {} 接收提议 View: {}",
+                    //     node_id,
+                    //     event.proposal.view
+                    // );
+                    // crate::log_node(node_id, log::Level::Debug, &msg);
                 }
             })
             .on_phase_vote({
                 move |event| {
-                    let msg = format!(
-                        "🗳️ Node {} 阶段投票 View: {}, 阶段: {:?}",
-                        node_id,
-                        event.vote.view,
-                        event.vote.phase
-                    );
-                    crate::log_node(node_id, log::Level::Debug, &msg);
+                    // let msg = format!(
+                    //     "🗳️ Node {} 阶段投票 View: {}, 阶段: {:?}",
+                    //     node_id,
+                    //     event.vote.view,
+                    //     event.vote.phase
+                    // );
+                    // crate::log_node(node_id, log::Level::Debug, &msg);
                 }
             })
             .on_receive_phase_vote({
                 move |event| {
-                    let msg = format!(
-                        "📨 Node {} 接收投票 View: {}, 阶段: {:?}",
-                        node_id,
-                        event.phase_vote.view,
-                        event.phase_vote.phase
-                    );
-                    crate::log_node(node_id, log::Level::Debug, &msg);
+                    // let msg = format!(
+                    //     "📨 Node {} 接收投票 View: {}, 阶段: {:?}",
+                    //     node_id,
+                    //     event.phase_vote.view,
+                    //     event.phase_vote.phase
+                    // );
+                    // crate::log_node(node_id, log::Level::Debug, &msg);
                 }
             })
             .on_collect_pc({
                 move |event| {
-                    let msg = format!(
-                        "🎯 Node {} 收集PC View: {}, 签名数: {}",
-                        node_id,
-                        event.phase_certificate.view,
-                        event.phase_certificate.signatures.iter().filter(|sig| sig.is_some()).count()
-                    );
-                    crate::log_node(node_id, log::Level::Info, &msg);
-                    // EWNL: 视图关键路径终点
-                    let ewnl_end = format!("[EWNL] END view={}", event.phase_certificate.view.int());
-                    warn!(target = "hotstuff_runner::ewnl", "{}", ewnl_end);
+                    // let msg = format!(
+                    //     "🎯 Node {} 收集PC View: {}, 签名数: {}",
+                    //     node_id,
+                    //     event.phase_certificate.view,
+                    //     event.phase_certificate.signatures.iter().filter(|sig| sig.is_some()).count()
+                    // );
+                    // crate::log_node(node_id, log::Level::Info, &msg);
+                    // // EWNL: 视图关键路径终点
+                    // let ewnl_end = format!("[EWNL] END view={}", event.phase_certificate.view.int());
+                    // warn!(target = "hotstuff_runner::ewnl", "{}", ewnl_end);
                 }
             })
             // .on_commit_block({
@@ -303,11 +311,11 @@ impl Node {
                             }
                         },
                         Ok(None) => {
-                            let msg = format!(
-                                "💎 Node {} 提交区块 - 哈希: {:?} (区块详情未找到)",
-                                node_id, &block_hash.bytes()[0..8]
-                            );
-                            crate::log_node(node_id, log::Level::Warn, &msg);
+                            // let msg = format!(
+                            //     "💎 Node {} 提交区块 - 哈希: {:?} (区块详情未找到)",
+                            //     node_id, &block_hash.bytes()[0..8]
+                            // );
+                            // crate::log_node(node_id, log::Level::Warn, &msg);
                         },
                         Err(e) => {
                             let msg = format!(
@@ -321,14 +329,14 @@ impl Node {
             })
             .on_update_highest_pc({
                 move |event| {
-                    let msg = format!(
-                        "📈 Node {} 更新最高PC，View: {}, 阶段: {:?}",
-                        node_id,
-                        event.highest_pc.view,
-                        event.highest_pc.phase
-                    );
-                    crate::log_node(node_id, log::Level::Info, &msg);
-                    warn!("[on_update_highest_pc] Node {} 更新最高PC: view = {}", node_id, event.highest_pc.view);
+                    // let msg = format!(
+                    //     "📈 Node {} 更新最高PC，View: {}, 阶段: {:?}",
+                    //     node_id,
+                    //     event.highest_pc.view,
+                    //     event.highest_pc.phase
+                    // );
+                    // crate::log_node(node_id, log::Level::Info, &msg);
+                    // warn!("[on_update_highest_pc] Node {} 更新最高PC: view = {}", node_id, event.highest_pc.view);
                 }
             })
             // === 超时和View变更事件 ===
@@ -346,45 +354,45 @@ impl Node {
             })
             .on_timeout_vote({
                 move |event| {
-                    let msg = format!(
-                        "⏰ Node {} 发送超时投票，View: {}",
-                        node_id,
-                        event.timeout_vote.view
-                    );
-                    crate::log_node(node_id, log::Level::Info, &msg);
+                    // let msg = format!(
+                    //     "⏰ Node {} 发送超时投票，View: {}",
+                    //     node_id,
+                    //     event.timeout_vote.view
+                    // );
+                    // crate::log_node(node_id, log::Level::Info, &msg);
                 }
             })
             .on_receive_timeout_vote({
                 move |event| {
-                    let msg = format!(
-                        "📩 Node {} 接收超时投票，来源: {:?}, View: {}",
-                        node_id,
-                        event.origin.to_bytes()[0..4].to_vec(),
-                        event.timeout_vote.view
-                    );
-                    crate::log_node(node_id, log::Level::Info, &msg);
+                    // let msg = format!(
+                    //     "📩 Node {} 接收超时投票，来源: {:?}, View: {}",
+                    //     node_id,
+                    //     event.origin.to_bytes()[0..4].to_vec(),
+                    //     event.timeout_vote.view
+                    // );
+                    // crate::log_node(node_id, log::Level::Info, &msg);
                 }
             })
             .on_collect_tc({
                 move |event| {
-                    let msg = format!(
-                        "🔄 Node {} 收集TC，View: {}",
-                        node_id,
-                        event.timeout_certificate.view
-                    );
-                    crate::log_node(node_id, log::Level::Info, &msg);
+                    // let msg = format!(
+                    //     "🔄 Node {} 收集TC，View: {}",
+                    //     node_id,
+                    //     event.timeout_certificate.view
+                    // );
+                    // crate::log_node(node_id, log::Level::Info, &msg);
                 }
             })
             .on_advance_view({
                 move |event| {
                     // 注意：这里的 view 来自进度证书（PC/TC）的视图，不等价于本地“进入的当前视图”。
                     let pc_view = event.advance_view.progress_certificate.view();
-                    let msg = format!(
-                        "📨 Node {} 收到 AdvanceView: PC.view={}",
-                        node_id,
-                        pc_view
-                    );
-                    crate::log_node(node_id, log::Level::Info, &msg);
+                    // let msg = format!(
+                    //     "📨 Node {} 收到 AdvanceView: PC.view={}",
+                    //     node_id,
+                    //     pc_view
+                    // );
+                    // crate::log_node(node_id, log::Level::Info, &msg);
                 }
             })
             .on_new_view({
@@ -393,36 +401,36 @@ impl Node {
                     // 并非“进入新视图”。真正进入新视图请看 StartView 事件。
                     let cur_view = event.new_view.view.int();
                     let next_view = cur_view + 1;
-                    let msg = format!(
-                        "🆕 Node {} 发送 NewView：cur_view={}, next_view(预期)={}",
-                        node_id,
-                        cur_view,
-                        next_view
-                    );
-                    crate::log_node(node_id, log::Level::Info, &msg);
-                    warn!("[on_new_view] Node {} 广播 NewView for 旧视图 {} (即将进入 {})", node_id, cur_view, next_view);
+                    // let msg = format!(
+                    //     "🆕 Node {} 发送 NewView：cur_view={}, next_view(预期)={}",
+                    //     node_id,
+                    //     cur_view,
+                    //     next_view
+                    // );
+                    // crate::log_node(node_id, log::Level::Info, &msg);
+                    // warn!("[on_new_view] Node {} 广播 NewView for 旧视图 {} (即将进入 {})", node_id, cur_view, next_view);
                 }
             })
             .on_receive_new_view({
                 move |event| {
-                    let msg = format!(
-                        "📬 Node {} 接收新View消息，来源: {:?}, View: {}",
-                        node_id,
-                        event.origin.to_bytes()[0..4].to_vec(),
-                        event.new_view.view
-                    );
-                    crate::log_node(node_id, log::Level::Info, &msg);
+                    // let msg = format!(
+                    //     "📬 Node {} 接收新View消息，来源: {:?}, View: {}",
+                    //     node_id,
+                    //     event.origin.to_bytes()[0..4].to_vec(),
+                    //     event.new_view.view
+                    // );
+                    // crate::log_node(node_id, log::Level::Info, &msg);
                 }
             })
             .on_insert_block({
                 move |event| {
-                    let msg = format!(
-                        "🔗 Node {} 插入区块, 高度: {}, 哈希: {:?}",
-                        node_id,
-                        event.block.height.int(),
-                        event.block.hash,
-                    );
-                    crate::log_node(node_id, log::Level::Info, &msg);
+                    // let msg = format!(
+                    //     "🔗 Node {} 插入区块, 高度: {}, 哈希: {:?}",
+                    //     node_id,
+                    //     event.block.height.int(),
+                    //     event.block.hash,
+                    // );
+                    // crate::log_node(node_id, log::Level::Info, &msg);
                 }
             })
             .build()

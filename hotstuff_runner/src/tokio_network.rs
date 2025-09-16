@@ -129,7 +129,7 @@ impl TokioNetwork {
         let cap: usize = std::env::var("HS_PEER_QUEUE_CAP")
             .ok()
             .and_then(|s| s.parse().ok())
-            .unwrap_or(1024);
+            .unwrap_or(16384);
 
         for (peer_key, addr) in &self.config.peer_addrs {
             if *peer_key == self.config.my_key {
@@ -163,9 +163,9 @@ impl TokioNetwork {
             // try fast path then block if necessary to preserve consensus messages
             if let Err(e) = writer.tx.try_send(frame) {
                 match e {
-                    mpsc::error::TrySendError::Full(f) => {
-                        warn!("peer {:?} 发送队列满，阻塞发送一次", peer_key.to_bytes()[0..4].to_vec());
-                        let _ = writer.tx.blocking_send(f);
+                    mpsc::error::TrySendError::Full(_f) => {
+                        // 不要阻塞 runtime 线程，直接丢弃该帧（可调大 HS_PEER_QUEUE_CAP 以减少丢弃）。
+                        warn!("peer {:?} 发送队列满，丢弃一帧以避免阻塞", peer_key.to_bytes()[0..4].to_vec());
                     }
                     mpsc::error::TrySendError::Closed(_) => {
                         error!("peer {:?} 发送队列已关闭", peer_key.to_bytes()[0..4].to_vec());
