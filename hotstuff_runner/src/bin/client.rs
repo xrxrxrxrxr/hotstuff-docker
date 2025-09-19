@@ -593,6 +593,7 @@ impl PersistentConnection {
         let mut batch_buffer = Vec::new();
 
         let is_pompe = true; /////// 调试修改点
+        let is_smrol=false;
 
         if is_pompe {
             for transaction in transactions {
@@ -606,6 +607,21 @@ impl PersistentConnection {
                 let message_length = serialized.len() as u32;
                 // 平均消息长度 170 bytes
                 // info!("📦 ******* 客户端发送pompe消息，长度: {} bytes", message_length);
+
+                batch_buffer.extend_from_slice(&message_length.to_be_bytes());
+                batch_buffer.extend_from_slice(&serialized);
+            }
+        } else if is_smrol {
+            for transaction in transactions {
+                let client_message = ClientMessage {
+                    message_type: "smrol_transaction".to_string(),
+                    transaction: Some(transaction.clone()),
+                    client_id: client_id.to_string(),
+                };
+            
+                let serialized = serde_json::to_vec(&client_message)?;
+                let message_length = serialized.len() as u32;
+                // info!("📦 ******* 客户端发送消息，长度: {} bytes", message_length);
 
                 batch_buffer.extend_from_slice(&message_length.to_be_bytes());
                 batch_buffer.extend_from_slice(&serialized);

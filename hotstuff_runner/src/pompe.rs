@@ -13,7 +13,7 @@ use ed25519_dalek::SigningKey;
 use tracing::{info, warn, error, debug};
 use sha2::{Sha256, Digest};
 use std::net::SocketAddr;
-use crate::{pompe_network::PompeNetwork, tcp_network::TcpNetwork};
+use crate::{pompe_network::PompeNetwork};
 use crossbeam::queue::SegQueue;
 // Switch Pompe internal queues to tokio::mpsc (async, non-blocking)
 use tokio::sync::mpsc as async_mpsc;

@@ -315,57 +315,6 @@ impl PompeNetwork {
         }
         
         Ok(())
-
-        // // 🚨 重试机制：最多重试3次
-        // let mut last_error_msg = String::new();
-        // for attempt in 1..=3 {
-        //     match TcpStream::connect(&target_addr).await {
-        //         Ok(mut stream) => {
-        //             let serialized = serde_json::to_vec(&network_msg).map_err(|e| format!("序列化失败: {}", e))?;
-        //             let message_length = serialized.len() as u32;
-                    
-        //             match stream.write_all(&message_length.to_be_bytes()).await {
-        //                 Ok(_) => {
-        //                     match stream.write_all(&serialized).await {
-        //                         Ok(_) => {
-        //                             if let Err(e) = stream.flush().await {
-        //                                 warn!("⚠️ 刷新连接失败 {} (尝试 {}): {}", target_addr, attempt, e);
-        //                                 continue;
-        //                             }
-                                    
-        //                             debug!("📤 Node {} Pompe发送到节点 {} 成功 (尝试 {}, {}字节)", 
-        //                                    self.node_id, target_node_id, attempt, message_length);
-        //                             return Ok(());
-        //                         }
-        //                         Err(e) => {
-        //                             warn!("⚠️ 写入消息失败 {} (尝试 {}): {}", target_addr, attempt, e);
-        //                             last_error_msg = format!("写入消息失败: {}", e);
-        //                             continue;
-        //                         }
-        //                     }
-        //                 }
-        //                 Err(e) => {
-        //                     warn!("⚠️ 写入长度失败 {} (尝试 {}): {}", target_addr, attempt, e);
-        //                     last_error_msg = format!("写入长度失败: {}", e);
-        //                     continue;
-        //                 }
-        //             }
-        //         }
-        //         Err(e) => {
-        //             warn!("⚠️ Node {} Pompe连接到节点 {} 失败 (尝试 {}): {}", 
-        //                   self.node_id, target_node_id, attempt, e);
-        //             last_error_msg = format!("连接失败: {}", e);
-                    
-        //             if attempt < 3 {
-        //                 // 等待一段时间再重试
-        //                 tokio::time::sleep(tokio::time::Duration::from_millis(100 * attempt as u64)).await;
-        //             }
-        //         }
-        //     }
-        // }
-        
-        // error!("❌ Node {} Pompe发送到节点 {} 最终失败，已重试3次", self.node_id, target_node_id);
-        // Err(last_error_msg.into())
     }
 
     // 🚨 新增：在指定流上发送消息的辅助方法
@@ -440,19 +389,10 @@ impl PompeNetwork {
         if success_count > 0 { Ok(()) } else { Err("所有广播目标都失败了".to_string()) }
     }
 
-    // pub async fn recv(&self) -> Option<(usize, PompeMessage)> {
-    //     let mut rx = self.message_rx.lock().unwrap();
-    //     rx.try_recv().ok()
-    // }
-    // pub async fn recv(&self) -> Option<(usize, PompeMessage)> {
-    //     let mut rx = self.message_rx.lock().await;
-    //     rx.recv().await
-    // }
     pub async fn recv(&self) -> Option<(usize, PompeMessage)> {
         let mut rx = self.message_rx.lock().await;
         rx.recv().await
     }
-// }
 
 
     // 🚨 新增：清理过期消息的维护函数

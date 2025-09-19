@@ -10,7 +10,6 @@ use hotstuff_rs::{
 };
 use crate::{
     app::TestApp,
-    network::NodeNetwork,
     kv_store::MemoryKVStore,
     stats::PerformanceStats,
     event::SystemEvent,

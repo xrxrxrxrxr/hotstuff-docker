@@ -2,7 +2,7 @@
 //! Tokio-based async TCP network implementation (length-prefixed framing)
 //! Compatible with `hotstuff_rs::networking::network::Network` trait.
 
-use crate::tcp_network::TcpNetworkConfig as TokioNetworkConfig; // reuse existing config struct
+// use crate::tcp_network::TcpNetworkConfig as TokioNetworkConfig; // reuse existing config struct
 use crossbeam::channel::{unbounded, Receiver, Sender};
 use ed25519_dalek::VerifyingKey;
 use borsh::{BorshSerialize, BorshDeserialize};
@@ -27,6 +27,14 @@ use tracing::{debug, error, info, warn};
 // Simple frame header to resync reliably
 const NET_MAGIC: u32 = 0x48534E57; // 'HSNW'
 const MAX_MSG_SIZE: usize = 10 * 1024 * 1024; // 10MB
+
+
+#[derive(Clone)]
+pub struct TokioNetworkConfig {
+    pub my_addr: SocketAddr,
+    pub peer_addrs: HashMap<VerifyingKey, SocketAddr>,
+    pub my_key: VerifyingKey,
+}
 
 // Message type tags (mirror of tcp_network.rs)
 #[derive(Serialize, Deserialize, Clone, Debug)]

@@ -9,7 +9,7 @@ use hotstuff_rs::{
     },
 };
 use hotstuff_runner::{
-    app::TestApp, detailed_performance_metrics::PompeQueueMetrics, event::{self, ResponseCommand, SystemEvent, TestTransaction}, pompe::{load_pompe_config, LockFreeHotStuffAdapter, PompeManager}, stats::PerformanceStats, tokio_network::TokioNetwork, tcp_network::TcpNetworkConfig, tcp_node::Node
+    app::TestApp, event::{self, ResponseCommand, SystemEvent, TestTransaction}, pompe::{load_pompe_config, LockFreeHotStuffAdapter, PompeManager}, stats::PerformanceStats, tokio_network::{TokioNetwork, TokioNetworkConfig}, tcp_node::Node
 };
 use std::sync::Arc;
 use tokio::sync::{mpsc, broadcast, Notify};
@@ -91,45 +91,6 @@ impl LockFreeStats {
     }
 }
 
-// Lock-free transaction processor for Pompe transactions
-#[derive(Debug)]
-pub struct LockFreeTransactionProcessor {
-    input_queue: Arc<SegQueue<String>>,
-    size_counter: AtomicUsize,
-}
-
-impl LockFreeTransactionProcessor {
-    fn new() -> Self {
-        Self {
-            input_queue: Arc::new(SegQueue::new()),
-            size_counter: AtomicUsize::new(0),
-        }
-    }
-    
-    fn push_input(&self, transaction: String) {
-        self.input_queue.push(transaction);
-        self.size_counter.fetch_add(1, Ordering::Relaxed);
-    }
-    
-    fn process_batch(&self, batch_size: usize) -> Vec<String> {
-        let mut batch = Vec::with_capacity(batch_size);
-        
-        for _ in 0..batch_size {
-            if let Some(tx) = self.input_queue.pop() {
-                self.size_counter.fetch_sub(1, Ordering::Relaxed);
-                batch.push(tx);
-            } else {
-                break;
-            }
-        }
-        
-        batch
-    }
-    
-    fn get_queue_size(&self) -> usize {
-        self.size_counter.load(Ordering::Relaxed)
-    }
-}
 
 // Regular transaction processor that directly feeds HotStuff queue
 #[derive(Debug)]
@@ -228,7 +189,6 @@ async fn start_lockfree_client_listener(
     node_id: usize, 
     port: u16, 
     event_tx: broadcast::Sender<SystemEvent>,
-    // pompe_tx_processor: Arc<LockFreeTransactionProcessor>,
     regular_tx_processor: Arc<RegularTransactionProcessor>,
     lockfree_stats: Arc<LockFreeStats>,
     node_stats: Arc<PerformanceStats>,
@@ -244,7 +204,6 @@ async fn start_lockfree_client_listener(
         match listener.accept().await {
             Ok((socket, _client_addr)) => {
                 let event_tx_clone = event_tx.clone();
-                // let pompe_tx_processor_clone = Arc::clone(&pompe_tx_processor);
                 let regular_tx_processor_clone = Arc::clone(&regular_tx_processor);
                 let lockfree_stats_clone = Arc::clone(&lockfree_stats);
                 let node_stats_clone = Arc::clone(&node_stats);
@@ -255,7 +214,6 @@ async fn start_lockfree_client_listener(
                         node_id,
                         socket,
                         event_tx_clone,
-                        // pompe_tx_processor_clone,
                         regular_tx_processor_clone,
                         lockfree_stats_clone,
                         node_stats_clone,
@@ -279,7 +237,6 @@ async fn handle_lockfree_client_connection(
     node_id: usize, 
     socket:  TcpStream,
     event_tx: broadcast::Sender<SystemEvent>,
-    // pompe_tx_processor: Arc<LockFreeTransactionProcessor>,
     regular_tx_processor: Arc<RegularTransactionProcessor>,
     lockfree_stats: Arc<LockFreeStats>,
     node_stats: Arc<PerformanceStats>,
@@ -363,8 +320,11 @@ async fn handle_lockfree_client_connection(
                 if let Ok(client_message) = serde_json::from_slice::<ClientMessage>(&message_buf) {
                     if let Some(transaction) = client_message.transaction {
                         connection_tx_count += 1;
+
+                        // Identify tx types
                         let is_pompe = client_message.message_type == "pompe_transaction";
-                        
+                        let is_smrol = client_message.message_type == "smrol_transaction";
+
                         // Lock-free statistics update
                         let total_received = lockfree_stats.increment_tx_received();
                         if is_pompe {
@@ -373,7 +333,7 @@ async fn handle_lockfree_client_connection(
 
                         info!("Node {} received {} ID={}, {}->{}:{}", 
                               node_id, 
-                              if is_pompe { "Pompe transaction" } else { "standard transaction" },
+                              if is_pompe { "Pompe transaction" } else if is_smrol { "SMROL transaction" } else { "standard transaction" },
                               transaction.id, transaction.from, transaction.to, transaction.amount);
 
                         // Process transaction with lock-free processor
@@ -393,8 +353,9 @@ async fn handle_lockfree_client_connection(
                                 warn!("Pompe 管理器未启用，跳过交易: {}", tx_string);
                             }
                             // Pompe transactions go through Pompe processor
-                            // pompe_tx_processor.push_input(tx_string.clone());
                             // info!("[Lock-free] Node {} Pompe transaction queued: {}", node_id, tx_string);
+                        } else if is_smrol {
+                            // TODO: Add SMROL transaction processing logic here
                         } else {
                             // Regular transactions go directly to HotStuff queue (following second code logic)
                             regular_tx_processor.push_transaction(tx_string.clone());
@@ -597,26 +558,6 @@ async fn start_lockfree_performance_monitor(
     }
 }
 
-// async fn handle_block_production_events(
-//     mut event_rx: broadcast::Receiver<SystemEvent>,
-//     node: Arc<Node>,
-// ) {
-//     while let Ok(event) = event_rx.recv().await {
-//         match event {
-//             SystemEvent::TriggerBlockProduction { view } => {
-//                 if let Err(e) = node.produce_block_for_view(view).await {
-//                     error!("区块生产失败: {}", e);
-//                 }
-//             }
-            
-//             SystemEvent::SyncPacemakerView { new_view } => {
-//                 info!("Node {} 收到Pacemaker同步事件，目标view: {}", node.node_id, new_view);
-//             }
-            
-//             _ => {}
-//         }
-//     }
-// }
 
 #[tokio::main]
 async fn main() -> Result<(), String> {
@@ -685,7 +626,7 @@ async fn main() -> Result<(), String> {
        .parse()
        .expect("Invalid local address");
    
-   let tcp_config = TcpNetworkConfig {
+   let tcp_config = TokioNetworkConfig {
        my_addr,
        peer_addrs,
        my_key: my_verifying_key,
@@ -707,8 +648,6 @@ async fn main() -> Result<(), String> {
    let (event_for_response_tx, event_for_response_rx) = broadcast::channel::<SystemEvent>(1000);
 
    let event_for_response_rx_clone=event_for_response_rx;
-   // Lock-free transaction processors for different paths
-   let pompe_tx_processor = Arc::new(LockFreeTransactionProcessor::new());
    
    // Use the lock-free transaction queue from Node for regular transactions
    let shared_tx_queue = Arc::new(SegQueue::new());
@@ -722,7 +661,7 @@ async fn main() -> Result<(), String> {
    let client_listener_node_id = node_id;
    let client_listener_port = my_port - 1000;
    let event_tx_clone = event_tx.clone();
-   let pompe_tx_processor_clone = Arc::clone(&pompe_tx_processor);
+
    let regular_tx_processor_clone = Arc::clone(&regular_tx_processor);
    let lockfree_stats_clone = Arc::clone(&lockfree_stats);
    let node_stats_clone = Arc::clone(&node_stats);
@@ -735,6 +674,7 @@ async fn main() -> Result<(), String> {
    info!("Creating HotStuff node...");
    
    // Create Node with lock-free queue integration
+   // replica
    let node = Node::new(
        node_id,
        signing_key.clone(),
@@ -746,23 +686,14 @@ async fn main() -> Result<(), String> {
        event_for_response_tx.clone() /* 🎯 */
    );
 
-    // let node_arc = Arc::new(node);  // 包装到Arc中
-        
-    //     // 启动区块生产事件处理器
-    //     let node_clone = node_arc.clone();
-    //     let event_rx_for_production = event_for_response_tx.subscribe();
-        
-    //     tokio::spawn(handle_block_production_events(
-    //         event_rx_for_production,
-    //         node_clone,
-    //     ));
 
    // Add monitoring for regular transaction queue size (similar to second code)
    let regular_tx_monitor = Arc::clone(&regular_tx_processor);
    let stats_for_monitor = Arc::clone(&node_stats);
    let lockfree_stats_for_monitor = Arc::clone(&lockfree_stats);
 
-   // Create completely lock-free Pompe manager
+   // Create Pompe manager
+   // pompe manager
    let pompe_config = load_pompe_config();
    let pompe_manager = if pompe_config.enable {
        info!("Enabling completely lock-free Pompe BFT, batch size: {}", pompe_config.batch_size);
@@ -800,6 +731,10 @@ async fn main() -> Result<(), String> {
        None
    };
 
+    // TODO: create smrol manager here
+    // TODO: pass smrol manager to client listener
+
+   // Pass Pompe manager to client listener
    let pompe_manager_clone = pompe_manager.clone();
 
     tokio::spawn(async move {
@@ -807,7 +742,6 @@ async fn main() -> Result<(), String> {
            client_listener_node_id,
            client_listener_port,
            event_tx_clone,
-        //    pompe_tx_processor_clone,
            regular_tx_processor_clone,
            lockfree_stats_clone,
            node_stats_clone,
