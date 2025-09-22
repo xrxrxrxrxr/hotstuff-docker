@@ -66,31 +66,6 @@ pub enum ResponseCommand {
     Error { tx_ids: Vec<u64>, error_msg: String },
 }
 
-// #[derive(Serialize, Deserialize, Debug, Clone)]
-// pub enum ResponseMessageContent {
-//     Ordering1Response {
-//         tx_id: u64,
-//         timestamp_us: u64,
-//         node_id: usize,
-//     },
-//     HotStuffCommitted {
-//         tx_id: u64,
-//         timestamp_us: u64,
-//         node_id: usize,
-//     },
-//     Error {
-//         tx_id: u64,
-//         error_msg: String,
-//     },
-// }
-
-// #[derive(Serialize, Deserialize, Debug, Clone)]
-// pub struct ResponseMessage {
-//     pub message_type: String,
-//     pub response: Option<ResponseMessageContent>,
-//     pub node_id: usize,
-// }
-
 impl LatencyTracker {
     pub fn new() -> Self {
         Self {
@@ -350,7 +325,7 @@ impl ClientNode {
             config.target_tps, config.duration_secs);
 
         // 参数调整点：降低发送频率测latency
-        let is_latency = true;
+        let is_latency = false;
 
         let mut batch_size = std::cmp::max(100, config.target_tps / 5);
         let mut batch_interval = Duration::from_millis(200);

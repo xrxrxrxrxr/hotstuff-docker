@@ -7,6 +7,7 @@ pub mod stats;
 pub mod pompe;
 pub mod pompe_network;
 pub mod event;
+pub mod pompe_adversary;
 
 // 重新导出常用类型
 pub use app::TestApp;

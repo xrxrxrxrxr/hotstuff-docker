@@ -184,7 +184,7 @@ pub fn load_pompe_config() -> PompeConfig {
 }
 
 #[derive(Debug)]
-struct PompeAppState {
+pub struct PompeAppState {
     batch_received: DashMap<String, usize>,
     ordering1_responses: DashMap<String, Vec<u64>>,
     ordering1_count: DashMap<String, usize>,
@@ -721,7 +721,7 @@ impl PompeManager {
     ) {
         let processing_start = std::time::Instant::now();
         
-        debug!("🎯 [handle_ordering1_request] Node {} 处理请求: tx_id={}, hash={}", node_id, transaction.id ,&tx_hash[0..8]);
+        warn!("🎯 [handle_ordering1_request] Node {} 处理请求: tx_id={}, hash={}", node_id, transaction.id ,&tx_hash[0..8]);
         
         let should_respond = if state.ordering1_responses.contains_key(&tx_hash) {
             false
