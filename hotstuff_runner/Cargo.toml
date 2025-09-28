@@ -12,11 +12,9 @@ tokio = { version = "1", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 bincode = "1.3"
 anyhow = "1.0"
-# rand = "0.9.2"
 rand = "0.7"
 rand_core = { version = "0.6.4", features = ["getrandom"] }
 sha2 = "0.10"
-# borsh = "1.0"
 borsh = "0.10"
 ed25519-dalek = { version = "2.0.0", features = ["rand_core","pkcs8"] }
 tracing = "0.1"
@@ -29,6 +27,9 @@ crossbeam = "0.8"
 parking_lot = "0.12"
 tokio-util = { version = "0.7", features = ["codec"] }
 bytes = "1.0"
+rug = "1.15" 
+uuid = { version = "1.0", features = ["v4"] }
+hex = "0.4"
 # smrol
 # ds: ed25519_dalek
 # threshold signature
@@ -36,27 +37,15 @@ threshold_crypto = "0.4"
 # erasure coding
 reed-solomon-erasure = "6.0"
 # vc
+# accumulator = { git = "https://github.com/cambrian/accumulator.git", tag = "v0.2.1" }
 rs_merkle = "1.4"
-# accumulator = { git = "https://github.com/cambrian/accumulator" }
 # vaba
 # vaba-rust = { git = "https://github.com/lichuang/vaba-rust", branch = "main" }
 
 
-# [[bin]]
-# name = "hotstuff_runner"
-# path = "src/main.rs"
-
 [[bin]]
 name = "docker_node"
 path = "src/bin/docker_node.rs"
-
-# [[bin]]
-# name = "single_node"
-# path = "src/bin/single_node.rs"
-
-# [[bin]]
-# name = "single_node_test"
-# path = "src/bin/single_node_test.rs"
 
 [[bin]]
 name = "client"

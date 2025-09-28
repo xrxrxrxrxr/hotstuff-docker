@@ -1,7 +1,7 @@
 //! 简化的系统事件定义 - 支持模块间通信
 
+use serde::{Deserialize, Serialize};
 use std::time::Instant;
-use serde::{Serialize, Deserialize};
 
 // 客户端交易结构
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -29,7 +29,7 @@ pub enum SystemEvent {
         tx_id: u64,
         // timestamp_us: u64,
     },
-    
+
     /// HotStuff 区块提交完成
     HotStuffCommitted {
         block_height: u64,
@@ -55,7 +55,6 @@ pub enum SystemEvent {
         pompe_tps: f64,
     },
 }
-
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum ResponseCommand {
