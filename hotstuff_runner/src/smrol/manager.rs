@@ -2,10 +2,12 @@ use crate::event::SystemEvent;
 use crate::smrol::{
     adapter::SmrolHotStuffAdapter,
     consensus::{Consensus, TransactionEntry},
+    crypto::derive_threshold_keys,
+    finalization::OutputFinalization,
     message::{SmrolMessage, SmrolTransaction},
     network::SmrolTcpNetwork,
     pnfifo::PnfifoBc,
-    sequencing::{Transaction,TransactionSequencing},
+    sequencing::TransactionSequencing,
 };
 use ed25519_dalek::{SigningKey, VerifyingKey};
 use std::collections::HashMap;
@@ -43,6 +45,7 @@ pub struct SmrolManager {
     pub network: Arc<SmrolTcpNetwork>,
     pub consensus: Arc<Mutex<Consensus>>,
     pub sequencing: Arc<Mutex<TransactionSequencing>>,
+    pub finalization: Arc<Mutex<OutputFinalization>>,
     hotstuff_adapter: Mutex<Option<Arc<SmrolHotStuffAdapter>>>,
     pub event_tx: broadcast::Sender<SystemEvent>,
 
@@ -61,14 +64,19 @@ impl SmrolManager {
     ) -> Result<Self, String> {
         let n = verifying_keys.len();
 
-        let pnfifo = PnfifoBc::new(
+        let (threshold_share, threshold_public) = derive_threshold_keys(node_id, config.f, &verifying_keys)
+            .map_err(|e| format!("derive threshold keys failed: {}", e))?;
+
+        let pnfifo = Arc::new(
+            PnfifoBc::new(
             node_id,
             n,
             signing_key.clone(),
             verifying_keys.clone(),
             peer_addrs,
         )
-        .await?;
+        .await?,
+        );
 
         // start PNFIFO network listener
         pnfifo.start().await?;
@@ -76,14 +84,22 @@ impl SmrolManager {
 
         let network = pnfifo.network();
 
+        let finalization = Arc::new(Mutex::new(OutputFinalization::new(
+            node_id,
+            config.f,
+            Arc::clone(&network),
+            signing_key.clone(),
+        )));
+
         let sequencing = TransactionSequencing::new(
             node_id,
             n,
             config.f,
             Arc::clone(&network),
-            pnfifo,
-            signing_key.clone(),
-            verifying_keys.clone(),
+            Arc::clone(&pnfifo),
+            threshold_share,
+            threshold_public.clone(),
+            Arc::clone(&finalization),
         );
 
         let consensus = Consensus::new(
@@ -93,6 +109,7 @@ impl SmrolManager {
             Arc::clone(&network),
             signing_key.clone(),
             verifying_keys.clone(),
+            Arc::clone(&finalization),
         );
 
         Ok(Self {
@@ -102,6 +119,7 @@ impl SmrolManager {
             network,
             consensus: Arc::new(Mutex::new(consensus)),
             sequencing: Arc::new(Mutex::new(sequencing)),
+            finalization,
             hotstuff_adapter: Mutex::new(None),
             event_tx,
             signing_key,
@@ -129,16 +147,8 @@ impl SmrolManager {
             transaction.from, transaction.to, transaction.amount
         );
 
-        let tx_data = format!(
-            "{}:{}->{}:{}",
-            transaction.id, transaction.from, transaction.to, transaction.amount
-        );
-        let tx = Transaction {
-            data: tx_data.into_bytes(),
-        };
-
         let mut sequencing = self.sequencing.lock().await;
-        sequencing.smrol_broadcast(tx).await?;
+        sequencing.smrol_broadcast(transaction).await?;
         debug!("✅ [SMROL] Transaction sent to sequencing layer");
         Ok(())
     }
@@ -159,6 +169,7 @@ impl SmrolManager {
 
                 match result {
                     Ok(Some(entry)) => {
+                        // line 38: add_sequenced_transaction(entry) to Mi and finalization
                         if let Err(e) = manager_for_seq.add_sequenced_transaction(entry).await {
                             error!("[SMROL] 共识输入登记失败: {}", e);
                         }
@@ -200,14 +211,14 @@ impl SmrolManager {
             epoch
         );
 
-        let finalized = {
+        {
             let mut consensus = self.consensus.lock().await;
             consensus.run_consensus(epoch).await?;
-            consensus
-                .epoch_states
-                .get(&epoch)
-                .map(|state| state.final_ledger.clone())
-                .unwrap_or_default()
+        }
+
+        let finalized = {
+            let finalization = self.finalization.lock().await;
+            finalization.get_final_ledger(epoch)
         };
 
         if !finalized.is_empty() {
@@ -229,8 +240,10 @@ impl SmrolManager {
         consensus.get_mi_size(epoch) >= self.config.k
     }
 
+    // line 38: take over sequenced transaction and add to Mi and finalization
     pub async fn add_sequenced_transaction(&self, entry: TransactionEntry) -> Result<(), String> {
         let entry_meta = (entry.vc_tx.len(), entry.s_tx);
+        let entry_for_finalization = entry.clone();
 
         let (epoch, pending) = {
             let mut consensus = self.consensus.lock().await;
@@ -239,6 +252,11 @@ impl SmrolManager {
             let pending = consensus.get_mi_size(epoch);
             (epoch, pending)
         };
+
+        {
+            let mut finalization = self.finalization.lock().await;
+            finalization.add_to_mi(epoch, entry_for_finalization);
+        }
 
         debug!(
             "🧮 [SMROL] 登记Sequencing输出: epoch={} vc_bytes={} s_tx={} pending={} threshold={}",

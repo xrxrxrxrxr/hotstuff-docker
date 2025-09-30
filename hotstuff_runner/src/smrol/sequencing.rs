@@ -1,24 +1,24 @@
 use crate::smrol::{
     consensus::TransactionEntry,
-    crypto::{
-        verify_combined_signature_bytes,
-        verify_signature_share,
-        SmrolThresholdSig,
-    },
-    message::SmrolMessage,
+    crypto::ErasurePackage,
+    finalization::OutputFinalization,
+    message::{SmrolMessage, SmrolTransaction},
     network::SmrolTcpNetwork,
     pnfifo::PnfifoBc,
 };
-use ed25519_dalek::{Signer, SigningKey, VerifyingKey};
 use serde::{Deserialize, Serialize};
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::sync::Arc;
-use tokio::sync::RwLock;
+use tokio::{
+    sync::{Mutex, RwLock},
+    time::{sleep, Duration},
+};
 use tracing::{debug, error, info, warn};
+use threshold_crypto::{PublicKeySet, SecretKeyShare, Signature, SignatureShare, SIG_SIZE};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Transaction {
-    pub data: Vec<u8>,
+    pub payload: Vec<u8>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -31,13 +31,13 @@ pub struct SeqRequest {
 pub struct SeqResponse {
     pub vc: Vec<u8>,
     pub s: u64,
-    pub sigma: Vec<u8>,
+    pub sigma: Vec<u8>, // signature
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SeqOrder {
     pub vc: Vec<u8>,
-    pub s_vec: Vec<u64>,
+    pub records: Vec<SeqResponseRecord>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -54,6 +54,13 @@ pub struct SeqFinal {
     pub sigma: Vec<u8>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SeqResponseRecord {
+    pub sender: usize,
+    pub sequence: u64,
+    pub signature: Vec<u8>,
+}
+
 #[derive(Debug)]
 pub struct TransactionSequencing {
     pub seq_i: u64,
@@ -61,15 +68,19 @@ pub struct TransactionSequencing {
     pub k: u64,
     pub f: usize,
     pub n: usize,
-    pub process_id: usize,
+    pub process_id: usize, // node_id
     pub network: Arc<SmrolTcpNetwork>,
-    pub pnfifo: PnfifoBc,
-    pub signing_key: SigningKey,
-    pub verifying_keys: HashMap<usize, VerifyingKey>,
+    pub pnfifo: Arc<PnfifoBc>,
+    pub threshold_share: SecretKeyShare,
+    pub threshold_public: PublicKeySet,
+    pub finalization: Arc<Mutex<OutputFinalization>>,
     pub pending_txs: HashMap<Vec<u8>, Transaction>,
-    pub s_vec_map: HashMap<Vec<u8>, Vec<u64>>,
-    pub threshold_sigs: HashMap<Vec<u8>, SmrolThresholdSig>,
+    pub s_vec_map: HashMap<Vec<u8>, Vec<SeqResponseRecord>>,
+    pub threshold_sigs: HashMap<u64, BTreeMap<usize, SignatureShare>>, // line 32: S[\bar{s}_tx] -> (j, sigma_seq_j)
+    pub erasure_store: HashMap<Vec<u8>, ErasurePackage>,
+    pub tx_sequence_map: HashMap<Vec<u8>, u64>,
 }
+
 
 impl TransactionSequencing {
     pub fn new(
@@ -77,9 +88,10 @@ impl TransactionSequencing {
         n: usize,
         f: usize,
         network: Arc<SmrolTcpNetwork>,
-        pnfifo: PnfifoBc,
-        signing_key: SigningKey,
-        verifying_keys: HashMap<usize, VerifyingKey>,
+        pnfifo: Arc<PnfifoBc>,
+        threshold_share: SecretKeyShare,
+        threshold_public: PublicKeySet,
+        finalization: Arc<Mutex<OutputFinalization>>,
     ) -> Self {
         Self {
             seq_i: 1,
@@ -90,21 +102,30 @@ impl TransactionSequencing {
             process_id,
             network,
             pnfifo,
-            signing_key,
-            verifying_keys,
+            threshold_share,
+            threshold_public,
+            finalization,
             pending_txs: HashMap::new(),
             s_vec_map: HashMap::new(),
             threshold_sigs: HashMap::new(),
+            erasure_store: HashMap::new(),
+            tx_sequence_map: HashMap::new(),
         }
     }
 
     // Function SMROL-broadcast(k, tx) - Line 1-3
-    pub async fn smrol_broadcast(&mut self, tx: Transaction) -> Result<(), String> {
+    pub async fn smrol_broadcast(&mut self, tx: SmrolTransaction) -> Result<(), String> {
         let s = self.seq_i; // Get current sequence number k
         self.seq_i += 1;
 
-        let seq_request = SeqRequest { seq_num: s, tx };
-        self.network.multicast_seq_request(seq_request).await
+        let payload =
+            bincode::serialize(&tx).map_err(|e| format!("序列化SmrolTransaction失败: {}", e))?;
+
+        let seq_request = SeqRequest {
+            seq_num: s,
+            tx: Transaction { payload },
+        };
+        self.network.multicast_seq_request(seq_request).await // Line 3： seq_request(seq_i, tx_serialized)
     }
 
     // Handle SEQ-REQUEST message - Lines 4-17
@@ -119,32 +140,52 @@ impl TransactionSequencing {
         );
 
         // Avoid downgrade attack (Line 5)
-        if !self.verify_log_condition(&req) {
+        if !self.wait_for_log_condition(sender, req.seq_num).await {
             warn!("❌ [Sequencing] Log condition verification failed");
             return Ok(());
         }
 
-        // Assign sequence number (Lines 7-11)
-        let s = if !self.pending_txs.contains_key(&req.tx.data) {
-            let assigned_s = self.seq_i;
-            self.seq_i += 1;
-            assigned_s
-        } else {
-            self.get_assigned_seq(&req.tx.data).unwrap_or(self.seq_i)
-        };
+        // Encode transaction with Reed-Solomon erasure coding (Lines 12-14)
+        let data_shards = std::cmp::max(1, self.f + 1);
+        let total_shards = std::cmp::max(data_shards, self.n);
+        let encoded = ErasurePackage::encode(&req.tx.payload, data_shards, total_shards)
+            .map_err(|e| format!("纠删码编码失败: {}", e))?;
 
-        // Encode and create vector commitment (Lines 12-14)
-        let encoded = self.encode_transaction(&req.tx, self.f + 1);
-        let vc_tx = self.create_vector_commitment(&encoded);
+        let vc_root = encoded.merkle_root();
+        let vc_tx = vc_root.to_vec();
         self.buf.insert(vc_tx.clone());
 
+        // Assign sequence number (Lines 7-11)
+        let s = if let Some(existing) = self.tx_sequence_map.get(&vc_tx) {
+            *existing
+        } else {
+            let assigned_s = self.seq_i;
+            self.seq_i += 1;
+            self.tx_sequence_map.insert(vc_tx.clone(), assigned_s);
+            assigned_s
+        };
+
+        // Persist local mappings for later reconstruction and consensus input
+        self.pending_txs
+            .entry(vc_tx.clone())
+            .or_insert_with(|| req.tx.clone());
+        self.erasure_store
+            .entry(vc_tx.clone())
+            .or_insert(encoded.clone());
+
         // Input to PNFIFO-BC (Line 15)
-        self.pnfifo.broadcast(vc_tx.clone()).await?;
+        let pnfifo = Arc::clone(&self.pnfifo);
+        let vc_for_pnfifo = vc_tx.clone();
+        tokio::spawn(async move {
+            if let Err(err) = pnfifo.broadcast(vc_for_pnfifo).await {
+                warn!("❌ [Sequencing] PNFIFO broadcast failed: {}", err);
+            }
+        });
 
         // Sign and respond (Lines 16-17)
-        let message = format!("sequence:{:?}:{}:{}", req.seq_num, hex::encode(&vc_tx), s);
+        let message = format!("sequence:{}:{}", hex::encode(&vc_tx), s);
         let sigma = self
-            .signing_key
+            .threshold_share
             .sign(message.as_bytes())
             .to_bytes()
             .to_vec();
@@ -165,7 +206,7 @@ impl TransactionSequencing {
         sender: usize,
         resp: SeqResponse,
     ) -> Result<(), String> {
-        debug!("📥 [Sequencing] 收到来自 {} 的SEQ-RESPONSE", sender);
+        debug!("📥 [Sequencing] 收到来自 Node {} 的SEQ-RESPONSE", sender);
 
         if sender == self.process_id {
             // Sender of original request (Line 19)
@@ -174,14 +215,18 @@ impl TransactionSequencing {
                 self.s_vec_map
                     .entry(resp.vc.clone())
                     .or_insert_with(Vec::new)
-                    .push(resp.s);
+                    .push(SeqResponseRecord {
+                        sender,
+                        sequence: resp.s,
+                        signature: resp.sigma.clone(),
+                    });
 
                 // Check if collected 2f+1 sequences (Line 22)
                 if self.s_vec_map[&resp.vc].len() == 2 * self.f + 1 {
-                    let s_vec = &self.s_vec_map[&resp.vc];
+                    let records = self.s_vec_map[&resp.vc].clone();
                     let seq_order = SeqOrder {
-                        vc: resp.vc,
-                        s_vec: s_vec.clone(),
+                        vc: resp.vc.clone(),
+                        records,
                     };
                     self.network.multicast_seq_order(seq_order).await?;
                 }
@@ -192,21 +237,26 @@ impl TransactionSequencing {
 
     // Handle SEQ-ORDER message - Lines 24-28
     pub async fn handle_seq_order(&mut self, sender: usize, order: SeqOrder) -> Result<(), String> {
-        debug!("📥 [Sequencing] 收到来自 {} 的SEQ-ORDER", sender);
+        debug!("📥 [Sequencing] 收到来自 Node {} 的SEQ-ORDER", sender);
 
         if self.verify_seq_order(&order) {
-            let median = self.calculate_median(&order.s_vec);
+            let sequences: Vec<u64> = order.records.iter().map(|r| r.sequence).collect();
+            let median = self.calculate_median(&sequences); // line 26
+            info!(
+                "✅ [Sequencing] Verified SEQ-ORDER from Node {} with median sequence {}",
+                sender, median
+            );
 
             // Create threshold signature share
             let message = format!("median:{}:{}", median, hex::encode(&order.vc));
             let sigma_seq = self
-                .signing_key
+                .threshold_share
                 .sign(message.as_bytes())
                 .to_bytes()
                 .to_vec();
 
             let seq_median = SeqMedian {
-                vc: order.vc,
+                vc: order.vc.clone(),
                 s_tx: median,
                 sigma_seq,
             };
@@ -224,26 +274,34 @@ impl TransactionSequencing {
         debug!("📥 [Sequencing] 收到来自 {} 的SEQ-MEDIAN", sender);
 
         if sender == self.process_id {
-            // Original sender (Line 30)
-            if self.verify_threshold_share(&median, sender)? {
-                // Collect threshold signature shares
-                let threshold_sig = self
-                    .threshold_sigs
-                    .entry(median.vc.clone())
-                    .or_insert_with(|| SmrolThresholdSig::new(self.f + 1));
+            // Original sender (Line 30) is the request sender
+            if self.verify_threshold_share(&median, sender)? { // line 31
+                let mut share_bytes = [0u8; SIG_SIZE];
+                share_bytes.copy_from_slice(&median.sigma_seq);
+                let share = SignatureShare::from_bytes(&share_bytes)
+                    .map_err(|e| format!("无法解析threshold share: {}", e))?;
 
-                let has_threshold = threshold_sig.add_share(sender, median.sigma_seq.clone());
-                if has_threshold {
-                    let combined_sig = threshold_sig
-                        .combine()
+                    // Collect shares for threshold signature of entry [median.vc] (Line 32)
+                let entry = self
+                    .threshold_sigs
+                    .entry(median.s_tx)
+                    .or_insert_with(BTreeMap::new);
+                entry.insert(sender, share);
+
+                if entry.len() == self.f + 1 {
+                    let combined_sig = self
+                        .threshold_public
+                        .combine_signatures(entry.iter().map(|(id, share)| (*id, share)))
                         .map_err(|e| format!("阈值签名组合失败: {}", e))?;
 
                     let seq_final = SeqFinal {
-                        vc: median.vc,
+                        vc: median.vc.clone(),
                         s_tx: median.s_tx,
-                        sigma: combined_sig,
+                        sigma: combined_sig.to_bytes().to_vec(),
                     };
                     self.network.multicast_seq_final(seq_final).await?;
+                    // 清理已使用的shares，避免重复广播
+                    self.threshold_sigs.remove(&median.s_tx);
                 }
             }
         }
@@ -257,8 +315,16 @@ impl TransactionSequencing {
     ) -> Result<Option<TransactionEntry>, String> {
         debug!("📥 [Sequencing] 收到SEQ-FINAL消息");
 
-        if self.verify_combined_signature(&final_msg)? {
-            if !self.is_in_vc_ledger(&final_msg.vc) && !self.is_in_mi(&final_msg.vc) {
+        if self.verify_combined_signature(&final_msg)? { // line 36
+            let (in_vc_ledger, in_mi) = {
+                let finalization = self.finalization.lock().await;
+                (
+                    finalization.is_in_vc_ledger(&final_msg.vc),
+                    finalization.is_in_mi(&final_msg.vc),
+                )
+            };
+
+            if !in_vc_ledger && !in_mi {
                 // Retain local bookkeeping for Algorithm 3's Mi set.
                 self.add_to_mi(&final_msg.vc, &final_msg.s_tx);
 
@@ -280,83 +346,146 @@ impl TransactionSequencing {
     }
 
     // Helper functions
-    fn encode_transaction(&self, tx: &Transaction, k: usize) -> Vec<Vec<u8>> {
-        // Simple encoding - split transaction data into k parts
-        let data = &tx.data;
-        let chunk_size = (data.len() + k - 1) / k;
-
-        (0..k)
-            .map(|i| {
-                let start = i * chunk_size;
-                let end = std::cmp::min(start + chunk_size, data.len());
-                if start < data.len() {
-                    data[start..end].to_vec()
-                } else {
-                    vec![]
-                }
-            })
-            .collect()
+    fn encode_transaction(
+        &self,
+        tx: &Transaction,
+        data_shards: usize,
+    ) -> Result<ErasurePackage, String> {
+        let data_shards = std::cmp::max(1, data_shards);
+        let total_shards = std::cmp::max(data_shards, self.n);
+        ErasurePackage::encode(&tx.payload, data_shards, total_shards)
     }
 
-    fn create_vector_commitment(&self, encoded: &[Vec<u8>]) -> Vec<u8> {
-        use sha2::{Digest, Sha256};
-        let mut hasher = Sha256::new();
-        for chunk in encoded {
-            hasher.update(chunk);
+    fn create_vector_commitment(&self, encoded: &ErasurePackage) -> Vec<u8> {
+        encoded.merkle_root().to_vec()
+    }
+
+    async fn wait_for_log_condition(&self, leader_id: usize, seq_num: u64) -> bool {
+        if seq_num <= 1 {
+            return true;
         }
-        hasher.finalize().to_vec()
-    }
 
-    fn verify_log_condition(&self, _req: &SeqRequest) -> bool {
-        // Implement log verification to avoid downgrade attacks
-        true // Simplified for now
-    }
+        let target_slot = seq_num - 1;
+        let mut attempts: u64 = 0;
 
-    fn get_assigned_seq(&self, tx_data: &[u8]) -> Option<u64> {
-        // Return existing sequence number if already assigned
-        self.pending_txs.get(tx_data).map(|_| self.seq_i - 1)
+        loop {
+            if self
+                .pnfifo
+                .get_output(leader_id, target_slot)
+                .await
+                .is_some()
+            {
+                if attempts > 0 {
+                    debug!(
+                        "⏱️ [Sequencing] wait_for_log_condition satisfied after {} checks for leader {} slot {}",
+                        attempts,
+                        leader_id,
+                        target_slot
+                    );
+                }
+                return true;
+            }
+
+            attempts = attempts.saturating_add(1);
+            sleep(Duration::from_millis(10)).await;
+        }
     }
 
     fn verify_signature(&self, resp: &SeqResponse, sender: usize) -> Result<bool, String> {
-        if let Some(verifying_key) = self.verifying_keys.get(&sender) {
-            let message = format!("sequence:{}:{}", hex::encode(&resp.vc), resp.s);
-
-            Ok(verify_signature_share(
-                &resp.sigma,
-                message.as_bytes(),
-                verifying_key,
-            ))
-        } else {
-            Err(format!("未找到节点 {} 的验证密钥", sender))
+        if resp.sigma.len() != SIG_SIZE {
+            return Err(format!("signature share length invalid: {}", resp.sigma.len()));
         }
+
+        let mut share_bytes = [0u8; SIG_SIZE];
+        share_bytes.copy_from_slice(&resp.sigma);
+        let share = SignatureShare::from_bytes(&share_bytes)
+            .map_err(|e| format!("无法解析signature share: {}", e))?;
+
+        let pk_share = self.threshold_public.public_key_share(sender);
+        let message = format!("sequence:{}:{}", hex::encode(&resp.vc), resp.s);
+
+        Ok(pk_share.verify(&share, message.as_bytes()))
     }
 
     fn verify_seq_order(&self, order: &SeqOrder) -> bool {
-        order.s_vec.len() == 2 * self.f + 1
+        if order.records.len() != 2 * self.f + 1 {
+            return false;
+        }
+
+        for record in &order.records {
+            if record.signature.len() != SIG_SIZE {
+                warn!(
+                    "❌ [Sequencing] Invalid signature length in SeqOrder from node {}",
+                    record.sender
+                );
+                return false;
+            }
+
+            let mut share_bytes = [0u8; SIG_SIZE];
+            share_bytes.copy_from_slice(&record.signature);
+            let share = match SignatureShare::from_bytes(&share_bytes) {
+                Ok(share) => share,
+                Err(e) => {
+                    warn!(
+                        "❌ [Sequencing] Failed to parse signature share from node {}: {}",
+                        record.sender, e
+                    );
+                    return false;
+                }
+            };
+
+            let pk_share = self.threshold_public.public_key_share(record.sender);
+            let message = format!("sequence:{}:{}", hex::encode(&order.vc), record.sequence);
+
+            if !pk_share.verify(&share, message.as_bytes()) {
+                warn!(
+                    "❌ [Sequencing] Invalid signature share from node {} in SeqOrder",
+                    record.sender
+                );
+                return false;
+            }
+        }
+
+        true
     }
 
     fn verify_threshold_share(&self, median: &SeqMedian, sender: usize) -> Result<bool, String> {
-        if let Some(verifying_key) = self.verifying_keys.get(&sender) {
-            let message = format!("median:{}:{}", median.s_tx, hex::encode(&median.vc));
-
-            Ok(verify_signature_share(
-                &median.sigma_seq,
-                message.as_bytes(),
-                verifying_key,
-            ))
-        } else {
-            Err(format!("未找到节点 {} 的验证密钥", sender))
+        if median.sigma_seq.len() != SIG_SIZE {
+            return Err(format!(
+                "threshold signature share length invalid: {}",
+                median.sigma_seq.len()
+            ));
         }
+
+        let mut share_bytes = [0u8; SIG_SIZE];
+        share_bytes.copy_from_slice(&median.sigma_seq);
+        let share = SignatureShare::from_bytes(&share_bytes)
+            .map_err(|e| format!("无法解析threshold share: {}", e))?;
+
+        let pk_share = self.threshold_public.public_key_share(sender);
+        let message = format!("median:{}:{}", median.s_tx, hex::encode(&median.vc));
+
+        Ok(pk_share.verify(&share, message.as_bytes()))
     }
 
     fn verify_combined_signature(&self, final_msg: &SeqFinal) -> Result<bool, String> {
+        if final_msg.sigma.len() != SIG_SIZE {
+            return Err(format!(
+                "combined signature length invalid: {}",
+                final_msg.sigma.len()
+            ));
+        }
+
+        let mut sig_bytes = [0u8; SIG_SIZE];
+        sig_bytes.copy_from_slice(&final_msg.sigma);
+        let signature = Signature::from_bytes(&sig_bytes)
+            .map_err(|e| format!("无法解析组合签名: {}", e))?;
+
         let message = format!("median:{}:{}", final_msg.s_tx, hex::encode(&final_msg.vc));
-        verify_combined_signature_bytes(
-            &final_msg.sigma,
-            message.as_bytes(),
-            &self.verifying_keys,
-            self.f + 1,
-        )
+        Ok(self
+            .threshold_public
+            .public_key()
+            .verify(&signature, message.as_bytes()))
     }
 
     fn calculate_median(&self, s_vec: &[u64]) -> u64 {
@@ -365,18 +494,20 @@ impl TransactionSequencing {
         sorted[sorted.len() / 2]
     }
 
-    fn is_in_vc_ledger(&self, _vc: &[u8]) -> bool {
-        false // Simplified
-    }
+    fn add_to_mi(&mut self, vc: &[u8], _s_tx: &u64) {
+        if self.pending_txs.contains_key(vc) {
+            return;
+        }
 
-    fn is_in_mi(&self, _vc: &[u8]) -> bool {
-        false // Simplified
-    }
+        let payload = self
+            .erasure_store
+            .get(vc)
+            .and_then(|pkg| pkg.reconstruct_full().ok())
+            .unwrap_or_else(|| vc.to_vec());
 
-    fn add_to_mi(&mut self, vc: &[u8], s_tx: &u64) {
-        // Add (vc_tx, s_tx, Σ) to Mi for Consensus input
         self.pending_txs
-            .insert(vc.to_vec(), Transaction { data: vc.to_vec() });
+            .entry(vc.to_vec())
+            .or_insert(Transaction { payload });
     }
 
     // Public stats methods
@@ -396,59 +527,71 @@ impl TransactionSequencing {
     ) -> Result<Option<TransactionEntry>, String> {
         match message {
             SmrolMessage::SeqRequest {
-                tx_hash,
+                tx_hash: _,
                 transaction,
                 sender_id: _,
                 sequence_number,
             } => {
-                let tx = Transaction {
-                    data: tx_hash.into_bytes(),
-                };
+                let payload = bincode::serialize(&transaction)
+                    .map_err(|e| format!("序列化SmrolTransaction失败: {}", e))?;
                 let req = SeqRequest {
                     seq_num: sequence_number,
-                    tx,
+                    tx: Transaction { payload },
                 };
                 self.handle_seq_request(sender_id, req).await?;
                 Ok(None)
             }
             SmrolMessage::SeqResponse {
-                tx_hash,
-                vector_commitment,
-                signature,
+                vc,
+                signature_share,
                 sender_id: _,
                 sequence_number,
             } => {
                 let resp = SeqResponse {
-                    vc: vector_commitment,
+                    vc,
                     s: sequence_number,
-                    sigma: signature,
+                    sigma: signature_share,
                 };
                 self.handle_seq_response(sender_id, resp).await?;
                 Ok(None)
             }
             SmrolMessage::SeqOrder {
-                tx_hash,
-                median_sequence,
-                proof,
+                vc,
+                responses,
                 sender_id: _,
             } => {
-                let order = SeqOrder {
-                    vc: proof,
-                    s_vec: vec![median_sequence], // 简化处理，实际应该从消息中获取完整s_vec
-                };
-                self.handle_seq_order(sender_id, order).await?;
+                if responses.len() == 1 {
+                    let (origin, s_tx, sigma_seq) = responses.into_iter().next().unwrap();
+                    let median_msg = SeqMedian {
+                        vc,
+                        s_tx,
+                        sigma_seq,
+                    };
+                    self.handle_seq_median(origin, median_msg).await?;
+                } else {
+                    let records = responses
+                        .into_iter()
+                        .map(|(sender, sequence, signature)| SeqResponseRecord {
+                            sender,
+                            sequence,
+                            signature,
+                        })
+                        .collect();
+                    let order = SeqOrder { vc, records };
+                    self.handle_seq_order(sender_id, order).await?;
+                }
                 Ok(None)
             }
             SmrolMessage::SeqFinal {
-                tx_hash,
+                vc,
                 final_sequence,
-                combined_proof,
+                combined_signature,
                 sender_id: _,
             } => {
                 let final_msg = SeqFinal {
-                    vc: tx_hash.into_bytes(),
+                    vc,
                     s_tx: final_sequence,
-                    sigma: combined_proof,
+                    sigma: combined_signature,
                 };
                 self.handle_seq_final(final_msg).await
             }
@@ -498,12 +641,15 @@ impl TransactionSequencing {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::smrol::crypto::derive_threshold_keys;
+    use ed25519_dalek::{SigningKey, VerifyingKey};
     use std::net::SocketAddr;
     use tokio::time::{sleep, Duration};
 
-    async fn create_test_sequencer(process_id: usize) -> TransactionSequencing {
+    async fn create_test_sequencer(
+        process_id: usize,
+    ) -> (TransactionSequencing, HashMap<usize, VerifyingKey>) {
         let signing_key = SigningKey::from_bytes(&[process_id as u8 + 1; 32]);
-        let verifying_key = signing_key.verifying_key();
 
         let mut verifying_keys = HashMap::new();
         let mut peer_addrs = HashMap::new();
@@ -520,33 +666,55 @@ mod tests {
             );
         }
 
-        let network = Arc::new(SmrolTcpNetwork::new(process_id, peer_addrs.clone()));
-        let pnfifo = PnfifoBc::new(
-            process_id,
-            4,
-            signing_key.clone(),
-            verifying_keys.clone(),
-            peer_addrs,
-        )
-        .await
-        .expect("Failed to create PNFIFO-BC");
+        let (threshold_share, threshold_public) =
+            derive_threshold_keys(process_id, 1, &verifying_keys)
+                .expect("derive threshold keys");
 
-        TransactionSequencing::new(
+        let network = Arc::new(SmrolTcpNetwork::new(process_id, peer_addrs.clone()));
+        let pnfifo = Arc::new(
+            PnfifoBc::new(
+                process_id,
+                4,
+                signing_key.clone(),
+                verifying_keys.clone(),
+                peer_addrs,
+            )
+            .await
+            .expect("Failed to create PNFIFO-BC"),
+        );
+
+        let finalization = Arc::new(Mutex::new(OutputFinalization::new(
+            process_id,
+            1,
+            Arc::clone(&network),
+            signing_key.clone(),
+        )));
+
+        let sequencing = TransactionSequencing::new(
             process_id,
             4,
             1,
             network,
             pnfifo,
-            signing_key,
-            verifying_keys,
-        )
+            threshold_share,
+            threshold_public,
+            finalization,
+        );
+
+        (sequencing, verifying_keys)
     }
 
     #[tokio::test]
     async fn test_smrol_broadcast() {
-        let mut sequencer = create_test_sequencer(0).await;
-        let tx = Transaction {
-            data: b"test_transaction".to_vec(),
+        let (mut sequencer, _) = create_test_sequencer(0).await;
+        let tx = SmrolTransaction {
+            id: 1,
+            from: "alice".into(),
+            to: "bob".into(),
+            amount: 42,
+            client_id: "client".into(),
+            timestamp: 0,
+            nonce: 0,
         };
 
         let initial_seq = sequencer.seq_i;
@@ -559,10 +727,18 @@ mod tests {
 
     #[tokio::test]
     async fn test_seq_request_handling() {
-        let mut sequencer = create_test_sequencer(0).await;
-        let tx = Transaction {
-            data: b"test_tx".to_vec(),
+        let (mut sequencer, _) = create_test_sequencer(0).await;
+        let smrol_tx = SmrolTransaction {
+            id: 2,
+            from: "alice".into(),
+            to: "carol".into(),
+            amount: 11,
+            client_id: "client".into(),
+            timestamp: 0,
+            nonce: 1,
         };
+        let payload = bincode::serialize(&smrol_tx).unwrap();
+        let tx = Transaction { payload };
         let req = SeqRequest { seq_num: 1, tx };
 
         let initial_seq = sequencer.seq_i;
@@ -571,29 +747,29 @@ mod tests {
         assert!(result.is_ok());
         assert_eq!(sequencer.seq_i, initial_seq + 1);
         assert_eq!(sequencer.buf.len(), 1);
+        assert_eq!(sequencer.pending_txs.len(), 1);
+        assert_eq!(sequencer.erasure_store.len(), 1);
         println!("✓ SEQ-REQUEST handling works correctly");
     }
 
     #[tokio::test]
     async fn test_seq_response_collection() {
-        let mut sequencer = create_test_sequencer(0).await;
+        let (mut sequencer, verifying_keys) = create_test_sequencer(0).await;
         let vc = b"test_vc".to_vec();
-
-        // Create valid signature for each response
-        let message = format!("sequence:{}:10", hex::encode(&vc));
-        let sigma = sequencer
-            .signing_key
-            .sign(message.as_bytes())
-            .to_bytes()
-            .to_vec();
 
         // Simulate collecting 2f+1 responses
         for i in 0..3 {
             // 2*1+1 = 3 responses for f=1
+            let (share, _) =
+                derive_threshold_keys(i, 1, &verifying_keys).expect("derive threshold share");
+            let sequence = 10 + i as u64;
+            let message = format!("sequence:{}:{}", hex::encode(&vc), sequence);
+            let sigma = share.sign(message.as_bytes()).to_bytes().to_vec();
+
             let resp = SeqResponse {
                 vc: vc.clone(),
-                s: 10 + i as u64,
-                sigma: sigma.clone(),
+                s: sequence,
+                sigma,
             };
             let result = sequencer.handle_seq_response(0, resp).await;
             assert!(result.is_ok());
@@ -605,7 +781,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_median_calculation() {
-        let sequencer = create_test_sequencer(0).await;
+        let (sequencer, _) = create_test_sequencer(0).await;
 
         // Test odd number of elements
         let s_vec = vec![5, 2, 8, 1, 9];
@@ -622,20 +798,33 @@ mod tests {
 
     #[tokio::test]
     async fn test_complete_sequencing_flow() {
-        let mut sequencer = create_test_sequencer(0).await;
+        let (mut sequencer, _) = create_test_sequencer(0).await;
+        let smrol_tx = SmrolTransaction {
+            id: 3,
+            from: "alice".into(),
+            to: "dave".into(),
+            amount: 9,
+            client_id: "client".into(),
+            timestamp: 0,
+            nonce: 2,
+        };
+        let payload = bincode::serialize(&smrol_tx).unwrap();
         let tx = Transaction {
-            data: b"complete_test".to_vec(),
+            payload: payload.clone(),
         };
 
         println!("Starting complete sequencing flow test...");
 
         // Step 1: SMROL broadcast
-        let result = sequencer.smrol_broadcast(tx.clone()).await;
+        let result = sequencer.smrol_broadcast(smrol_tx.clone()).await;
         assert!(result.is_ok());
         assert_eq!(sequencer.seq_i, 2);
 
         // Step 2: Handle SEQ-REQUEST
-        let req = SeqRequest { seq_num: 1, tx };
+        let req = SeqRequest {
+            seq_num: 1,
+            tx: Transaction { payload },
+        };
         let result = sequencer.handle_seq_request(1, req).await;
         assert!(result.is_ok());
         assert_eq!(sequencer.buf.len(), 1);
@@ -645,32 +834,40 @@ mod tests {
 
     #[tokio::test]
     async fn test_vector_commitment() {
-        let sequencer = create_test_sequencer(0).await;
+        let (sequencer, _) = create_test_sequencer(0).await;
+        let smrol_tx = SmrolTransaction {
+            id: 4,
+            from: "alice".into(),
+            to: "erin".into(),
+            amount: 99,
+            client_id: "client".into(),
+            timestamp: 0,
+            nonce: 3,
+        };
         let tx = Transaction {
-            data: b"test_data".to_vec(),
+            payload: bincode::serialize(&smrol_tx).unwrap(),
         };
 
-        let encoded = sequencer.encode_transaction(&tx, 3);
-        assert_eq!(encoded.len(), 3);
+        let encoded = sequencer
+            .encode_transaction(&tx, 3)
+            .expect("erasure coding must succeed");
+        assert_eq!(encoded.shards.len(), std::cmp::max(3, sequencer.n));
 
         let vc = sequencer.create_vector_commitment(&encoded);
-        assert!(!vc.is_empty());
+        assert_eq!(vc.len(), 32);
 
         println!("✓ Vector commitment creation works");
     }
 
     #[tokio::test]
     async fn test_signature_verification() {
-        let sequencer = create_test_sequencer(0).await;
+        let (sequencer, verifying_keys) = create_test_sequencer(0).await;
         let vc = b"test_vc".to_vec();
 
         // Create valid signature
         let message = format!("sequence:{}:10", hex::encode(&vc));
-        let sigma = sequencer
-            .signing_key
-            .sign(message.as_bytes())
-            .to_bytes()
-            .to_vec();
+        let (share, _) = derive_threshold_keys(0, 1, &verifying_keys).expect("derive threshold");
+        let sigma = share.sign(message.as_bytes()).to_bytes().to_vec();
 
         let resp = SeqResponse { vc, s: 10, sigma };
         let result = sequencer.verify_signature(&resp, 0);

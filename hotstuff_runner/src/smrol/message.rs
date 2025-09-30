@@ -11,11 +11,13 @@ pub enum SmrolMessage {
         value: Vec<u8>,
     },
     PnfifoVote {
+        leader_id: usize,
         sender_id: usize,
         slot: u64,
         signature_share: Vec<u8>,
     },
     PnfifoFinal {
+        leader_id: usize,
         sender_id: usize,
         slot: u64,
         value: Vec<u8>,
@@ -30,22 +32,20 @@ pub enum SmrolMessage {
         sequence_number: u64,
     },
     SeqResponse {
-        tx_hash: String,
-        vector_commitment: Vec<u8>,
-        signature: Vec<u8>,
+        vc: Vec<u8>,
+        signature_share: Vec<u8>,
         sender_id: usize,
         sequence_number: u64,
     },
     SeqOrder {
-        tx_hash: String,
-        median_sequence: u64,
-        proof: Vec<u8>,
+        vc: Vec<u8>,
+        responses: Vec<(usize, u64, Vec<u8>)>,
         sender_id: usize,
     },
     SeqFinal {
-        tx_hash: String,
+        vc: Vec<u8>,
         final_sequence: u64,
-        combined_proof: Vec<u8>,
+        combined_signature: Vec<u8>,
         sender_id: usize,
     },
 

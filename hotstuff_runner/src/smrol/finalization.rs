@@ -239,7 +239,17 @@ impl OutputFinalization {
             .unwrap_or(0)
     }
 
+    pub fn get_final_ledger(&self, epoch: u64) -> Vec<String> {
+        self.final_ledger.get(&epoch).cloned().unwrap_or_default()
+    }
+
     pub fn is_in_vc_ledger(&self, vc_tx: &[u8]) -> bool {
         self.vc_ledger.contains(vc_tx)
+    }
+
+    pub fn is_in_mi(&self, vc_tx: &[u8]) -> bool {
+        self.mi
+            .values()
+            .any(|entries| entries.iter().any(|entry| entry.vc_tx == vc_tx))
     }
 }

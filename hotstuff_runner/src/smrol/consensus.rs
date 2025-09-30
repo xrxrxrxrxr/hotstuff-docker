@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
+use tokio::sync::Mutex;
 
 use crate::smrol::adapter::SmrolHotStuffAdapter;
 use crate::smrol::finalization::OutputFinalization;
@@ -88,10 +89,10 @@ pub struct Consensus {
     pub verifying_keys: HashMap<usize, VerifyingKey>,
     pub current_epoch: u64,
     pub mi: HashMap<u64, Vec<TransactionEntry>>,
-    pub vc_ledger: HashSet<Vec<u8>>,
     pub pending_e: HashMap<u64, HashSet<Vec<u8>>>,
     pub epoch_states: HashMap<u64, EpochState>,
     hotstuff_adapter: Option<Arc<SmrolHotStuffAdapter>>,
+    finalization: Arc<Mutex<OutputFinalization>>,
 }
 
 impl Consensus {
@@ -103,6 +104,7 @@ impl Consensus {
         network: Arc<SmrolTcpNetwork>,
         signing_key: SigningKey,
         verifying_keys: HashMap<usize, VerifyingKey>,
+        finalization: Arc<Mutex<OutputFinalization>>,
     ) -> Self {
         let k = std::cmp::max(1, 2 * f + 1);
         Self {
@@ -115,10 +117,10 @@ impl Consensus {
             verifying_keys,
             current_epoch: 1,
             mi: HashMap::new(),
-            vc_ledger: HashSet::new(),
             pending_e: HashMap::new(),
             epoch_states: HashMap::new(),
             hotstuff_adapter: None,
+            finalization,
         }
     }
 
@@ -143,6 +145,19 @@ impl Consensus {
 
         let (m_i_e, s_i_e, h_e) = self.prepare_consensus_input(epoch)?;
 
+        // Lines 42-45 of Algorithm 3: mark epoch as submitted and freeze the
+        // selected transactions so we do not resubmit them.
+        let pending_vcs: HashSet<Vec<u8>> = m_i_e.iter().map(|entry| entry.vc_tx.clone()).collect();
+        let pending_entry = self
+            .pending_e
+            .entry(epoch)
+            .or_insert_with(HashSet::new);
+        pending_entry.extend(pending_vcs.iter().cloned());
+
+        if let Some(queue) = self.mi.get_mut(&epoch) {
+            queue.retain(|entry| !pending_vcs.contains(&entry.vc_tx));
+        }
+
         let mut epoch_state = self
             .epoch_states
             .remove(&epoch)
@@ -161,6 +176,9 @@ impl Consensus {
     }
 
     fn should_start_consensus(&self, epoch: u64) -> bool {
+        if self.pending_e.contains_key(&epoch) {
+            return false;
+        }
         self.mi
             .get(&epoch)
             .map(|entries| entries.len() >= self.k)
@@ -177,8 +195,8 @@ impl Consensus {
         }
 
         entries.sort_by_key(|entry| entry.s_tx);
-        let m_e: Vec<TransactionEntry> = entries.into_iter().take(self.k).collect();
-        let h_e = m_e.iter().map(|entry| entry.s_tx).max().unwrap_or(0);
+        let m_i_e: Vec<TransactionEntry> = entries.into_iter().take(self.k).collect();
+        let h_e = m_i_e.iter().map(|entry| entry.s_tx).max().unwrap_or(0);
 
         // Placeholder: in a full implementation, collect 2f+1 outputs from PNFIFO-BC.
         let mut s_e = Vec::new();
@@ -200,18 +218,18 @@ impl Consensus {
             "[Consensus] node={} epoch={} prepared M={} S={} h_e={}",
             self.process_id,
             epoch,
-            m_e.len(),
+            m_i_e.len(),
             s_e.len(),
             h_e
         );
 
-        Ok((m_e, s_e, h_e))
+        Ok((m_i_e, s_e, h_e))
     }
 
     async fn invoke_consensus(
         &mut self,
         epoch: u64,
-        m_e: Vec<TransactionEntry>,
+        m_e: Vec<TransactionEntry>, //m_i_e
         s_e: Vec<SequenceEntry>,
     ) -> Result<(), String> {
         info!(
@@ -222,6 +240,12 @@ impl Consensus {
         let merkle_root = Self::compute_merkle_root(&m_e);
         let transactions: Vec<String> = m_e.iter().map(|entry| hex::encode(&entry.vc_tx)).collect();
 
+        // Line 46: Push transactions to HotStuff
+        if let Some(adapter) = &self.hotstuff_adapter {
+            if !transactions.is_empty() {
+                adapter.output_to_hotstuff(transactions.clone(), epoch);
+            }
+        }
         let message = SmrolMessage::ConsensusProposal {
             epoch,
             transactions,
@@ -352,21 +376,18 @@ impl Consensus {
             (state.m_e.clone(), state.s_e.clone(), state.t_e.clone())
         };
 
-        let mut finalizer = OutputFinalization::new(
-            self.process_id,
-            self.f,
-            Arc::clone(&self.network),
-            self.signing_key.clone(),
-        );
-        let finalized = finalizer.finalize_epoch(epoch, m_e, s_e, t_e).await?;
+        let finalized = {
+            let mut finalizer = self.finalization.lock().await;
+            finalizer.finalize_epoch(epoch, m_e, s_e, t_e).await?
+        };
 
         if let Some(state) = self.epoch_states.get_mut(&epoch) {
             state.final_ledger = finalized.clone();
         }
 
-        if let Some(adapter) = &self.hotstuff_adapter {
-            adapter.output_to_hotstuff(finalized.clone(), epoch);
-        }
+        // Consensus for this epoch is complete; clear the pending marker so the
+        // next epoch can progress.
+        self.pending_e.remove(&epoch);
 
         self.current_epoch = self.current_epoch.max(epoch + 1);
         Ok(())
@@ -553,8 +574,22 @@ mod tests {
         }
 
         let network = Arc::new(SmrolTcpNetwork::new(process_id, peer_addrs));
+        let finalization = Arc::new(Mutex::new(OutputFinalization::new(
+            process_id,
+            1,
+            Arc::clone(&network),
+            signing_key.clone(),
+        )));
 
-        Consensus::new(process_id, 4, 1, network, signing_key, verifying_keys)
+        Consensus::new(
+            process_id,
+            4,
+            1,
+            network,
+            signing_key,
+            verifying_keys,
+            finalization,
+        )
     }
 
     #[tokio::test]

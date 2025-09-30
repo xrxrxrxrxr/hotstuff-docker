@@ -1,6 +1,7 @@
 // src/smrol/network.rs - 优化后的SMROL TCP网络层实现
 
-use super::message::SmrolMessage;
+use crate::smrol::message::{SmrolMessage, SmrolTransaction};
+use futures::Future;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::net::SocketAddr;
@@ -73,7 +74,7 @@ impl SmrolTcpNetwork {
 
     fn spawn_on_runtime<F>(&self, future: F)
     where
-        F: std::future::Future<Output = ()> + Send + 'static,
+        F: Future<Output = ()> + Send + 'static,
     {
         if let Some(handle) = self.runtime_handle() {
             handle.spawn(future);
@@ -774,24 +775,12 @@ impl SmrolTcpNetwork {
         &self,
         req: crate::smrol::sequencing::SeqRequest,
     ) -> Result<(), String> {
-        use crate::smrol::message::{SmrolMessage, SmrolTransaction};
-
         // 将Transaction转换为SmrolTransaction
-        let smrol_tx = SmrolTransaction {
-            id: 0, // 临时ID，后续可以改进
-            from: "unknown".to_string(),
-            to: "unknown".to_string(),
-            amount: 0,
-            client_id: "system".to_string(),
-            timestamp: std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_millis() as u64,
-            nonce: req.seq_num,
-        };
+        let smrol_tx: SmrolTransaction = bincode::deserialize(&req.tx.payload)
+            .map_err(|e| format!("反序列化SmrolTransaction失败: {}", e))?;
 
         let message = SmrolMessage::SeqRequest {
-            tx_hash: hex::encode(&req.tx.data[0..std::cmp::min(8, req.tx.data.len())]),
+            tx_hash: hex::encode(&req.tx.payload[0..std::cmp::min(8, req.tx.payload.len())]),
             transaction: smrol_tx,
             sender_id: self.node_id,
             sequence_number: req.seq_num,
@@ -824,9 +813,8 @@ impl SmrolTcpNetwork {
         use crate::smrol::message::SmrolMessage;
 
         let message = SmrolMessage::SeqResponse {
-            tx_hash: hex::encode(&resp.vc[0..std::cmp::min(8, resp.vc.len())]),
-            vector_commitment: resp.vc,
-            signature: resp.sigma,
+            vc: resp.vc,
+            signature_share: resp.sigma,
             sender_id: self.node_id,
             sequence_number: resp.s,
         };
@@ -857,12 +845,18 @@ impl SmrolTcpNetwork {
     ) -> Result<(), String> {
         use crate::smrol::message::SmrolMessage;
 
-        let median = self.calculate_median(&order.s_vec);
+        let responses: Vec<(usize, u64, Vec<u8>)> = order
+            .records
+            .iter()
+            .map(|record| (record.sender, record.sequence, record.signature.clone()))
+            .collect();
+
+        let sequences: Vec<u64> = responses.iter().map(|(_, seq, _)| *seq).collect();
+        let median = self.calculate_median(&sequences);
 
         let message = SmrolMessage::SeqOrder {
-            tx_hash: hex::encode(&order.vc[0..std::cmp::min(8, order.vc.len())]),
-            median_sequence: median,
-            proof: order.vc, // 使用vc作为proof
+            vc: order.vc.clone(),
+            responses,
             sender_id: self.node_id,
         };
 
@@ -893,11 +887,10 @@ impl SmrolTcpNetwork {
     ) -> Result<(), String> {
         use crate::smrol::message::SmrolMessage;
 
-        // 由于现有message.rs没有SeqMedian，我们使用SeqOrder来发送median信息
+        // 由于现有message.rs没有SeqMedian，我们复用SeqOrder结构来携带单个记录
         let message = SmrolMessage::SeqOrder {
-            tx_hash: hex::encode(&median.vc[0..std::cmp::min(8, median.vc.len())]),
-            median_sequence: median.s_tx,
-            proof: median.sigma_seq, // 使用threshold signature作为proof
+            vc: median.vc.clone(),
+            responses: vec![(self.node_id, median.s_tx, median.sigma_seq.clone())],
             sender_id: self.node_id,
         };
 
@@ -933,9 +926,9 @@ impl SmrolTcpNetwork {
         use crate::smrol::message::SmrolMessage;
 
         let message = SmrolMessage::SeqFinal {
-            tx_hash: hex::encode(&final_msg.vc[0..std::cmp::min(8, final_msg.vc.len())]),
+            vc: final_msg.vc,
             final_sequence: final_msg.s_tx,
-            combined_proof: final_msg.sigma,
+            combined_signature: final_msg.sigma,
             sender_id: self.node_id,
         };
 
@@ -971,9 +964,13 @@ impl SmrolTcpNetwork {
 
 impl Drop for SmrolTcpNetwork {
     fn drop(&mut self) {
-        if let Some(rt_arc) = self.rt.take() {
-            if let Ok(rt) = Arc::try_unwrap(rt_arc) {
-                std::thread::spawn(move || rt.shutdown_background());
+        // Gracefully tear down the dedicated runtime even when we are currently
+        // executing inside another Tokio runtime (e.g. #[tokio::test]).
+        if let Some(rt) = self.rt.take() {
+            if Arc::strong_count(&rt) == 1 {
+                if let Ok(runtime) = Arc::try_unwrap(rt) {
+                    runtime.shutdown_background();
+                }
             }
         }
     }
@@ -998,7 +995,7 @@ impl Clone for SmrolTcpNetwork {
             sent_messages: Arc::clone(&self.sent_messages),
             sent_messages_count: Arc::clone(&self.sent_messages_count),
             received_messages_count: Arc::clone(&self.received_messages_count),
-            rt: self.rt.clone(),
+            rt: self.rt.as_ref().map(Arc::clone),
         }
     }
 }
