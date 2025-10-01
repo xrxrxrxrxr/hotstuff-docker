@@ -346,7 +346,7 @@ impl ClientNode {
         );
 
         // 参数调整点：降低发送频率测latency
-        let is_latency = false;
+        let is_latency = true;
 
         let mut batch_size = std::cmp::max(100, config.target_tps / 5);
         let mut batch_interval = Duration::from_millis(200);
@@ -767,6 +767,9 @@ async fn handle_node_responses(
                             "pompe_ordering1_response" => {
                                 ResponseCommand::Ordering1Response { tx_ids }
                             }
+                            // "smrol_ordering1_response" => {
+                            //     ResponseCommand::Ordering1Response { tx_ids }
+                            // }
                             "consensus_response" => ResponseCommand::HotStuffCommitted { tx_ids },
                             "error_response" => {
                                 let error_msg = response_json

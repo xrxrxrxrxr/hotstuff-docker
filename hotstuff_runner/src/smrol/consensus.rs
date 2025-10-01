@@ -148,10 +148,7 @@ impl Consensus {
         // Lines 42-45 of Algorithm 3: mark epoch as submitted and freeze the
         // selected transactions so we do not resubmit them.
         let pending_vcs: HashSet<Vec<u8>> = m_i_e.iter().map(|entry| entry.vc_tx.clone()).collect();
-        let pending_entry = self
-            .pending_e
-            .entry(epoch)
-            .or_insert_with(HashSet::new);
+        let pending_entry = self.pending_e.entry(epoch).or_insert_with(HashSet::new);
         pending_entry.extend(pending_vcs.iter().cloned());
 
         if let Some(queue) = self.mi.get_mut(&epoch) {

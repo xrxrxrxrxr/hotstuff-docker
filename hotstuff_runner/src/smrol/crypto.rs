@@ -250,12 +250,7 @@ impl ErasurePackage {
 
     /// Convenience wrapper when all shards are locally available.
     pub fn reconstruct_full(&self) -> Result<Vec<u8>, String> {
-        let shards = self
-            .shards
-            .iter()
-            .cloned()
-            .map(Some)
-            .collect::<Vec<_>>();
+        let shards = self.shards.iter().cloned().map(Some).collect::<Vec<_>>();
         self.reconstruct(shards)
     }
 }

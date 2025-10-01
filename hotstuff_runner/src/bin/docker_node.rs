@@ -141,7 +141,7 @@ fn setup_tracing_logger(node_id: usize) {
         .expect("Cannot open node log file");
 
     let result = tracing_subscriber::registry()
-        .with(EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("warn")))
+        .with(EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")))
         .with(
             fmt::layer()
                 .with_writer(std::io::stdout)
@@ -289,7 +289,7 @@ async fn handle_lockfree_client_connection(
                     block_height,
                     tx_ids,
                 } => {
-                    info!(
+                    warn!(
                         "[Event received] Node {} HotStuffCommitted: block_height={}, tx_ids={:?}",
                         node_id, block_height, tx_ids
                     );
@@ -412,6 +412,10 @@ async fn handle_lockfree_client_connection(
                             // Pompe transactions go through Pompe processor
                             // info!("[Lock-free] Node {} Pompe transaction queued: {}", node_id, tx_string);
                         } else if is_smrol {
+                            info!(
+                                "🫡 Node {} SMROL transaction received: {}",
+                                node_id, tx_string
+                            );
                             if let Some(ref smrol) = smrol_manager {
                                 let smrol_tx = SmrolTransaction::from_test_transaction(
                                     transaction.clone(),
@@ -876,7 +880,15 @@ async fn main() -> Result<(), String> {
 
         // 从peer_addrs中找到对应的地址
         if let Some(addr) = peer_addrs.get(key) {
-            node_id_to_addr.insert(actual_node_id, *addr);
+            let smrol_port = 21000u16 + actual_node_id as u16;
+            let smrol_addr = SocketAddr::new(addr.ip(), smrol_port);
+            node_id_to_addr.insert(actual_node_id, smrol_addr);
+        } else {
+            warn!(
+                "SMROL peer address missing for node {} (verifier {:?})",
+                actual_node_id,
+                key.to_bytes()[0..4].to_vec()
+            );
         }
     }
 

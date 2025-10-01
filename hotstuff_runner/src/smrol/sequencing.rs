@@ -9,12 +9,12 @@ use crate::smrol::{
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::sync::Arc;
+use threshold_crypto::{PublicKeySet, SecretKeyShare, Signature, SignatureShare, SIG_SIZE};
 use tokio::{
     sync::{Mutex, RwLock},
     time::{sleep, Duration},
 };
 use tracing::{debug, error, info, warn};
-use threshold_crypto::{PublicKeySet, SecretKeyShare, Signature, SignatureShare, SIG_SIZE};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Transaction {
@@ -43,14 +43,14 @@ pub struct SeqOrder {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SeqMedian {
     pub vc: Vec<u8>,
-    pub s_tx: u64,
+    pub s_tx: u64, // median sequence number
     pub sigma_seq: Vec<u8>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SeqFinal {
     pub vc: Vec<u8>,
-    pub s_tx: u64,
+    pub s_tx: u64, // median sequence number
     pub sigma: Vec<u8>,
 }
 
@@ -79,8 +79,8 @@ pub struct TransactionSequencing {
     pub threshold_sigs: HashMap<u64, BTreeMap<usize, SignatureShare>>, // line 32: S[\bar{s}_tx] -> (j, sigma_seq_j)
     pub erasure_store: HashMap<Vec<u8>, ErasurePackage>,
     pub tx_sequence_map: HashMap<Vec<u8>, u64>,
+    pub originated_vcs: HashSet<Vec<u8>>,
 }
-
 
 impl TransactionSequencing {
     pub fn new(
@@ -110,6 +110,7 @@ impl TransactionSequencing {
             threshold_sigs: HashMap::new(),
             erasure_store: HashMap::new(),
             tx_sequence_map: HashMap::new(),
+            originated_vcs: HashSet::new(),
         }
     }
 
@@ -117,6 +118,11 @@ impl TransactionSequencing {
     pub async fn smrol_broadcast(&mut self, tx: SmrolTransaction) -> Result<(), String> {
         let s = self.seq_i; // Get current sequence number k
         self.seq_i += 1;
+
+        debug!(
+            "🚀 [Sequencing] node={} broadcast seq_num={} tx_id={}",
+            self.process_id, s, tx.id
+        );
 
         let payload =
             bincode::serialize(&tx).map_err(|e| format!("序列化SmrolTransaction失败: {}", e))?;
@@ -145,6 +151,11 @@ impl TransactionSequencing {
             return Ok(());
         }
 
+        debug!(
+            "✅ [Sequencing] Log condition verified for SEQ-REQUEST from {} with seq_num {}. Continue to Line 12-14",
+            sender, req.seq_num
+        );
+
         // Encode transaction with Reed-Solomon erasure coding (Lines 12-14)
         let data_shards = std::cmp::max(1, self.f + 1);
         let total_shards = std::cmp::max(data_shards, self.n);
@@ -165,6 +176,16 @@ impl TransactionSequencing {
             assigned_s
         };
 
+        debug!(
+            "🧮 [Sequencing] node={} assigned sequence {} for vc={} (req_seq={} from {})",
+            self.process_id,
+            s,
+            hex::encode(&vc_tx[..std::cmp::min(8, vc_tx.len())]),
+            req.seq_num,
+            sender
+        );
+        let process_id = self.process_id;
+
         // Persist local mappings for later reconstruction and consensus input
         self.pending_txs
             .entry(vc_tx.clone())
@@ -173,12 +194,22 @@ impl TransactionSequencing {
             .entry(vc_tx.clone())
             .or_insert(encoded.clone());
 
+        if sender == self.process_id {
+            self.originated_vcs.insert(vc_tx.clone());
+        }
+
         // Input to PNFIFO-BC (Line 15)
         let pnfifo = Arc::clone(&self.pnfifo);
         let vc_for_pnfifo = vc_tx.clone();
+        let slot_for_pnfifo = s;
         tokio::spawn(async move {
-            if let Err(err) = pnfifo.broadcast(vc_for_pnfifo).await {
+            if let Err(err) = pnfifo.broadcast(slot_for_pnfifo, vc_for_pnfifo).await {
                 warn!("❌ [Sequencing] PNFIFO broadcast failed: {}", err);
+            } else {
+                debug!(
+                    "📡 [Sequencing] node={} forwarded vc to PNFIFO slot {}",
+                    process_id, slot_for_pnfifo
+                );
             }
         });
 
@@ -206,10 +237,10 @@ impl TransactionSequencing {
         sender: usize,
         resp: SeqResponse,
     ) -> Result<(), String> {
-        debug!("📥 [Sequencing] 收到来自 Node {} 的SEQ-RESPONSE", sender);
 
-        if sender == self.process_id {
-            // Sender of original request (Line 19)
+        if self.originated_vcs.contains(&resp.vc) {
+            debug!("📥 [Sequencing] 收到来自 Node {} 的SEQ-RESPONSE as leader", sender);
+            // Original SEQ-REQUEST sender collects sequence responses (Algorithm 2, line 19)
             if self.verify_signature(&resp, sender)? {
                 // Collect sequence numbers for tx (Line 21)
                 self.s_vec_map
@@ -221,6 +252,15 @@ impl TransactionSequencing {
                         signature: resp.sigma.clone(),
                     });
 
+                let collected = self.s_vec_map[&resp.vc].len();
+                debug!(
+                    "🧾 [Sequencing] node={} collected {} / {} responses for vc={}",
+                    self.process_id,
+                    collected,
+                    2 * self.f + 1,
+                    hex::encode(&resp.vc[..std::cmp::min(8, resp.vc.len())])
+                );
+
                 // Check if collected 2f+1 sequences (Line 22)
                 if self.s_vec_map[&resp.vc].len() == 2 * self.f + 1 {
                     let records = self.s_vec_map[&resp.vc].clone();
@@ -228,6 +268,11 @@ impl TransactionSequencing {
                         vc: resp.vc.clone(),
                         records,
                     };
+                    debug!(
+                        "📤 [Sequencing] node={} broadcasting SEQ-ORDER for vc={}",
+                        self.process_id,
+                        hex::encode(&resp.vc[..std::cmp::min(8, resp.vc.len())])
+                    );
                     self.network.multicast_seq_order(seq_order).await?;
                 }
             }
@@ -245,6 +290,14 @@ impl TransactionSequencing {
             info!(
                 "✅ [Sequencing] Verified SEQ-ORDER from Node {} with median sequence {}",
                 sender, median
+            );
+
+            debug!(
+                "📊 [Sequencing] node={} seq_order vc={} median={} records={:?}",
+                self.process_id,
+                hex::encode(&order.vc[..std::cmp::min(8, order.vc.len())]),
+                median,
+                sequences
             );
 
             // Create threshold signature share
@@ -273,26 +326,45 @@ impl TransactionSequencing {
     ) -> Result<(), String> {
         debug!("📥 [Sequencing] 收到来自 {} 的SEQ-MEDIAN", sender);
 
-        if sender == self.process_id {
-            // Original sender (Line 30) is the request sender
-            if self.verify_threshold_share(&median, sender)? { // line 31
+        if self.originated_vcs.contains(&median.vc) {
+            // Original SEQ-REQUEST sender gathers median shares (Algorithm 2, line 30)
+            if self.verify_threshold_share(&median, sender)? {
+                // line 31
                 let mut share_bytes = [0u8; SIG_SIZE];
                 share_bytes.copy_from_slice(&median.sigma_seq);
                 let share = SignatureShare::from_bytes(&share_bytes)
                     .map_err(|e| format!("无法解析threshold share: {}", e))?;
 
-                    // Collect shares for threshold signature of entry [median.vc] (Line 32)
+                // Collect shares for threshold signature of entry [median.vc] (Line 32)
                 let entry = self
                     .threshold_sigs
                     .entry(median.s_tx)
                     .or_insert_with(BTreeMap::new);
                 entry.insert(sender, share);
 
+                debug!(
+                    "🔑 [Sequencing] node={} stored median share {}/{} for vc={} s_tx={} from {}",
+                    self.process_id,
+                    entry.len(),
+                    self.f + 1,
+                    hex::encode(&median.vc[..std::cmp::min(8, median.vc.len())]),
+                    median.s_tx,
+                    sender
+                );
+
                 if entry.len() == self.f + 1 {
                     let combined_sig = self
                         .threshold_public
                         .combine_signatures(entry.iter().map(|(id, share)| (*id, share)))
                         .map_err(|e| format!("阈值签名组合失败: {}", e))?;
+
+                    debug!(
+                        "🔐 [Sequencing] node={} collected {} median shares for vc={} (s_tx={})",
+                        self.process_id,
+                        entry.len(),
+                        hex::encode(&median.vc[..std::cmp::min(8, median.vc.len())]),
+                        median.s_tx
+                    );
 
                     let seq_final = SeqFinal {
                         vc: median.vc.clone(),
@@ -315,7 +387,8 @@ impl TransactionSequencing {
     ) -> Result<Option<TransactionEntry>, String> {
         debug!("📥 [Sequencing] 收到SEQ-FINAL消息");
 
-        if self.verify_combined_signature(&final_msg)? { // line 36
+        if self.verify_combined_signature(&final_msg)? {
+            // line 36
             let (in_vc_ledger, in_mi) = {
                 let finalization = self.finalization.lock().await;
                 (
@@ -338,6 +411,14 @@ impl TransactionSequencing {
                     "✅ [Sequencing] Finalized VC forwarded to consensus: vc_len={}, s_tx={}",
                     entry.vc_tx.len(),
                     entry.s_tx
+                );
+                debug!(
+                    "🎯 [Sequencing] node={} finalizing vc={} s_tx={} (ledger dup? {} / {})",
+                    self.process_id,
+                    hex::encode(&entry.vc_tx[..std::cmp::min(8, entry.vc_tx.len())]),
+                    entry.s_tx,
+                    in_vc_ledger,
+                    in_mi
                 );
                 return Ok(Some(entry));
             }
@@ -364,10 +445,12 @@ impl TransactionSequencing {
         if seq_num <= 1 {
             return true;
         }
-
         let target_slot = seq_num - 1;
         let mut attempts: u64 = 0;
-
+        debug!(
+            "⏱️ [Sequencing] Waiting for log condition: leader {}, target_slot {}",
+            leader_id, target_slot
+        );
         loop {
             if self
                 .pnfifo
@@ -375,6 +458,13 @@ impl TransactionSequencing {
                 .await
                 .is_some()
             {
+                if attempts == 0 {
+                    debug!(
+                        "⏱️ [Sequencing] wait_for_log_condition satisfied for leader {} slot {}",
+                        leader_id, target_slot
+                    );
+                    return true;
+                }
                 if attempts > 0 {
                     debug!(
                         "⏱️ [Sequencing] wait_for_log_condition satisfied after {} checks for leader {} slot {}",
@@ -382,18 +472,33 @@ impl TransactionSequencing {
                         leader_id,
                         target_slot
                     );
+                    return true;
                 }
-                return true;
+                // return true;
             }
-
             attempts = attempts.saturating_add(1);
+            if attempts % 100 == 0 {
+                debug!(
+                    "⏳ [Sequencing] Node {} still waiting for leader {} slot {} after {} checks",
+                    self.process_id, leader_id, target_slot, attempts
+                );
+            }
             sleep(Duration::from_millis(10)).await;
         }
+        // Latency-simulation mode: skip strict dependency on prior PNFIFO outputs.
+        // The full SMROL algorithm would wait for the previous slot to finalize via
+        // `pnfifo.get_output`, but that stalls our reduced pipeline. Always allow
+        // progress so every transaction flows through sequencing immediately.
+        // let _ = (leader_id, seq_num); // silence unused warnings when compiled with lint checks
+        // true
     }
 
     fn verify_signature(&self, resp: &SeqResponse, sender: usize) -> Result<bool, String> {
         if resp.sigma.len() != SIG_SIZE {
-            return Err(format!("signature share length invalid: {}", resp.sigma.len()));
+            return Err(format!(
+                "signature share length invalid: {}",
+                resp.sigma.len()
+            ));
         }
 
         let mut share_bytes = [0u8; SIG_SIZE];
@@ -478,8 +583,8 @@ impl TransactionSequencing {
 
         let mut sig_bytes = [0u8; SIG_SIZE];
         sig_bytes.copy_from_slice(&final_msg.sigma);
-        let signature = Signature::from_bytes(&sig_bytes)
-            .map_err(|e| format!("无法解析组合签名: {}", e))?;
+        let signature =
+            Signature::from_bytes(&sig_bytes).map_err(|e| format!("无法解析组合签名: {}", e))?;
 
         let message = format!("median:{}:{}", final_msg.s_tx, hex::encode(&final_msg.vc));
         Ok(self
@@ -667,8 +772,7 @@ mod tests {
         }
 
         let (threshold_share, threshold_public) =
-            derive_threshold_keys(process_id, 1, &verifying_keys)
-                .expect("derive threshold keys");
+            derive_threshold_keys(process_id, 1, &verifying_keys).expect("derive threshold keys");
 
         let network = Arc::new(SmrolTcpNetwork::new(process_id, peer_addrs.clone()));
         let pnfifo = Arc::new(

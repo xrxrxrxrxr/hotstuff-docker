@@ -5,15 +5,19 @@ use crate::smrol::message::SmrolMessage;
 use crate::smrol::network::{SmrolNetworkMessage, SmrolTcpNetwork};
 use ed25519_dalek::{Signer, SigningKey, VerifyingKey};
 use serde::{Deserialize, Serialize};
+use tracing_subscriber::field::debug;
 use std::collections::{HashMap, HashSet};
 use std::net::SocketAddr;
 use std::sync::{atomic::AtomicU64, Arc};
-use tokio::sync::RwLock;
+use tokio::{
+    sync::RwLock,
+    time::{sleep, Duration},
+};
 use tracing::{debug, error, info, warn};
+use uuid::Uuid;
 
 #[derive(Debug)]
 struct PnfifoSlotState {
-    flag: bool,
     output: Option<(Vec<u8>, Vec<u8>)>, // (value, signature)
 
     value: Option<Vec<u8>>,
@@ -23,12 +27,12 @@ struct PnfifoSlotState {
     proposal_received: bool,
     proposal_senders: HashSet<usize>,
     final_received: bool,
+    pending_final: Option<(Vec<u8>, Vec<u8>)>,
 }
 
 impl PnfifoSlotState {
     fn new(threshold: usize) -> Self {
         Self {
-            flag: false,
             output: None,
             value: None,
             votes: HashMap::new(),
@@ -36,6 +40,7 @@ impl PnfifoSlotState {
             proposal_received: false,
             proposal_senders: HashSet::new(),
             final_received: false,
+            pending_final: None,
         }
     }
 }
@@ -49,6 +54,7 @@ pub struct PnfifoBc {
     // 算法状态
     current_slot: AtomicU64,
     slots: Arc<RwLock<HashMap<(usize, u64), PnfifoSlotState>>>,
+    leader_flags: Arc<RwLock<HashMap<usize, bool>>>,
 
     // 密码学
     signing_key: SigningKey,
@@ -85,10 +91,58 @@ impl PnfifoBc {
             threshold,
             current_slot: AtomicU64::new(1),
             slots: Arc::new(RwLock::new(HashMap::new())),
+            leader_flags: Arc::new(RwLock::new(
+                verifying_keys.keys().map(|id| (*id, false)).collect(),
+            )),
             signing_key,
             verifying_keys,
             network,
         })
+    }
+
+    async fn wait_for_flag_clear(
+        leader_flags: &Arc<RwLock<HashMap<usize, bool>>>,
+        leader_id: usize,
+        slot: u64,
+        node_id: usize,
+    ) {
+        let mut attempts: u64 = 0;
+        loop {
+            {
+                let flags = leader_flags.read().await;
+                if !flags.get(&leader_id).copied().unwrap_or(false) {
+                    if attempts > 0 {
+                        debug!(
+                            "⏱️ [PNFIFO-BC] Node {} flag_{} at slot {} after {} checks",
+                            node_id,
+                            leader_id,
+                            slot,
+                            attempts
+                        );
+                    }
+                    break;
+                }
+            }
+
+            if attempts == 0 {
+                debug!(
+                    "⏳ [PNFIFO-BC] Node {} wait flag_{} at slot {}",
+                    node_id, leader_id, slot
+                );
+            }
+
+            attempts += 1;
+            if attempts % 100 == 0 {
+                debug!(
+                    "⏳ [PNFIFO-BC] Node {} still waiting flag_{} at slot {} after {} checks",
+                    node_id,
+                    leader_id,
+                    slot,
+                    attempts
+                );
+            }
+            sleep(Duration::from_millis(10)).await;
+        }
     }
 
     /// Return a clone of the underlying SMROL network handle so other
@@ -113,6 +167,7 @@ impl PnfifoBc {
         let verifying_keys = self.verifying_keys.clone();
         let signing_key = self.signing_key.clone();
         let network = Arc::clone(&self.network);
+        let leader_flags = Arc::clone(&self.leader_flags);
 
         tokio::spawn(async move {
             info!("📡 [PNFIFO-BC] Node {} 启动网络消息监听器", node_id);
@@ -120,12 +175,12 @@ impl PnfifoBc {
             let mut rx = pnfifo_rx.lock().await;
 
             while let Some((sender_id, message)) = rx.recv().await {
-                debug!(
-                    "📨 [PNFIFO-BC] Node {} 收到来自 {} 的消息: {:?}",
-                    node_id,
-                    sender_id,
-                    std::mem::discriminant(&message)
-                );
+                // debug!(
+                //     "📨 [PNFIFO-BC] Node {} 收到来自 {} 的消息: {:?}",
+                //     node_id,
+                //     sender_id,
+                //     std::mem::discriminant(&message)
+                // );
 
                 match message {
                     SmrolMessage::PnfifoProposal {
@@ -136,7 +191,9 @@ impl PnfifoBc {
                         if let Err(e) = PnfifoBc::handle_proposal_static(
                             node_id,
                             &slots,
+                            &leader_flags,
                             threshold,
+                            &verifying_keys,
                             &signing_key,
                             &network,
                             prop_sender,
@@ -157,6 +214,7 @@ impl PnfifoBc {
                         if let Err(e) = PnfifoBc::handle_vote_static(
                             node_id,
                             &slots,
+                            &leader_flags,
                             threshold,
                             &verifying_keys,
                             &network,
@@ -180,6 +238,7 @@ impl PnfifoBc {
                         if let Err(e) = PnfifoBc::handle_final_static(
                             node_id,
                             &slots,
+                            &leader_flags,
                             threshold,
                             &verifying_keys,
                             leader_id,
@@ -206,16 +265,27 @@ impl PnfifoBc {
     // }
 
     // 算法1: PNFIFO-BC_s[k](v_k) - 发送者广播值
-    pub async fn broadcast(&self, value: Vec<u8>) -> Result<u64, String> {
-        let slot = self
-            .current_slot
-            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    pub async fn broadcast(&self, slot: u64, value: Vec<u8>) -> Result<u64, String> {
+        self.current_slot
+            .store(slot.saturating_add(1), std::sync::atomic::Ordering::Relaxed);
+
+        {
+            let mut flags = self.leader_flags.write().await;
+            flags.insert(self.node_id, false);
+        }
 
         info!(
             "📤 [PNFIFO-BC] Node {} Broadcast Proposal for slot {}, length: {} bytes",
             self.node_id,
             slot,
             value.len()
+        );
+
+        debug!(
+            "🧾 [PNFIFO-BC] Node {} proposal payload={} slot={}",
+            self.node_id,
+            hex::encode(&value[..std::cmp::min(8, value.len())]),
+            slot
         );
 
         // 初始化slot状态
@@ -231,6 +301,13 @@ impl PnfifoBc {
             value: value.clone(),
         };
 
+        let message_id = format!(
+            "pnfifo-proposal:{}:{}:{}",
+            self.node_id,
+            slot,
+            Uuid::new_v4()
+        );
+
         let network_msg = SmrolNetworkMessage {
             from_node_id: self.node_id,
             to_node_id: None, // 广播给所有节点
@@ -240,7 +317,7 @@ impl PnfifoBc {
                 .duration_since(std::time::UNIX_EPOCH)
                 .unwrap()
                 .as_micros() as u64,
-            message_id: String::new(), // 网络层会自动生成
+            message_id,
         };
 
         self.network.parallel_broadcast(&network_msg).await;
@@ -256,7 +333,9 @@ impl PnfifoBc {
     async fn handle_proposal_static(
         node_id: usize,
         slots: &Arc<RwLock<HashMap<(usize, u64), PnfifoSlotState>>>,
+        leader_flags: &Arc<RwLock<HashMap<usize, bool>>>,
         threshold: usize,
+        verifying_keys: &HashMap<usize, VerifyingKey>,
         signing_key: &SigningKey,
         network: &Arc<SmrolTcpNetwork>,
         sender_id: usize,
@@ -268,7 +347,18 @@ impl PnfifoBc {
             node_id, sender_id, slot
         );
 
+        if !PnfifoBc::predicate_q_static(&value) {
+            debug!(
+                "❌ [PNFIFO-BC] Node {} 拒绝slot {} proposal: predicate Q(v) 未满足",
+                node_id, slot
+            );
+            return Ok(());
+        }
+
         let mut vote_message: Option<SmrolMessage> = None;
+        let mut delayed_finalize: Option<(Vec<u8>, Vec<u8>)> = None;
+
+        PnfifoBc::wait_for_flag_clear(leader_flags, sender_id, slot, node_id).await;
 
         {
             let mut slots_guard = slots.write().await;
@@ -276,7 +366,7 @@ impl PnfifoBc {
                 .entry((sender_id, slot))
                 .or_insert_with(|| PnfifoSlotState::new(threshold));
 
-            if !slot_state.proposal_senders.insert(sender_id) {
+            if slot_state.proposal_senders.contains(&sender_id) {
                 debug!(
                     "🔁 [PNFIFO-BC] Node {} 已处理过来自 {} 的slot {} proposal，跳过",
                     node_id, sender_id, slot
@@ -284,35 +374,66 @@ impl PnfifoBc {
                 return Ok(());
             }
 
-            // 检查条件: wait flag_s = 0 and Q(v_k) = 1
-            if !slot_state.flag && PnfifoBc::predicate_q_static(&value)
-            // && !slot_state.proposal_received  // already checked by proposal_senders
-            {
-                slot_state.proposal_received = true;
-                slot_state.value = Some(value.clone());
+            let mut flag_guard = leader_flags.write().await;
+            let flag_entry = flag_guard.entry(sender_id).or_insert(false);
 
-                // 生成阈值签名份额
-                let message_to_sign = PnfifoBc::create_vote_message_static(slot, &value);
-                let signature_share = signing_key.sign(&message_to_sign).to_bytes().to_vec();
-
-                vote_message = Some(SmrolMessage::PnfifoVote {
-                    leader_id: sender_id,
-                    sender_id: node_id,
-                    slot,
-                    signature_share,
-                });
-
-                // 设置flag防止处理其他proposal
-                slot_state.flag = true;
-
-                info!(
-                    "🗳️ [PNFIFO-BC] Node {} 投票支持slot {} (来自 {})",
-                    node_id, slot, sender_id
+            if *flag_entry {
+                debug!(
+                    "♻️ [PNFIFO-BC] Node {} flag already set for leader {} slot {}, skipping",
+                    node_id, sender_id, slot
                 );
-            } else {
-                debug!("❌ [PNFIFO-BC] Node {} 拒绝slot {} proposal: flag={}, predicate={}, received={}", 
-                       node_id, slot, slot_state.flag, PnfifoBc::predicate_q_static(&value), slot_state.proposal_received);
+                return Ok(());
             }
+
+            debug!(
+                "🧮 [PNFIFO-BC] Node {} accept proposal slot {} from {} (flag was {})",
+                node_id, slot, sender_id, *flag_entry
+            );
+
+            slot_state.proposal_senders.insert(sender_id);
+            slot_state.proposal_received = true;
+            slot_state.value = Some(value.clone());
+
+            let message_to_sign = PnfifoBc::create_vote_message_static(slot, &value);
+            let signature_share = signing_key.sign(&message_to_sign).to_bytes().to_vec();
+
+            vote_message = Some(SmrolMessage::PnfifoVote {
+                leader_id: sender_id,
+                sender_id: node_id,
+                slot,
+                signature_share,
+            });
+
+            *flag_entry = true;
+            debug!(
+                "🇺🇳 [FLAG_s] Flag_{} set to {} at slot {} (proposal)",
+                sender_id, *flag_entry, slot
+            );
+
+            info!(
+                "🗳️ [PNFIFO-BC] Node {} 发送 VOTE for slot {} (Leader = {})",
+                node_id, slot, sender_id
+            );
+
+            if let Some(pending) = slot_state.pending_final.take() {
+                delayed_finalize = Some(pending);
+            }
+        }
+
+        // make another attempt for delayed final messages
+        if let Some((pending_value, pending_signature)) = delayed_finalize {
+            PnfifoBc::finalize_with_signature(
+                node_id,
+                slots,
+                leader_flags,
+                threshold,
+                verifying_keys,
+                sender_id,
+                slot,
+                pending_value,
+                pending_signature,
+            )
+            .await?;
         }
 
         // 发送投票给提议者
@@ -325,7 +446,13 @@ impl PnfifoBc {
                     .duration_since(std::time::UNIX_EPOCH)
                     .unwrap()
                     .as_micros() as u64,
-                message_id: String::new(),
+                message_id: format!(
+                    "pnfifo-vote:{}:{}:{}:{}",
+                    node_id,
+                    sender_id,
+                    slot,
+                    Uuid::new_v4()
+                ),
             };
 
             network
@@ -341,6 +468,7 @@ impl PnfifoBc {
     async fn handle_vote_static(
         node_id: usize,
         slots: &Arc<RwLock<HashMap<(usize, u64), PnfifoSlotState>>>,
+        _leader_flags: &Arc<RwLock<HashMap<usize, bool>>>,
         threshold: usize,
         verifying_keys: &HashMap<usize, VerifyingKey>,
         network: &Arc<SmrolTcpNetwork>,
@@ -385,6 +513,16 @@ impl PnfifoBc {
                                     threshold
                                 );
 
+                                if !reached {
+                                    debug!(
+                                        "🧩 [PNFIFO-BC] Node {} slot {} awaiting more votes (have {} need {})",
+                                        node_id,
+                                        slot,
+                                        slot_state.votes.len(),
+                                        threshold
+                                    );
+                                }
+
                                 if reached {
                                     if let Ok(combined_sig) = slot_state.threshold_sig.combine() {
                                         finalize_data = Some((value.clone(), combined_sig));
@@ -393,6 +531,12 @@ impl PnfifoBc {
                                         info!(
                                             "🎯 [PNFIFO-BC] Node {} slot {} 达到阈值, 准备finalize",
                                             node_id, slot
+                                        );
+                                        debug!(
+                                            "🔐 [PNFIFO-BC] Node {} slot {} collected votes from {:?}",
+                                            node_id,
+                                            slot,
+                                            slot_state.votes.keys().cloned().collect::<Vec<_>>()
                                         );
                                     }
                                 }
@@ -412,7 +556,7 @@ impl PnfifoBc {
         if should_finalize {
             if let Some((value, combined_signature)) = finalize_data {
                 let final_message = SmrolMessage::PnfifoFinal {
-                    leader_id: node_id,
+                    leader_id,
                     sender_id: node_id,
                     slot,
                     value: value.clone(),
@@ -427,7 +571,7 @@ impl PnfifoBc {
                         .duration_since(std::time::UNIX_EPOCH)
                         .unwrap()
                         .as_micros() as u64,
-                    message_id: String::new(),
+                    message_id: format!("pnfifo-final:{}:{}:{}", node_id, slot, Uuid::new_v4()),
                 };
 
                 network
@@ -435,16 +579,20 @@ impl PnfifoBc {
                     .await
                     .map_err(|e| format!("广播FINAL失败: {}", e))?;
 
+                debug!(
+                    "✅ [PNFIFO-BC] Node {} 广播slot {} FINAL as leader",
+                    node_id, slot
+                );
                 // 更新本地输出
-                PnfifoBc::store_output_static(
-                    slots,
-                    threshold,
-                    leader_id,
-                    slot,
-                    value,
-                    combined_signature,
-                )
-                .await;
+                // PnfifoBc::store_output_static(
+                //     slots,
+                //     threshold,
+                //     leader_id,
+                //     slot,
+                //     value,
+                //     combined_signature,
+                // )
+                // .await;
             }
         }
 
@@ -455,6 +603,7 @@ impl PnfifoBc {
     async fn handle_final_static(
         node_id: usize,
         slots: &Arc<RwLock<HashMap<(usize, u64), PnfifoSlotState>>>,
+        leader_flags: &Arc<RwLock<HashMap<usize, bool>>>,
         threshold: usize,
         verifying_keys: &HashMap<usize, VerifyingKey>,
         leader_id: usize,
@@ -474,47 +623,118 @@ impl PnfifoBc {
                 .entry((leader_id, slot))
                 .or_insert_with(|| PnfifoSlotState::new(threshold));
 
-            // 等待flag设置
-            if slot_state.flag {
-                if slot_state.final_received {
+            if slot_state.final_received {
+                debug!(
+                    "🔁 [PNFIFO-BC] Node {} 已处理 leader {} slot {} 的FINAL, 忽略重复",
+                    node_id, leader_id, slot
+                );
+                return Ok(());
+            }
+
+            let flag_ready = {
+                let flags = leader_flags.read().await;
+                *flags.get(&leader_id).unwrap_or(&false)
+            };
+
+            if !flag_ready {
+                slot_state.pending_final = Some((value.clone(), combined_signature.clone()));
+                debug!(
+                    "⏳ [PNFIFO-BC] Node {} 暂存slot {} 来自 {} 的FINAL，等待flag=1",
+                    node_id, slot, leader_id
+                );
+                return Ok(());
+            }
+
+            slot_state.pending_final = None;
+        }
+
+        PnfifoBc::finalize_with_signature(
+            node_id,
+            slots,
+            leader_flags,
+            threshold,
+            verifying_keys,
+            leader_id,
+            slot,
+            value,
+            combined_signature,
+        )
+        .await
+    }
+
+    async fn finalize_with_signature(
+        node_id: usize,
+        slots: &Arc<RwLock<HashMap<(usize, u64), PnfifoSlotState>>>,
+        leader_flags: &Arc<RwLock<HashMap<usize, bool>>>,
+        threshold: usize,
+        verifying_keys: &HashMap<usize, VerifyingKey>,
+        leader_id: usize,
+        slot: u64,
+        value: Vec<u8>,
+        combined_signature: Vec<u8>,
+    ) -> Result<(), String> {
+        let message_to_verify = PnfifoBc::create_vote_message_static(slot, &value);
+
+        match verify_combined_signature_bytes(
+            &combined_signature,
+            &message_to_verify,
+            verifying_keys,
+            threshold,
+        ) {
+            Ok(true) => {
+                let mut should_store = false;
+                {
+                    let mut slots_guard = slots.write().await;
+                    let slot_state = slots_guard
+                        .entry((leader_id, slot))
+                        .or_insert_with(|| PnfifoSlotState::new(threshold));
+
+                    if slot_state.final_received {
+                        debug!(
+                            "🔁 [PNFIFO-BC] Node {} 已处理 leader {} slot {} 的FINAL, 忽略重复",
+                            node_id, leader_id, slot
+                        );
+                        return Ok(());
+                    }
+
+                    slot_state.value.get_or_insert_with(|| value.clone());
+                    slot_state.pending_final = None;
+                    slot_state.final_received = true;
+                    should_store = true;
+                }
+
+                if should_store {
+                    PnfifoBc::store_output_static(
+                        slots,
+                        threshold,
+                        leader_id,
+                        slot,
+                        value.clone(),
+                        combined_signature.clone(),
+                    )
+                    .await;
+
+                    {
+                        let mut flags = leader_flags.write().await;
+                        flags.insert(leader_id, false);
+                    }
                     debug!(
-                        "🔁 [PNFIFO-BC] Node {} 已处理slot {} 的FINAL, 忽略重复",
-                        node_id, slot
+                        "🇺🇳 [FLAG_s] Flag_{} set to {} at slot {} (final)",
+                        leader_id, false, slot
                     );
-                    return Ok(());
                 }
-
-                // 验证组合签名 (简化实现)
-                let message_to_verify = PnfifoBc::create_vote_message_static(slot, &value);
-                match verify_combined_signature_bytes(
-                    &combined_signature,
-                    &message_to_verify,
-                    verifying_keys,
-                    threshold,
-                ) {
-                    Ok(true) => {
-                        slot_state.output = Some((value.clone(), combined_signature.clone()));
-
-                        info!("✅ [PNFIFO-BC] Node {} 完成slot {} 输出存储", node_id, slot);
-
-                        slot_state.flag = false;
-                        slot_state.final_received = true;
-                    }
-                    Ok(false) => {
-                        warn!(
-                            "❌ [PNFIFO-BC] Node {} slot {} 组合签名验证未通过",
-                            node_id, slot
-                        );
-                    }
-                    Err(e) => {
-                        warn!(
-                            "❌ [PNFIFO-BC] Node {} slot {} 验证组合签名出错: {}",
-                            node_id, slot, e
-                        );
-                    }
-                }
-            } else {
-                debug!("⏳ [PNFIFO-BC] Node {} slot {} 等待flag设置", node_id, slot);
+            }
+            Ok(false) => {
+                warn!(
+                    "❌ [PNFIFO-BC] Node {} slot {} 组合签名验证未通过",
+                    node_id, slot
+                );
+            }
+            Err(e) => {
+                warn!(
+                    "❌ [PNFIFO-BC] Node {} slot {} 验证组合签名出错: {}",
+                    node_id, slot, e
+                );
             }
         }
 
@@ -531,8 +751,7 @@ impl PnfifoBc {
 
     // 谓词Q - 检查值是否有效 (简化实现)
     fn predicate_q(&self, _value: &[u8]) -> bool {
-        // 在实际实现中，这里可能包含更复杂的验证逻辑
-        // 现在简单返回true，表示接受所有值
+        // dummy implementation, always returns true
         true
     }
 
@@ -575,6 +794,10 @@ impl PnfifoBc {
         value: Vec<u8>,
         signature: Vec<u8>,
     ) {
+        debug!(
+            "🏁 [PNFIFO-BC] Node {} 存储slot {} 的输出, leader_id: {}",
+            leader_id, slot, leader_id
+        );
         let mut guard = slots.write().await;
         let slot_state = guard
             .entry((leader_id, slot))
@@ -633,13 +856,13 @@ mod tests {
             .unwrap();
 
         let value = b"test_value".to_vec();
-        let slot = pnfifo.broadcast(value.clone()).await.unwrap();
+        let slot = pnfifo.broadcast(1, value.clone()).await.unwrap();
 
         assert_eq!(slot, 1);
 
         let (total, _, current) = pnfifo.get_stats().await;
         assert_eq!(total, 1);
-        assert_eq!(current, 2); // next slot
+        assert_eq!(current, 2); // next slot should track provided value
     }
 
     #[tokio::test]

@@ -64,18 +64,19 @@ impl SmrolManager {
     ) -> Result<Self, String> {
         let n = verifying_keys.len();
 
-        let (threshold_share, threshold_public) = derive_threshold_keys(node_id, config.f, &verifying_keys)
-            .map_err(|e| format!("derive threshold keys failed: {}", e))?;
+        let (threshold_share, threshold_public) =
+            derive_threshold_keys(node_id, config.f, &verifying_keys)
+                .map_err(|e| format!("derive threshold keys failed: {}", e))?;
 
         let pnfifo = Arc::new(
             PnfifoBc::new(
-            node_id,
-            n,
-            signing_key.clone(),
-            verifying_keys.clone(),
-            peer_addrs,
-        )
-        .await?,
+                node_id,
+                n,
+                signing_key.clone(),
+                verifying_keys.clone(),
+                peer_addrs,
+            )
+            .await?,
         );
 
         // start PNFIFO network listener
@@ -147,9 +148,14 @@ impl SmrolManager {
             transaction.from, transaction.to, transaction.amount
         );
 
-        let mut sequencing = self.sequencing.lock().await;
-        sequencing.smrol_broadcast(transaction).await?;
-        debug!("✅ [SMROL] Transaction sent to sequencing layer");
+        let sequencing_handle = Arc::clone(&self.sequencing);
+        tokio::spawn(async move {
+            let mut sequencing = sequencing_handle.lock().await;
+            match sequencing.smrol_broadcast(transaction).await {
+                Ok(_) => debug!("✅ [SMROL] Transaction dispatched to sequencing layer"),
+                Err(e) => error!("[SMROL] Sequencing broadcast failed: {}", e),
+            }
+        });
         Ok(())
     }
 

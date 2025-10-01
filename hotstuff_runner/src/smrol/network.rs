@@ -356,7 +356,7 @@ impl SmrolTcpNetwork {
                             if let Err(e) = pnfifo_tx.send((sender_id, smrol_msg.message)) {
                                 error!("❌ [SMROL-TCP] PNFIFO消息分发失败: {}", e);
                             } else {
-                                debug!("📨 [SMROL-TCP] Node {} 分发PNFIFO消息到处理器", node_id);
+                                // debug!("📨 [SMROL-TCP] Node {} 分发PNFIFO消息到处理器", node_id);
                             }
                         }
                         SmrolMessage::SeqRequest { .. }
@@ -366,10 +366,10 @@ impl SmrolTcpNetwork {
                             if let Err(e) = sequencing_tx.send((sender_id, smrol_msg.message)) {
                                 error!("❌ [SMROL-TCP] Sequencing消息分发失败: {}", e);
                             } else {
-                                debug!(
-                                    "📨 [SMROL-TCP] Node {} 分发Sequencing消息到处理器",
-                                    node_id
-                                );
+                                // debug!(
+                                //     "📨 [SMROL-TCP] Node {} 分发Sequencing消息到处理器",
+                                //     node_id
+                                // );
                             }
                         }
                         SmrolMessage::ConsensusProposal { .. }
@@ -377,7 +377,7 @@ impl SmrolTcpNetwork {
                             if let Err(e) = consensus_tx.send((sender_id, smrol_msg.message)) {
                                 error!("❌ [SMROL-TCP] Consensus消息分发失败: {}", e);
                             } else {
-                                debug!("📨 [SMROL-TCP] Node {} 分发Consensus消息到处理器", node_id);
+                                // debug!("📨 [SMROL-TCP] Node {} 分发Consensus消息到处理器", node_id);
                             }
                         }
                         SmrolMessage::Warmup => {
@@ -437,11 +437,11 @@ impl SmrolTcpNetwork {
         use tokio::task::JoinHandle;
         let start_time = std::time::Instant::now();
 
-        info!(
-            "📡 [SMROL-TCP] Node {} 并行广播到 {} 个节点",
-            self.node_id,
-            self.peer_nodes.len()
-        );
+        // info!(
+        //     "📡 [SMROL-TCP] Node {} 并行广播到 {} 个节点",
+        //     self.node_id,
+        //     self.peer_nodes.len()
+        // );
 
         let mut success_count = 0usize;
         let mut failure_details: Vec<String> = Vec::new();
@@ -451,10 +451,10 @@ impl SmrolTcpNetwork {
             match self.deliver_to_local_processors(&smrol_msg).await {
                 Ok(_) => {
                     success_count += 1;
-                    debug!(
-                        "📨 [SMROL-TCP] Node {} 发送消息给自己: 直接绕过TCP",
-                        self.node_id
-                    );
+                    // debug!(
+                    //     "📨 [SMROL-TCP] Node {} 发送消息给自己: 直接绕过TCP",
+                    //     self.node_id
+                    // );
                 }
                 Err(e) => failure_details.push(format!("self: {}", e)),
             }
@@ -486,13 +486,13 @@ impl SmrolTcpNetwork {
         }
 
         let total_duration = start_time.elapsed();
-        info!(
-            "📊 [SMROL-TCP] Node {} 并行广播完成: {}/{} 成功, 耗时: {:?}",
-            self.node_id,
-            success_count,
-            self.peer_nodes.len(),
-            total_duration
-        );
+        // info!(
+        //     "📊 [SMROL-TCP] Node {} 并行广播完成: {}/{} 成功, 耗时: {:?}",
+        //     self.node_id,
+        //     success_count,
+        //     self.peer_nodes.len(),
+        //     total_duration
+        // );
 
         if !failure_details.is_empty() {
             warn!(
@@ -533,10 +533,10 @@ impl SmrolTcpNetwork {
                         .sent_messages_count
                         .fetch_add(1, std::sync::atomic::Ordering::Relaxed)
                         + 1;
-                    debug!(
-                        "📮 [SMROL-TCP] Node {} 复用连接发送第{}条消息到节点{}",
-                        self.node_id, count, target_id
-                    );
+                    // debug!(
+                    //     "📮 [SMROL-TCP] Node {} 复用连接发送第{}条消息到节点{}",
+                    //     self.node_id, count, target_id
+                    // );
                     return Ok(());
                 }
                 Err(_) => {
@@ -595,10 +595,10 @@ impl SmrolTcpNetwork {
         // 自消息绕过优化
         if let Some(target_id) = message.to_node_id {
             if target_id == self.node_id {
-                debug!(
-                    "📨 [SMROL-TCP] Node {} 发送消息给自己: 直接绕过TCP",
-                    self.node_id
-                );
+                // debug!(
+                //     "📨 [SMROL-TCP] Node {} 发送消息给自己: 直接绕过TCP",
+                //     self.node_id
+                // );
                 return self.deliver_to_local_processors(&message).await;
             }
         }
