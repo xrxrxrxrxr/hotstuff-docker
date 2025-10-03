@@ -194,7 +194,10 @@ impl Consensus {
     ) -> Result<(Vec<TransactionEntry>, Vec<SequenceEntry>, u64), String> {
         let mut entries = self.mi.get(&epoch).cloned().unwrap_or_default();
         if entries.len() < self.capital_k {
-            return Err(format!("M_i for epoch {} has < {} entries", epoch, self.capital_k));
+            return Err(format!(
+                "M_i for epoch {} has < {} entries",
+                epoch, self.capital_k
+            ));
         }
 
         entries.sort_by_key(|entry| entry.s_tx);
@@ -283,14 +286,8 @@ impl Consensus {
 
         // In this prototype we treat local proposal as the decided value once enough votes arrive.
         // The vote handler will call `handle_consensus_output` with the stored state.
-        // Broadcast own vote immediately.
+        // Record own vote immediately so the proposer contributes to quorum tracking.
         let vote = self.create_vote(epoch)?;
-        self.broadcast_consensus_message(SmrolMessage::ConsensusVote {
-            epoch,
-            vote_signature: vote.vote_signature.clone(),
-            sender_id: vote.sender_id,
-        })
-        .await?;
 
         let epoch_state = self
             .epoch_states
@@ -320,8 +317,19 @@ impl Consensus {
             .epoch_states
             .entry(epoch)
             .or_insert_with(EpochState::new);
-        state.m_e = m_e;
-        state.s_e = s_e;
+        if !m_e.is_empty() {
+            state.m_e = m_e;
+        }
+        if !s_e.is_empty() {
+            state.s_e = s_e;
+        }
+        if state.m_e.is_empty() {
+            debug!(
+                "[Consensus] node={} epoch={} output ignored because M_e is empty",
+                self.process_id, epoch
+            );
+            return Ok(());
+        }
         state.h_e = state
             .m_e
             .iter()
@@ -411,6 +419,12 @@ impl Consensus {
 
         if let Some(state) = self.epoch_states.get_mut(&epoch) {
             state.final_ledger = finalized.clone();
+        }
+
+        if !finalized.is_empty() {
+            let _ = self.event_tx.send(SystemEvent::PompeOutputReady {
+                transactions: finalized.clone(),
+            });
         }
 
         // Consensus for this epoch is complete; clear the pending marker so the
@@ -516,7 +530,7 @@ impl Consensus {
             .or_insert_with(EpochState::new);
         state.votes.insert(sender_id, vote_signature);
 
-        if state.votes.len() >= 2 * self.f + 1 {
+        if state.votes.len() == 2 * self.f + 1 {
             info!(
                 "[Consensus] epoch={} reached quorum {}/{}",
                 epoch,

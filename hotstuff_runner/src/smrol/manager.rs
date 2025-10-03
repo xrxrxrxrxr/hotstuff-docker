@@ -215,32 +215,12 @@ impl SmrolManager {
     }
 
     pub async fn invoke_consensus_and_finalize(&self, epoch: u64) -> Result<(), String> {
-        info!(
-            "🏛️ [SMROL] Starting consensus and finalization for epoch {}",
-            epoch
-        );
+        info!("🏛️ [SMROL] Starting consensus for epoch {}", epoch);
 
         {
             let mut consensus = self.consensus.lock().await;
             consensus.run_consensus(epoch).await?;
         }
-
-        let finalized = {
-            let finalization = self.finalization.lock().await;
-            finalization.get_final_ledger(epoch)
-        };
-
-        if !finalized.is_empty() {
-            let _ = self.event_tx.send(SystemEvent::PompeOutputReady {
-                transactions: finalized.clone(),
-            });
-        }
-
-        info!(
-            "✅ [SMROL] Epoch {} finalized and delivered to HotStuff ({} txs)",
-            epoch,
-            finalized.len()
-        );
         Ok(())
     }
 
