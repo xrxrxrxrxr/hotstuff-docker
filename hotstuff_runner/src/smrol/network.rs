@@ -11,6 +11,7 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::runtime::{Builder, Handle, Runtime};
 use tokio::sync::{mpsc, RwLock};
+use tokio::time::{interval, sleep};
 use tracing::{debug, error, info, warn};
 
 // SMROL网络消息封装
@@ -56,6 +57,8 @@ pub struct SmrolTcpNetwork {
     outbound_tx: mpsc::UnboundedSender<SmrolNetworkMessage>,
     outbound_rx: Arc<tokio::sync::Mutex<mpsc::UnboundedReceiver<SmrolNetworkMessage>>>,
 
+    peer_writers: Arc<RwLock<HashMap<usize, mpsc::Sender<Vec<u8>>>>>,
+
     // 消息去重机制
     sent_messages: Arc<std::sync::Mutex<HashMap<String, u64>>>,
 
@@ -68,6 +71,13 @@ pub struct SmrolTcpNetwork {
 }
 
 impl SmrolTcpNetwork {
+    fn peer_queue_capacity() -> usize {
+        std::env::var("SMROL_PEER_QUEUE_CAP")
+            .ok()
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(4096)
+    }
+
     fn runtime_handle(&self) -> Option<Handle> {
         self.rt.as_ref().map(|runtime| runtime.handle().clone())
     }
@@ -125,6 +135,7 @@ impl SmrolTcpNetwork {
             consensus_rx: Arc::new(tokio::sync::Mutex::new(consensus_rx)),
             outbound_tx,
             outbound_rx: Arc::new(tokio::sync::Mutex::new(outbound_rx)),
+            peer_writers: Arc::new(RwLock::new(HashMap::new())),
             sent_messages: Arc::new(std::sync::Mutex::new(HashMap::new())),
             sent_messages_count: Arc::new(std::sync::atomic::AtomicU64::new(0)),
             received_messages_count: Arc::new(std::sync::atomic::AtomicU64::new(0)),
@@ -133,6 +144,7 @@ impl SmrolTcpNetwork {
 
         // 启动连接维护任务
         network.start_connection_maintenance();
+        network.spawn_peer_writers();
         network
     }
 
@@ -187,6 +199,76 @@ impl SmrolTcpNetwork {
                 }
             }
         });
+    }
+
+    fn spawn_peer_writers(&self) {
+        for (&peer_id, &addr) in &self.peer_nodes {
+            if peer_id == self.node_id {
+                continue;
+            }
+
+            let (tx, rx) = mpsc::channel::<Vec<u8>>(Self::peer_queue_capacity());
+            let writers_map = Arc::clone(&self.peer_writers);
+            let tx_for_map = tx.clone();
+            self.spawn_on_runtime(async move {
+                writers_map.write().await.insert(peer_id, tx_for_map);
+            });
+
+            self.spawn_on_runtime(peer_writer_task(peer_id, addr, rx, tx));
+        }
+    }
+
+    async fn queue_frame(&self, target_id: usize, frame: Vec<u8>) -> Result<(), String> {
+        if target_id == self.node_id {
+            return Err("attempted to queue frame to self".into());
+        }
+
+        let sender = self.ensure_peer_writer(target_id).await?;
+        use tokio::sync::mpsc::error::TrySendError;
+
+        match sender.try_send(frame.clone()) {
+            Ok(_) => Ok(()),
+            Err(TrySendError::Full(_)) => sender
+                .send(frame)
+                .await
+                .map_err(|e| format!("发送队列已关闭: {}", e)),
+            Err(TrySendError::Closed(_)) => Err("发送队列已关闭".into()),
+        }
+    }
+
+    async fn ensure_peer_writer(&self, target_id: usize) -> Result<mpsc::Sender<Vec<u8>>, String> {
+        {
+            let readers = self.peer_writers.read().await;
+            if let Some(sender) = readers.get(&target_id) {
+                return Ok(sender.clone());
+            }
+        }
+
+        let addr = *self
+            .peer_nodes
+            .get(&target_id)
+            .ok_or_else(|| format!("未知目标节点 {}", target_id))?;
+
+        let (tx, rx) = mpsc::channel::<Vec<u8>>(Self::peer_queue_capacity());
+        {
+            let mut writers = self.peer_writers.write().await;
+            if let Some(existing) = writers.get(&target_id) {
+                return Ok(existing.clone());
+            }
+            writers.insert(target_id, tx.clone());
+        }
+
+        self.spawn_on_runtime(peer_writer_task(target_id, addr, rx, tx.clone()));
+
+        Ok(tx)
+    }
+
+    fn frame_message(message: &SmrolNetworkMessage) -> Result<Vec<u8>, String> {
+        let serialized = bincode::serialize(message).map_err(|e| format!("序列化失败: {}", e))?;
+        let mut frame = Vec::with_capacity(4 + serialized.len());
+        frame.extend_from_slice(&(serialized.len() as u32).to_be_bytes());
+        frame.extend_from_slice(&serialized);
+        Ok(frame)
     }
 
     pub fn get_pnfifo_receiver(
@@ -356,7 +438,7 @@ impl SmrolTcpNetwork {
                             if let Err(e) = pnfifo_tx.send((sender_id, smrol_msg.message)) {
                                 error!("❌ [SMROL-TCP] PNFIFO消息分发失败: {}", e);
                             } else {
-                                // debug!("📨 [SMROL-TCP] Node {} 分发PNFIFO消息到处理器", node_id);
+                                debug!("📨 [SMROL-TCP] Node {} 分发PNFIFO消息到处理器", node_id);
                             }
                         }
                         SmrolMessage::SeqRequest { .. }
@@ -366,10 +448,10 @@ impl SmrolTcpNetwork {
                             if let Err(e) = sequencing_tx.send((sender_id, smrol_msg.message)) {
                                 error!("❌ [SMROL-TCP] Sequencing消息分发失败: {}", e);
                             } else {
-                                // debug!(
-                                //     "📨 [SMROL-TCP] Node {} 分发Sequencing消息到处理器",
-                                //     node_id
-                                // );
+                                debug!(
+                                    "📨 [SMROL-TCP] Node {} 分发Sequencing消息到处理器",
+                                    node_id
+                                );
                             }
                         }
                         SmrolMessage::ConsensusProposal { .. }
@@ -377,7 +459,7 @@ impl SmrolTcpNetwork {
                             if let Err(e) = consensus_tx.send((sender_id, smrol_msg.message)) {
                                 error!("❌ [SMROL-TCP] Consensus消息分发失败: {}", e);
                             } else {
-                                // debug!("📨 [SMROL-TCP] Node {} 分发Consensus消息到处理器", node_id);
+                                debug!("📨 [SMROL-TCP] Node {} 分发Consensus消息到处理器", node_id);
                             }
                         }
                         SmrolMessage::Warmup => {
@@ -385,14 +467,10 @@ impl SmrolTcpNetwork {
                         }
                     }
 
-                    // debug!("📨 [SMROL-TCP] Node {} 接收第{}条消息，来自节点{}",
-                    //        node_id, count, smrol_msg.from_node_id);
-
-                    // // send put to public inbound channel
-                    // if let Err(e) = inbound_tx.send(smrol_msg) {
-                    //     error!("❌ [SMROL-TCP] Node {} 转发消息失败: {}", node_id, e);
-                    //     break;
-                    // }
+                    debug!(
+                        "📨 [SMROL-TCP] Node {} 接收第{}条消息，来自节点{}",
+                        node_id, count, smrol_msg.from_node_id
+                    );
                 }
                 Err(e) => {
                     error!("❌ [SMROL-TCP] Node {} 反序列化消息失败: {}", node_id, e);
@@ -415,179 +493,59 @@ impl SmrolTcpNetwork {
             let mut rx = outbound_rx.lock().await;
 
             while let Some(smrol_msg) = rx.recv().await {
-                match smrol_msg.to_node_id {
-                    Some(target_id) => {
-                        if let Err(e) = self_clone.send_to_node(target_id, &smrol_msg).await {
-                            error!(
-                                "❌ [SMROL-TCP] Node {} 单播到{}失败: {}",
-                                node_id, target_id, e
-                            );
+                if let Some(target_id) = smrol_msg.to_node_id {
+                    if target_id == node_id {
+                        if let Err(e) = self_clone.deliver_to_local_processors(&smrol_msg).await {
+                            error!("❌ [SMROL-TCP] Node {} 本地派发消息失败: {}", node_id, e);
+                        }
+                        continue;
+                    }
+
+                    match SmrolTcpNetwork::frame_message(&smrol_msg) {
+                        Ok(frame) => {
+                            if let Err(e) = self_clone.queue_frame(target_id, frame).await {
+                                error!(
+                                    "❌ [SMROL-TCP] Node {} 发送消息到{}失败: {}",
+                                    node_id, target_id, e
+                                );
+                            }
+                        }
+                        Err(e) => {
+                            error!("❌ [SMROL-TCP] Node {} 序列化消息失败: {}", node_id, e);
                         }
                     }
-                    None => {
-                        self_clone.parallel_broadcast(&smrol_msg).await;
+                } else {
+                    match SmrolTcpNetwork::frame_message(&smrol_msg) {
+                        Ok(frame) => {
+                            for (&peer_id, _) in &self_clone.peer_nodes {
+                                if peer_id == node_id {
+                                    if let Err(e) =
+                                        self_clone.deliver_to_local_processors(&smrol_msg).await
+                                    {
+                                        error!(
+                                            "❌ [SMROL-TCP] Node {} 本地派发消息失败: {}",
+                                            node_id, e
+                                        );
+                                    }
+                                    continue;
+                                }
+
+                                if let Err(e) = self_clone.queue_frame(peer_id, frame.clone()).await
+                                {
+                                    warn!(
+                                        "⚠️ [SMROL-TCP] Node {} 广播到{}失败: {}",
+                                        node_id, peer_id, e
+                                    );
+                                }
+                            }
+                        }
+                        Err(e) => {
+                            error!("❌ [SMROL-TCP] Node {} 序列化消息失败: {}", node_id, e);
+                        }
                     }
                 }
             }
         });
-    }
-
-    // 并行广播实现 (实例方法，与Pompe一致)
-    pub async fn parallel_broadcast(&self, smrol_msg: &SmrolNetworkMessage) {
-        use tokio::task::JoinHandle;
-        let start_time = std::time::Instant::now();
-
-        // info!(
-        //     "📡 [SMROL-TCP] Node {} 并行广播到 {} 个节点",
-        //     self.node_id,
-        //     self.peer_nodes.len()
-        // );
-
-        let mut success_count = 0usize;
-        let mut failure_details: Vec<String> = Vec::new();
-
-        // 1) 先发送给自己（短路，不经TCP）
-        if self.peer_nodes.contains_key(&self.node_id) {
-            match self.deliver_to_local_processors(&smrol_msg).await {
-                Ok(_) => {
-                    success_count += 1;
-                    // debug!(
-                    //     "📨 [SMROL-TCP] Node {} 发送消息给自己: 直接绕过TCP",
-                    //     self.node_id
-                    // );
-                }
-                Err(e) => failure_details.push(format!("self: {}", e)),
-            }
-        }
-
-        // 2) 并行发送给其他节点
-        let mut handles: Vec<JoinHandle<(usize, Result<(), String>)>> = Vec::new();
-        for &target_id in self.peer_nodes.keys() {
-            if target_id == self.node_id {
-                continue;
-            }
-
-            let msg = smrol_msg.clone();
-            let net = self.clone();
-
-            let handle = tokio::spawn(async move {
-                let res = net.send_to_node(target_id, &msg).await;
-                (target_id, res)
-            });
-            handles.push(handle);
-        }
-
-        for h in handles {
-            match h.await {
-                Ok((nid, Ok(()))) => success_count += 1,
-                Ok((nid, Err(e))) => failure_details.push(format!("Node {}: {}", nid, e)),
-                Err(e) => failure_details.push(format!("JoinError: {}", e)),
-            }
-        }
-
-        let total_duration = start_time.elapsed();
-        // info!(
-        //     "📊 [SMROL-TCP] Node {} 并行广播完成: {}/{} 成功, 耗时: {:?}",
-        //     self.node_id,
-        //     success_count,
-        //     self.peer_nodes.len(),
-        //     total_duration
-        // );
-
-        if !failure_details.is_empty() {
-            warn!(
-                "⚠️ [SMROL-TCP] Node {} 广播部分失败: {:?}",
-                self.node_id, failure_details
-            );
-        }
-    }
-
-    // 发送消息到指定节点 (简化版本，使用实例方法)
-    async fn send_to_node(
-        &self,
-        target_id: usize,
-        smrol_msg: &SmrolNetworkMessage,
-    ) -> Result<(), String> {
-        // 序列化消息
-        let serialized = bincode::serialize(smrol_msg).map_err(|e| format!("序列化失败: {}", e))?;
-
-        let message_length = serialized.len() as u32;
-        let mut frame = Vec::with_capacity(4 + serialized.len());
-        frame.extend_from_slice(&message_length.to_be_bytes());
-        frame.extend_from_slice(&serialized);
-
-        // 尝试复用现有连接
-        let existing_conn = {
-            let connections_read = self.connections.read().await;
-            connections_read.get(&target_id).cloned()
-        };
-
-        if let Some(conn_arc) = existing_conn {
-            let mut conn_state = conn_arc.lock().await;
-            match conn_state.writer.write_all(&frame).await {
-                Ok(_) => {
-                    conn_state.last_used = std::time::Instant::now();
-                    conn_state.send_count += 1;
-
-                    let count = self
-                        .sent_messages_count
-                        .fetch_add(1, std::sync::atomic::Ordering::Relaxed)
-                        + 1;
-                    // debug!(
-                    //     "📮 [SMROL-TCP] Node {} 复用连接发送第{}条消息到节点{}",
-                    //     self.node_id, count, target_id
-                    // );
-                    return Ok(());
-                }
-                Err(_) => {
-                    // 连接可能已断开，移除并重新连接
-                    drop(conn_state);
-                    let mut connections_write = self.connections.write().await;
-                    connections_write.remove(&target_id);
-                }
-            }
-        }
-
-        // 建立新连接
-        if let Some(&target_addr) = self.peer_nodes.get(&target_id) {
-            match TcpStream::connect(target_addr).await {
-                Ok(stream) => {
-                    let _ = stream.set_nodelay(true);
-                    let (_read_half, mut write_half) = stream.into_split();
-
-                    // 发送消息
-                    write_half
-                        .write_all(&frame)
-                        .await
-                        .map_err(|e| format!("发送失败: {}", e))?;
-
-                    // 保存连接
-                    let mut connections_write = self.connections.write().await;
-                    connections_write.insert(
-                        target_id,
-                        Arc::new(tokio::sync::Mutex::new(TcpConnectionState {
-                            writer: write_half,
-                            last_used: std::time::Instant::now(),
-                            send_count: 1,
-                        })),
-                    );
-
-                    let count = self
-                        .sent_messages_count
-                        .fetch_add(1, std::sync::atomic::Ordering::Relaxed)
-                        + 1;
-                    debug!(
-                        "📮 [SMROL-TCP] Node {} 新连接发送第{}条消息到节点{}",
-                        self.node_id, count, target_id
-                    );
-
-                    Ok(())
-                }
-                Err(e) => Err(format!("连接到{}失败: {}", target_addr, e)),
-            }
-        } else {
-            Err(format!("未知节点ID: {}", target_id))
-        }
     }
 
     // 发送消息（公共接口） - 添加自消息绕过 + 消息去重
@@ -620,8 +578,8 @@ impl SmrolTcpNetwork {
         {
             let mut sent = self.sent_messages.lock().unwrap();
             if sent.contains_key(&message.message_id) {
-                debug!(
-                    "🔄 [SMROL-TCP] Node {} 跳过重复消息: {}",
+                warn!(
+                    "❗️ [SMROL-TCP] Node {} 跳过重复消息: {}",
                     self.node_id,
                     &message.message_id[0..8]
                 );
@@ -798,7 +756,7 @@ impl SmrolTcpNetwork {
         };
 
         debug!(
-            "📤 [SMROL-TCP] Node {} 广播SEQ-REQUEST, seq_num: {}",
+            "📤 [SMROL-TCP] Node {} 广播SEQ-REQUEST, k = {}",
             self.node_id, req.seq_num
         );
 
@@ -831,7 +789,7 @@ impl SmrolTcpNetwork {
         };
 
         debug!(
-            "📤 [SMROL-TCP] Node {} 广播SEQ-RESPONSE, s: {}",
+            "📤 [SMROL-TCP] Node {} 广播SEQ-RESPONSE, sequence s = {}",
             self.node_id, resp.s
         );
 
@@ -992,10 +950,73 @@ impl Clone for SmrolTcpNetwork {
             consensus_rx: Arc::clone(&self.consensus_rx),
             outbound_tx: self.outbound_tx.clone(),
             outbound_rx: Arc::clone(&self.outbound_rx),
+            peer_writers: Arc::clone(&self.peer_writers),
             sent_messages: Arc::clone(&self.sent_messages),
             sent_messages_count: Arc::clone(&self.sent_messages_count),
             received_messages_count: Arc::clone(&self.received_messages_count),
             rt: self.rt.as_ref().map(Arc::clone),
+        }
+    }
+}
+
+async fn peer_writer_task(
+    peer_id: usize,
+    addr: SocketAddr,
+    mut rx: mpsc::Receiver<Vec<u8>>,
+    retry_tx: mpsc::Sender<Vec<u8>>,
+) {
+    let mut backoff = Duration::from_millis(100);
+    let mut ping = interval(Duration::from_secs(15));
+
+    loop {
+        let mut stream = match TcpStream::connect(addr).await {
+            Ok(s) => {
+                let _ = s.set_nodelay(true);
+                backoff = Duration::from_millis(100);
+                debug!("peer {} 已连接 {}", peer_id, addr);
+                s
+            }
+            Err(e) => {
+                warn!(
+                    "peer {} 连接失败 {}: {}，等待 {:?}",
+                    peer_id, addr, e, backoff
+                );
+                sleep(backoff).await;
+                backoff = (backoff * 2).min(Duration::from_secs(5));
+                continue;
+            }
+        };
+
+        loop {
+            tokio::select! {
+                biased;
+                _ = ping.tick() => {
+                    if let Err(e) = stream.write_all(&0u32.to_be_bytes()).await {
+                        warn!("peer {} ping 写失败: {}", peer_id, e);
+                        break;
+                    }
+                }
+                maybe = rx.recv() => {
+                    match maybe {
+                        Some(frame) => {
+                            if let Err(e) = stream.write_all(&frame).await {
+                                warn!("peer {} 写失败: {}，重连", peer_id, e);
+                                if let Err(send_err) = retry_tx.send(frame).await {
+                                    warn!(
+                                        "peer {} 重投队列失败: {} (消息丢弃)",
+                                        peer_id, send_err
+                                    );
+                                }
+                                break;
+                            }
+                        }
+                        None => {
+                            debug!("peer {} 发送端关闭", peer_id);
+                            return;
+                        }
+                    }
+                }
+            }
         }
     }
 }

@@ -893,12 +893,25 @@ async fn main() -> Result<(), String> {
 
     tokio::time::sleep(Duration::from_secs(5)).await;
     info!("网络连通性测试:");
-    for i in 0..4 {
-        // 假设4个节点
-        let addr = format!("127.0.0.1:{}", 20000 + i);
-        match tokio::net::TcpStream::connect(&addr).await {
-            Ok(_) => info!("节点 {} 端口可达", i),
-            Err(e) => error!("节点 {} 端口不可达: {}", i, e),
+    let connectivity_timeout = Duration::from_secs(2);
+    for target_id in node_least_id..(node_least_id + node_num) {
+        let addr = format!("node{}:{}", target_id, 20000 + target_id);
+        match tokio::time::timeout(connectivity_timeout, tokio::net::TcpStream::connect(&addr))
+            .await
+        {
+            Ok(Ok(_)) => info!("节点 {} 端口 {} 可达", target_id, 20000 + target_id),
+            Ok(Err(e)) => warn!(
+                "节点 {} 端口 {} 暂不可达: {}",
+                target_id,
+                20000 + target_id,
+                e
+            ),
+            Err(_) => warn!(
+                "节点 {} 端口 {} 连接超时 (>{:?})",
+                target_id,
+                20000 + target_id,
+                connectivity_timeout
+            ),
         }
     }
 

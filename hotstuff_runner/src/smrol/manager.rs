@@ -30,7 +30,8 @@ impl Default for SmrolConfig {
         Self {
             enable: true,
             f: 1,
-            k: 3,
+            // k: 3, // 🔥🔥 文中 k=O(n)
+            k: 1, // 🔥🔥 修改点
             epoch_timeout_ms: 100,
             pnfifo_threshold: 3,
         }
@@ -111,6 +112,7 @@ impl SmrolManager {
             signing_key.clone(),
             verifying_keys.clone(),
             Arc::clone(&finalization),
+            event_tx.clone(),
         );
 
         Ok(Self {
@@ -144,15 +146,16 @@ impl SmrolManager {
         transaction: SmrolTransaction,
     ) -> Result<(), String> {
         info!(
-            "📥 [SMROL] Processing transaction: {} -> {}: {}",
-            transaction.from, transaction.to, transaction.amount
+            "📥 [SMROL] Processing transaction: {}:{}->{}:{}",
+            transaction.id, transaction.from, transaction.to, transaction.amount
         );
 
+        let tx_id = transaction.id;
         let sequencing_handle = Arc::clone(&self.sequencing);
         tokio::spawn(async move {
             let mut sequencing = sequencing_handle.lock().await;
             match sequencing.smrol_broadcast(transaction).await {
-                Ok(_) => debug!("✅ [SMROL] Transaction dispatched to sequencing layer"),
+                Ok(_) => debug!("✅ [SMROL] Broadcast completed. Transaction tx_id={} dispatched to sequencing layer", tx_id),
                 Err(e) => error!("[SMROL] Sequencing broadcast failed: {}", e),
             }
         });

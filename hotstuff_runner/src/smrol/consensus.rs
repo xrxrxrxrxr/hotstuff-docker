@@ -1,15 +1,16 @@
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
-use tokio::sync::Mutex;
+use tokio::sync::{broadcast, Mutex};
 
+use crate::event::SystemEvent;
 use crate::smrol::adapter::SmrolHotStuffAdapter;
 use crate::smrol::finalization::OutputFinalization;
-use crate::smrol::message::SmrolMessage;
+use crate::smrol::message::{SmrolMessage, SmrolTransaction};
 use crate::smrol::network::{SmrolNetworkMessage, SmrolTcpNetwork};
 use ed25519_dalek::{Signer, SigningKey, VerifyingKey};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use tracing::{debug, info};
+use tracing::{debug, info, warn};
 use uuid::Uuid;
 
 /// Input to the consensus instance for epoch `e`.
@@ -26,6 +27,7 @@ pub struct TransactionEntry {
     pub vc_tx: Vec<u8>,
     pub s_tx: u64,
     pub sigma: Vec<u8>,
+    pub payload: Vec<u8>,
 }
 
 /// Entry in `S_e` (Algorithm 3, predicate \(Q(x)\) condition 3).
@@ -93,6 +95,7 @@ pub struct Consensus {
     pub epoch_states: HashMap<u64, EpochState>,
     hotstuff_adapter: Option<Arc<SmrolHotStuffAdapter>>,
     finalization: Arc<Mutex<OutputFinalization>>,
+    event_tx: broadcast::Sender<SystemEvent>,
 }
 
 impl Consensus {
@@ -105,6 +108,7 @@ impl Consensus {
         signing_key: SigningKey,
         verifying_keys: HashMap<usize, VerifyingKey>,
         finalization: Arc<Mutex<OutputFinalization>>,
+        event_tx: broadcast::Sender<SystemEvent>,
     ) -> Self {
         let k = std::cmp::max(1, 2 * f + 1);
         Self {
@@ -121,6 +125,7 @@ impl Consensus {
             epoch_states: HashMap::new(),
             hotstuff_adapter: None,
             finalization,
+            event_tx,
         }
     }
 
@@ -235,13 +240,37 @@ impl Consensus {
         );
 
         let merkle_root = Self::compute_merkle_root(&m_e);
-        let transactions: Vec<String> = m_e.iter().map(|entry| hex::encode(&entry.vc_tx)).collect();
+        let transactions: Vec<String> = m_e.iter().map(Self::format_hotstuff_transaction).collect();
+        let tx_ids: Vec<u64> = m_e.iter().filter_map(Self::extract_tx_id).collect();
 
         // Line 46: Push transactions to HotStuff
         if let Some(adapter) = &self.hotstuff_adapter {
             if !transactions.is_empty() {
                 adapter.output_to_hotstuff(transactions.clone(), epoch);
             }
+        }
+
+        if !tx_ids.is_empty() {
+            if let Err(e) = self.event_tx.send(SystemEvent::SmrolOrderingCompleted {
+                tx_ids: tx_ids.clone(),
+            }) {
+                warn!(
+                    "[Consensus] node={} failed to notify SMROL ordering completion: {}",
+                    self.process_id, e
+                );
+            } else {
+                debug!(
+                    "[Consensus] node={} epoch={} emitted SMROL ordering for {:?}",
+                    self.process_id, epoch, tx_ids
+                );
+            }
+        }
+        for tx in transactions.clone() {
+            debug!(
+                // smrol 传递 tx 给 hotstuff adapter
+                "[Consensus] 🚀 node={} epoch={} pushed transaction {} to HotStuff",
+                self.process_id, epoch, tx
+            );
         }
         let message = SmrolMessage::ConsensusProposal {
             epoch,
@@ -532,6 +561,36 @@ impl Consensus {
         digest.into()
     }
 
+    fn format_hotstuff_transaction(entry: &TransactionEntry) -> String {
+        if let Ok(tx) = bincode::deserialize::<SmrolTransaction>(&entry.payload) {
+            tx.to_hotstuff_format(entry.s_tx)
+        } else {
+            format!(
+                "{}:{}",
+                entry.s_tx,
+                hex::encode(&entry.vc_tx[..std::cmp::min(8, entry.vc_tx.len())])
+            )
+        }
+    }
+
+    fn extract_tx_id(entry: &TransactionEntry) -> Option<u64> {
+        if let Ok(tx) = bincode::deserialize::<SmrolTransaction>(&entry.payload) {
+            Some(tx.id)
+        } else if let Ok(text) = std::str::from_utf8(&entry.payload) {
+            // try to parse from plain text formats like "smrol:seq:id:..." or "id:from->to"
+            let parts: Vec<&str> = text.split(':').collect();
+            if parts.len() >= 3 && parts[0] == "smrol" {
+                return parts[2].parse().ok();
+            }
+            if !parts.is_empty() {
+                return parts[0].parse().ok();
+            }
+            None
+        } else {
+            None
+        }
+    }
+
     fn now_millis() -> u64 {
         std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
@@ -577,6 +636,7 @@ mod tests {
             Arc::clone(&network),
             signing_key.clone(),
         )));
+        let (event_tx, _event_rx) = broadcast::channel(16);
 
         Consensus::new(
             process_id,
@@ -586,6 +646,7 @@ mod tests {
             signing_key,
             verifying_keys,
             finalization,
+            event_tx,
         )
     }
 
@@ -606,6 +667,7 @@ mod tests {
             vc_tx: b"test_vc".to_vec(),
             s_tx: 123,
             sigma: b"test_sig".to_vec(),
+            payload: Vec::new(),
         };
 
         consensus.add_to_mi(1, entry);

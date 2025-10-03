@@ -28,7 +28,9 @@ impl SmrolHotStuffAdapter {
         if let Some(ref queue) = self.hotstuff_queue {
             let count = transactions.len();
             for tx in transactions {
-                queue.push(format!("smrol:{}:{}", epoch, tx));
+                // adapter从smrol获取交易push到hotstuff队列
+                // queue.push(format!("smrol:{}:{}", epoch, tx)); // 不需要重复添加前缀
+                queue.push(tx);
             }
             info!(
                 "📤 [SMROL→HotStuff] delivered {} transactions for epoch {}",

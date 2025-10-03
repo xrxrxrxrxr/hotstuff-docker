@@ -1,6 +1,6 @@
 use crate::smrol::{
     consensus::{SequenceEntry, TransactionEntry},
-    message::SmrolMessage,
+    message::{SmrolMessage, SmrolTransaction},
     network::SmrolTcpNetwork,
 };
 use ed25519_dalek::SigningKey;
@@ -86,7 +86,7 @@ impl OutputFinalization {
         }
 
         // Lines 75-82: Extract and deliver transactions
-        self.extract_and_deliver(epoch, &m_e_prime).await?;
+        self.extract_and_deliver(epoch, &m_e).await?;
 
         let finalized = self.final_ledger.get(&epoch).cloned().unwrap_or_default();
 
@@ -140,8 +140,8 @@ impl OutputFinalization {
         let final_entries = self.final_ledger.entry(epoch).or_default();
 
         // Line 74: Insert Value[vc_tx_k'] in correct position
-        let tx_data = String::from_utf8_lossy(&entry.vc_tx).to_string();
-        final_entries.push(format!("{}:{}", s_tx_prime, tx_data));
+        let formatted = Self::format_transaction_entry(entry, s_tx_prime);
+        final_entries.push(formatted);
         final_entries.sort();
 
         Ok(())
@@ -151,58 +151,50 @@ impl OutputFinalization {
     async fn extract_and_deliver(
         &mut self,
         epoch: u64,
-        m_e_prime: &[Vec<u8>],
+        entries: &[TransactionEntry],
     ) -> Result<(), String> {
-        for vc_tx in m_e_prime {
-            // Line 76-77: Check if transaction received
-            if !self.transaction_received(vc_tx) {
-                self.call_help_value(vc_tx).await?;
+        for entry in entries {
+            if !self.transaction_received(&entry.vc_tx) {
+                self.call_help_value(&entry.vc_tx).await?;
             }
 
-            // Line 78-79: Wait and extract transaction
-            let tx_data = self.wait_and_extract_transaction(vc_tx).await?;
-
-            // Line 79: FinalLedger[e][k] ← tx_k
             let final_entries = self.final_ledger.entry(epoch).or_default();
-            final_entries.push(tx_data);
+            final_entries.push(Self::format_transaction_entry(entry, entry.s_tx));
         }
 
-        // Line 80-81: Update Mi and VCLedger
-        for vc_tx in m_e_prime {
+        for entry in entries {
             self.mi
                 .entry(epoch)
                 .or_default()
-                .retain(|entry| &entry.vc_tx != vc_tx);
-            self.vc_ledger.insert(vc_tx.clone());
+                .retain(|pending| pending.vc_tx != entry.vc_tx);
+            self.vc_ledger.insert(entry.vc_tx.clone());
         }
 
-        // Line 82: SMROL-delivery
         self.smrol_delivery(epoch).await
     }
 
-    // Helper: Check if transaction data received
-    fn transaction_received(&self, vc_tx: &[u8]) -> bool {
-        // Simplified: assume we have the transaction if VC exists
+    fn format_transaction_entry(entry: &TransactionEntry, sequence: u64) -> String {
+        if let Ok(tx) = bincode::deserialize::<SmrolTransaction>(&entry.payload) {
+            tx.to_hotstuff_format(sequence)
+        } else {
+            format!(
+                "{}:{}",
+                sequence,
+                hex::encode(&entry.vc_tx[..std::cmp::min(8, entry.vc_tx.len())])
+            )
+        }
+    }
+
+    fn transaction_received(&self, _vc_tx: &[u8]) -> bool {
         true
     }
 
-    // Helper: Call help mechanism (Algorithm 5 reference)
     async fn call_help_value(&self, vc_tx: &[u8]) -> Result<(), String> {
         debug!(
             "🆘 [Finalization] Requesting help for VC: {}",
             hex::encode(vc_tx)
         );
-        // Implementation would trigger help protocol
         Ok(())
-    }
-
-    // Helper: Wait and extract transaction
-    async fn wait_and_extract_transaction(&self, vc_tx: &[u8]) -> Result<String, String> {
-        // Convert VC to transaction data (simplified)
-        Ok(format!(
-            "tx_{}",
-            hex::encode(&vc_tx[0..std::cmp::min(8, vc_tx.len())])
-        ))
     }
 
     // Helper: Get pending entries for epoch

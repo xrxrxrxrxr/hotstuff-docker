@@ -1,7 +1,7 @@
 // hotstuff_runner/src/app.rs - 无锁版本
 use borsh::BorshSerialize;
 use crossbeam::channel::{Receiver, TryRecvError};
-use crossbeam::queue::SegQueue;
+use crossbeam::queue::{self, SegQueue};
 use hotstuff_rs::{
     app::{
         App, ProduceBlockRequest, ProduceBlockResponse, ValidateBlockRequest, ValidateBlockResponse,
@@ -101,6 +101,12 @@ impl<K: KVStore> App<K> for TestApp {
             "Node {} [produce_block] 当前队列大小: {}, 本区块将尝试获取最多 {} 个交易",
             self.node_id, queue_size, actual_max
         );
+        if queue_size != 0 {
+            warn!(
+                "Node {} [produce_block] 当前队列大小: {}, 本区块将尝试获取最多 {} 个交易",
+                self.node_id, queue_size, actual_max
+            );
+        }
 
         if actual_max > 0 {
             transactions.reserve(actual_max); // 预分配容量
@@ -108,7 +114,7 @@ impl<K: KVStore> App<K> for TestApp {
             // 使用更紧凑的循环
             while transactions.len() < max_tx_count {
                 if let Some(tx) = self.tx_queue.pop() {
-                    debug!(
+                    warn!(
                         "Node {} [produce_block] 🔨 从队列获取交易: {}",
                         self.node_id, &tx
                     );

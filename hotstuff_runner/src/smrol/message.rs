@@ -102,4 +102,11 @@ impl SmrolTransaction {
             final_sequence, self.id, self.from, self.to, self.amount
         )
     }
+    // 不带final sequence
+    // pub fn to_hotstuff_format(&self, final_sequence: u64) -> String {
+    //     format!(
+    //         "smrol:{}:{}->{}:{}",
+    //         self.id, self.from, self.to, self.amount
+    //     )
+    // }
 }

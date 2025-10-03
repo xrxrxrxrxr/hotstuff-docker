@@ -75,7 +75,7 @@ impl SmrolThresholdSig {
 
     pub fn add_share(&mut self, node_id: usize, share_bytes: Vec<u8>) -> bool {
         self.shares.entry(node_id).or_insert(share_bytes);
-        self.shares.len() >= self.threshold
+        self.shares.len() == self.threshold
     }
 
     pub fn combine(&self) -> Result<Vec<u8>, String> {

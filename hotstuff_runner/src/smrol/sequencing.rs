@@ -80,6 +80,7 @@ pub struct TransactionSequencing {
     pub erasure_store: HashMap<Vec<u8>, ErasurePackage>,
     pub tx_sequence_map: HashMap<Vec<u8>, u64>,
     pub originated_vcs: HashSet<Vec<u8>>,
+    pub pending_seq_finals: HashMap<Vec<u8>, Vec<SeqFinal>>,
 }
 
 impl TransactionSequencing {
@@ -111,16 +112,17 @@ impl TransactionSequencing {
             erasure_store: HashMap::new(),
             tx_sequence_map: HashMap::new(),
             originated_vcs: HashSet::new(),
+            pending_seq_finals: HashMap::new(),
         }
     }
 
     // Function SMROL-broadcast(k, tx) - Line 1-3
     pub async fn smrol_broadcast(&mut self, tx: SmrolTransaction) -> Result<(), String> {
-        let s = self.seq_i; // Get current sequence number k
-        self.seq_i += 1;
+        let s = self.k; // Get current sequence number k
+        self.k += 1;
 
         debug!(
-            "🚀 [Sequencing] node={} broadcast seq_num={} tx_id={}",
+            "🚀 [Sequencing] node={} generate SEQ-REQUEST (k={}, tx_id={})",
             self.process_id, s, tx.id
         );
 
@@ -139,20 +141,20 @@ impl TransactionSequencing {
         &mut self,
         sender: usize,
         req: SeqRequest,
-    ) -> Result<(), String> {
+    ) -> Result<Option<TransactionEntry>, String> {
         debug!(
-            "📥 [Sequencing] 收到来自 {} 的SEQ-REQUEST, seq_num: {}",
+            "📥 [Sequencing] Line 2:4: 收到来自 {} 的SEQ-REQUEST, seq_num: {}",
             sender, req.seq_num
         );
 
         // Avoid downgrade attack (Line 5)
         if !self.wait_for_log_condition(sender, req.seq_num).await {
             warn!("❌ [Sequencing] Log condition verification failed");
-            return Ok(());
+            return Ok(None);
         }
 
         debug!(
-            "✅ [Sequencing] Log condition verified for SEQ-REQUEST from {} with seq_num {}. Continue to Line 12-14",
+            "✅ [Sequencing] Line 2:5: Log condition verified for SEQ-REQUEST from {} with seq_num {}. Continue to Line 12-14",
             sender, req.seq_num
         );
 
@@ -177,7 +179,7 @@ impl TransactionSequencing {
         };
 
         debug!(
-            "🧮 [Sequencing] node={} assigned sequence {} for vc={} (req_seq={} from {})",
+            "🧮 [Sequencing] Line 2:7-11 node={} assigned sequence {} for vc={} (req_seq={} from {})",
             self.process_id,
             s,
             hex::encode(&vc_tx[..std::cmp::min(8, vc_tx.len())]),
@@ -207,8 +209,8 @@ impl TransactionSequencing {
                 warn!("❌ [Sequencing] PNFIFO broadcast failed: {}", err);
             } else {
                 debug!(
-                    "📡 [Sequencing] node={} forwarded vc to PNFIFO slot {}",
-                    process_id, slot_for_pnfifo
+                    "📡 [Sequencing] Line 2:15 node={} forwarded sequence {} vc to PNFIFO slot {}",
+                    process_id, s, slot_for_pnfifo
                 );
             }
         });
@@ -222,13 +224,25 @@ impl TransactionSequencing {
             .to_vec();
 
         let response = SeqResponse {
-            vc: vc_tx,
+            vc: vc_tx.clone(),
             s,
             sigma,
         };
         self.network.multicast_seq_response(response).await?;
 
-        Ok(())
+        // Check if we have deferred FINAL messages waiting for this vc
+        let mut finalized_entry: Option<TransactionEntry> = None;
+        if let Some(mut pending_finals) = self.pending_seq_finals.remove(&vc_tx) {
+            // process in arrival order
+            for final_msg in pending_finals.drain(..) {
+                if let Some(entry) = self.finalize_ready_final(final_msg) {
+                    finalized_entry = Some(entry);
+                    break;
+                }
+            }
+        }
+
+        Ok(finalized_entry)
     }
 
     // Handle SEQ-RESPONSE message - Lines 18-23
@@ -237,9 +251,11 @@ impl TransactionSequencing {
         sender: usize,
         resp: SeqResponse,
     ) -> Result<(), String> {
-
         if self.originated_vcs.contains(&resp.vc) {
-            debug!("📥 [Sequencing] 收到来自 Node {} 的SEQ-RESPONSE as leader", sender);
+            debug!(
+                "📥 [Sequencing] 收到来自 Node {} 的SEQ-RESPONSE as leader",
+                sender
+            );
             // Original SEQ-REQUEST sender collects sequence responses (Algorithm 2, line 19)
             if self.verify_signature(&resp, sender)? {
                 // Collect sequence numbers for tx (Line 21)
@@ -388,7 +404,6 @@ impl TransactionSequencing {
         debug!("📥 [Sequencing] 收到SEQ-FINAL消息");
 
         if self.verify_combined_signature(&final_msg)? {
-            // line 36
             let (in_vc_ledger, in_mi) = {
                 let finalization = self.finalization.lock().await;
                 (
@@ -397,33 +412,23 @@ impl TransactionSequencing {
                 )
             };
 
-            if !in_vc_ledger && !in_mi {
-                // Retain local bookkeeping for Algorithm 3's Mi set.
-                self.add_to_mi(&final_msg.vc, &final_msg.s_tx);
-
-                let entry = TransactionEntry {
-                    vc_tx: final_msg.vc.clone(),
-                    s_tx: final_msg.s_tx,
-                    sigma: final_msg.sigma.clone(),
-                };
-
-                info!(
-                    "✅ [Sequencing] Finalized VC forwarded to consensus: vc_len={}, s_tx={}",
-                    entry.vc_tx.len(),
-                    entry.s_tx
-                );
+            if in_vc_ledger || in_mi {
                 debug!(
-                    "🎯 [Sequencing] node={} finalizing vc={} s_tx={} (ledger dup? {} / {})",
-                    self.process_id,
-                    hex::encode(&entry.vc_tx[..std::cmp::min(8, entry.vc_tx.len())]),
-                    entry.s_tx,
-                    in_vc_ledger,
-                    in_mi
+                    "ℹ️ [Sequencing] SEQ-FINAL vc={} already finalized, ignoring",
+                    hex::encode(&final_msg.vc[..std::cmp::min(8, final_msg.vc.len())])
                 );
-                return Ok(Some(entry));
+                return Ok(None);
             }
+
+            if !self.pending_txs.contains_key(&final_msg.vc) {
+                self.store_pending_final(final_msg);
+                return Ok(None);
+            }
+
+            Ok(self.finalize_ready_final(final_msg))
+        } else {
+            Ok(None)
         }
-        Ok(None)
     }
 
     // Helper functions
@@ -448,7 +453,7 @@ impl TransactionSequencing {
         let target_slot = seq_num - 1;
         let mut attempts: u64 = 0;
         debug!(
-            "⏱️ [Sequencing] Waiting for log condition: leader {}, target_slot {}",
+            "⏱️ [Sequencing] Checking log condition: leader {}, target_slot {}",
             leader_id, target_slot
         );
         loop {
@@ -460,26 +465,25 @@ impl TransactionSequencing {
             {
                 if attempts == 0 {
                     debug!(
-                        "⏱️ [Sequencing] wait_for_log_condition satisfied for leader {} slot {}",
+                        "⏱️ [Sequencing] Line 5 log_condition satisfied for leader {} slot {}",
                         leader_id, target_slot
                     );
                     return true;
                 }
                 if attempts > 0 {
                     debug!(
-                        "⏱️ [Sequencing] wait_for_log_condition satisfied after {} checks for leader {} slot {}",
+                        "⏱️ [Sequencing] Line 5 log_condition satisfied after {} checks for leader {} slot {}",
                         attempts,
                         leader_id,
                         target_slot
                     );
                     return true;
                 }
-                // return true;
             }
             attempts = attempts.saturating_add(1);
             if attempts % 100 == 0 {
                 debug!(
-                    "⏳ [Sequencing] Node {} still waiting for leader {} slot {} after {} checks",
+                    "⏳ [Sequencing] Node {} still has no LOG_{}[{}] after {} checks",
                     self.process_id, leader_id, target_slot, attempts
                 );
             }
@@ -643,8 +647,7 @@ impl TransactionSequencing {
                     seq_num: sequence_number,
                     tx: Transaction { payload },
                 };
-                self.handle_seq_request(sender_id, req).await?;
-                Ok(None)
+                self.handle_seq_request(sender_id, req).await
             }
             SmrolMessage::SeqResponse {
                 vc,
@@ -708,6 +711,63 @@ impl TransactionSequencing {
                 Ok(None)
             }
         }
+    }
+
+    fn store_pending_final(&mut self, final_msg: SeqFinal) {
+        debug!(
+            "⏳ [Sequencing] node={} 缓存SEQ-FINAL等待载荷: vc={} s_tx={}",
+            self.process_id,
+            hex::encode(&final_msg.vc[..std::cmp::min(8, final_msg.vc.len())]),
+            final_msg.s_tx
+        );
+        self.pending_seq_finals
+            .entry(final_msg.vc.clone())
+            .or_default()
+            .push(final_msg);
+    }
+
+    fn finalize_ready_final(&mut self, final_msg: SeqFinal) -> Option<TransactionEntry> {
+        if !self.pending_txs.contains_key(&final_msg.vc) {
+            // 事务尚未就绪，重新缓存等待
+            self.store_pending_final(final_msg);
+            return None;
+        }
+
+        self.add_to_mi(&final_msg.vc, &final_msg.s_tx);
+
+        let payload = if let Some(tx) = self.pending_txs.remove(&final_msg.vc) {
+            tx.payload
+        } else if let Some(bytes) = self
+            .erasure_store
+            .get(&final_msg.vc)
+            .and_then(|pkg| pkg.reconstruct_full().ok())
+        {
+            bytes
+        } else {
+            self.store_pending_final(final_msg);
+            return None;
+        };
+
+        let entry = TransactionEntry {
+            vc_tx: final_msg.vc.clone(),
+            s_tx: final_msg.s_tx,
+            sigma: final_msg.sigma.clone(),
+            payload,
+        };
+
+        info!(
+            "✅ [Sequencing] Finalized VC forwarded to consensus: vc_len={}, s_tx={}",
+            entry.vc_tx.len(),
+            entry.s_tx
+        );
+        debug!(
+            "🎯 [Sequencing] node={} finalizing vc={} s_tx={}",
+            self.process_id,
+            hex::encode(&entry.vc_tx[..std::cmp::min(8, entry.vc_tx.len())]),
+            entry.s_tx
+        );
+
+        Some(entry)
     }
 
     /// 启动消息处理循环 - 从网络层的sequencing_rx接收消息
@@ -849,6 +909,7 @@ mod tests {
         let result = sequencer.handle_seq_request(1, req).await;
 
         assert!(result.is_ok());
+        assert!(result.unwrap().is_none());
         assert_eq!(sequencer.seq_i, initial_seq + 1);
         assert_eq!(sequencer.buf.len(), 1);
         assert_eq!(sequencer.pending_txs.len(), 1);
@@ -931,6 +992,7 @@ mod tests {
         };
         let result = sequencer.handle_seq_request(1, req).await;
         assert!(result.is_ok());
+        assert!(result.unwrap().is_none());
         assert_eq!(sequencer.buf.len(), 1);
 
         println!("✓ Complete sequencing flow executed successfully");

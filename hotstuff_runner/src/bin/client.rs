@@ -15,6 +15,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
+use tokio::sync::Mutex;
 use tracing::{error, info, warn};
 use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 
@@ -62,6 +63,7 @@ pub struct StatsReporter {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum ResponseCommand {
     Ordering1Response { tx_ids: Vec<u64> },
+    SmrolOrderingResponse { tx_ids: Vec<u64> },
     HotStuffCommitted { tx_ids: Vec<u64> },
     Error { tx_ids: Vec<u64>, error_msg: String },
 }
@@ -81,7 +83,7 @@ impl LatencyTracker {
         self.send_timestamps.insert(tx_id, Instant::now());
     }
 
-    // 🔥 修改：支持批量处理 ordering 响应
+    //  修改：支持批量处理 ordering 响应
     pub fn handle_ordering_response(&mut self, tx_ids: Vec<u64>) {
         for tx_id in tx_ids {
             // 只记录第一次
@@ -98,7 +100,7 @@ impl LatencyTracker {
         }
     }
 
-    // 🔥 修改：支持批量处理 consensus 响应
+    //  修改：支持批量处理 consensus 响应
     pub fn handle_consensus_response(&mut self, tx_ids: Vec<u64>) {
         for tx_id in tx_ids {
             if self.consensus_recorded.contains(&tx_id) {
@@ -236,9 +238,6 @@ pub enum ClientCommand {
         transactions: Vec<TestTransaction>,
         reply_tx: tokio::sync::oneshot::Sender<Result<usize, Box<dyn std::error::Error + Send>>>,
     },
-    RecordSendTimes {
-        tx_ids: Vec<u64>,
-    },
     PrintStats,
     GetConnectionCount {
         reply_tx: tokio::sync::oneshot::Sender<usize>,
@@ -338,7 +337,7 @@ impl ClientNode {
         config: LoadTestConfig,
         node_least_id: usize,
         node_num: usize,
-        cmd_tx: tokio::sync::mpsc::UnboundedSender<ClientCommand>,
+        latency_tracker: Arc<Mutex<LatencyTracker>>,
     ) {
         info!(
             "🚀 开始负载测试 - TPS目标: {}, 持续时间: {}秒",
@@ -363,13 +362,19 @@ impl ClientNode {
         let mut batch_counter = 0;
 
         while Instant::now() < end_time {
-            for node_offset in 0..node_num {
-                let node_id = node_least_id + node_offset;
+            // for node_offset in 0..node_num {// 🔥🔥 调试修改点
+                // let node_id = node_least_id + node_offset;
+                let node_id = node_least_id; // 🔥🔥 调试修改点：只发给第一个节点
                 let transactions = self.tx_generator.generate_batch(batch_size as usize);
 
                 // 先通知延迟跟踪器记录发送时间
                 let tx_ids: Vec<u64> = transactions.iter().map(|tx| tx.id).collect();
-                let _ = cmd_tx.send(ClientCommand::RecordSendTimes { tx_ids });
+                {
+                    let mut tracker = latency_tracker.lock().await;
+                    for tx_id in &tx_ids {
+                        tracker.record_send_time(*tx_id);
+                    }
+                }
 
                 match self.send_batch_to_node(node_id, transactions).await {
                     Ok(sent_count) => {
@@ -390,7 +395,7 @@ impl ClientNode {
                         );
                     }
                 }
-            }
+            // }
 
             batch_counter += 1;
 
@@ -398,7 +403,9 @@ impl ClientNode {
                 self.stats.log_summary();
             }
 
-            tokio::time::sleep(batch_interval).await;
+            // tokio::time::sleep(batch_interval).await;
+            // 🔥🔥 调试修改点：120秒一个交易
+            tokio::time::sleep(Duration::from_secs(120)).await;
         }
 
         info!("🏁 负载测试完成，总计发送 {} 个交易", total_sent);
@@ -409,7 +416,7 @@ impl ClientNode {
         &mut self,
         node_least_id: usize,
         node_num: usize,
-        cmd_tx: tokio::sync::mpsc::UnboundedSender<ClientCommand>,
+        latency_tracker: Arc<Mutex<LatencyTracker>>,
     ) {
         info!("🎮 进入交互模式");
 
@@ -422,7 +429,12 @@ impl ClientNode {
 
             // 先通知延迟跟踪器记录发送时间
             let tx_ids: Vec<u64> = transactions.iter().map(|tx| tx.id).collect();
-            let _ = cmd_tx.send(ClientCommand::RecordSendTimes { tx_ids });
+            {
+                let mut tracker = latency_tracker.lock().await;
+                for tx_id in &tx_ids {
+                    tracker.record_send_time(*tx_id);
+                }
+            }
 
             match self.send_batch_to_node(target_node, transactions).await {
                 Ok(sent_count) => {
@@ -735,13 +747,13 @@ async fn handle_node_responses(
                 let mut message_buf = vec![0u8; message_length];
                 read_half.read_exact(&mut message_buf).await?;
 
-                // 🔥 解析响应消息，支持批量 tx_ids
+                //  解析响应消息，支持批量 tx_ids
                 if let Ok(response_json) = serde_json::from_slice::<serde_json::Value>(&message_buf)
                 {
                     if let Some(message_type) =
                         response_json.get("message_type").and_then(|v| v.as_str())
                     {
-                        // 🔥 支持单个 tx_id 或 tx_ids 数组
+                        //  支持单个 tx_id 或 tx_ids 数组
                         let tx_ids = if let Some(tx_ids_array) = response_json.get("tx_ids") {
                             // 批量交易 ID
                             serde_json::from_value::<Vec<u64>>(tx_ids_array.clone())
@@ -766,6 +778,9 @@ async fn handle_node_responses(
                         let response_cmd = match message_type {
                             "pompe_ordering1_response" => {
                                 ResponseCommand::Ordering1Response { tx_ids }
+                            }
+                            "smrol_ordering_response" => {
+                                ResponseCommand::SmrolOrderingResponse { tx_ids }
                             }
                             // "smrol_ordering1_response" => {
                             //     ResponseCommand::Ordering1Response { tx_ids }
@@ -825,55 +840,59 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let (cmd_tx, mut cmd_rx) = tokio::sync::mpsc::unbounded_channel::<ClientCommand>();
     let (response_tx, mut response_rx) = tokio::sync::mpsc::unbounded_channel::<ResponseCommand>();
 
+    let latency_tracker = Arc::new(Mutex::new(LatencyTracker::new()));
+
     // 启动延迟跟踪器任务
-    let latency_cmd_tx = cmd_tx.clone();
-    tokio::spawn(async move {
-        let mut latency_tracker = LatencyTracker::new();
-        let mut stats_reporter = StatsReporter::new();
+    {
+        let tracker = Arc::clone(&latency_tracker);
+        tokio::spawn(async move {
+            let mut cmd_rx = cmd_rx;
+            let mut response_rx = response_rx;
+            let mut stats_reporter = StatsReporter::new();
 
-        loop {
-            tokio::select! {
-                Some(cmd) = cmd_rx.recv() => {
-                    match cmd {
-                        ClientCommand::RecordSendTimes { tx_ids } => {
-                            for tx_id in tx_ids {
-                                latency_tracker.record_send_time(tx_id);
+            loop {
+                tokio::select! {
+                    Some(cmd) = cmd_rx.recv() => {
+                        match cmd {
+                            ClientCommand::PrintStats => {
+                                let tracker_guard = tracker.lock().await;
+                                tracker_guard.print_comprehensive_stats();
                             }
-                        }
-                        ClientCommand::PrintStats => {
-                            latency_tracker.print_comprehensive_stats();
-                        }
-                        _ => {} // 其他命令由主任务处理
-                    }
-                }
-                Some(response_cmd) = response_rx.recv() => {
-                    match response_cmd {
-                        // 🔥 修改：处理批量 ordering 响应
-                        ResponseCommand::Ordering1Response { tx_ids } => {
-                            // info!("🎉 收到 {} 个 Ordering1 响应 for {:?}", tx_ids.len(), tx_ids);
-                            latency_tracker.handle_ordering_response(tx_ids);
-                        }
-                        // 🔥 修改：处理批量 consensus 响应
-                        ResponseCommand::HotStuffCommitted { tx_ids } => {
-                            // info!("🎉 收到 {} 个 Consensus 响应", tx_ids.len());
-                            latency_tracker.handle_consensus_response(tx_ids);
-                        }
-                        ResponseCommand::Error { tx_ids, error_msg } => {
-                            error!("❌ {} 个交易处理失败: {}", tx_ids.len(), error_msg);
-                            for tx_id in tx_ids {
-                                error!("❌ 交易 {} 失败", tx_id);
-                            }
+                            _ => {} // 其他命令由主任务处理
                         }
                     }
+                    Some(response_cmd) = response_rx.recv() => {
+                        {
+                            let mut tracker_guard = tracker.lock().await;
+                            match response_cmd {
+                                ResponseCommand::Ordering1Response { tx_ids } => {
+                                    tracker_guard.handle_ordering_response(tx_ids);
+                                }
+                                ResponseCommand::SmrolOrderingResponse { tx_ids } => {
+                                    tracker_guard.handle_ordering_response(tx_ids);
+                                }
+                                ResponseCommand::HotStuffCommitted { tx_ids } => {
+                                    tracker_guard.handle_consensus_response(tx_ids);
+                                }
+                                ResponseCommand::Error { tx_ids, error_msg } => {
+                                    error!("❌ {} 个交易处理失败: {}", tx_ids.len(), error_msg);
+                                    for tx_id in tx_ids {
+                                        error!("❌ 交易 {} 失败", tx_id);
+                                    }
+                                }
+                            }
+                        }
 
-                    stats_reporter.record_response();
-                    if stats_reporter.should_print_stats() {
-                        latency_tracker.print_comprehensive_stats();
+                        stats_reporter.record_response();
+                        if stats_reporter.should_print_stats() {
+                            let tracker_guard = tracker.lock().await;
+                            tracker_guard.print_comprehensive_stats();
+                        }
                     }
                 }
             }
-        }
-    });
+        });
+    }
 
     // 创建并启动客户端核心
     let mut client_core = ClientNode::new(client_id);
@@ -910,7 +929,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             };
 
             client_core
-                .run_load_test(config, node_least_id, node_num, cmd_tx.clone())
+                .run_load_test(
+                    config,
+                    node_least_id,
+                    node_num,
+                    Arc::clone(&latency_tracker),
+                )
                 .await;
 
             info!("✅ 负载测试完成，等待响应处理...");
@@ -922,7 +946,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         _ => {
             client_core
-                .run_interactive_mode(node_least_id, node_num, cmd_tx.clone())
+                .run_interactive_mode(node_least_id, node_num, Arc::clone(&latency_tracker))
                 .await;
         }
     }

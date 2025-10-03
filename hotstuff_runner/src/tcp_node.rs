@@ -251,14 +251,6 @@ impl Node {
                                 )
                             };
 
-                            
-                            // 主要的统计日志
-                            let msg = format!(
-                                "💎 Node {} Commit block - Height: {}, TxCount: {}, E2E_TPS: {:.2}, Pure_TPS: {:.2}, Submit_TPS: {:.2}, TotalTxs: {}, TotalBlocks: {}",
-                                node_id, height, tx_count, end_to_end_tps, pure_consensus_tps, submission_tps, total_confirmed_txs, total_confirmed_blocks
-                            );
-                            crate::log_node(node_id, log::Level::Info, &msg);
-
                             // 🔥 关键：发送 HotStuff 提交事件，触发客户端 Consensus 响应
                             // 提取交易 ID（关键：用于客户端响应）
                             // let extract_transaction_ids_from_block_start = Instant::now();
@@ -275,8 +267,15 @@ impl Node {
                                     error!("❌ Node {} 发送 HotStuff 提交事件失败: {}", node_id, e);
                                 }
                             }
-                            info!("[Event sent] Node {} HotStuffCommitted: block_height={}, tx_ids={:?}", node_id, height, tx_ids);
+                            info!("[Event sent] Node {} HotStuffCommitted: block_height={}, tx_ids.len= {}, tx_ids={:?}", node_id, height, tx_ids.len(), tx_ids);
                             // 🔥 关键：发送 HotStuff 提交事件，触发客户端 Consensus 响应
+
+                            // 主要的统计日志
+                            let msg = format!(
+                                "💎 Node {} Commit block - Height: {}, TxCount: {}, E2E_TPS: {:.2}, Pure_TPS: {:.2}, Submit_TPS: {:.2}, TotalTxs: {}, TotalBlocks: {}, tx_ids.len= {}",
+                                node_id, height, tx_count, end_to_end_tps, pure_consensus_tps, submission_tps, total_confirmed_txs, total_confirmed_blocks, tx_ids.len()
+                            );
+                            crate::log_node(node_id, log::Level::Info, &msg);
 
                             // 🎯 每10个区块显示详细分析
                             if total_confirmed_blocks % 10 == 0 {
@@ -601,6 +600,11 @@ fn parse_transaction_string(tx_str: &str) -> Option<u64> {
     // 格式1: pompe:timestamp:tx_id:from->to:amount
     let parts: Vec<&str> = trimmed.split(':').collect();
     if parts.len() >= 4 && parts[0] == "pompe" {
+        return parts[2].parse::<u64>().ok();
+    }
+
+    // 格式1b: smrol:final_sequence:tx_id:from->to:amount
+    if parts.len() >= 3 && parts[0] == "smrol" {
         return parts[2].parse::<u64>().ok();
     }
 

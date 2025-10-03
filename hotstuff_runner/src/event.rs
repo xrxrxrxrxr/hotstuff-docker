@@ -30,6 +30,11 @@ pub enum SystemEvent {
         // timestamp_us: u64,
     },
 
+    /// SMROL 共识层调用 HotStuff 前的 ordering 完成
+    SmrolOrderingCompleted {
+        tx_ids: Vec<u64>,
+    },
+
     /// HotStuff 区块提交完成
     HotStuffCommitted {
         block_height: u64,
@@ -59,6 +64,7 @@ pub enum SystemEvent {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum ResponseCommand {
     Ordering1Response { tx_ids: Vec<u64> },
+    SmrolOrderingResponse { tx_ids: Vec<u64> },
     HotStuffCommitted { tx_ids: Vec<u64> },
     Error { tx_ids: Vec<u64>, error_msg: String },
 }
