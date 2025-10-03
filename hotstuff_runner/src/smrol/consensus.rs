@@ -85,7 +85,7 @@ pub struct Consensus {
     pub process_id: usize,
     pub n: usize,
     pub f: usize,
-    pub k: usize,
+    pub capital_k: usize,
     pub network: Arc<SmrolTcpNetwork>,
     pub signing_key: SigningKey,
     pub verifying_keys: HashMap<usize, VerifyingKey>,
@@ -110,12 +110,13 @@ impl Consensus {
         finalization: Arc<Mutex<OutputFinalization>>,
         event_tx: broadcast::Sender<SystemEvent>,
     ) -> Self {
-        let k = std::cmp::max(1, 2 * f + 1);
+        // let k = std::cmp::max(1, 2 * f + 1);
+        let capital_k = 1; // 🔥🔥 文中 k=O(n)
         Self {
             process_id,
             n,
             f,
-            k,
+            capital_k,
             network,
             signing_key,
             verifying_keys,
@@ -183,7 +184,7 @@ impl Consensus {
         }
         self.mi
             .get(&epoch)
-            .map(|entries| entries.len() >= self.k)
+            .map(|entries| entries.len() >= self.capital_k)
             .unwrap_or(false)
     }
 
@@ -192,12 +193,12 @@ impl Consensus {
         epoch: u64,
     ) -> Result<(Vec<TransactionEntry>, Vec<SequenceEntry>, u64), String> {
         let mut entries = self.mi.get(&epoch).cloned().unwrap_or_default();
-        if entries.len() < self.k {
-            return Err(format!("M_i for epoch {} has < {} entries", epoch, self.k));
+        if entries.len() < self.capital_k {
+            return Err(format!("M_i for epoch {} has < {} entries", epoch, self.capital_k));
         }
 
         entries.sort_by_key(|entry| entry.s_tx);
-        let m_i_e: Vec<TransactionEntry> = entries.into_iter().take(self.k).collect();
+        let m_i_e: Vec<TransactionEntry> = entries.into_iter().take(self.capital_k).collect();
         let h_e = m_i_e.iter().map(|entry| entry.s_tx).max().unwrap_or(0);
 
         // Placeholder: in a full implementation, collect 2f+1 outputs from PNFIFO-BC.
@@ -228,7 +229,7 @@ impl Consensus {
         Ok((m_i_e, s_e, h_e))
     }
 
-    async fn invoke_consensus(
+    pub async fn invoke_consensus(
         &mut self,
         epoch: u64,
         m_e: Vec<TransactionEntry>, //m_i_e
@@ -300,7 +301,8 @@ impl Consensus {
             .insert(self.process_id, vote.vote_signature.clone());
 
         // Optimistically process the proposal locally.
-        self.handle_consensus_output(epoch, m_e, s_e).await
+        // self.handle_consensus_output(epoch, m_e, s_e).await
+        Ok(())
     }
 
     pub async fn handle_consensus_output(

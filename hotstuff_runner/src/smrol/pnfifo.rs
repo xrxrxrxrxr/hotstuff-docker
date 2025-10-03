@@ -9,7 +9,7 @@ use std::collections::{HashMap, HashSet};
 use std::net::SocketAddr;
 use std::sync::{atomic::AtomicU64, Arc};
 use tokio::{
-    sync::{RwLock, Semaphore},
+    sync::{Notify, RwLock, Semaphore},
     time::{sleep, Duration},
 };
 use tracing::{debug, error, info, warn};
@@ -61,6 +61,8 @@ pub struct PnfifoBc {
     current_slot: AtomicU64,
     slots: Arc<RwLock<HashMap<(usize, u64), PnfifoSlotState>>>,
     leader_flags: Arc<RwLock<HashMap<usize, bool>>>,
+    leader_flag_notifiers: Arc<RwLock<HashMap<usize, Arc<Notify>>>>,
+    slot_output_notifiers: Arc<RwLock<HashMap<(usize, u64), Arc<Notify>>>>,
 
     // 密码学
     signing_key: SigningKey,
@@ -94,8 +96,10 @@ impl PnfifoBc {
             .map_err(|e| format!("Failed to start PNFIFO network: {}", e))?;
 
         let mut leader_semaphores = HashMap::new();
+        let mut leader_flag_notifiers = HashMap::new();
         for &leader_id in verifying_keys.keys() {
             leader_semaphores.insert(leader_id, Arc::new(Semaphore::new(1)));
+            leader_flag_notifiers.insert(leader_id, Arc::new(Notify::new()));
         }
         Ok(Self {
             node_id,
@@ -106,6 +110,8 @@ impl PnfifoBc {
             leader_flags: Arc::new(RwLock::new(
                 verifying_keys.keys().map(|id| (*id, false)).collect(),
             )),
+            leader_flag_notifiers: Arc::new(RwLock::new(leader_flag_notifiers)),
+            slot_output_notifiers: Arc::new(RwLock::new(HashMap::new())),
             signing_key,
             verifying_keys,
             network,
@@ -115,6 +121,7 @@ impl PnfifoBc {
 
     async fn wait_for_flag_clear(
         leader_flags: &Arc<RwLock<HashMap<usize, bool>>>,
+        leader_flag_notifiers: &Arc<RwLock<HashMap<usize, Arc<Notify>>>>,
         leader_id: usize,
         slot: u64,
         node_id: usize,
@@ -126,7 +133,7 @@ impl PnfifoBc {
                 if !flags.get(&leader_id).copied().unwrap_or(false) {
                     if attempts > 0 {
                         debug!(
-                            "⏱️ [PNFIFO-BC] Node {} flag_{} at slot {} after {} checks",
+                            "⏱️ [PNFIFO-BC] Node {} flag_{} at slot {} cleared after {} waits",
                             node_id, leader_id, slot, attempts
                         );
                     }
@@ -136,22 +143,28 @@ impl PnfifoBc {
 
             if attempts == 0 {
                 debug!(
-                    "⏳ [PNFIFO-BC] Node {} wait flag_{} to become false at slot {}",
+                    "⏳ [PNFIFO-BC] Node {} waiting for flag_{} to become false at slot {}",
                     node_id, leader_id, slot
                 );
-            }
-
-            attempts += 1;
-            if attempts % 100 == 0 {
+            } else if attempts % 100 == 0 {
                 debug!(
-                    "⏳ [PNFIFO-BC] Node {} still waiting flag_{} to become false at slot {} after {} checks",
+                    "⏳ [PNFIFO-BC] Node {} still waiting flag_{} to become false at slot {} after {} notifications",
                     node_id,
                     leader_id,
                     slot,
                     attempts
                 );
             }
-            sleep(Duration::from_millis(10)).await;
+            attempts += 1;
+
+            let notifier = {
+                let mut map = leader_flag_notifiers.write().await;
+                Arc::clone(
+                    map.entry(leader_id)
+                        .or_insert_with(|| Arc::new(Notify::new())),
+                )
+            };
+            notifier.notified().await;
         }
     }
 
@@ -178,6 +191,8 @@ impl PnfifoBc {
         let signing_key = self.signing_key.clone();
         let network = Arc::clone(&self.network);
         let leader_flags = Arc::clone(&self.leader_flags);
+        let leader_flag_notifiers = Arc::clone(&self.leader_flag_notifiers);
+        let slot_output_notifiers = Arc::clone(&self.slot_output_notifiers);
         let leader_semaphores = Arc::clone(&self.leader_semaphores);
 
         tokio::spawn(async move {
@@ -203,6 +218,8 @@ impl PnfifoBc {
                             node_id,
                             &slots,
                             &leader_flags,
+                            &leader_flag_notifiers,
+                            &slot_output_notifiers,
                             &leader_semaphores,
                             threshold,
                             &verifying_keys,
@@ -227,6 +244,8 @@ impl PnfifoBc {
                             node_id,
                             &slots,
                             &leader_flags,
+                            &leader_flag_notifiers,
+                            &slot_output_notifiers,
                             threshold,
                             &verifying_keys,
                             &network,
@@ -251,6 +270,8 @@ impl PnfifoBc {
                             node_id,
                             &slots,
                             &leader_flags,
+                            &leader_flag_notifiers,
+                            &slot_output_notifiers,
                             threshold,
                             &verifying_keys,
                             leader_id,
@@ -354,6 +375,8 @@ impl PnfifoBc {
         node_id: usize,
         slots: &Arc<RwLock<HashMap<(usize, u64), PnfifoSlotState>>>,
         leader_flags: &Arc<RwLock<HashMap<usize, bool>>>,
+        leader_flag_notifiers: &Arc<RwLock<HashMap<usize, Arc<Notify>>>>,
+        slot_output_notifiers: &Arc<RwLock<HashMap<(usize, u64), Arc<Notify>>>>,
         leader_semaphores: &Arc<RwLock<HashMap<usize, Arc<Semaphore>>>>,
         threshold: usize,
         verifying_keys: &HashMap<usize, VerifyingKey>,
@@ -418,7 +441,14 @@ impl PnfifoBc {
             "🎫 [FIFO] Node {} acquired permit for Leader {} Slot {}",
             node_id, sender_id, slot
         );
-        PnfifoBc::wait_for_flag_clear(leader_flags, sender_id, slot, node_id).await;
+        PnfifoBc::wait_for_flag_clear(
+            leader_flags,
+            leader_flag_notifiers,
+            sender_id,
+            slot,
+            node_id,
+        )
+        .await;
 
         // ✅ Step 4: 处理新 proposal
         let mut vote_message: Option<SmrolMessage> = None;
@@ -501,6 +531,8 @@ impl PnfifoBc {
                 node_id,
                 slots,
                 leader_flags,
+                leader_flag_notifiers,
+                slot_output_notifiers,
                 threshold,
                 verifying_keys,
                 sender_id,
@@ -518,7 +550,9 @@ impl PnfifoBc {
     async fn handle_vote_static(
         node_id: usize,
         slots: &Arc<RwLock<HashMap<(usize, u64), PnfifoSlotState>>>,
-        _leader_flags: &Arc<RwLock<HashMap<usize, bool>>>,
+        leader_flags: &Arc<RwLock<HashMap<usize, bool>>>,
+        leader_flag_notifiers: &Arc<RwLock<HashMap<usize, Arc<Notify>>>>,
+        slot_output_notifiers: &Arc<RwLock<HashMap<(usize, u64), Arc<Notify>>>>,
         threshold: usize,
         verifying_keys: &HashMap<usize, VerifyingKey>,
         network: &Arc<SmrolTcpNetwork>,
@@ -725,6 +759,8 @@ impl PnfifoBc {
         node_id: usize,
         slots: &Arc<RwLock<HashMap<(usize, u64), PnfifoSlotState>>>,
         leader_flags: &Arc<RwLock<HashMap<usize, bool>>>,
+        leader_flag_notifiers: &Arc<RwLock<HashMap<usize, Arc<Notify>>>>,
+        slot_output_notifiers: &Arc<RwLock<HashMap<(usize, u64), Arc<Notify>>>>,
         threshold: usize,
         verifying_keys: &HashMap<usize, VerifyingKey>,
         leader_id: usize,
@@ -774,6 +810,8 @@ impl PnfifoBc {
             node_id,
             slots,
             leader_flags,
+            leader_flag_notifiers,
+            slot_output_notifiers,
             threshold,
             verifying_keys,
             leader_id,
@@ -788,6 +826,8 @@ impl PnfifoBc {
         node_id: usize,
         slots: &Arc<RwLock<HashMap<(usize, u64), PnfifoSlotState>>>,
         leader_flags: &Arc<RwLock<HashMap<usize, bool>>>,
+        leader_flag_notifiers: &Arc<RwLock<HashMap<usize, Arc<Notify>>>>,
+        slot_output_notifiers: &Arc<RwLock<HashMap<(usize, u64), Arc<Notify>>>>,
         threshold: usize,
         verifying_keys: &HashMap<usize, VerifyingKey>,
         leader_id: usize,
@@ -828,6 +868,7 @@ impl PnfifoBc {
                 if should_store {
                     PnfifoBc::store_output_static(
                         slots,
+                        slot_output_notifiers,
                         threshold,
                         leader_id,
                         slot,
@@ -839,6 +880,12 @@ impl PnfifoBc {
                     {
                         let mut flags = leader_flags.write().await;
                         flags.insert(leader_id, false);
+                    }
+                    if let Some(notifier) = {
+                        let map = leader_flag_notifiers.read().await;
+                        map.get(&leader_id).cloned()
+                    } {
+                        notifier.notify_waiters();
                     }
                     debug!(
                         "🇺🇳 [FLAG_s] Flag_{} set to {} at slot {} (final)",
@@ -869,6 +916,43 @@ impl PnfifoBc {
         slots
             .get(&(leader_id, slot))
             .and_then(|state| state.output.clone())
+    }
+
+    pub async fn wait_for_output(&self, leader_id: usize, slot: u64) {
+        let mut attempts: u64 = 0;
+        loop {
+            if self.get_output(leader_id, slot).await.is_some() {
+                if attempts > 0 {
+                    debug!(
+                        "⏱️ [PNFIFO-BC] Node {} observed output for leader {} slot {} after {} waits",
+                        self.node_id, leader_id, slot, attempts
+                    );
+                }
+                return;
+            }
+
+            if attempts == 0 {
+                debug!(
+                    "⏳ [PNFIFO-BC] Node {} waiting for output leader {} slot {}",
+                    self.node_id, leader_id, slot
+                );
+            } else if attempts % 100 == 0 {
+                debug!(
+                    "⏳ [PNFIFO-BC] Node {} still waiting for output leader {} slot {} after {} notifications",
+                    self.node_id, leader_id, slot, attempts
+                );
+            }
+            attempts += 1;
+
+            let notifier = {
+                let mut map = self.slot_output_notifiers.write().await;
+                Arc::clone(
+                    map.entry((leader_id, slot))
+                        .or_insert_with(|| Arc::new(Notify::new())),
+                )
+            };
+            notifier.notified().await;
+        }
     }
 
     // 谓词Q - 检查值是否有效 (简化实现)
@@ -910,6 +994,7 @@ impl PnfifoBc {
 
     async fn store_output_static(
         slots: &Arc<RwLock<HashMap<(usize, u64), PnfifoSlotState>>>,
+        slot_output_notifiers: &Arc<RwLock<HashMap<(usize, u64), Arc<Notify>>>>,
         threshold: usize,
         leader_id: usize,
         slot: u64,
@@ -920,12 +1005,23 @@ impl PnfifoBc {
             "🏁 [PNFIFO-BC] 存储 Leader {} slot {} 的输出",
             leader_id, slot
         );
-        let mut guard = slots.write().await;
-        let slot_state = guard
-            .entry((leader_id, slot))
-            .or_insert_with(|| PnfifoSlotState::new(threshold));
-        slot_state.output = Some((value, signature));
-        slot_state.final_received = true;
+        {
+            let mut guard = slots.write().await;
+            let slot_state = guard
+                .entry((leader_id, slot))
+                .or_insert_with(|| PnfifoSlotState::new(threshold));
+            slot_state.output = Some((value, signature));
+            slot_state.final_received = true;
+        }
+
+        let notifier = {
+            let mut map = slot_output_notifiers.write().await;
+            Arc::clone(
+                map.entry((leader_id, slot))
+                    .or_insert_with(|| Arc::new(Notify::new())),
+            )
+        };
+        notifier.notify_waiters();
     }
 
     // 获取统计信息

@@ -20,7 +20,7 @@ use tracing::{debug, error, info};
 pub struct SmrolConfig {
     pub enable: bool,
     pub f: usize,
-    pub k: usize,
+    pub capital_k: usize,
     pub epoch_timeout_ms: u64,
     pub pnfifo_threshold: usize,
 }
@@ -31,7 +31,7 @@ impl Default for SmrolConfig {
             enable: true,
             f: 1,
             // k: 3, // 🔥🔥 文中 k=O(n)
-            k: 1, // 🔥🔥 修改点
+            capital_k: 1, // 🔥🔥 修改点
             epoch_timeout_ms: 100,
             pnfifo_threshold: 3,
         }
@@ -246,7 +246,7 @@ impl SmrolManager {
 
     pub async fn should_invoke_consensus(&self, epoch: u64) -> bool {
         let consensus = self.consensus.lock().await;
-        consensus.get_mi_size(epoch) >= self.config.k
+        consensus.get_mi_size(epoch) >= self.config.capital_k
     }
 
     // line 38: take over sequenced transaction and add to Mi and finalization
@@ -268,8 +268,8 @@ impl SmrolManager {
         }
 
         debug!(
-            "🧮 [SMROL] 登记Sequencing输出: epoch={} vc_bytes={} s_tx={} pending={} threshold={}",
-            epoch, entry_meta.0, entry_meta.1, pending, self.config.k
+            "🧮 [SMROL] 登记Sequencing输出, add to M_i: epoch={} vc_bytes={} s_tx={} pending={} K={}",
+            epoch, entry_meta.0, entry_meta.1, pending, self.config.capital_k
         );
 
         if self.should_invoke_consensus(epoch).await {
@@ -305,10 +305,10 @@ pub fn load_smrol_config() -> SmrolConfig {
             .unwrap_or_else(|_| "1".to_string())
             .parse()
             .unwrap_or(1),
-        k: env::var("SMROL_K")
-            .unwrap_or_else(|_| "3".to_string())
+        capital_k: env::var("SMROL_K")
+            .unwrap_or_else(|_| "1".to_string())
             .parse()
-            .unwrap_or(3),
+            .unwrap_or(1),
         epoch_timeout_ms: env::var("SMROL_EPOCH_TIMEOUT_MS")
             .unwrap_or_else(|_| "100".to_string())
             .parse()

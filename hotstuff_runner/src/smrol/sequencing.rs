@@ -451,50 +451,16 @@ impl TransactionSequencing {
             return true;
         }
         let target_slot = seq_num - 1;
-        let mut attempts: u64 = 0;
         debug!(
             "⏱️ [Sequencing] Checking log condition: leader {}, target_slot {}",
             leader_id, target_slot
         );
-        loop {
-            if self
-                .pnfifo
-                .get_output(leader_id, target_slot)
-                .await
-                .is_some()
-            {
-                if attempts == 0 {
-                    debug!(
-                        "⏱️ [Sequencing] Line 5 log_condition satisfied for leader {} slot {}",
-                        leader_id, target_slot
-                    );
-                    return true;
-                }
-                if attempts > 0 {
-                    debug!(
-                        "⏱️ [Sequencing] Line 5 log_condition satisfied after {} checks for leader {} slot {}",
-                        attempts,
-                        leader_id,
-                        target_slot
-                    );
-                    return true;
-                }
-            }
-            attempts = attempts.saturating_add(1);
-            if attempts % 100 == 0 {
-                debug!(
-                    "⏳ [Sequencing] Node {} still has no LOG_{}[{}] after {} checks",
-                    self.process_id, leader_id, target_slot, attempts
-                );
-            }
-            sleep(Duration::from_millis(10)).await;
-        }
-        // Latency-simulation mode: skip strict dependency on prior PNFIFO outputs.
-        // The full SMROL algorithm would wait for the previous slot to finalize via
-        // `pnfifo.get_output`, but that stalls our reduced pipeline. Always allow
-        // progress so every transaction flows through sequencing immediately.
-        // let _ = (leader_id, seq_num); // silence unused warnings when compiled with lint checks
-        // true
+        self.pnfifo.wait_for_output(leader_id, target_slot).await;
+        debug!(
+            "⏱️ [Sequencing] Line 5 log_condition satisfied for leader {} slot {}",
+            leader_id, target_slot
+        );
+        true
     }
 
     fn verify_signature(&self, resp: &SeqResponse, sender: usize) -> Result<bool, String> {
@@ -785,14 +751,7 @@ impl TransactionSequencing {
             );
 
             match self.handle_smrol_message(sender_id, message).await {
-                Ok(Some(entry)) => {
-                    debug!(
-                        "[Sequencing] 自主消息循环产生共识输入 vc_len={} s_tx={}",
-                        entry.vc_tx.len(),
-                        entry.s_tx
-                    );
-                    // Manager-driven pipeline consumes these entries; here we just drop them.
-                }
+                Ok(Some(_entry)) => {}
                 Ok(None) => {}
                 Err(e) => error!("❌ [Sequencing] 处理消息失败: {}", e),
             }

@@ -1,295 +1,247 @@
-2025-10-03T04:21:37.219415Z  WARN ThreadId(01) hotstuff_runner::tcp_node: Node 3 视图超时设置为 700 ms
-2025-10-03T04:21:37.235773Z  INFO ThreadId(01) hotstuff_runner::smrol::pnfifo: 🔄 PNFIFO-BC Initialization: Node 3, threshold: 3/4
-2025-10-03T04:21:37.240306Z  INFO ThreadId(09) hotstuff_runner::smrol::pnfifo: 📡 [PNFIFO-BC] Node 3 启动网络消息监听器
-2025-10-03T04:21:37.240422Z  INFO ThreadId(01) hotstuff_runner::smrol::pnfifo: ✅ [PNFIFO-BC] Node 3 网络监听器已启动
-2025-10-03T04:21:37.244357Z  INFO ThreadId(01) hotstuff_runner::smrol::manager: ✅ [SMROL] PNFIFO自动启动完成
-2025-10-03T04:21:37.251056Z DEBUG ThreadId(01) hotstuff_runner::smrol::adapter: 🔗 [SMROL Adapter] Connected to HotStuff queue
-2025-10-03T04:21:37.251329Z  INFO ThreadId(01) hotstuff_runner::smrol::manager: 🔗 [SMROL] Connected to HotStuff adapter
-2025-10-03T04:21:37.251414Z  INFO ThreadId(01) hotstuff_runner::smrol::manager: 🔄 [SMROL] Message loop starting for node 3
-2025-10-03T04:21:37.251554Z  INFO ThreadId(01) hotstuff_runner::smrol::manager: ✅ [SMROL] 消息处理循环已启动
-2025-10-03T04:21:37.258992Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:21:40.931905Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 3 View 32 超时，可能导致延迟累积
-2025-10-03T04:21:42.259928Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:21:42.464288Z DEBUG ThreadId(02) hotstuff_runner::smrol::sequencing: 📥 [Sequencing] Line 2:4: 收到来自 0 的SEQ-REQUEST, seq_num: 1
-2025-10-03T04:21:42.464762Z DEBUG ThreadId(02) hotstuff_runner::smrol::sequencing: ✅ [Sequencing] Line 2:5: Log condition verified for SEQ-REQUEST from 0 with seq_num 1. Continue to Line 12-14
-2025-10-03T04:21:42.465892Z DEBUG ThreadId(02) hotstuff_runner::smrol::sequencing: 🧮 [Sequencing] Line 2:7-11 node=3 assigned sequence 1 for vc=951755881d92d207 (req_seq=1 from 0)
-2025-10-03T04:21:42.483078Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 📥 [PNFIFO-BC] Node 3 收到来自 0 的PROPOSAL, slot: 1
-2025-10-03T04:21:42.483832Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 🎫 [FIFO] Node 3 acquired permit for Leader 0 Slot 1
-2025-10-03T04:21:42.484104Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_0 set to true at slot 1 (proposal line 6)
-2025-10-03T04:21:42.484138Z  INFO ThreadId(02) hotstuff_runner::smrol::pnfifo: 📤 [PNFIFO-BC] Node 3 Broadcast Proposal for slot 1, length: 32 bytes
-2025-10-03T04:21:42.486225Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 VOTE for slot 1 leader 0
-2025-10-03T04:21:42.487202Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🧾 [PNFIFO-BC] Node 3 proposal payload=951755881d92d207 slot=1
-2025-10-03T04:21:42.488592Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: ✅ [PNFIFO-BC] Node 3 发起slot 1 PROPOSAL
-2025-10-03T04:21:42.488760Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: ✅ [PNFIFO-BC] Node 3 完成slot 1 PROPOSAL 广播
-2025-10-03T04:21:42.488941Z DEBUG ThreadId(02) hotstuff_runner::smrol::sequencing: 📡 [Sequencing] Line 2:15 node=3 forwarded sequence 1 vc to PNFIFO slot 1
-2025-10-03T04:21:42.488985Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 📥 [PNFIFO-BC] Node 3 收到来自 3 的PROPOSAL, slot: 1
-2025-10-03T04:21:42.489201Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 🎫 [FIFO] Node 3 acquired permit for Leader 3 Slot 1
-2025-10-03T04:21:42.490053Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_3 set to true at slot 1 (proposal line 6)
-2025-10-03T04:21:42.490229Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 VOTE for slot 1 leader 3
-2025-10-03T04:21:42.490360Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 📥 [PNFIFO-BC] Node 3 收到来自 2 的PROPOSAL, slot: 1
-2025-10-03T04:21:42.490477Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 🎫 [FIFO] Node 3 acquired permit for Leader 2 Slot 1
-2025-10-03T04:21:42.490945Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_2 set to true at slot 1 (proposal line 6)
-2025-10-03T04:21:42.491428Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 VOTE for slot 1 leader 2
-2025-10-03T04:21:42.491536Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 收到来自 3 的VOTE, slot: 1
-2025-10-03T04:21:42.491732Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: ✅ [PNFIFO-BC] Node 3 接受来自 3 的有效VOTE, 当前票数: 1/3
-2025-10-03T04:21:42.491880Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 🧩 [PNFIFO-BC] Node 3 slot 1 awaiting more votes (have 1 need 3)
-2025-10-03T04:21:42.491975Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 收到来自 2 的VOTE, slot: 1
-2025-10-03T04:21:42.492368Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: ✅ [PNFIFO-BC] Node 3 接受来自 2 的有效VOTE, 当前票数: 2/3
-2025-10-03T04:21:42.492704Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 🧩 [PNFIFO-BC] Node 3 slot 1 awaiting more votes (have 2 need 3)
-2025-10-03T04:21:42.495372Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 收到来自 1 的VOTE, slot: 1
-2025-10-03T04:21:42.495636Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: ✅ [PNFIFO-BC] Node 3 接受来自 1 的有效VOTE, 当前票数: 3/3
-2025-10-03T04:21:42.495814Z  INFO ThreadId(08) hotstuff_runner::smrol::pnfifo: 🎯 [PNFIFO-BC] Node 3 slot 1 达到阈值, 准备finalize
-2025-10-03T04:21:42.496038Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 🔐 [PNFIFO-BC] Node 3 slot 1 collected votes from [1, 2, 3]
-2025-10-03T04:21:42.496176Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: ✅ [PNFIFO-BC] Node 3 广播slot 1 FINAL as leader (line 13)
-2025-10-03T04:21:42.496406Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] Node 3 收到来自 3 的FINAL, slot: 1 (line 14)
-2025-10-03T04:21:42.496898Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] 存储 Leader 3 slot 1 的输出
-2025-10-03T04:21:42.500604Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_3 set to false at slot 1 (final)
-2025-10-03T04:21:42.500964Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] Node 3 收到来自 2 的FINAL, slot: 1 (line 14)
-2025-10-03T04:21:42.501360Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] 存储 Leader 2 slot 1 的输出
-2025-10-03T04:21:42.501709Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_2 set to false at slot 1 (final)
-2025-10-03T04:21:42.513494Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] Node 3 收到来自 0 的FINAL, slot: 1 (line 14)
-2025-10-03T04:21:42.524104Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] 存储 Leader 0 slot 1 的输出
-2025-10-03T04:21:42.527369Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_0 set to false at slot 1 (final)
-2025-10-03T04:21:42.527523Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 收到来自 0 的VOTE, slot: 1
-2025-10-03T04:21:42.527731Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 🧩 [PNFIFO-BC] Node 3 slot 1 awaiting more votes (have 4 need 3)
-2025-10-03T04:21:42.541080Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 📥 [PNFIFO-BC] Node 3 收到来自 1 的PROPOSAL, slot: 1
-2025-10-03T04:21:42.543359Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🎫 [FIFO] Node 3 acquired permit for Leader 1 Slot 1
-2025-10-03T04:21:42.543685Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_1 set to true at slot 1 (proposal line 6)
-2025-10-03T04:21:42.544063Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 VOTE for slot 1 leader 1
-2025-10-03T04:21:42.547407Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] Node 3 收到来自 1 的FINAL, slot: 1 (line 14)
-2025-10-03T04:21:42.549417Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] 存储 Leader 1 slot 1 的输出
-2025-10-03T04:21:42.549870Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_1 set to false at slot 1 (final)
-2025-10-03T04:21:42.587722Z DEBUG ThreadId(09) hotstuff_runner::smrol::sequencing: 📥 [Sequencing] 收到来自 Node 0 的SEQ-ORDER
-2025-10-03T04:21:42.734462Z  INFO ThreadId(09) hotstuff_runner::smrol::sequencing: ✅ [Sequencing] Verified SEQ-ORDER from Node 0 with median sequence 1
-2025-10-03T04:21:42.738221Z DEBUG ThreadId(09) hotstuff_runner::smrol::sequencing: 📊 [Sequencing] node=3 seq_order vc=951755881d92d207 median=1 records=[1, 1, 1]
-2025-10-03T04:21:42.925708Z DEBUG ThreadId(02) hotstuff_runner::smrol::sequencing: 📥 [Sequencing] 收到SEQ-FINAL消息
-2025-10-03T04:21:42.961699Z  INFO ThreadId(02) hotstuff_runner::smrol::sequencing: ✅ [Sequencing] Finalized VC forwarded to consensus: vc_len=32, s_tx=1
-2025-10-03T04:21:43.016983Z DEBUG ThreadId(02) hotstuff_runner::smrol::sequencing: 🎯 [Sequencing] node=3 finalizing vc=951755881d92d207 s_tx=1
-2025-10-03T04:21:43.024294Z DEBUG ThreadId(02) hotstuff_runner::smrol::manager: 🧮 [SMROL] 登记Sequencing输出: epoch=1 vc_bytes=32 s_tx=1 pending=1 threshold=3
-2025-10-03T04:21:43.102952Z DEBUG ThreadId(09) hotstuff_runner::smrol::sequencing: 📥 [Sequencing] 收到SEQ-FINAL消息
-2025-10-03T04:21:43.159763Z DEBUG ThreadId(09) hotstuff_runner::smrol::sequencing: ℹ️ [Sequencing] SEQ-FINAL vc=951755881d92d207 already finalized, ignoring
-2025-10-03T04:21:47.260174Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:21:52.259837Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:21:57.261018Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:22:02.282963Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:22:07.277210Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:22:12.260334Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:22:17.261669Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:22:22.260601Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:22:27.262545Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:22:32.261419Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:22:37.261682Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:22:42.261404Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:22:47.265631Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:22:52.260545Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:22:57.275118Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:23:02.261864Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:23:07.261880Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:23:12.264024Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:23:17.260824Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:23:22.261718Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:23:27.261796Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:23:32.262650Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:23:37.261155Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:23:42.262155Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:23:42.490685Z DEBUG ThreadId(08) hotstuff_runner::smrol::sequencing: 📥 [Sequencing] Line 2:4: 收到来自 0 的SEQ-REQUEST, seq_num: 2
-2025-10-03T04:23:42.493718Z DEBUG ThreadId(08) hotstuff_runner::smrol::sequencing: ⏱️ [Sequencing] Checking log condition: leader 0, target_slot 1
-2025-10-03T04:23:42.493807Z DEBUG ThreadId(08) hotstuff_runner::smrol::sequencing: ⏱️ [Sequencing] Line 5 log_condition satisfied for leader 0 slot 1
-2025-10-03T04:23:42.498089Z DEBUG ThreadId(08) hotstuff_runner::smrol::sequencing: ✅ [Sequencing] Line 2:5: Log condition verified for SEQ-REQUEST from 0 with seq_num 2. Continue to Line 12-14
-2025-10-03T04:23:42.499083Z DEBUG ThreadId(08) hotstuff_runner::smrol::sequencing: 🧮 [Sequencing] Line 2:7-11 node=3 assigned sequence 2 for vc=aa3a01c0e03740a3 (req_seq=2 from 0)
-2025-10-03T04:23:42.515444Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 📥 [PNFIFO-BC] Node 3 收到来自 1 的PROPOSAL, slot: 2
-2025-10-03T04:23:42.515641Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🎫 [FIFO] Node 3 acquired permit for Leader 1 Slot 2
-2025-10-03T04:23:42.515814Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_1 set to true at slot 2 (proposal line 6)
-2025-10-03T04:23:42.516216Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 VOTE for slot 2 leader 1
-2025-10-03T04:23:42.517571Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] Node 3 收到来自 1 的FINAL, slot: 2 (line 14)
-2025-10-03T04:23:42.521114Z  INFO ThreadId(08) hotstuff_runner::smrol::pnfifo: 📤 [PNFIFO-BC] Node 3 Broadcast Proposal for slot 2, length: 32 bytes
-2025-10-03T04:23:42.521324Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 🧾 [PNFIFO-BC] Node 3 proposal payload=aa3a01c0e03740a3 slot=2
-2025-10-03T04:23:42.521423Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: ✅ [PNFIFO-BC] Node 3 发起slot 2 PROPOSAL
-2025-10-03T04:23:42.521448Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] 存储 Leader 1 slot 2 的输出
-2025-10-03T04:23:42.521596Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_1 set to false at slot 2 (final)
-2025-10-03T04:23:42.521505Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: ✅ [PNFIFO-BC] Node 3 完成slot 2 PROPOSAL 广播
-2025-10-03T04:23:42.521822Z DEBUG ThreadId(08) hotstuff_runner::smrol::sequencing: 📡 [Sequencing] Line 2:15 node=3 forwarded sequence 2 vc to PNFIFO slot 2
-2025-10-03T04:23:42.521848Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 📥 [PNFIFO-BC] Node 3 收到来自 3 的PROPOSAL, slot: 2
-2025-10-03T04:23:42.521992Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🎫 [FIFO] Node 3 acquired permit for Leader 3 Slot 2
-2025-10-03T04:23:42.522144Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_3 set to true at slot 2 (proposal line 6)
-2025-10-03T04:23:42.522283Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 VOTE for slot 2 leader 3
-2025-10-03T04:23:42.522451Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 收到来自 3 的VOTE, slot: 2
-2025-10-03T04:23:42.522705Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: ✅ [PNFIFO-BC] Node 3 接受来自 3 的有效VOTE, 当前票数: 1/3
-2025-10-03T04:23:42.523115Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🧩 [PNFIFO-BC] Node 3 slot 2 awaiting more votes (have 1 need 3)
-2025-10-03T04:23:42.523198Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 📥 [PNFIFO-BC] Node 3 收到来自 2 的PROPOSAL, slot: 2
-2025-10-03T04:23:42.523278Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🎫 [FIFO] Node 3 acquired permit for Leader 2 Slot 2
-2025-10-03T04:23:42.523407Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_2 set to true at slot 2 (proposal line 6)
-2025-10-03T04:23:42.523524Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 VOTE for slot 2 leader 2
-2025-10-03T04:23:42.523630Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 收到来自 1 的VOTE, slot: 2
-2025-10-03T04:23:42.523976Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: ✅ [PNFIFO-BC] Node 3 接受来自 1 的有效VOTE, 当前票数: 2/3
-2025-10-03T04:23:42.524205Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🧩 [PNFIFO-BC] Node 3 slot 2 awaiting more votes (have 2 need 3)
-2025-10-03T04:23:42.524535Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 收到来自 2 的VOTE, slot: 2
-2025-10-03T04:23:42.525229Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: ✅ [PNFIFO-BC] Node 3 接受来自 2 的有效VOTE, 当前票数: 3/3
-2025-10-03T04:23:42.525379Z  INFO ThreadId(02) hotstuff_runner::smrol::pnfifo: 🎯 [PNFIFO-BC] Node 3 slot 2 达到阈值, 准备finalize
-2025-10-03T04:23:42.525494Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🔐 [PNFIFO-BC] Node 3 slot 2 collected votes from [3, 2, 1]
-2025-10-03T04:23:42.526300Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: ✅ [PNFIFO-BC] Node 3 广播slot 2 FINAL as leader (line 13)
-2025-10-03T04:23:42.526386Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] Node 3 收到来自 3 的FINAL, slot: 2 (line 14)
-2025-10-03T04:23:42.527933Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] 存储 Leader 3 slot 2 的输出
-2025-10-03T04:23:42.529528Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_3 set to false at slot 2 (final)
-2025-10-03T04:23:42.532600Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] Node 3 收到来自 2 的FINAL, slot: 2 (line 14)
-2025-10-03T04:23:42.539884Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] 存储 Leader 2 slot 2 的输出
-2025-10-03T04:23:42.540230Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_2 set to false at slot 2 (final)
-2025-10-03T04:23:42.545888Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 收到来自 0 的VOTE, slot: 2
-2025-10-03T04:23:42.546305Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🧩 [PNFIFO-BC] Node 3 slot 2 awaiting more votes (have 4 need 3)
-2025-10-03T04:23:42.707332Z DEBUG ThreadId(08) hotstuff_runner::smrol::sequencing: 📥 [Sequencing] 收到来自 Node 0 的SEQ-ORDER
-2025-10-03T04:23:42.851121Z  INFO ThreadId(08) hotstuff_runner::smrol::sequencing: ✅ [Sequencing] Verified SEQ-ORDER from Node 0 with median sequence 2
-2025-10-03T04:23:42.851507Z DEBUG ThreadId(08) hotstuff_runner::smrol::sequencing: 📊 [Sequencing] node=3 seq_order vc=aa3a01c0e03740a3 median=2 records=[2, 2, 2]
-2025-10-03T04:23:43.000308Z DEBUG ThreadId(09) hotstuff_runner::smrol::sequencing: 📥 [Sequencing] 收到SEQ-FINAL消息
-2025-10-03T04:23:43.035949Z  INFO ThreadId(09) hotstuff_runner::smrol::sequencing: ✅ [Sequencing] Finalized VC forwarded to consensus: vc_len=32, s_tx=2
-2025-10-03T04:23:43.037859Z DEBUG ThreadId(09) hotstuff_runner::smrol::sequencing: 🎯 [Sequencing] node=3 finalizing vc=aa3a01c0e03740a3 s_tx=2
-2025-10-03T04:23:43.039408Z DEBUG ThreadId(09) hotstuff_runner::smrol::manager: 🧮 [SMROL] 登记Sequencing输出: epoch=1 vc_bytes=32 s_tx=2 pending=2 threshold=3
-2025-10-03T04:23:43.095479Z DEBUG ThreadId(02) hotstuff_runner::smrol::sequencing: 📥 [Sequencing] 收到SEQ-FINAL消息
-2025-10-03T04:23:43.131074Z DEBUG ThreadId(02) hotstuff_runner::smrol::sequencing: ℹ️ [Sequencing] SEQ-FINAL vc=aa3a01c0e03740a3 already finalized, ignoring
-2025-10-03T04:23:43.177223Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 📥 [PNFIFO-BC] Node 3 收到来自 0 的PROPOSAL, slot: 2
-2025-10-03T04:23:43.177428Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🎫 [FIFO] Node 3 acquired permit for Leader 0 Slot 2
-2025-10-03T04:23:43.177677Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_0 set to true at slot 2 (proposal line 6)
-2025-10-03T04:23:43.177850Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 VOTE for slot 2 leader 0
-2025-10-03T04:23:43.182350Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] Node 3 收到来自 0 的FINAL, slot: 2 (line 14)
-2025-10-03T04:23:43.183936Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] 存储 Leader 0 slot 2 的输出
-2025-10-03T04:23:43.186542Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_0 set to false at slot 2 (final)
-2025-10-03T04:23:47.262562Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:23:52.262016Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:23:57.262539Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:24:02.263905Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:24:07.261461Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:24:12.262745Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:24:17.262522Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:24:22.261430Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:24:27.262314Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:24:32.266422Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:24:37.263560Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:24:42.267836Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:24:47.261796Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:24:52.262864Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:24:57.264514Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:25:02.263324Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:25:07.263228Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:25:12.263183Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:25:17.263324Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:25:22.263359Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:25:23.859320Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 3 View 3018 超时，可能导致延迟累积
-2025-10-03T04:25:27.263525Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:25:32.262929Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:25:37.264197Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:25:42.262993Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:25:42.550906Z DEBUG ThreadId(08) hotstuff_runner::smrol::sequencing: 📥 [Sequencing] Line 2:4: 收到来自 0 的SEQ-REQUEST, seq_num: 3
-2025-10-03T04:25:42.580739Z DEBUG ThreadId(08) hotstuff_runner::smrol::sequencing: ⏱️ [Sequencing] Checking log condition: leader 0, target_slot 2
-2025-10-03T04:25:42.582690Z DEBUG ThreadId(08) hotstuff_runner::smrol::sequencing: ⏱️ [Sequencing] Line 5 log_condition satisfied for leader 0 slot 2
-2025-10-03T04:25:42.585509Z DEBUG ThreadId(08) hotstuff_runner::smrol::sequencing: ✅ [Sequencing] Line 2:5: Log condition verified for SEQ-REQUEST from 0 with seq_num 3. Continue to Line 12-14
-2025-10-03T04:25:42.587065Z DEBUG ThreadId(08) hotstuff_runner::smrol::sequencing: 🧮 [Sequencing] Line 2:7-11 node=3 assigned sequence 3 for vc=0e8699e7d8627a83 (req_seq=3 from 0)
-2025-10-03T04:25:42.619274Z  INFO ThreadId(08) hotstuff_runner::smrol::pnfifo: 📤 [PNFIFO-BC] Node 3 Broadcast Proposal for slot 3, length: 32 bytes
-2025-10-03T04:25:42.621319Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: 🧾 [PNFIFO-BC] Node 3 proposal payload=0e8699e7d8627a83 slot=3
-2025-10-03T04:25:42.652158Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: ✅ [PNFIFO-BC] Node 3 发起slot 3 PROPOSAL
-2025-10-03T04:25:42.667817Z DEBUG ThreadId(08) hotstuff_runner::smrol::pnfifo: ✅ [PNFIFO-BC] Node 3 完成slot 3 PROPOSAL 广播
-2025-10-03T04:25:42.667912Z DEBUG ThreadId(08) hotstuff_runner::smrol::sequencing: 📡 [Sequencing] Line 2:15 node=3 forwarded sequence 3 vc to PNFIFO slot 3
-2025-10-03T04:25:42.667899Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 📥 [PNFIFO-BC] Node 3 收到来自 3 的PROPOSAL, slot: 3
-2025-10-03T04:25:42.668847Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🎫 [FIFO] Node 3 acquired permit for Leader 3 Slot 3
-2025-10-03T04:25:42.668944Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_3 set to true at slot 3 (proposal line 6)
-2025-10-03T04:25:42.671651Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 VOTE for slot 3 leader 3
-2025-10-03T04:25:42.671780Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 📥 [PNFIFO-BC] Node 3 收到来自 2 的PROPOSAL, slot: 3
-2025-10-03T04:25:42.672307Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🎫 [FIFO] Node 3 acquired permit for Leader 2 Slot 3
-2025-10-03T04:25:42.674627Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_2 set to true at slot 3 (proposal line 6)
-2025-10-03T04:25:42.678722Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 VOTE for slot 3 leader 2
-2025-10-03T04:25:42.678838Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 收到来自 1 的VOTE, slot: 3
-2025-10-03T04:25:42.679042Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: ✅ [PNFIFO-BC] Node 3 接受来自 1 的有效VOTE, 当前票数: 1/3
-2025-10-03T04:25:42.679113Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🧩 [PNFIFO-BC] Node 3 slot 3 awaiting more votes (have 1 need 3)
-2025-10-03T04:25:42.679186Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 收到来自 0 的VOTE, slot: 3
-2025-10-03T04:25:42.679353Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: ✅ [PNFIFO-BC] Node 3 接受来自 0 的有效VOTE, 当前票数: 2/3
-2025-10-03T04:25:42.679487Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🧩 [PNFIFO-BC] Node 3 slot 3 awaiting more votes (have 2 need 3)
-2025-10-03T04:25:42.679628Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 收到来自 2 的VOTE, slot: 3
-2025-10-03T04:25:42.679815Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: ✅ [PNFIFO-BC] Node 3 接受来自 2 的有效VOTE, 当前票数: 3/3
-2025-10-03T04:25:42.679897Z  INFO ThreadId(09) hotstuff_runner::smrol::pnfifo: 🎯 [PNFIFO-BC] Node 3 slot 3 达到阈值, 准备finalize
-2025-10-03T04:25:42.679955Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🔐 [PNFIFO-BC] Node 3 slot 3 collected votes from [1, 0, 2]
-2025-10-03T04:25:42.680045Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: ✅ [PNFIFO-BC] Node 3 广播slot 3 FINAL as leader (line 13)
-2025-10-03T04:25:42.680111Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] Node 3 收到来自 2 的FINAL, slot: 3 (line 14)
-2025-10-03T04:25:42.680460Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] 存储 Leader 2 slot 3 的输出
-2025-10-03T04:25:42.680910Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_2 set to false at slot 3 (final)
-2025-10-03T04:25:42.681243Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 收到来自 3 的VOTE, slot: 3
-2025-10-03T04:25:42.682881Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🧩 [PNFIFO-BC] Node 3 slot 3 awaiting more votes (have 4 need 3)
-2025-10-03T04:25:42.683422Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 📥 [PNFIFO-BC] Node 3 收到来自 1 的PROPOSAL, slot: 3
-2025-10-03T04:25:42.685230Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🎫 [FIFO] Node 3 acquired permit for Leader 1 Slot 3
-2025-10-03T04:25:42.685664Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_1 set to true at slot 3 (proposal line 6)
-2025-10-03T04:25:42.685875Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 VOTE for slot 3 leader 1
-2025-10-03T04:25:42.685941Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] Node 3 收到来自 3 的FINAL, slot: 3 (line 14)
-2025-10-03T04:25:42.686286Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] 存储 Leader 3 slot 3 的输出
-2025-10-03T04:25:42.687351Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_3 set to false at slot 3 (final)
-2025-10-03T04:25:42.704810Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] Node 3 收到来自 1 的FINAL, slot: 3 (line 14)
-2025-10-03T04:25:42.707361Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] 存储 Leader 1 slot 3 的输出
-2025-10-03T04:25:42.707978Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_1 set to false at slot 3 (final)
-2025-10-03T04:25:42.803279Z DEBUG ThreadId(02) hotstuff_runner::smrol::sequencing: 📥 [Sequencing] 收到来自 Node 0 的SEQ-ORDER
-2025-10-03T04:25:42.945492Z  INFO ThreadId(02) hotstuff_runner::smrol::sequencing: ✅ [Sequencing] Verified SEQ-ORDER from Node 0 with median sequence 3
-2025-10-03T04:25:42.958997Z DEBUG ThreadId(02) hotstuff_runner::smrol::sequencing: 📊 [Sequencing] node=3 seq_order vc=0e8699e7d8627a83 median=3 records=[3, 3, 3]
-2025-10-03T04:25:43.346924Z DEBUG ThreadId(09) hotstuff_runner::smrol::sequencing: 📥 [Sequencing] 收到SEQ-FINAL消息
-2025-10-03T04:25:43.385082Z DEBUG ThreadId(08) hotstuff_runner::smrol::consensus: [Consensus] received proposal epoch=1 from 1
-2025-10-03T04:25:43.387408Z DEBUG ThreadId(08) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=1 from 1
-2025-10-03T04:25:43.391185Z  INFO ThreadId(09) hotstuff_runner::smrol::sequencing: ✅ [Sequencing] Finalized VC forwarded to consensus: vc_len=32, s_tx=3
-2025-10-03T04:25:43.392786Z DEBUG ThreadId(08) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=1 from 0
-2025-10-03T04:25:43.393729Z DEBUG ThreadId(08) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=1 from 2
-2025-10-03T04:25:43.393486Z DEBUG ThreadId(09) hotstuff_runner::smrol::sequencing: 🎯 [Sequencing] node=3 finalizing vc=0e8699e7d8627a83 s_tx=3
-2025-10-03T04:25:43.396789Z  INFO ThreadId(08) hotstuff_runner::smrol::consensus: [Consensus] epoch=1 reached quorum 3/3
-2025-10-03T04:25:43.412895Z  INFO ThreadId(08) hotstuff_runner::smrol::consensus: [Consensus] node=3 epoch=1 output received
-2025-10-03T04:25:43.419307Z DEBUG ThreadId(08) hotstuff_runner::smrol::finalization: 🔄 [Finalization] Starting epoch 1 finalization
-2025-10-03T04:25:43.421239Z  INFO ThreadId(08) hotstuff_runner::smrol::finalization: ✅ [Finalization] Epoch 1 finalized with 0 transactions
-2025-10-03T04:25:43.421479Z DEBUG ThreadId(08) hotstuff_runner::smrol::manager: 🧮 [SMROL] 登记Sequencing输出: epoch=2 vc_bytes=32 s_tx=3 pending=1 threshold=3
-2025-10-03T04:25:43.422113Z DEBUG ThreadId(08) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=1 from 3
-2025-10-03T04:25:43.424402Z  INFO ThreadId(08) hotstuff_runner::smrol::consensus: [Consensus] epoch=1 reached quorum 4/3
-2025-10-03T04:25:43.424651Z  INFO ThreadId(08) hotstuff_runner::smrol::consensus: [Consensus] node=3 epoch=1 output received
-2025-10-03T04:25:43.428926Z DEBUG ThreadId(08) hotstuff_runner::smrol::finalization: 🔄 [Finalization] Starting epoch 1 finalization
-2025-10-03T04:25:43.430083Z  INFO ThreadId(08) hotstuff_runner::smrol::finalization: ✅ [Finalization] Epoch 1 finalized with 0 transactions
-2025-10-03T04:25:43.430760Z DEBUG ThreadId(09) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=1 from 1
-2025-10-03T04:25:43.430843Z  INFO ThreadId(09) hotstuff_runner::smrol::consensus: [Consensus] epoch=1 reached quorum 4/3
-2025-10-03T04:25:43.431058Z  INFO ThreadId(09) hotstuff_runner::smrol::consensus: [Consensus] node=3 epoch=1 output received
-2025-10-03T04:25:43.438993Z DEBUG ThreadId(09) hotstuff_runner::smrol::finalization: 🔄 [Finalization] Starting epoch 1 finalization
-2025-10-03T04:25:43.439919Z  INFO ThreadId(09) hotstuff_runner::smrol::finalization: ✅ [Finalization] Epoch 1 finalized with 0 transactions
-2025-10-03T04:25:43.447916Z DEBUG ThreadId(09) hotstuff_runner::smrol::consensus: [Consensus] received proposal epoch=1 from 2
-2025-10-03T04:25:43.452720Z DEBUG ThreadId(09) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=1 from 2
-2025-10-03T04:25:43.456593Z  INFO ThreadId(09) hotstuff_runner::smrol::consensus: [Consensus] epoch=1 reached quorum 4/3
-2025-10-03T04:25:43.470321Z  INFO ThreadId(09) hotstuff_runner::smrol::consensus: [Consensus] node=3 epoch=1 output received
-2025-10-03T04:25:43.471302Z DEBUG ThreadId(09) hotstuff_runner::smrol::finalization: 🔄 [Finalization] Starting epoch 1 finalization
-2025-10-03T04:25:43.471570Z  INFO ThreadId(09) hotstuff_runner::smrol::finalization: ✅ [Finalization] Epoch 1 finalized with 0 transactions
-2025-10-03T04:25:43.472417Z DEBUG ThreadId(09) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=1 from 0
-2025-10-03T04:25:43.473249Z  INFO ThreadId(09) hotstuff_runner::smrol::consensus: [Consensus] epoch=1 reached quorum 4/3
-2025-10-03T04:25:43.474136Z  INFO ThreadId(09) hotstuff_runner::smrol::consensus: [Consensus] node=3 epoch=1 output received
-2025-10-03T04:25:43.474594Z DEBUG ThreadId(09) hotstuff_runner::smrol::finalization: 🔄 [Finalization] Starting epoch 1 finalization
-2025-10-03T04:25:43.475825Z  INFO ThreadId(09) hotstuff_runner::smrol::finalization: ✅ [Finalization] Epoch 1 finalized with 0 transactions
-2025-10-03T04:25:43.476472Z DEBUG ThreadId(09) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=1 from 3
-2025-10-03T04:25:43.477332Z  INFO ThreadId(09) hotstuff_runner::smrol::consensus: [Consensus] epoch=1 reached quorum 4/3
-2025-10-03T04:25:43.477456Z  INFO ThreadId(09) hotstuff_runner::smrol::consensus: [Consensus] node=3 epoch=1 output received
-2025-10-03T04:25:43.477577Z DEBUG ThreadId(09) hotstuff_runner::smrol::finalization: 🔄 [Finalization] Starting epoch 1 finalization
-2025-10-03T04:25:43.477629Z  INFO ThreadId(09) hotstuff_runner::smrol::finalization: ✅ [Finalization] Epoch 1 finalized with 0 transactions
-2025-10-03T04:25:43.477830Z DEBUG ThreadId(09) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=1 from 1
-2025-10-03T04:25:43.478003Z  INFO ThreadId(09) hotstuff_runner::smrol::consensus: [Consensus] epoch=1 reached quorum 4/3
-2025-10-03T04:25:43.478092Z  INFO ThreadId(09) hotstuff_runner::smrol::consensus: [Consensus] node=3 epoch=1 output received
-2025-10-03T04:25:43.478178Z DEBUG ThreadId(09) hotstuff_runner::smrol::finalization: 🔄 [Finalization] Starting epoch 1 finalization
-2025-10-03T04:25:43.478281Z  INFO ThreadId(09) hotstuff_runner::smrol::finalization: ✅ [Finalization] Epoch 1 finalized with 0 transactions
-2025-10-03T04:25:43.480208Z DEBUG ThreadId(09) hotstuff_runner::smrol::sequencing: 📥 [Sequencing] 收到SEQ-FINAL消息
-2025-10-03T04:25:43.502722Z DEBUG ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=1 from 2
-2025-10-03T04:25:43.502940Z  INFO ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] epoch=1 reached quorum 4/3
-2025-10-03T04:25:43.503085Z  INFO ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] node=3 epoch=1 output received
-2025-10-03T04:25:43.503253Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization: 🔄 [Finalization] Starting epoch 1 finalization
-2025-10-03T04:25:43.503455Z  INFO ThreadId(02) hotstuff_runner::smrol::finalization: ✅ [Finalization] Epoch 1 finalized with 0 transactions
-2025-10-03T04:25:43.532611Z DEBUG ThreadId(09) hotstuff_runner::smrol::sequencing: ℹ️ [Sequencing] SEQ-FINAL vc=0e8699e7d8627a83 already finalized, ignoring
-2025-10-03T04:25:43.578783Z DEBUG ThreadId(07) hotstuff_runner::smrol::pnfifo: 📥 [PNFIFO-BC] Node 3 收到来自 0 的PROPOSAL, slot: 3
-2025-10-03T04:25:43.579125Z DEBUG ThreadId(07) hotstuff_runner::smrol::pnfifo: 🎫 [FIFO] Node 3 acquired permit for Leader 0 Slot 3
-2025-10-03T04:25:43.579585Z DEBUG ThreadId(07) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_0 set to true at slot 3 (proposal line 6)
-2025-10-03T04:25:43.580090Z DEBUG ThreadId(07) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 VOTE for slot 3 leader 0
-2025-10-03T04:25:43.615305Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] Node 3 收到来自 0 的FINAL, slot: 3 (line 14)
-2025-10-03T04:25:43.620211Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] 存储 Leader 0 slot 3 的输出
-2025-10-03T04:25:43.625450Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_0 set to false at slot 3 (final)
-2025-10-03T04:25:43.715076Z  WARN ThreadId(07) docker_node: [Event received] Node 3 HotStuffCommitted: block_height=3273, tx_ids=[1, 2, 3]
-2025-10-03T04:25:43.897039Z  WARN ThreadId(07) docker_node: [Event received] Node 3 HotStuffCommitted: block_height=3276, tx_ids=[1, 2, 3]
-2025-10-03T04:25:47.262993Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:25:52.262099Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:25:57.263082Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:26:02.263746Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:26:07.263801Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:26:12.281621Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:26:17.263593Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:26:22.262789Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:26:27.265783Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (1.0 msg/conn)
-2025-10-03T04:26:32.264054Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-03T11:16:10.265833Z  WARN ThreadId(01) hotstuff_runner::tcp_node: Node 3 视图超时设置为 700 ms
+2025-10-03T11:16:10.289170Z  INFO ThreadId(01) hotstuff_runner::smrol::pnfifo: 🔄 PNFIFO-BC Initialization: Node 3, threshold: 3/4
+2025-10-03T11:16:10.290524Z ERROR ThreadId(23) hotstuff_runner::pompe_network: ❌ Node 3 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-03T11:16:10.297391Z  INFO ThreadId(01) hotstuff_runner::smrol::pnfifo: ✅ [PNFIFO-BC] Node 3 网络监听器已启动
+2025-10-03T11:16:10.298672Z  INFO ThreadId(01) hotstuff_runner::smrol::manager: ✅ [SMROL] PNFIFO自动启动完成
+2025-10-03T11:16:10.299086Z DEBUG ThreadId(01) hotstuff_runner::smrol::adapter: 🔗 [SMROL Adapter] Connected to HotStuff queue
+2025-10-03T11:16:10.298731Z  INFO ThreadId(02) hotstuff_runner::smrol::pnfifo: 📡 [PNFIFO-BC] Node 3 启动网络消息监听器
+2025-10-03T11:16:10.302404Z  WARN ThreadId(25) hotstuff_runner::smrol::network: peer 0 连接失败 172.20.0.4:21000: Connection refused (os error 111)，等待 100ms
+2025-10-03T11:16:10.300869Z  WARN ThreadId(26) hotstuff_runner::smrol::network: peer 2 连接失败 172.20.0.5:21002: Connection refused (os error 111)，等待 100ms
+2025-10-03T11:16:10.300925Z  INFO ThreadId(01) hotstuff_runner::smrol::manager: 🔗 [SMROL] Connected to HotStuff adapter
+2025-10-03T11:16:10.315730Z  INFO ThreadId(01) hotstuff_runner::smrol::manager: 🔄 [SMROL] Message loop starting for node 3
+2025-10-03T11:16:10.302324Z ERROR ThreadId(23) hotstuff_runner::pompe_network: ❌ Node 3 连接到节点 2 失败: Connection refused (os error 111)
+2025-10-03T11:16:10.325350Z  INFO ThreadId(01) hotstuff_runner::smrol::manager: ✅ [SMROL] 消息处理循环已启动
+2025-10-03T11:16:10.336626Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-03T11:16:10.972232Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 3 View 0 超时，可能导致延迟累积
+2025-10-03T11:16:15.187399Z DEBUG ThreadId(02) hotstuff_runner::smrol::sequencing: 📥 [Sequencing] Line 2:4: 收到来自 0 的SEQ-REQUEST, seq_num: 1
+2025-10-03T11:16:15.188383Z DEBUG ThreadId(02) hotstuff_runner::smrol::sequencing: ✅ [Sequencing] Line 2:5: Log condition verified for SEQ-REQUEST from 0 with seq_num 1. Continue to Line 12-14
+2025-10-03T11:16:15.188517Z DEBUG ThreadId(02) hotstuff_runner::smrol::sequencing: 🧮 [Sequencing] Line 2:7-11 node=3 assigned sequence 1 for vc=403167f79faea4a2 (req_seq=1 from 0)
+2025-10-03T11:16:15.194457Z  INFO ThreadId(02) hotstuff_runner::smrol::pnfifo: 📤 [PNFIFO-BC] Node 3 Broadcast Proposal for slot 1, length: 32 bytes
+2025-10-03T11:16:15.194605Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🧾 [PNFIFO-BC] Node 3 proposal payload=403167f79faea4a2 slot=1
+2025-10-03T11:16:15.194873Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: ✅ [PNFIFO-BC] Node 3 发起slot 1 PROPOSAL
+2025-10-03T11:16:15.195258Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: ✅ [PNFIFO-BC] Node 3 完成slot 1 PROPOSAL 广播
+2025-10-03T11:16:15.195471Z DEBUG ThreadId(02) hotstuff_runner::smrol::sequencing: 📡 [Sequencing] Line 2:15 node=3 forwarded sequence 1 vc to PNFIFO slot 1
+2025-10-03T11:16:15.196140Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 📥 [PNFIFO-BC] Node 3 收到来自 3 的PROPOSAL, slot: 1
+2025-10-03T11:16:15.196292Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🎫 [FIFO] Node 3 acquired permit for Leader 3 Slot 1
+2025-10-03T11:16:15.196646Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_3 set to true at slot 1 (proposal line 6)
+2025-10-03T11:16:15.196928Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 VOTE for slot 1 leader 3
+2025-10-03T11:16:15.197323Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 📥 [PNFIFO-BC] Node 3 收到来自 2 的PROPOSAL, slot: 1
+2025-10-03T11:16:15.197457Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🎫 [FIFO] Node 3 acquired permit for Leader 2 Slot 1
+2025-10-03T11:16:15.197714Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_2 set to true at slot 1 (proposal line 6)
+2025-10-03T11:16:15.198334Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 VOTE for slot 1 leader 2
+2025-10-03T11:16:15.198452Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 收到来自 1 的VOTE, slot: 1
+2025-10-03T11:16:15.201186Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: ✅ [PNFIFO-BC] Node 3 接受来自 1 的有效VOTE, 当前票数: 1/3
+2025-10-03T11:16:15.201375Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🧩 [PNFIFO-BC] Node 3 slot 1 awaiting more votes (have 1 need 3)
+2025-10-03T11:16:15.204010Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 收到来自 3 的VOTE, slot: 1
+2025-10-03T11:16:15.205846Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: ✅ [PNFIFO-BC] Node 3 接受来自 3 的有效VOTE, 当前票数: 2/3
+2025-10-03T11:16:15.206063Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🧩 [PNFIFO-BC] Node 3 slot 1 awaiting more votes (have 2 need 3)
+2025-10-03T11:16:15.206134Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 收到来自 2 的VOTE, slot: 1
+2025-10-03T11:16:15.206606Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: ✅ [PNFIFO-BC] Node 3 接受来自 2 的有效VOTE, 当前票数: 3/3
+2025-10-03T11:16:15.206692Z  INFO ThreadId(02) hotstuff_runner::smrol::pnfifo: 🎯 [PNFIFO-BC] Node 3 slot 1 达到阈值, 准备finalize
+2025-10-03T11:16:15.207136Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🔐 [PNFIFO-BC] Node 3 slot 1 collected votes from [1, 3, 2]
+2025-10-03T11:16:15.210834Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: ✅ [PNFIFO-BC] Node 3 广播slot 1 FINAL as leader (line 13)
+2025-10-03T11:16:15.210926Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 📥 [PNFIFO-BC] Node 3 收到来自 1 的PROPOSAL, slot: 1
+2025-10-03T11:16:15.210996Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🎫 [FIFO] Node 3 acquired permit for Leader 1 Slot 1
+2025-10-03T11:16:15.211099Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_1 set to true at slot 1 (proposal line 6)
+2025-10-03T11:16:15.214864Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 VOTE for slot 1 leader 1
+2025-10-03T11:16:15.214933Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 收到来自 0 的VOTE, slot: 1
+2025-10-03T11:16:15.215047Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: ♻️ [PNFIFO-BC] Node 3 slot 1 已广播过FINAL，忽略重复阈值
+2025-10-03T11:16:15.215293Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] Node 3 收到来自 2 的FINAL, slot: 1 (line 14)
+2025-10-03T11:16:15.216484Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] 存储 Leader 2 slot 1 的输出
+2025-10-03T11:16:15.216987Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_2 set to false at slot 1 (final)
+2025-10-03T11:16:15.217099Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] Node 3 收到来自 3 的FINAL, slot: 1 (line 14)
+2025-10-03T11:16:15.217562Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] 存储 Leader 3 slot 1 的输出
+2025-10-03T11:16:15.217624Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_3 set to false at slot 1 (final)
+2025-10-03T11:16:15.218017Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] Node 3 收到来自 1 的FINAL, slot: 1 (line 14)
+2025-10-03T11:16:15.221513Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] 存储 Leader 1 slot 1 的输出
+2025-10-03T11:16:15.221610Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_1 set to false at slot 1 (final)
+2025-10-03T11:16:15.239688Z DEBUG ThreadId(02) hotstuff_runner::smrol::sequencing: 📥 [Sequencing] 收到来自 Node 0 的SEQ-ORDER
+2025-10-03T11:16:15.303368Z  INFO ThreadId(02) hotstuff_runner::smrol::sequencing: ✅ [Sequencing] Verified SEQ-ORDER from Node 0 with median sequence 1
+2025-10-03T11:16:15.305906Z DEBUG ThreadId(02) hotstuff_runner::smrol::sequencing: 📊 [Sequencing] node=3 seq_order vc=403167f79faea4a2 median=1 records=[1, 1, 1]
+2025-10-03T11:16:15.336498Z DEBUG ThreadId(02) hotstuff_runner::smrol::sequencing: 📥 [Sequencing] 收到SEQ-FINAL消息
+2025-10-03T11:16:15.336527Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-03T11:16:15.365810Z DEBUG ThreadId(03) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=1 from 2
+2025-10-03T11:16:15.368288Z DEBUG ThreadId(03) hotstuff_runner::smrol::consensus: [Consensus] received proposal epoch=1 from 1
+2025-10-03T11:16:15.371267Z DEBUG ThreadId(03) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=1 from 1
+2025-10-03T11:16:15.371572Z  INFO ThreadId(02) hotstuff_runner::smrol::sequencing: ✅ [Sequencing] Finalized VC forwarded to consensus: vc_len=32, s_tx=1
+2025-10-03T11:16:15.372029Z DEBUG ThreadId(03) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=1 from 1
+2025-10-03T11:16:15.373072Z DEBUG ThreadId(02) hotstuff_runner::smrol::sequencing: 🎯 [Sequencing] node=3 finalizing vc=403167f79faea4a2 s_tx=1
+2025-10-03T11:16:15.373373Z DEBUG ThreadId(03) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=1 from 0
+2025-10-03T11:16:15.374090Z  INFO ThreadId(03) hotstuff_runner::smrol::consensus: [Consensus] epoch=1 reached quorum 3/3
+2025-10-03T11:16:15.375293Z  INFO ThreadId(03) hotstuff_runner::smrol::consensus: [Consensus] node=3 epoch=1 output received
+2025-10-03T11:16:15.375469Z DEBUG ThreadId(03) hotstuff_runner::smrol::finalization: 🔄 [Finalization] Starting epoch 1 finalization
+2025-10-03T11:16:15.375822Z  INFO ThreadId(03) hotstuff_runner::smrol::finalization: ✅ [Finalization] Epoch 1 finalized with 0 transactions
+2025-10-03T11:16:15.376019Z DEBUG ThreadId(03) hotstuff_runner::smrol::manager: 🧮 [SMROL] 登记Sequencing输出, add to M_i: epoch=2 vc_bytes=32 s_tx=1 pending=1 K=1
+2025-10-03T11:16:15.376308Z DEBUG ThreadId(03) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=1 from 3
+2025-10-03T11:16:15.376439Z  INFO ThreadId(03) hotstuff_runner::smrol::consensus: [Consensus] epoch=1 reached quorum 4/3
+2025-10-03T11:16:15.376541Z  INFO ThreadId(03) hotstuff_runner::smrol::consensus: [Consensus] node=3 epoch=1 output received
+2025-10-03T11:16:15.376623Z DEBUG ThreadId(03) hotstuff_runner::smrol::finalization: 🔄 [Finalization] Starting epoch 1 finalization
+2025-10-03T11:16:15.376809Z  INFO ThreadId(03) hotstuff_runner::smrol::finalization: ✅ [Finalization] Epoch 1 finalized with 0 transactions
+2025-10-03T11:16:15.377184Z  INFO ThreadId(03) hotstuff_runner::smrol::manager: 🏛️ [SMROL] Starting consensus and finalization for epoch 2
+2025-10-03T11:16:15.377626Z  INFO ThreadId(03) hotstuff_runner::smrol::consensus: 🏛️ [Consensus] node=3 start epoch=2
+2025-10-03T11:16:15.378006Z DEBUG ThreadId(03) hotstuff_runner::smrol::consensus: [Consensus] node=3 epoch=2 prepared M=1 S=3 h_e=1
+2025-10-03T11:16:15.378498Z  INFO ThreadId(03) hotstuff_runner::smrol::consensus: [Consensus] node=3 invoke epoch=2
+2025-10-03T11:16:15.379148Z  INFO ThreadId(03) hotstuff_runner::smrol::adapter: 📤 [SMROL→HotStuff] delivered 1 transactions for epoch 2
+2025-10-03T11:16:15.379816Z DEBUG ThreadId(03) hotstuff_runner::smrol::consensus: [Consensus] node=3 epoch=2 emitted SMROL ordering for [1]
+2025-10-03T11:16:15.379950Z DEBUG ThreadId(03) hotstuff_runner::smrol::consensus: [Consensus] 🚀 node=3 epoch=2 pushed transaction smrol:1:1:eve->david:34214 to HotStuff
+2025-10-03T11:16:15.380505Z  INFO ThreadId(03) hotstuff_runner::smrol::manager: ✅ [SMROL] Epoch 2 finalized and delivered to HotStuff (0 txs)
+2025-10-03T11:16:15.380553Z DEBUG ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] received proposal epoch=2 from 2
+2025-10-03T11:16:15.382068Z DEBUG ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=2 from 1
+2025-10-03T11:16:15.382478Z DEBUG ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=2 from 2
+2025-10-03T11:16:15.382945Z  INFO ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] epoch=2 reached quorum 3/3
+2025-10-03T11:16:15.383205Z  INFO ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] node=3 epoch=2 output received
+2025-10-03T11:16:15.383286Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization: 🔄 [Finalization] Starting epoch 2 finalization
+2025-10-03T11:16:15.383433Z  INFO ThreadId(02) hotstuff_runner::smrol::finalization: 📦 [Finalization] Delivering 1 transactions for epoch 2
+2025-10-03T11:16:15.383732Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 1: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.383992Z  INFO ThreadId(02) hotstuff_runner::smrol::finalization: ✅ [Finalization] Epoch 2 finalized with 1 transactions
+2025-10-03T11:16:15.384355Z DEBUG ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=2 from 2
+2025-10-03T11:16:15.384579Z  INFO ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] epoch=2 reached quorum 3/3
+2025-10-03T11:16:15.384900Z  INFO ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] node=3 epoch=2 output received
+2025-10-03T11:16:15.385053Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization: 🔄 [Finalization] Starting epoch 2 finalization
+2025-10-03T11:16:15.385169Z  INFO ThreadId(02) hotstuff_runner::smrol::finalization: 📦 [Finalization] Delivering 2 transactions for epoch 2
+2025-10-03T11:16:15.385409Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 1: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.386056Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 2: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.386177Z  INFO ThreadId(02) hotstuff_runner::smrol::finalization: ✅ [Finalization] Epoch 2 finalized with 2 transactions
+2025-10-03T11:16:15.386431Z DEBUG ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=2 from 0
+2025-10-03T11:16:15.386509Z  INFO ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] epoch=2 reached quorum 4/3
+2025-10-03T11:16:15.386633Z  INFO ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] node=3 epoch=2 output received
+2025-10-03T11:16:15.386808Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization: 🔄 [Finalization] Starting epoch 2 finalization
+2025-10-03T11:16:15.387296Z  INFO ThreadId(02) hotstuff_runner::smrol::finalization: 📦 [Finalization] Delivering 3 transactions for epoch 2
+2025-10-03T11:16:15.387778Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 1: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.388090Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 2: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.388225Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 3: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.388462Z  INFO ThreadId(02) hotstuff_runner::smrol::finalization: ✅ [Finalization] Epoch 2 finalized with 3 transactions
+2025-10-03T11:16:15.388667Z DEBUG ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] received proposal epoch=2 from 3
+2025-10-03T11:16:15.389288Z DEBUG ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=2 from 3
+2025-10-03T11:16:15.389428Z  INFO ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] epoch=2 reached quorum 4/3
+2025-10-03T11:16:15.389537Z  INFO ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] node=3 epoch=2 output received
+2025-10-03T11:16:15.389796Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization: 🔄 [Finalization] Starting epoch 2 finalization
+2025-10-03T11:16:15.390028Z  INFO ThreadId(02) hotstuff_runner::smrol::finalization: 📦 [Finalization] Delivering 4 transactions for epoch 2
+2025-10-03T11:16:15.390637Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 1: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.390837Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 2: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.391126Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 3: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.391589Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 4: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.391715Z  INFO ThreadId(02) hotstuff_runner::smrol::finalization: ✅ [Finalization] Epoch 2 finalized with 4 transactions
+2025-10-03T11:16:15.392035Z DEBUG ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=2 from 3
+2025-10-03T11:16:15.392123Z  INFO ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] epoch=2 reached quorum 4/3
+2025-10-03T11:16:15.392717Z  INFO ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] node=3 epoch=2 output received
+2025-10-03T11:16:15.392871Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization: 🔄 [Finalization] Starting epoch 2 finalization
+2025-10-03T11:16:15.393274Z  INFO ThreadId(02) hotstuff_runner::smrol::finalization: 📦 [Finalization] Delivering 5 transactions for epoch 2
+2025-10-03T11:16:15.393410Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 1: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.393507Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 2: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.393680Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 3: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.393789Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 4: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.393941Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 5: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.394078Z  INFO ThreadId(02) hotstuff_runner::smrol::finalization: ✅ [Finalization] Epoch 2 finalized with 5 transactions
+2025-10-03T11:16:15.394235Z DEBUG ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=2 from 1
+2025-10-03T11:16:15.394478Z  INFO ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] epoch=2 reached quorum 4/3
+2025-10-03T11:16:15.394657Z  INFO ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] node=3 epoch=2 output received
+2025-10-03T11:16:15.394882Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization: 🔄 [Finalization] Starting epoch 2 finalization
+2025-10-03T11:16:15.395025Z  INFO ThreadId(02) hotstuff_runner::smrol::finalization: 📦 [Finalization] Delivering 6 transactions for epoch 2
+2025-10-03T11:16:15.395109Z DEBUG ThreadId(07) hotstuff_runner::smrol::sequencing: 📥 [Sequencing] 收到SEQ-FINAL消息
+2025-10-03T11:16:15.395309Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 1: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.399146Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 2: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.400600Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 3: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.400757Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 4: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.404076Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 5: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.404997Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 6: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.405125Z  INFO ThreadId(02) hotstuff_runner::smrol::finalization: ✅ [Finalization] Epoch 2 finalized with 6 transactions
+2025-10-03T11:16:15.405212Z DEBUG ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=2 from 2
+2025-10-03T11:16:15.405274Z  INFO ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] epoch=2 reached quorum 4/3
+2025-10-03T11:16:15.405342Z  INFO ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] node=3 epoch=2 output received
+2025-10-03T11:16:15.405407Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization: 🔄 [Finalization] Starting epoch 2 finalization
+2025-10-03T11:16:15.405500Z  INFO ThreadId(02) hotstuff_runner::smrol::finalization: 📦 [Finalization] Delivering 7 transactions for epoch 2
+2025-10-03T11:16:15.405546Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 1: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.405590Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 2: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.405650Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 3: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.405704Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 4: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.405787Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 5: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.405865Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 6: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.405929Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 7: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.406015Z  INFO ThreadId(02) hotstuff_runner::smrol::finalization: ✅ [Finalization] Epoch 2 finalized with 7 transactions
+2025-10-03T11:16:15.406072Z DEBUG ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=2 from 0
+2025-10-03T11:16:15.406122Z  INFO ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] epoch=2 reached quorum 4/3
+2025-10-03T11:16:15.406177Z  INFO ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] node=3 epoch=2 output received
+2025-10-03T11:16:15.406222Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization: 🔄 [Finalization] Starting epoch 2 finalization
+2025-10-03T11:16:15.406267Z  INFO ThreadId(02) hotstuff_runner::smrol::finalization: 📦 [Finalization] Delivering 8 transactions for epoch 2
+2025-10-03T11:16:15.406335Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 1: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.406408Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 2: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.406481Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 3: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.406540Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 4: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.406598Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 5: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.406664Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 6: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.406752Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 7: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.406826Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 8: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.406891Z  INFO ThreadId(02) hotstuff_runner::smrol::finalization: ✅ [Finalization] Epoch 2 finalized with 8 transactions
+2025-10-03T11:16:15.406956Z DEBUG ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=2 from 3
+2025-10-03T11:16:15.407015Z  INFO ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] epoch=2 reached quorum 4/3
+2025-10-03T11:16:15.407073Z  INFO ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] node=3 epoch=2 output received
+2025-10-03T11:16:15.407131Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization: 🔄 [Finalization] Starting epoch 2 finalization
+2025-10-03T11:16:15.407189Z  INFO ThreadId(02) hotstuff_runner::smrol::finalization: 📦 [Finalization] Delivering 9 transactions for epoch 2
+2025-10-03T11:16:15.407245Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 1: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.407301Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 2: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.407357Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 3: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.407479Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 4: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.409702Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 5: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.409967Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 6: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.410437Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 7: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.410676Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 8: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.410890Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization:   📄 Transaction 9: smrol:1:1:eve->david:34214
+2025-10-03T11:16:15.410997Z  INFO ThreadId(02) hotstuff_runner::smrol::finalization: ✅ [Finalization] Epoch 2 finalized with 9 transactions
+2025-10-03T11:16:15.411265Z DEBUG ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] received proposal epoch=3 from 0
+2025-10-03T11:16:15.411786Z DEBUG ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=3 from 0
+2025-10-03T11:16:15.412144Z DEBUG ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=3 from 3
+2025-10-03T11:16:15.412312Z DEBUG ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=3 from 1
+2025-10-03T11:16:15.412372Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 📥 [PNFIFO-BC] Node 3 收到来自 0 的PROPOSAL, slot: 1
+2025-10-03T11:16:15.412515Z  INFO ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] epoch=3 reached quorum 3/3
+2025-10-03T11:16:15.412921Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🎫 [FIFO] Node 3 acquired permit for Leader 0 Slot 1
+2025-10-03T11:16:15.412937Z  WARN ThreadId(20) hotstuff_runner::app: Node 3 [produce_block] 当前队列大小: 1, 本区块将尝试获取最多 1 个交易    
+2025-10-03T11:16:15.413073Z  INFO ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] node=3 epoch=3 output received
+2025-10-03T11:16:15.413524Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_0 set to true at slot 1 (proposal line 6)
+2025-10-03T11:16:15.414137Z  WARN ThreadId(20) hotstuff_runner::app: Node 3 [produce_block] 🔨 从队列获取交易: smrol:1:1:eve->david:34214    
+2025-10-03T11:16:15.414211Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization: 🔄 [Finalization] Starting epoch 3 finalization
+2025-10-03T11:16:15.417852Z  INFO ThreadId(02) hotstuff_runner::smrol::finalization: ✅ [Finalization] Epoch 3 finalized with 0 transactions
+2025-10-03T11:16:15.417480Z DEBUG ThreadId(09) hotstuff_runner::smrol::pnfifo: 🗳️ [PNFIFO-BC] Node 3 VOTE for slot 1 leader 0
+2025-10-03T11:16:15.417948Z DEBUG ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=3 from 0
+2025-10-03T11:16:15.418081Z  INFO ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] epoch=3 reached quorum 3/3
+2025-10-03T11:16:15.418157Z  INFO ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] node=3 epoch=3 output received
+2025-10-03T11:16:15.418625Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization: 🔄 [Finalization] Starting epoch 3 finalization
+2025-10-03T11:16:15.423893Z  INFO ThreadId(02) hotstuff_runner::smrol::finalization: ✅ [Finalization] Epoch 3 finalized with 0 transactions
+2025-10-03T11:16:15.424245Z DEBUG ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] received vote epoch=3 from 2
+2025-10-03T11:16:15.424353Z  INFO ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] epoch=3 reached quorum 4/3
+2025-10-03T11:16:15.424448Z  INFO ThreadId(02) hotstuff_runner::smrol::consensus: [Consensus] node=3 epoch=3 output received
+2025-10-03T11:16:15.424536Z DEBUG ThreadId(02) hotstuff_runner::smrol::finalization: 🔄 [Finalization] Starting epoch 3 finalization
+2025-10-03T11:16:15.424651Z  INFO ThreadId(02) hotstuff_runner::smrol::finalization: ✅ [Finalization] Epoch 3 finalized with 0 transactions
+2025-10-03T11:16:15.426488Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] Node 3 收到来自 0 的FINAL, slot: 1 (line 14)
+2025-10-03T11:16:15.426968Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🏁 [PNFIFO-BC] 存储 Leader 0 slot 1 的输出
+2025-10-03T11:16:15.427110Z DEBUG ThreadId(02) hotstuff_runner::smrol::pnfifo: 🇺🇳 [FLAG_s] Flag_0 set to false at slot 1 (final)
+2025-10-03T11:16:15.431365Z DEBUG ThreadId(07) hotstuff_runner::smrol::sequencing: ℹ️ [Sequencing] SEQ-FINAL vc=403167f79faea4a2 already finalized, ignoring
+2025-10-03T11:16:15.656135Z  WARN ThreadId(03) docker_node: [Event received] Node 3 HotStuffCommitted: block_height=73, tx_ids=[1]
+2025-10-03T11:16:15.662083Z  WARN ThreadId(02) docker_node: [Event received] Node 3 HotStuffCommitted: block_height=74, tx_ids=[1]
+2025-10-03T11:16:15.769859Z  WARN ThreadId(03) docker_node: [Event received] Node 3 HotStuffCommitted: block_height=75, tx_ids=[1]
+2025-10-03T11:16:15.827908Z  WARN ThreadId(09) docker_node: [Event received] Node 3 HotStuffCommitted: block_height=76, tx_ids=[1]
+2025-10-03T11:16:20.336811Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-03T11:16:25.336863Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-03T11:16:30.336811Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-03T11:16:35.336853Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-03T11:16:40.336901Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-03T11:16:45.337906Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-03T11:16:50.338027Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-03T11:16:55.337575Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-03T11:17:00.341546Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-03T11:17:05.338384Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-03T11:17:10.337397Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-03T11:17:15.337423Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-03T11:17:20.338107Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-03T11:17:25.338102Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-03T11:17:30.337988Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-03T11:17:35.338267Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-03T11:17:40.337950Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-03T11:17:45.336201Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-03T11:17:50.336423Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-03T11:17:55.336001Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-03T11:18:00.336712Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-03T11:18:05.336402Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-03T11:18:10.336455Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-03T11:18:15.340689Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-03T11:18:20.340521Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (1.0 msg/conn)
