@@ -17,7 +17,7 @@ COPY . .
 # 进入hotstuff_runner目录并构建应用
 WORKDIR /app/hotstuff_runner
 RUN cargo build --release --bin docker_node
-RUN cargo build --release --bin docker_node_adversary
+# RUN cargo build --release --bin docker_node_adversary
 RUN cargo build --release --bin client
 
 # 运行时镜像
@@ -35,7 +35,7 @@ RUN useradd -r -s /bin/false hotstuff
 # 复制构建好的二进制文件
 COPY --from=builder /app/hotstuff_runner/target/release/docker_node /usr/local/bin/docker_node
 COPY --from=builder /app/hotstuff_runner/target/release/client /usr/local/bin/client
-COPY --from=builder /app/hotstuff_runner/target/release/docker_node_adversary /usr/local/bin/docker_node_adversary
+# COPY --from=builder /app/hotstuff_runner/target/release/docker_node_adversary /usr/local/bin/docker_node_adversary
 
 # 切换到应用用户
 # USER hotstuff

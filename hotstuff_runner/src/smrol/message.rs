@@ -1,4 +1,5 @@
 use crate::event::TestTransaction;
+use crate::smrol::consensus::{SequenceEntry, TransactionEntry};
 use serde::{Deserialize, Serialize};
 
 // 统一的SMROL消息枚举
@@ -52,6 +53,8 @@ pub enum SmrolMessage {
     // === 算法3: Consensus 消息 ===
     ConsensusProposal {
         epoch: u64,
+        m_e: Vec<TransactionEntry>,
+        s_e: Vec<SequenceEntry>,
         transactions: Vec<String>,
         merkle_root: [u8; 32],
         sender_id: usize,

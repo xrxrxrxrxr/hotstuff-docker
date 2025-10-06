@@ -226,7 +226,7 @@ impl SmrolManager {
 
     pub async fn should_invoke_consensus(&self, epoch: u64) -> bool {
         let consensus = self.consensus.lock().await;
-        consensus.get_mi_size(epoch) >= self.config.capital_k
+        consensus.get_mi_size(epoch) >= self.config.capital_k // line 39
     }
 
     // line 38: take over sequenced transaction and add to Mi and finalization

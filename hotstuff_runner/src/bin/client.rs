@@ -362,8 +362,9 @@ impl ClientNode {
         let mut batch_counter = 0;
 
         while Instant::now() < end_time {
-            // for node_offset in 0..node_num {// 🔥🔥 调试修改点
-                // let node_id = node_least_id + node_offset;
+            for node_offset in 0..node_num {// 🔥🔥 调试修改点
+            // for node_offset in 0..2 {
+                let node_id = node_least_id + node_offset;
                 let node_id = node_least_id; // 🔥🔥 调试修改点：只发给第一个节点
                 let transactions = self.tx_generator.generate_batch(batch_size as usize);
 
@@ -395,7 +396,7 @@ impl ClientNode {
                         );
                     }
                 }
-            // }
+            }
 
             batch_counter += 1;
 
@@ -403,9 +404,9 @@ impl ClientNode {
                 self.stats.log_summary();
             }
 
-            // tokio::time::sleep(batch_interval).await;
+            tokio::time::sleep(batch_interval).await;
             // 🔥🔥 调试修改点：120秒一个交易
-            tokio::time::sleep(Duration::from_secs(120)).await;
+            // tokio::time::sleep(Duration::from_millis(100)).await;
         }
 
         info!("🏁 负载测试完成，总计发送 {} 个交易", total_sent);

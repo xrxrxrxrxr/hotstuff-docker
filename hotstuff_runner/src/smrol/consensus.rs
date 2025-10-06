@@ -58,6 +58,7 @@ pub struct EpochState {
     pub t_e: HashSet<usize>,
     pub s_help: HashSet<(usize, u64)>,
     pub log_received: HashMap<usize, Vec<LogEntry>>,
+    pub consensus_output_triggered: bool,
 }
 
 impl EpochState {
@@ -71,6 +72,7 @@ impl EpochState {
             t_e: HashSet::new(),
             s_help: HashSet::new(),
             log_received: HashMap::new(),
+            consensus_output_triggered: false,
         }
     }
 }
@@ -170,6 +172,7 @@ impl Consensus {
         epoch_state.h_e = h_e;
         epoch_state.t_e.clear();
         epoch_state.s_help.clear();
+        epoch_state.consensus_output_triggered = false;
         for entry in &s_i_e {
             epoch_state.t_e.insert(entry.j);
         }
@@ -278,6 +281,8 @@ impl Consensus {
         }
         let message = SmrolMessage::ConsensusProposal {
             epoch,
+            m_e: m_e.clone(),
+            s_e: s_e.clone(),
             transactions,
             merkle_root,
             sender_id: self.process_id,
@@ -478,15 +483,18 @@ impl Consensus {
         match message {
             SmrolMessage::ConsensusProposal {
                 epoch,
+                m_e,
+                s_e,
                 transactions: _,
                 merkle_root: _,
-                sender_id: _,
+                sender_id: proposer_id,
             } => {
                 debug!(
                     "[Consensus] received proposal epoch={} from {}",
                     epoch, sender_id
                 );
-                self.handle_consensus_proposal(sender_id, epoch).await
+                self.handle_consensus_proposal(proposer_id, epoch, m_e, s_e)
+                    .await
             }
             SmrolMessage::ConsensusVote {
                 epoch,
@@ -508,7 +516,29 @@ impl Consensus {
         &mut self,
         _sender_id: usize,
         epoch: u64,
+        m_e: Vec<TransactionEntry>,
+        s_e: Vec<SequenceEntry>,
     ) -> Result<(), String> {
+        let state = self
+            .epoch_states
+            .entry(epoch)
+            .or_insert_with(EpochState::new);
+
+        if state.m_e.is_empty() && !m_e.is_empty() {
+            state.m_e = m_e.clone();
+            state.h_e = m_e
+                .iter()
+                .map(|entry| entry.s_tx)
+                .max()
+                .unwrap_or(state.h_e);
+        }
+
+        if state.s_e.is_empty() && !s_e.is_empty() {
+            state.s_e = s_e.clone();
+            state.t_e = s_e.iter().map(|entry| entry.j).collect();
+            state.s_help.clear();
+        }
+
         let vote = self.create_vote(epoch)?;
         self.broadcast_consensus_message(SmrolMessage::ConsensusVote {
             epoch,
@@ -530,13 +560,17 @@ impl Consensus {
             .or_insert_with(EpochState::new);
         state.votes.insert(sender_id, vote_signature);
 
-        if state.votes.len() == 2 * self.f + 1 {
+        let reached_quorum = state.votes.len() >= 2 * self.f + 1;
+        let already_triggered = state.consensus_output_triggered;
+
+        if reached_quorum && !already_triggered {
             info!(
                 "[Consensus] epoch={} reached quorum {}/{}",
                 epoch,
                 state.votes.len(),
                 2 * self.f + 1
             );
+            state.consensus_output_triggered = true;
             let m_e = state.m_e.clone();
             let s_e = state.s_e.clone();
             drop(state);
