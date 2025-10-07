@@ -350,7 +350,7 @@ impl ClientNode {
             config.target_tps, config.duration_secs);
 
         // 参数调整点：降低发送频率测latency
-        let is_latency = true;
+        let is_latency = false;
 
         let mut batch_size = std::cmp::max(100, config.target_tps / 5);
         let mut batch_interval = Duration::from_millis(200);
@@ -565,7 +565,8 @@ impl PersistentConnection {
         response_tx: tokio::sync::mpsc::UnboundedSender<ResponseCommand>,
     ) -> Result<Self, Box<dyn std::error::Error>> {
         let hostname = format!("node{}", node_id);
-        let port = 9000 + node_id as u16;
+        // let port = 9000 + node_id as u16;
+        let port = 9000;
         let addr_str = format!("{}:{}", hostname, port);
 
         info!("🔗 建立持久连接到节点 {}: {}", node_id, addr_str);
@@ -824,7 +825,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         }
                         // 🔥 修改：处理批量 consensus 响应
                         ResponseCommand::HotStuffCommitted { tx_ids } => { 
-                            // info!("🎉 收到 {} 个 Consensus 响应", tx_ids.len());
+                            info!("🎉 收到 {} 个 Consensus 响应", tx_ids.len());
                             latency_tracker.handle_consensus_response(tx_ids);
                         }
                         ResponseCommand::Error { tx_ids, error_msg } => {
