@@ -98,7 +98,7 @@ impl Node {
         let max_view_time_ms: u64 = std::env::var("HS_MAX_VIEW_TIME_MS")
             .ok()
             .and_then(|s| s.parse().ok())
-            .unwrap_or(700);
+            .unwrap_or(2000);
         warn!("Node {} 视图超时设置为 {} ms", node_id, max_view_time_ms);
         let progress_buf_cap: usize = std::env::var("HS_PROGRESS_BUF_CAP")
             .ok()

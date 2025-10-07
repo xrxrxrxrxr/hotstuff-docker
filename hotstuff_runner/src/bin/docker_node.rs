@@ -199,7 +199,8 @@ fn setup_tracing_logger(node_id: usize) {
 
 fn create_peer_address(i: usize) -> Result<SocketAddr, String> {
     let hostname = format!("node{}", i);
-    let port = 10000 + i as u16;
+    // let port = 10000 + i as u16;
+    let port = 10000;
     let addr_str = format!("{}:{}", hostname, port);
     
     info!("Trying to resolve address: {}", addr_str);
@@ -308,7 +309,7 @@ async fn handle_lockfree_client_connection(
                     })
                 }
                 SystemEvent::HotStuffCommitted { block_height, tx_ids } => {
-                    info!("[Event received] Node {} HotStuffCommitted: block_height={}, tx_ids={:?}", node_id, block_height, tx_ids);
+                    debug!("[Event received] Node {} HotStuffCommitted: block_height={}, tx_ids={:?}", node_id, block_height, tx_ids);
                     response_count += tx_ids.len();
                     serde_json::json!({
                         "message_type": "consensus_response", 
@@ -339,7 +340,7 @@ async fn handle_lockfree_client_connection(
                 error!("Node {} 响应发送失败", node_id);
                 break;
             }
-            debug!("***** Node {} 向客户端发送响应: {:?} tx_id:{:?}", node_id, response_json.get("message_type"), response_json.get("tx_ids"));
+            warn!("***** Node {} 向客户端发送响应: {:?} tx_id:{:?}", node_id, response_json.get("message_type"), response_json.get("tx_ids"));
             // 🔥 减少日志频率
             if response_count % 50 == 0 {
                 info!("Node {} 已发送 {} 个响应", node_id, response_count);
@@ -626,7 +627,7 @@ async fn main() -> Result<(), String> {
         .expect("NODE_ID must be a number");
     
     let my_port: u16 = env::var("NODE_PORT")
-        .unwrap_or_else(|_| (10000 + node_id).to_string())
+        .unwrap_or_else(|_| (10000).to_string())
         .parse()
         .expect("NODE_PORT must be a number");
 
@@ -818,14 +819,14 @@ async fn main() -> Result<(), String> {
        }
    });
     
-   let lockfree_stats_clone = Arc::clone(&lockfree_stats);
-   tokio::spawn(start_lockfree_performance_monitor(
-       node_id,
-       event_rx,
-       node_stats.clone(),
-       pompe_manager_clone,
-       lockfree_stats_clone,
-   ));
+//    let lockfree_stats_clone = Arc::clone(&lockfree_stats);
+//    tokio::spawn(start_lockfree_performance_monitor(
+//        node_id,
+//        event_rx,
+//        node_stats.clone(),
+//        pompe_manager_clone,
+//        lockfree_stats_clone,
+//    ));
 
    tokio::time::sleep(Duration::from_secs(5)).await;
     info!("网络连通性测试:");

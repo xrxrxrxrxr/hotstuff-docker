@@ -62,7 +62,7 @@ impl PompeNetwork {
                     .ok()
                     .and_then(|s| s.parse().ok())
                     .unwrap_or(20000);
-                base + node_id as u16
+                base //+ node_id as u16
             });
         let (tx, rx) = async_mpsc::unbounded_channel();
         // 创建独立的 Tokio 运行时（线程数可由环境变量 POMPE_RT_THREADS 配置，默认 2）
@@ -234,8 +234,6 @@ impl PompeNetwork {
             }
             sent.insert(message_id.clone(), std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs());
         }
-
-        let target_addr = format!("node{}:{}", target_node_id, 20000 + target_node_id);
         
         let network_msg = PompeNetworkMessage {
             from_node_id: self.node_id,
@@ -280,7 +278,7 @@ impl PompeNetwork {
 
         // 如果没有可用连接，建立新连接
         if !connection_used {
-            let target_addr = format!("node{}:{}", target_node_id, 20000 + target_node_id);
+            let target_addr = format!("node{}:{}", target_node_id, 20000);
             
             match TcpStream::connect(&target_addr).await {
                 Ok(stream) => {
