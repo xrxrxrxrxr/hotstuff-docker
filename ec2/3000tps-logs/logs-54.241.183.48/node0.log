@@ -1,0 +1,191 @@
+2025-10-08T12:25:03.041242Z  WARN ThreadId(01) hotstuff_runner::tcp_node: Node 0 视图超时设置为 2000 ms
+2025-10-08T12:25:03.046252Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 0 连接到节点 3 失败: Connection refused (os error 111)
+2025-10-08T12:25:05.043337Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 0 View 0 超时，可能导致延迟累积
+2025-10-08T12:25:08.046794Z ERROR ThreadId(01) docker_node: 节点 1 端口不可达: Connection refused (os error 111)
+2025-10-08T12:25:08.047358Z ERROR ThreadId(01) docker_node: 节点 2 端口不可达: Connection refused (os error 111)
+2025-10-08T12:25:08.048098Z ERROR ThreadId(01) docker_node: 节点 3 端口不可达: Connection refused (os error 111)
+2025-10-08T12:25:33.049401Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 1340 transactions
+2025-10-08T12:25:33.061374Z  WARN ThreadId(02) hotstuff_runner::pompe: 🧹 [清理] Node 0 清理 11400 个孤儿ordering1状态
+2025-10-08T12:25:38.049929Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 3425 transactions
+2025-10-08T12:25:43.049351Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 6959 transactions
+2025-10-08T12:25:48.049959Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 9969 transactions
+2025-10-08T12:25:53.049500Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 14094 transactions
+2025-10-08T12:25:58.049588Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 20382 transactions
+2025-10-08T12:26:03.049407Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 23547 transactions
+2025-10-08T12:26:03.116021Z  WARN ThreadId(03) hotstuff_runner::pompe: 🧹 [清理] Node 0 清理 44600 个孤儿ordering1状态
+2025-10-08T12:26:08.049331Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 30539 transactions
+2025-10-08T12:26:13.049598Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 37042 transactions
+2025-10-08T12:26:18.049754Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 41226 transactions
+2025-10-08T12:26:23.049851Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 48713 transactions
+2025-10-08T12:26:28.049667Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 56604 transactions
+2025-10-08T12:26:33.049401Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 63547 transactions
+2025-10-08T12:26:33.114538Z  WARN ThreadId(03) hotstuff_runner::pompe: 🧹 [清理] Node 0 清理 44600 个孤儿ordering1状态
+2025-10-08T12:26:38.049510Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 69651 transactions
+2025-10-08T12:26:43.049806Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 72679 transactions
+2025-10-08T12:26:48.050033Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 77484 transactions
+2025-10-08T12:26:53.049994Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 90420 transactions
+2025-10-08T12:26:58.049991Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 97250 transactions
+2025-10-08T12:27:03.049628Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 103500 transactions
+2025-10-08T12:27:03.111360Z  WARN ThreadId(03) hotstuff_runner::pompe: 🧹 [清理] Node 0 清理 44622 个孤儿ordering1状态
+2025-10-08T12:27:08.048943Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 111443 transactions
+2025-10-08T12:27:13.049722Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 118975 transactions
+2025-10-08T12:27:18.049293Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 124507 transactions
+2025-10-08T12:27:23.050210Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 132502 transactions
+2025-10-08T12:27:28.049880Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 134991 transactions
+2025-10-08T12:27:33.049310Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 148523 transactions
+2025-10-08T12:27:33.118342Z  WARN ThreadId(03) hotstuff_runner::pompe: 🧹 [清理] Node 0 清理 44629 个孤儿ordering1状态
+2025-10-08T12:27:38.049662Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 152425 transactions
+2025-10-08T12:27:43.049813Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 163155 transactions
+2025-10-08T12:27:48.049334Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 161588 transactions
+2025-10-08T12:27:53.049304Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 175357 transactions
+2025-10-08T12:27:58.056198Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 184190 transactions
+2025-10-08T12:28:03.050341Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 189560 transactions
+2025-10-08T12:28:03.129106Z  WARN ThreadId(02) hotstuff_runner::pompe: 🧹 [清理] Node 0 清理 44562 个孤儿ordering1状态
+2025-10-08T12:28:08.049791Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 195253 transactions
+2025-10-08T12:28:13.049483Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 207470 transactions
+2025-10-08T12:28:18.049422Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 205970 transactions
+2025-10-08T12:28:23.050190Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 221558 transactions
+2025-10-08T12:28:28.049759Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 231588 transactions
+2025-10-08T12:28:33.049358Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 240484 transactions
+2025-10-08T12:28:33.130402Z  WARN ThreadId(03) hotstuff_runner::pompe: 🧹 [清理] Node 0 清理 44694 个孤儿ordering1状态
+2025-10-08T12:28:38.049718Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 247817 transactions
+2025-10-08T12:28:43.050021Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 246317 transactions
+2025-10-08T12:28:48.049772Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 264069 transactions
+2025-10-08T12:28:53.049111Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 262569 transactions
+2025-10-08T12:28:58.049669Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 279829 transactions
+2025-10-08T12:29:03.049600Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 277829 transactions
+2025-10-08T12:29:03.133292Z  WARN ThreadId(03) hotstuff_runner::pompe: 🧹 [清理] Node 0 清理 44499 个孤儿ordering1状态
+2025-10-08T12:29:08.050149Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 298929 transactions
+2025-10-08T12:29:13.050837Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 305557 transactions
+2025-10-08T12:29:18.049813Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 313148 transactions
+2025-10-08T12:29:23.049469Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 315727 transactions
+2025-10-08T12:29:28.049160Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 328767 transactions
+2025-10-08T12:29:33.050326Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 337208 transactions
+2025-10-08T12:29:33.125496Z  WARN ThreadId(03) hotstuff_runner::pompe: 🧹 [清理] Node 0 清理 44749 个孤儿ordering1状态
+2025-10-08T12:29:38.050343Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 348070 transactions
+2025-10-08T12:29:43.051442Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 354112 transactions
+2025-10-08T12:29:48.049698Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 358434 transactions
+2025-10-08T12:29:53.049227Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 368252 transactions
+2025-10-08T12:29:58.049677Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 381554 transactions
+2025-10-08T12:30:03.049567Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 384839 transactions
+2025-10-08T12:30:03.126521Z  WARN ThreadId(03) hotstuff_runner::pompe: 🧹 [清理] Node 0 清理 44478 个孤儿ordering1状态
+2025-10-08T12:30:04.929583Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 0 View 2550 超时，可能导致延迟累积
+2025-10-08T12:30:08.049307Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 397059 transactions
+2025-10-08T12:30:13.049928Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 408682 transactions
+2025-10-08T12:30:18.050909Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 416099 transactions
+2025-10-08T12:30:23.049409Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 420199 transactions
+2025-10-08T12:30:28.049401Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 428576 transactions
+2025-10-08T12:30:33.051342Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 427076 transactions
+2025-10-08T12:30:33.093611Z  WARN ThreadId(03) hotstuff_runner::pompe: 🧹 [清理] Node 0 清理 33300 个孤儿ordering1状态
+2025-10-08T12:30:38.056743Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 426076 transactions
+2025-10-08T12:30:43.065243Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 425076 transactions
+2025-10-08T12:30:43.869389Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 0 View 2626 超时，可能导致延迟累积
+2025-10-08T12:30:48.465258Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 425076 transactions
+2025-10-08T12:30:48.732782Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 0 View 2628 超时，可能导致延迟累积
+2025-10-08T12:30:52.941085Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 0 View 2630 超时，可能导致延迟累积
+2025-10-08T12:30:53.518476Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 424576 transactions
+2025-10-08T12:30:54.960725Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 0 View 2631 超时，可能导致延迟累积
+2025-10-08T12:30:57.201985Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 0 View 2632 超时，可能导致延迟累积
+2025-10-08T12:30:58.279948Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 424076 transactions
+2025-10-08T12:30:59.616400Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 0 View 2633 超时，可能导致延迟累积
+2025-10-08T12:30:59.634417Z  WARN ThreadId(04) hotstuff_runner::tokio_network: peer [202, 147, 172, 23] 写失败: Broken pipe (os error 32)，重连
+2025-10-08T12:30:59.644739Z  WARN ThreadId(05) hotstuff_runner::tokio_network: peer [202, 147, 172, 23] 连接失败 172.31.30.167:10000: Connection refused (os error 111)，等待 100ms
+2025-10-08T12:30:59.957079Z  WARN ThreadId(04) hotstuff_runner::tokio_network: peer [202, 147, 172, 23] 连接失败 172.31.30.167:10000: Connection refused (os error 111)，等待 200ms
+2025-10-08T12:31:03.659745Z  WARN ThreadId(04) hotstuff_runner::tokio_network: peer [202, 147, 172, 23] 连接失败 172.31.30.167:10000: Connection refused (os error 111)，等待 400ms
+2025-10-08T12:31:03.667469Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 424076 transactions
+2025-10-08T12:31:03.674340Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 0 View 2634 超时，可能导致延迟累积
+2025-10-08T12:31:05.481866Z  WARN ThreadId(05) hotstuff_runner::tokio_network: peer [202, 147, 172, 23] 连接失败 172.31.30.167:10000: Connection refused (os error 111)，等待 800ms
+2025-10-08T12:31:06.019207Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 0 View 2635 超时，可能导致延迟累积
+2025-10-08T12:31:11.555140Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 424076 transactions
+2025-10-08T12:31:11.555327Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 0 View 2636 超时，可能导致延迟累积
+2025-10-08T12:31:11.563938Z  WARN ThreadId(05) hotstuff_runner::tokio_network: peer [202, 147, 172, 23] 连接失败 172.31.30.167:10000: Connection refused (os error 111)，等待 1.6s
+2025-10-08T12:31:17.257791Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 424076 transactions
+2025-10-08T12:31:17.292541Z  WARN ThreadId(05) hotstuff_runner::tokio_network: peer [202, 147, 172, 23] 连接失败 172.31.30.167:10000: Connection refused (os error 111)，等待 3s
+2025-10-08T12:31:22.454312Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 424076 transactions
+2025-10-08T12:31:26.195328Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423576 transactions
+2025-10-08T12:31:26.195387Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 0 View 2637 超时，可能导致延迟累积
+2025-10-08T12:31:26.194686Z  WARN ThreadId(05) hotstuff_runner::tokio_network: peer [237, 73, 40, 198] ping 写失败: Broken pipe (os error 32)
+2025-10-08T12:31:29.085754Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423576 transactions
+2025-10-08T12:31:35.586538Z  WARN ThreadId(05) hotstuff_runner::tokio_network: peer [237, 73, 40, 198] 连接失败 172.31.20.80:10000: Connection refused (os error 111)，等待 100ms
+2025-10-08T12:31:35.586475Z  WARN ThreadId(04) hotstuff_runner::tokio_network: peer [202, 147, 172, 23] 连接失败 172.31.30.167:10000: Connection refused (os error 111)，等待 3s
+2025-10-08T12:32:16.867511Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 423576 transactions
+2025-10-08T12:32:28.898638Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423576 transactions
+2025-10-08T12:32:28.898659Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423576 transactions
+2025-10-08T12:32:28.898666Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423576 transactions
+2025-10-08T12:32:28.898672Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423576 transactions
+2025-10-08T12:32:28.898678Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423576 transactions
+2025-10-08T12:32:28.898684Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423576 transactions
+2025-10-08T12:32:28.898690Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423576 transactions
+2025-10-08T12:32:28.898696Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423576 transactions
+2025-10-08T12:32:28.898701Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423576 transactions
+2025-10-08T12:32:28.898707Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423576 transactions
+2025-10-08T12:32:28.898713Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423576 transactions
+2025-10-08T12:32:28.656303Z  WARN ThreadId(04) hotstuff_runner::tokio_network: peer [237, 73, 40, 198] 连接失败 172.31.20.80:10000: Connection refused (os error 111)，等待 200ms
+2025-10-08T12:32:28.656360Z  WARN ThreadId(05) hotstuff_runner::tokio_network: peer [202, 147, 172, 23] 连接失败 172.31.30.167:10000: Connection refused (os error 111)，等待 3s
+2025-10-08T12:32:37.527061Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 423576 transactions
+2025-10-08T12:32:37.527105Z  WARN ThreadId(04) hotstuff_runner::tokio_network: peer [237, 73, 40, 198] 连接失败 172.31.20.80:10000: Connection refused (os error 111)，等待 400ms
+2025-10-08T12:32:37.534720Z  WARN ThreadId(05) hotstuff_runner::tokio_network: peer [202, 147, 172, 23] 连接失败 172.31.30.167:10000: Connection refused (os error 111)，等待 3s
+2025-10-08T12:32:49.309442Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 423576 transactions
+2025-10-08T12:32:50.458013Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 423576 transactions
+2025-10-08T12:32:50.464740Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 423576 transactions
+2025-10-08T12:32:50.457815Z  WARN ThreadId(04) hotstuff_runner::tokio_network: peer [237, 73, 40, 198] 连接失败 172.31.20.80:10000: Connection refused (os error 111)，等待 800ms
+2025-10-08T12:32:52.277497Z  WARN ThreadId(05) hotstuff_runner::tokio_network: peer [202, 147, 172, 23] 连接失败 172.31.30.167:10000: Connection refused (os error 111)，等待 3s
+2025-10-08T12:32:54.390096Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 423576 transactions
+2025-10-08T12:32:56.462742Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 0 View 2639 超时，可能导致延迟累积
+2025-10-08T12:32:55.942264Z  WARN ThreadId(04) hotstuff_runner::tokio_network: peer [237, 73, 40, 198] 连接失败 172.31.20.80:10000: Connection refused (os error 111)，等待 1.6s
+2025-10-08T12:33:04.066756Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 0 View 2640 超时，可能导致延迟累积
+2025-10-08T12:33:12.063690Z  WARN ThreadId(04) hotstuff_runner::tokio_network: peer [202, 147, 172, 23] 连接失败 172.31.30.167:10000: Connection refused (os error 111)，等待 3s
+2025-10-08T12:33:12.070039Z  WARN ThreadId(05) hotstuff_runner::tokio_network: peer [237, 73, 40, 198] 连接失败 172.31.20.80:10000: Connection refused (os error 111)，等待 3s
+2025-10-08T12:33:12.074693Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423576 transactions
+2025-10-08T12:33:12.074706Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423576 transactions
+2025-10-08T12:33:12.074710Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423576 transactions
+2025-10-08T12:33:20.966771Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 423576 transactions
+2025-10-08T12:33:22.248486Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 423576 transactions
+2025-10-08T12:33:27.145708Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 423576 transactions
+2025-10-08T12:33:26.945724Z  WARN ThreadId(04) hotstuff_runner::tokio_network: peer [237, 73, 40, 198] 连接失败 172.31.20.80:10000: Connection refused (os error 111)，等待 3s
+2025-10-08T12:33:26.945489Z  WARN ThreadId(05) hotstuff_runner::tokio_network: peer [202, 147, 172, 23] 连接失败 172.31.30.167:10000: Connection refused (os error 111)，等待 3s
+2025-10-08T12:33:28.876536Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423576 transactions
+2025-10-08T12:33:33.149328Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423576 transactions
+2025-10-08T12:33:33.190331Z  WARN ThreadId(05) hotstuff_runner::tokio_network: peer [202, 147, 172, 23] 连接失败 172.31.30.167:10000: Connection refused (os error 111)，等待 3s
+2025-10-08T12:33:33.190382Z  WARN ThreadId(04) hotstuff_runner::tokio_network: peer [237, 73, 40, 198] 连接失败 172.31.20.80:10000: Connection refused (os error 111)，等待 3s
+2025-10-08T12:33:44.961712Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423076 transactions
+2025-10-08T12:33:44.972300Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423076 transactions
+2025-10-08T12:33:51.830413Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423076 transactions
+2025-10-08T12:33:48.694131Z  WARN ThreadId(05) hotstuff_runner::tokio_network: peer [237, 73, 40, 198] 连接失败 172.31.20.80:10000: Connection refused (os error 111)，等待 3s
+2025-10-08T12:33:48.694211Z  WARN ThreadId(04) hotstuff_runner::tokio_network: peer [202, 147, 172, 23] 连接失败 172.31.30.167:10000: Connection refused (os error 111)，等待 3s
+2025-10-08T12:34:41.978918Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423076 transactions
+2025-10-08T12:34:42.000429Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423076 transactions
+2025-10-08T12:34:42.000440Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423076 transactions
+2025-10-08T12:34:42.000444Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423076 transactions
+2025-10-08T12:34:42.000449Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423076 transactions
+2025-10-08T12:34:42.000453Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423076 transactions
+2025-10-08T12:34:42.000458Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423076 transactions
+2025-10-08T12:34:42.000462Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423076 transactions
+2025-10-08T12:34:42.000466Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423076 transactions
+2025-10-08T12:34:42.000470Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423076 transactions
+2025-10-08T12:34:49.077467Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 423076 transactions
+2025-10-08T12:34:47.879521Z  WARN ThreadId(04) hotstuff_runner::tokio_network: peer [202, 147, 172, 23] 连接失败 172.31.30.167:10000: Connection refused (os error 111)，等待 3s
+2025-10-08T12:34:47.879332Z  WARN ThreadId(05) hotstuff_runner::tokio_network: peer [237, 73, 40, 198] 连接失败 172.31.20.80:10000: Connection refused (os error 111)，等待 3s
+2025-10-08T12:34:54.264993Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423076 transactions
+2025-10-08T12:35:03.884061Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423076 transactions
+2025-10-08T12:35:03.885413Z  WARN ThreadId(04) hotstuff_runner::tokio_network: peer [202, 147, 172, 23] 连接失败 172.31.30.167:10000: Connection refused (os error 111)，等待 3s
+2025-10-08T12:35:03.902064Z  WARN ThreadId(05) hotstuff_runner::tokio_network: peer [237, 73, 40, 198] 连接失败 172.31.20.80:10000: Connection refused (os error 111)，等待 3s
+2025-10-08T12:35:15.411436Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423076 transactions
+2025-10-08T12:35:15.421732Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423076 transactions
+2025-10-08T12:35:15.421742Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423076 transactions
+2025-10-08T12:35:15.421747Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 423076 transactions
+2025-10-08T12:35:16.008084Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 0 View 2643 超时，可能导致延迟累积
+2025-10-08T12:35:16.007146Z  WARN ThreadId(04) hotstuff_runner::tokio_network: peer [237, 73, 40, 198] 连接失败 172.31.20.80:10000: Connection refused (os error 111)，等待 3s
+2025-10-08T12:35:16.007312Z  WARN ThreadId(05) hotstuff_runner::tokio_network: peer [202, 147, 172, 23] 连接失败 172.31.30.167:10000: Connection refused (os error 111)，等待 3s
+2025-10-08T12:35:17.445580Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 0 View 2644 超时，可能导致延迟累积
+2025-10-08T12:35:18.051037Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 423076 transactions
+2025-10-08T12:35:19.022223Z  WARN ThreadId(04) hotstuff_runner::tokio_network: peer [202, 147, 172, 23] 连接失败 172.31.30.167:10000: Connection refused (os error 111)，等待 3s
+2025-10-08T12:35:19.022288Z  WARN ThreadId(05) hotstuff_runner::tokio_network: peer [237, 73, 40, 198] 连接失败 172.31.20.80:10000: Connection refused (os error 111)，等待 3s
+2025-10-08T12:35:19.440183Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 0 View 2645 超时，可能导致延迟累积
+2025-10-08T12:35:22.029773Z  WARN ThreadId(05) hotstuff_runner::tokio_network: peer [202, 147, 172, 23] 连接失败 172.31.30.167:10000: Connection refused (os error 111)，等待 3s
+2025-10-08T12:35:22.029822Z  WARN ThreadId(04) hotstuff_runner::tokio_network: peer [237, 73, 40, 198] 连接失败 172.31.20.80:10000: Connection refused (os error 111)，等待 3s
+2025-10-08T12:35:23.059324Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 422576 transactions
+2025-10-08T12:35:25.031714Z  WARN ThreadId(05) hotstuff_runner::tokio_network: peer [202, 147, 172, 23] 连接失败 172.31.30.167:10000: Connection refused (os error 111)，等待 3s
+2025-10-08T12:35:25.031756Z  WARN ThreadId(05) hotstuff_runner::tokio_network: peer [237, 73, 40, 198] 连接失败 172.31.20.80:10000: Connection refused (os error 111)，等待 3s
+2025-10-08T12:35:25.437583Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 0 View 2648 超时，可能导致延迟累积
+2025-10-08T12:35:27.444589Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 0 View 2649 超时，可能导致延迟累积

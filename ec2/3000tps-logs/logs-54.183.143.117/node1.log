@@ -1,0 +1,179 @@
+2025-10-08T12:25:02.964915Z  WARN ThreadId(01) hotstuff_runner::tcp_node: Node 1 视图超时设置为 2000 ms
+2025-10-08T12:25:02.969235Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 1 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:25:02.970874Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 1 连接到节点 2 失败: Connection refused (os error 111)
+2025-10-08T12:25:02.972793Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 1 连接到节点 3 失败: Connection refused (os error 111)
+2025-10-08T12:25:04.967031Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 1 View 0 超时，可能导致延迟累积
+2025-10-08T12:25:07.969160Z ERROR ThreadId(01) docker_node: 节点 1 端口不可达: Connection refused (os error 111)
+2025-10-08T12:25:07.969490Z ERROR ThreadId(01) docker_node: 节点 2 端口不可达: Connection refused (os error 111)
+2025-10-08T12:25:07.969742Z ERROR ThreadId(01) docker_node: 节点 3 端口不可达: Connection refused (os error 111)
+2025-10-08T12:25:32.970536Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 1653 transactions
+2025-10-08T12:25:32.984129Z  WARN ThreadId(02) hotstuff_runner::pompe: 🧹 [清理] Node 1 清理 11400 个孤儿ordering1状态
+2025-10-08T12:25:37.976905Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 3753 transactions
+2025-10-08T12:25:42.971196Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 7467 transactions
+2025-10-08T12:25:47.971221Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 10544 transactions
+2025-10-08T12:25:52.971036Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 15242 transactions
+2025-10-08T12:25:57.971383Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 19187 transactions
+2025-10-08T12:26:02.981079Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 24096 transactions
+2025-10-08T12:26:03.080553Z  WARN ThreadId(02) hotstuff_runner::pompe: 🧹 [清理] Node 1 清理 44400 个孤儿ordering1状态
+2025-10-08T12:26:07.970637Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 28794 transactions
+2025-10-08T12:26:12.970311Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 34615 transactions
+2025-10-08T12:26:17.971094Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 42323 transactions
+2025-10-08T12:26:22.971702Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 47537 transactions
+2025-10-08T12:26:27.970739Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 52928 transactions
+2025-10-08T12:26:32.970989Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 59946 transactions
+2025-10-08T12:26:33.021346Z  WARN ThreadId(03) hotstuff_runner::pompe: 🧹 [清理] Node 1 清理 44700 个孤儿ordering1状态
+2025-10-08T12:26:37.971253Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 66951 transactions
+2025-10-08T12:26:42.970719Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 73541 transactions
+2025-10-08T12:26:47.971004Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 81306 transactions
+2025-10-08T12:26:52.970820Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 78806 transactions
+2025-10-08T12:26:57.970979Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 96889 transactions
+2025-10-08T12:27:02.976763Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 104037 transactions
+2025-10-08T12:27:03.042242Z  WARN ThreadId(03) hotstuff_runner::pompe: 🧹 [清理] Node 1 清理 44559 个孤儿ordering1状态
+2025-10-08T12:27:07.970928Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 110878 transactions
+2025-10-08T12:27:12.971117Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 117947 transactions
+2025-10-08T12:27:17.970765Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 124793 transactions
+2025-10-08T12:27:22.973658Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 130764 transactions
+2025-10-08T12:27:27.971100Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 138623 transactions
+2025-10-08T12:27:32.970760Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 145017 transactions
+2025-10-08T12:27:33.010214Z  WARN ThreadId(02) hotstuff_runner::pompe: 🧹 [清理] Node 1 清理 44632 个孤儿ordering1状态
+2025-10-08T12:27:37.970832Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 153330 transactions
+2025-10-08T12:27:42.970152Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 158549 transactions
+2025-10-08T12:27:47.970764Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 167586 transactions
+2025-10-08T12:27:52.970821Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 172708 transactions
+2025-10-08T12:27:57.971051Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 181789 transactions
+2025-10-08T12:28:02.970828Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 181882 transactions
+2025-10-08T12:28:03.047961Z  WARN ThreadId(02) hotstuff_runner::pompe: 🧹 [清理] Node 1 清理 44700 个孤儿ordering1状态
+2025-10-08T12:28:07.971147Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 179882 transactions
+2025-10-08T12:28:12.971205Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 196944 transactions
+2025-10-08T12:28:17.971125Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 210112 transactions
+2025-10-08T12:28:22.971032Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 220459 transactions
+2025-10-08T12:28:27.971049Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 219459 transactions
+2025-10-08T12:28:32.970892Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 235443 transactions
+2025-10-08T12:28:33.026650Z  WARN ThreadId(02) hotstuff_runner::pompe: 🧹 [清理] Node 1 清理 44400 个孤儿ordering1状态
+2025-10-08T12:28:37.971155Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 244177 transactions
+2025-10-08T12:28:42.970144Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 242677 transactions
+2025-10-08T12:28:47.971029Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 260198 transactions
+2025-10-08T12:28:52.970517Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 269725 transactions
+2025-10-08T12:28:57.970751Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 275903 transactions
+2025-10-08T12:29:02.971708Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 281843 transactions
+2025-10-08T12:29:03.048833Z  WARN ThreadId(03) hotstuff_runner::pompe: 🧹 [清理] Node 1 清理 44700 个孤儿ordering1状态
+2025-10-08T12:29:07.981091Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 292363 transactions
+2025-10-08T12:29:12.970566Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 301160 transactions
+2025-10-08T12:29:17.971641Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 307547 transactions
+2025-10-08T12:29:22.974910Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 318331 transactions
+2025-10-08T12:29:27.970984Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 325863 transactions
+2025-10-08T12:29:32.970752Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 332597 transactions
+2025-10-08T12:29:33.017614Z  WARN ThreadId(03) hotstuff_runner::pompe: 🧹 [清理] Node 1 清理 44400 个孤儿ordering1状态
+2025-10-08T12:29:37.978113Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 331097 transactions
+2025-10-08T12:29:42.971361Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 349147 transactions
+2025-10-08T12:29:47.980868Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 347647 transactions
+2025-10-08T12:29:52.971109Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 367389 transactions
+2025-10-08T12:29:57.973892Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 375890 transactions
+2025-10-08T12:30:02.970464Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 381146 transactions
+2025-10-08T12:30:03.029682Z  WARN ThreadId(03) hotstuff_runner::pompe: 🧹 [清理] Node 1 清理 44711 个孤儿ordering1状态
+2025-10-08T12:30:05.422653Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 1 View 2550 超时，可能导致延迟累积
+2025-10-08T12:30:07.971185Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 392356 transactions
+2025-10-08T12:30:12.970887Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 398580 transactions
+2025-10-08T12:30:17.973774Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 407186 transactions
+2025-10-08T12:30:22.971648Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 415079 transactions
+2025-10-08T12:30:27.977520Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 420867 transactions
+2025-10-08T12:30:32.974901Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 418867 transactions
+2025-10-08T12:30:33.017939Z  WARN ThreadId(02) hotstuff_runner::pompe: 🧹 [清理] Node 1 清理 33350 个孤儿ordering1状态
+2025-10-08T12:30:37.973549Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 417367 transactions
+2025-10-08T12:30:43.005269Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 416867 transactions
+2025-10-08T12:30:44.197991Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 1 View 2626 超时，可能导致延迟累积
+2025-10-08T12:34:01.745184Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416867 transactions
+2025-10-08T12:35:51.347658Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416867 transactions
+2025-10-08T12:38:01.691589Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416867 transactions
+2025-10-08T12:38:03.503414Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.503461Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.503471Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.503479Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.503674Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.503683Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.503690Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.503697Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.503704Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504147Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504168Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504175Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504183Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504203Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504209Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504215Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504221Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504227Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504233Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504239Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504245Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504251Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504257Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504262Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504268Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504467Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504477Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504483Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504489Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504495Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504502Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504508Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504513Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504519Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504525Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504531Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504536Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504542Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504548Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504554Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504560Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504566Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504572Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504577Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504584Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504589Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504775Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504800Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504805Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504811Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504817Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504825Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504830Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504836Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504842Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504848Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504853Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504859Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504865Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504871Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504876Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504882Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504888Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504893Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504899Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504905Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.504911Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.505255Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.505263Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.505269Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.505275Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.505280Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.505286Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.505291Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.505297Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.505302Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.505308Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.505315Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.505321Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.505327Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.505338Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.505343Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.505349Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.505354Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:03.505360Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:07.981783Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 416367 transactions
+2025-10-08T12:38:08.576444Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 1 View 2629 超时，可能导致延迟累积
+2025-10-08T12:38:10.580944Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 1 View 2630 超时，可能导致延迟累积
+2025-10-08T12:38:12.604064Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 1 View 2631 超时，可能导致延迟累积
+2025-10-08T12:38:12.971036Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 415867 transactions
+2025-10-08T12:38:16.622793Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 1 View 2633 超时，可能导致延迟累积
+2025-10-08T12:38:17.982749Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 415867 transactions
