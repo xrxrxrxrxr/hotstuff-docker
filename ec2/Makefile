@@ -12,7 +12,7 @@ HOST_IPS := $(shell grep -v private hosts.txt | awk '{print $$1}')
 SSH_OPTS = -i $(SSH_KEY) -o StrictHostKeyChecking=accept-new -o BatchMode=yes -o ConnectTimeout=8
 
 
-.PHONY: init deploy start stop logs known_hosts ping hosts-clean clean-ec2
+.PHONY: init deploy start stop logs known_hosts ping hosts-clean clean-ec2 clean
 
 known_hosts:
 	@echo "🔐 初始化 known_hosts..."
@@ -81,6 +81,14 @@ hosts-clean:
 		ssh-keygen -R $$ip >/dev/null 2>&1; \
 	done
 	@echo "✅ EC2 IP 已清理完毕"
+
+clean:
+	@echo "🧹 开始清理 log..."
+	@for ip in $$(awk '{if ($$1 !~ /^172\./ && ($$2 ~ /^node/ || $$2 ~ /^client/)) print $$1}' hosts.txt); do \
+		echo "→ 清理 $$ip ..."; \
+		ssh $(SSH_OPTS) ubuntu@$$ip "sudo rm -rf ~/hotstuff/logs/*" || echo "⚠️ $$ip 清理失败"; \
+	done
+	@echo "✅ 清理完成"
 
 clean-ec2:
 	@echo "🧹 开始清理 EC2 节点数据（仅公网IP）..."
