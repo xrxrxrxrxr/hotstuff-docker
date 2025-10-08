@@ -1,0 +1,227 @@
+2025-10-08T12:06:15.584486Z  WARN ThreadId(01) hotstuff_runner::tcp_node: Node 2 视图超时设置为 2000 ms
+2025-10-08T12:06:15.589819Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:06:15.590190Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:06:15.590557Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 3 失败: Connection refused (os error 111)
+2025-10-08T12:06:17.585666Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 2 View 0 超时，可能导致延迟累积
+2025-10-08T12:06:20.590169Z ERROR ThreadId(01) docker_node: 节点 1 端口不可达: Connection refused (os error 111)
+2025-10-08T12:06:20.590390Z ERROR ThreadId(01) docker_node: 节点 2 端口不可达: Connection refused (os error 111)
+2025-10-08T12:06:20.590563Z ERROR ThreadId(01) docker_node: 节点 3 端口不可达: Connection refused (os error 111)
+2025-10-08T12:06:45.594673Z  WARN ThreadId(02) hotstuff_runner::pompe: 🧹 [清理] Node 2 清理 6480 个孤儿ordering1状态
+2025-10-08T12:06:55.591784Z  WARN ThreadId(03) docker_node: Node 2 Regular transaction queue backlog: 1527 transactions
+2025-10-08T12:07:00.592058Z  WARN ThreadId(03) docker_node: Node 2 Regular transaction queue backlog: 2307 transactions
+2025-10-08T12:07:05.593485Z  WARN ThreadId(03) docker_node: Node 2 Regular transaction queue backlog: 2304 transactions
+2025-10-08T12:07:15.592491Z  WARN ThreadId(02) docker_node: Node 2 Regular transaction queue backlog: 3479 transactions
+2025-10-08T12:07:15.648482Z  WARN ThreadId(03) hotstuff_runner::pompe: 🧹 [清理] Node 2 清理 26820 个孤儿ordering1状态
+2025-10-08T12:07:20.596374Z  WARN ThreadId(03) docker_node: Node 2 Regular transaction queue backlog: 5043 transactions
+2025-10-08T12:07:25.591929Z  WARN ThreadId(03) docker_node: Node 2 Regular transaction queue backlog: 5576 transactions
+2025-10-08T12:07:30.591864Z  WARN ThreadId(03) docker_node: Node 2 Regular transaction queue backlog: 7861 transactions
+2025-10-08T12:07:35.592641Z  WARN ThreadId(02) docker_node: Node 2 Regular transaction queue backlog: 10011 transactions
+2025-10-08T12:07:40.591402Z  WARN ThreadId(03) docker_node: Node 2 Regular transaction queue backlog: 12824 transactions
+2025-10-08T12:07:45.592481Z  WARN ThreadId(03) docker_node: Node 2 Regular transaction queue backlog: 15651 transactions
+2025-10-08T12:07:45.625989Z  WARN ThreadId(02) hotstuff_runner::pompe: 🧹 [清理] Node 2 清理 26640 个孤儿ordering1状态
+2025-10-08T12:07:50.591991Z  WARN ThreadId(02) docker_node: Node 2 Regular transaction queue backlog: 19440 transactions
+2025-10-08T12:07:55.591467Z  WARN ThreadId(02) docker_node: Node 2 Regular transaction queue backlog: 23839 transactions
+2025-10-08T12:08:00.593824Z  WARN ThreadId(03) docker_node: Node 2 Regular transaction queue backlog: 26449 transactions
+2025-10-08T12:08:05.593432Z  WARN ThreadId(03) docker_node: Node 2 Regular transaction queue backlog: 28138 transactions
+2025-10-08T12:08:10.591437Z  WARN ThreadId(03) docker_node: Node 2 Regular transaction queue backlog: 30875 transactions
+2025-10-08T12:08:15.592481Z  WARN ThreadId(03) docker_node: Node 2 Regular transaction queue backlog: 28875 transactions
+2025-10-08T12:08:15.634799Z  WARN ThreadId(02) hotstuff_runner::pompe: 🧹 [清理] Node 2 清理 26820 个孤儿ordering1状态
+2025-10-08T12:08:20.593478Z  WARN ThreadId(03) docker_node: Node 2 Regular transaction queue backlog: 36580 transactions
+2025-10-08T12:08:25.592206Z  WARN ThreadId(03) docker_node: Node 2 Regular transaction queue backlog: 40795 transactions
+2025-10-08T12:08:30.591837Z  WARN ThreadId(03) docker_node: Node 2 Regular transaction queue backlog: 44516 transactions
+2025-10-08T12:08:35.592247Z  WARN ThreadId(02) docker_node: Node 2 Regular transaction queue backlog: 47660 transactions
+2025-10-08T12:08:40.591528Z  WARN ThreadId(03) docker_node: Node 2 Regular transaction queue backlog: 52164 transactions
+2025-10-08T12:08:45.592482Z  WARN ThreadId(03) docker_node: Node 2 Regular transaction queue backlog: 52062 transactions
+2025-10-08T12:08:45.629479Z  WARN ThreadId(03) hotstuff_runner::pompe: 🧹 [清理] Node 2 清理 26820 个孤儿ordering1状态
+2025-10-08T12:08:50.591632Z  WARN ThreadId(02) docker_node: Node 2 Regular transaction queue backlog: 59622 transactions
+2025-10-08T12:08:55.594680Z  WARN ThreadId(03) docker_node: Node 2 Regular transaction queue backlog: 62197 transactions
+2025-10-08T12:09:00.591447Z  WARN ThreadId(02) docker_node: Node 2 Regular transaction queue backlog: 63197 transactions
+2025-10-08T12:09:05.591795Z  WARN ThreadId(02) docker_node: Node 2 Regular transaction queue backlog: 64431 transactions
+2025-10-08T12:09:10.592136Z  WARN ThreadId(03) docker_node: Node 2 Regular transaction queue backlog: 71418 transactions
+2025-10-08T12:09:15.592488Z  WARN ThreadId(03) docker_node: Node 2 Regular transaction queue backlog: 74818 transactions
+2025-10-08T12:09:15.632654Z  WARN ThreadId(02) hotstuff_runner::pompe: 🧹 [清理] Node 2 清理 26640 个孤儿ordering1状态
+2025-10-08T12:09:20.591499Z  WARN ThreadId(02) docker_node: Node 2 Regular transaction queue backlog: 74547 transactions
+2025-10-08T12:09:25.592050Z  WARN ThreadId(02) docker_node: Node 2 Regular transaction queue backlog: 73047 transactions
+2025-10-08T12:09:30.591758Z  WARN ThreadId(03) docker_node: Node 2 Regular transaction queue backlog: 71547 transactions
+2025-10-08T12:09:35.591069Z  WARN ThreadId(03) docker_node: Node 2 Regular transaction queue backlog: 91164 transactions
+2025-10-08T12:09:40.591875Z  WARN ThreadId(03) docker_node: Node 2 Regular transaction queue backlog: 95322 transactions
+2025-10-08T12:09:45.591677Z  WARN ThreadId(03) docker_node: Node 2 Regular transaction queue backlog: 98317 transactions
+2025-10-08T12:09:45.618800Z  WARN ThreadId(02) hotstuff_runner::pompe: 🧹 [清理] Node 2 清理 26820 个孤儿ordering1状态
+2025-10-08T12:09:50.592344Z  WARN ThreadId(02) docker_node: Node 2 Regular transaction queue backlog: 103788 transactions
+2025-10-08T12:09:55.592885Z  WARN ThreadId(03) docker_node: Node 2 Regular transaction queue backlog: 107349 transactions
+2025-10-08T12:10:00.591543Z  WARN ThreadId(02) docker_node: Node 2 Regular transaction queue backlog: 113053 transactions
+2025-10-08T12:10:03.234042Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 -> Node 0 连接断开，将重新建立
+2025-10-08T12:10:03.234646Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.234708Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.234947Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 -> Node 1 连接断开，将重新建立
+2025-10-08T12:10:03.235077Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.235250Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.235278Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.235542Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.236605Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.236754Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.237232Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.237566Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.237679Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.239812Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.239887Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.239907Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.240297Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.243464Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.243601Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.244054Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.245252Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.245282Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.245986Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.246794Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.246831Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.248782Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.248942Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.249084Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.249496Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.250103Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.250132Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.250678Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.251553Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.251619Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.253582Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.253622Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.253641Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.254153Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.254323Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.254436Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.254884Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.255008Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.255026Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.255561Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.255684Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.255708Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.256157Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.256466Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.256526Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.258504Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.258537Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.258562Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.258988Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.259104Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.259199Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.259580Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.262632Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.262686Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.263439Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.264564Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.264613Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.265109Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.265789Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.265866Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.266489Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.266556Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.266580Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.267055Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.267227Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.267326Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.267746Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.267864Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.267885Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.269638Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.269676Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.269875Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.270226Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.270298Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.270484Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.270938Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.271084Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.271117Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.273675Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.273763Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.273854Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.274308Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.274541Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.274611Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.275063Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.275119Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.275142Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.275485Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.275658Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.275756Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.276020Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.278283Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.278319Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.278748Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.278801Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.278987Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.279213Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.279430Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.279491Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.279875Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.279906Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.280034Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.280548Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.280582Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.280606Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.282742Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.282900Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.282927Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.283396Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.284054Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.284091Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.284549Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.284614Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.284637Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.285147Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.285283Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.285407Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.287511Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.287732Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.287838Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.288225Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.288753Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.288882Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.289126Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.289564Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.289587Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.290091Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.290176Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.290206Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.290658Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.290793Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.290931Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.291454Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.292129Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.292249Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.293174Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.293808Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.293945Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.295660Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.298064Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.298094Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.298764Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.298994Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.299045Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.299509Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.299744Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.299832Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.300136Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.300300Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.300324Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.300825Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.301009Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.301100Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.301397Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.301484Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.301732Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.302112Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.303390Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.303539Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.303830Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.304578Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.304603Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.305162Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.307726Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.307850Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.308310Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.309454Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.310440Z  WARN ThreadId(11) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]
+2025-10-08T12:10:03.310924Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 0 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.315856Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T12:10:03.315917Z  WARN ThreadId(10) hotstuff_runner::pompe_network: ⚠️ Node 2 Pompe广播部分失败: ["Node 0: 连接失败: Connection refused (os error 111)", "Node 1: 连接失败: Connection refused (os error 111)"]

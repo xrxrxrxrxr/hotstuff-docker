@@ -1,0 +1,31 @@
+2025-10-08T11:32:04.402796Z  WARN ThreadId(01) hotstuff_runner::tcp_node: Node 2 视图超时设置为 2000 ms
+2025-10-08T11:32:04.406273Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-08T11:32:04.406503Z ERROR ThreadId(10) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 3 失败: Connection refused (os error 111)
+2025-10-08T11:32:06.403984Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 2 View 0 超时，可能导致延迟累积
+2025-10-08T11:32:09.410254Z ERROR ThreadId(01) docker_node: 节点 1 端口不可达: Connection refused (os error 111)
+2025-10-08T11:32:09.410461Z ERROR ThreadId(01) docker_node: 节点 2 端口不可达: Connection refused (os error 111)
+2025-10-08T11:32:09.410649Z ERROR ThreadId(01) docker_node: 节点 3 端口不可达: Connection refused (os error 111)
+2025-10-08T11:32:34.408072Z  WARN ThreadId(02) hotstuff_runner::pompe: 🧹 [清理] Node 2 清理 2160 个孤儿ordering1状态
+2025-10-08T11:33:04.420434Z  WARN ThreadId(02) hotstuff_runner::pompe: 🧹 [清理] Node 2 清理 8940 个孤儿ordering1状态
+2025-10-08T11:33:34.419474Z  WARN ThreadId(03) hotstuff_runner::pompe: 🧹 [清理] Node 2 清理 8940 个孤儿ordering1状态
+2025-10-08T11:34:04.413107Z  WARN ThreadId(02) hotstuff_runner::pompe: 🧹 [清理] Node 2 清理 8940 个孤儿ordering1状态
+2025-10-08T11:34:19.412173Z  WARN ThreadId(03) docker_node: Node 2 Regular transaction queue backlog: 1420 transactions
+2025-10-08T11:34:34.416309Z  WARN ThreadId(02) hotstuff_runner::pompe: 🧹 [清理] Node 2 清理 8940 个孤儿ordering1状态
+2025-10-08T11:35:04.426853Z  WARN ThreadId(03) hotstuff_runner::pompe: 🧹 [清理] Node 2 清理 8940 个孤儿ordering1状态
+2025-10-08T11:35:19.412478Z  WARN ThreadId(02) docker_node: Node 2 Regular transaction queue backlog: 1777 transactions
+2025-10-08T11:35:34.416258Z  WARN ThreadId(02) hotstuff_runner::pompe: 🧹 [清理] Node 2 清理 8940 个孤儿ordering1状态
+2025-10-08T11:35:54.412414Z  WARN ThreadId(03) docker_node: Node 2 Regular transaction queue backlog: 1191 transactions
+2025-10-08T11:36:04.414760Z  WARN ThreadId(02) hotstuff_runner::pompe: 🧹 [清理] Node 2 清理 8940 个孤儿ordering1状态
+2025-10-08T11:36:09.412100Z  WARN ThreadId(02) docker_node: Node 2 Regular transaction queue backlog: 1817 transactions
+2025-10-08T11:36:34.412749Z  WARN ThreadId(02) docker_node: Node 2 Regular transaction queue backlog: 1131 transactions
+2025-10-08T11:36:34.418740Z  WARN ThreadId(03) hotstuff_runner::pompe: 🧹 [清理] Node 2 清理 8880 个孤儿ordering1状态
+2025-10-08T11:36:54.412159Z  WARN ThreadId(02) docker_node: Node 2 Regular transaction queue backlog: 1592 transactions
+2025-10-08T11:36:59.412339Z  WARN ThreadId(02) docker_node: Node 2 Regular transaction queue backlog: 1147 transactions
+2025-10-08T11:37:04.415936Z  WARN ThreadId(03) hotstuff_runner::pompe: 🧹 [清理] Node 2 清理 8940 个孤儿ordering1状态
+2025-10-08T11:37:09.412767Z  WARN ThreadId(03) docker_node: Node 2 Regular transaction queue backlog: 2296 transactions
+2025-10-08T11:37:14.413756Z  WARN ThreadId(02) docker_node: Node 2 Regular transaction queue backlog: 1248 transactions
+2025-10-08T11:37:24.412870Z  WARN ThreadId(02) docker_node: Node 2 Regular transaction queue backlog: 1985 transactions
+2025-10-08T11:37:34.410535Z  WARN ThreadId(03) hotstuff_runner::pompe: 🧹 [清理] Node 2 清理 6780 个孤儿ordering1状态
+2025-10-08T11:39:28.827609Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 2 View 4347 超时，可能导致延迟累积
+2025-10-08T11:39:29.037991Z  WARN ThreadId(08) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[77, 253, 119, 242, 103, 115, 223, 141, 205, 210, 74, 141, 254, 107, 220, 8, 78, 172, 251, 227, 120, 2, 162, 98, 238, 113, 67, 116, 145, 210, 83, 110] view=4344 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=true (exists=true) | cond3(view>locked || extends)=false (pc.view=4344, locked.view=4345, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[0, 119, 182, 184, 172, 228, 118, 181, 106, 17, 21, 42, 84, 218, 49, 50, 95, 145, 59, 224, 224, 47, 134, 91, 55, 156, 104, 20, 46, 246, 209, 94] highest_pc.view=4346 locked.block=[41, 164, 55, 248, 65, 231, 211, 129, 224, 225, 193, 139, 195, 24, 2, 164, 167, 120, 52, 164, 135, 31, 5, 94, 60, 246, 116, 96, 74, 166, 254, 62] locked.view=4345    
+2025-10-08T11:39:29.038118Z  WARN ThreadId(08) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[19, 129, 27, 183, 98, 170, 180, 55, 188, 200, 119, 238, 60, 212, 136, 75, 120, 201, 37, 33, 246, 244, 253, 95, 172, 215, 93, 108, 27, 233, 104, 222] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[77, 253, 119, 242, 103, 115, 223, 141, 205, 210, 74, 141, 254, 107, 220, 8, 78, 172, 251, 227, 120, 2, 162, 98, 238, 113, 67, 116, 145, 210, 83, 110] justify.view=4344 | highest_pc.block=[0, 119, 182, 184, 172, 228, 118, 181, 106, 17, 21, 42, 84, 218, 49, 50, 95, 145, 59, 224, 224, 47, 134, 91, 55, 156, 104, 20, 46, 246, 209, 94] highest_pc.view=4346 | locked.block=[41, 164, 55, 248, 65, 231, 211, 129, 224, 225, 193, 139, 195, 24, 2, 164, 167, 120, 52, 164, 135, 31, 5, 94, 60, 246, 116, 96, 74, 166, 254, 62] locked.view=4345    

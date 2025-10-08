@@ -1,0 +1,47 @@
+2025-10-08T12:06:15.701023Z  WARN ThreadId(01) hotstuff_runner::tcp_node: Node 1 视图超时设置为 2000 ms
+2025-10-08T12:06:20.705074Z ERROR ThreadId(01) docker_node: 节点 1 端口不可达: Connection refused (os error 111)
+2025-10-08T12:06:20.705767Z ERROR ThreadId(01) docker_node: 节点 2 端口不可达: Connection refused (os error 111)
+2025-10-08T12:06:20.705999Z ERROR ThreadId(01) docker_node: 节点 3 端口不可达: Connection refused (os error 111)
+2025-10-08T12:06:45.721644Z  WARN ThreadId(02) hotstuff_runner::pompe: 🧹 [清理] Node 1 清理 6660 个孤儿ordering1状态
+2025-10-08T12:07:05.707540Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 1009 transactions
+2025-10-08T12:07:10.709929Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 1866 transactions
+2025-10-08T12:07:15.709863Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 2080 transactions
+2025-10-08T12:07:15.748901Z  WARN ThreadId(03) hotstuff_runner::pompe: 🧹 [清理] Node 1 清理 26674 个孤儿ordering1状态
+2025-10-08T12:07:20.708999Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 3468 transactions
+2025-10-08T12:07:25.707481Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 4347 transactions
+2025-10-08T12:07:30.706885Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 6276 transactions
+2025-10-08T12:07:35.706947Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 8315 transactions
+2025-10-08T12:07:40.706982Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 12360 transactions
+2025-10-08T12:07:45.706793Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 16092 transactions
+2025-10-08T12:07:45.733130Z  WARN ThreadId(03) hotstuff_runner::pompe: 🧹 [清理] Node 1 清理 26820 个孤儿ordering1状态
+2025-10-08T12:07:50.707200Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 19088 transactions
+2025-10-08T12:07:55.707237Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 22432 transactions
+2025-10-08T12:08:00.707065Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 24545 transactions
+2025-10-08T12:08:05.707068Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 27407 transactions
+2025-10-08T12:08:10.706703Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 28166 transactions
+2025-10-08T12:08:15.707710Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 32903 transactions
+2025-10-08T12:08:15.746229Z  WARN ThreadId(02) hotstuff_runner::pompe: 🧹 [清理] Node 1 清理 26786 个孤儿ordering1状态
+2025-10-08T12:08:20.707782Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 34941 transactions
+2025-10-08T12:08:25.707378Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 38748 transactions
+2025-10-08T12:08:30.707934Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 43493 transactions
+2025-10-08T12:08:35.706995Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 45581 transactions
+2025-10-08T12:08:40.707247Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 50142 transactions
+2025-10-08T12:08:45.706693Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 51721 transactions
+2025-10-08T12:08:45.742643Z  WARN ThreadId(03) hotstuff_runner::pompe: 🧹 [清理] Node 1 清理 26735 个孤儿ordering1状态
+2025-10-08T12:08:50.706926Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 56166 transactions
+2025-10-08T12:08:55.706656Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 60237 transactions
+2025-10-08T12:09:00.706871Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 60523 transactions
+2025-10-08T12:09:05.707062Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 64220 transactions
+2025-10-08T12:09:10.706907Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 70023 transactions
+2025-10-08T12:09:15.707716Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 73539 transactions
+2025-10-08T12:09:15.771256Z  WARN ThreadId(03) hotstuff_runner::pompe: 🧹 [清理] Node 1 清理 26760 个孤儿ordering1状态
+2025-10-08T12:09:20.706943Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 73267 transactions
+2025-10-08T12:09:25.706995Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 80576 transactions
+2025-10-08T12:09:30.707094Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 84505 transactions
+2025-10-08T12:09:35.718075Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 88481 transactions
+2025-10-08T12:09:40.706770Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 90210 transactions
+2025-10-08T12:09:45.706762Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 97254 transactions
+2025-10-08T12:09:45.732460Z  WARN ThreadId(03) hotstuff_runner::pompe: 🧹 [清理] Node 1 清理 26940 个孤儿ordering1状态
+2025-10-08T12:09:50.711860Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 101404 transactions
+2025-10-08T12:09:55.707801Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 106109 transactions
+2025-10-08T12:10:00.707696Z  WARN ThreadId(03) docker_node: Node 1 Regular transaction queue backlog: 110057 transactions

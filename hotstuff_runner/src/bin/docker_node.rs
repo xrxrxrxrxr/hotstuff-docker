@@ -27,8 +27,35 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use serde::{Serialize, Deserialize};
 use std::sync::atomic::{AtomicUsize, AtomicU64, Ordering};
 use crossbeam::queue::SegQueue;
-use std::time::Instant;
+use std::time::Instant;      
+use std::sync::OnceLock;
 
+static HOST_MAP: OnceLock<HashMap<String, String>> = OnceLock::new();
+
+pub fn resolve_target(target_id: usize, port: u16) -> String {
+    let target_name = format!("node{}", target_id);
+
+    // 初始化 HOST_MAP（只执行一次）
+    let map = HOST_MAP.get_or_init(|| {
+        let hosts_str = std::env::var("NODE_HOSTS")
+            .unwrap_or_else(|_| panic!("NODE_HOSTS environment variable not set"));
+        hosts_str
+            .split(',')
+            .filter_map(|entry| {
+                let mut parts = entry.split(':');
+                let name = parts.next()?.trim().to_string();
+                let ip = parts.next()?.trim().to_string();
+                Some((name, ip))
+            })
+            .collect::<HashMap<_, _>>()
+    });
+
+    let host_ip = map
+        .get(&target_name)
+        .unwrap_or_else(|| panic!("Target {} not found in NODE_HOSTS", target_name));
+
+    format!("{}:{}", host_ip, port)
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ClientMessage {
@@ -201,7 +228,8 @@ fn create_peer_address(i: usize) -> Result<SocketAddr, String> {
     let hostname = format!("node{}", i);
     // let port = 10000 + i as u16;
     let port = 10000;
-    let addr_str = format!("{}:{}", hostname, port);
+    let addr_str = resolve_target(i, port);
+    // let addr_str = format!("{}:{}", hostname, port);
     
     info!("Trying to resolve address: {}", addr_str);
     
@@ -340,7 +368,7 @@ async fn handle_lockfree_client_connection(
                 error!("Node {} 响应发送失败", node_id);
                 break;
             }
-            warn!("***** Node {} 向客户端发送响应: {:?} tx_id:{:?}", node_id, response_json.get("message_type"), response_json.get("tx_ids"));
+            debug!("***** Node {} 向客户端发送响应: {:?} tx_id:{:?}", node_id, response_json.get("message_type"), response_json.get("tx_ids"));
             // 🔥 减少日志频率
             if response_count % 50 == 0 {
                 info!("Node {} 已发送 {} 个响应", node_id, response_count);

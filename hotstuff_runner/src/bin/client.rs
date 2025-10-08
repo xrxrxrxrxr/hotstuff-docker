@@ -66,30 +66,34 @@ pub enum ResponseCommand {
     Error { tx_ids: Vec<u64>, error_msg: String },
 }
 
-// #[derive(Serialize, Deserialize, Debug, Clone)]
-// pub enum ResponseMessageContent {
-//     Ordering1Response {
-//         tx_id: u64,
-//         timestamp_us: u64,
-//         node_id: usize,
-//     },
-//     HotStuffCommitted {
-//         tx_id: u64,
-//         timestamp_us: u64,
-//         node_id: usize,
-//     },
-//     Error {
-//         tx_id: u64,
-//         error_msg: String,
-//     },
-// }
+use std::sync::OnceLock;
 
-// #[derive(Serialize, Deserialize, Debug, Clone)]
-// pub struct ResponseMessage {
-//     pub message_type: String,
-//     pub response: Option<ResponseMessageContent>,
-//     pub node_id: usize,
-// }
+static HOST_MAP: OnceLock<HashMap<String, String>> = OnceLock::new();
+
+pub fn resolve_target(target_id: usize, port: u16) -> String {
+    let target_name = format!("node{}", target_id);
+
+    // 初始化 HOST_MAP（只执行一次）
+    let map = HOST_MAP.get_or_init(|| {
+        let hosts_str = std::env::var("NODE_HOSTS")
+            .unwrap_or_else(|_| panic!("NODE_HOSTS environment variable not set"));
+        hosts_str
+            .split(',')
+            .filter_map(|entry| {
+                let mut parts = entry.split(':');
+                let name = parts.next()?.trim().to_string();
+                let ip = parts.next()?.trim().to_string();
+                Some((name, ip))
+            })
+            .collect::<HashMap<_, _>>()
+    });
+
+    let host_ip = map
+        .get(&target_name)
+        .unwrap_or_else(|| panic!("Target {} not found in NODE_HOSTS", target_name));
+
+    format!("{}:{}", host_ip, port)
+}
 
 impl LatencyTracker {
     pub fn new() -> Self {
@@ -352,7 +356,10 @@ impl ClientNode {
         // 参数调整点：降低发送频率测latency
         let is_latency = false;
 
-        let mut batch_size = std::cmp::max(100, config.target_tps / 5);
+        // let mut batch_size = std::cmp::max(100, config.target_tps / 5);
+        let mut batch_size=config.target_tps / 5;
+         if batch_size==0 { batch_size=1; }
+         if batch_size>100 { batch_size=100; } // 限制最大批次大小为100
         let mut batch_interval = Duration::from_millis(200);
 
         if is_latency {
@@ -567,7 +574,9 @@ impl PersistentConnection {
         let hostname = format!("node{}", node_id);
         // let port = 9000 + node_id as u16;
         let port = 9000;
-        let addr_str = format!("{}:{}", hostname, port);
+        let addr_str = resolve_target(node_id, port); // 🔥 使用解析函数
+        info!("Resolved address for node {}: {}", node_id, addr_str);
+        // let addr_str = format!("{}:{}", hostname, port);
 
         info!("🔗 建立持久连接到节点 {}: {}", node_id, addr_str);
 
