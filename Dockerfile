@@ -11,13 +11,27 @@ RUN apt-get update && apt-get install -y \
 # 设置工作目录
 WORKDIR /app
 
+# 1️⃣ 先拷贝 Cargo 清单文件（用于缓存依赖）
+COPY Cargo.toml Cargo.lock ./
+COPY hotstuff_runner/Cargo.toml hotstuff_runner/Cargo.toml
+
+# 2️⃣ 预构建依赖（不含你自己的代码）以命中缓存
+RUN mkdir -p hotstuff_runner/src && echo "fn main(){}" > hotstuff_runner/src/main.rs
+
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/app/target \
+    cargo build --release --bin docker_node || true
+
 # 复制整个项目（包括hotstuff_runner子目录）
 COPY . .
 
 # 进入hotstuff_runner目录并构建应用
 WORKDIR /app/hotstuff_runner
-RUN cargo build --release --bin docker_node
-RUN cargo build --release --bin client
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/app/target \
+    cargo build --release --bin docker_node && \
+    cargo build --release --bin client && \
+    cargo build --release --bin docker_node_adversary
 
 # 运行时镜像
 FROM ubuntu:22.04
@@ -34,6 +48,7 @@ RUN useradd -r -s /bin/false hotstuff
 # 复制构建好的二进制文件
 COPY --from=builder /app/hotstuff_runner/target/release/docker_node /usr/local/bin/docker_node
 COPY --from=builder /app/hotstuff_runner/target/release/client /usr/local/bin/client
+COPY --from=builder /app/hotstuff_runner/target/release/docker_node_adversary /usr/local/bin/docker_node_adversary
 
 
 # 切换到应用用户

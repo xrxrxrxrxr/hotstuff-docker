@@ -12,6 +12,7 @@ pub mod diagnose;
 pub mod lockfree_types;
 pub mod event;
 pub mod utils;
+pub mod pompe_adversary;
 
 // 重新导出常用类型
 pub use app::TestApp;

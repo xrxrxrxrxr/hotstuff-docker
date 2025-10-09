@@ -360,7 +360,7 @@ impl ClientNode {
 
         // let mut batch_size = std::cmp::max(100, config.target_tps / 5);
         let mut batch_size=config.target_tps / (5 * node_num as u32);
-        //  if batch_size==0 { batch_size=1; }
+        if batch_size==0 { batch_size=1; }
         //  if batch_size>100 { batch_size=100; } // 限制最大批次大小为100
         let mut batch_interval = Duration::from_millis(200);
 
@@ -379,8 +379,8 @@ impl ClientNode {
             for node_offset in 0..node_num {
                 let node_id = node_least_id + node_offset;
                 let transactions = self.tx_generator.generate_batch(batch_size as usize);
-                let tx_num= transactions.len() as u64;
-                info!("📝 生成批次 {}: {} 个交易, 目标节点 {}", batch_counter + 1, tx_num, node_id);
+                // let tx_num= transactions.len() as u64;
+                // info!("📝 生成批次 {}: {} 个交易, 目标节点 {}", batch_counter + 1, tx_num, node_id);
                 
                 // 先通知延迟跟踪器记录发送时间
                 let tx_ids: Vec<u64> = transactions.iter().map(|tx| tx.id).collect();
@@ -838,7 +838,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         }
                         // 🔥 修改：处理批量 consensus 响应
                         ResponseCommand::HotStuffCommitted { tx_ids } => { 
-                            info!("🎉 收到 {} 个 Consensus 响应", tx_ids.len());
+                            // info!("🎉 收到 {} 个 Consensus 响应", tx_ids.len());
                             latency_tracker.handle_consensus_response(tx_ids);
                         }
                         ResponseCommand::Error { tx_ids, error_msg } => {
@@ -878,6 +878,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .unwrap_or_else(|_| "100".to_string())
                 .parse()
                 .unwrap_or(100);
+            info!("目标TPS: {}", target_tps);
             
             let duration: u64 = env::var("TEST_DURATION")
                 .unwrap_or_else(|_| "60".to_string())

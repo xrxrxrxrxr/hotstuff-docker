@@ -38,9 +38,9 @@ bytes = "1.0"
 name = "docker_node"
 path = "src/bin/docker_node.rs"
 
-# [[bin]]
-# name = "single_node"
-# path = "src/bin/single_node.rs"
+[[bin]]
+name = "docker_node_adversary"
+path = "src/bin/docker_node_adversary.rs"
 
 # [[bin]]
 # name = "single_node_test"

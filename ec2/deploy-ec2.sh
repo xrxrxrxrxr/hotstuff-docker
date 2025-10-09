@@ -53,6 +53,18 @@ for i in {0..3}; do
     echo "❌ node$i 上传 docker-compose.yml 失败"
     exit 1
   }
+  # adversary node1 uses a different compose file
+  # if [[ "$i" -eq 1 ]]; then
+  #   scp $SSH_OPTS docker-compose-adv.yml ubuntu@$ip:~/hotstuff/docker-compose.yml || {
+  #     echo "❌ node$i 上传 docker-compose-node-adv.yml 失败"
+  #     exit 1
+  #   }
+  # else
+  #   scp $SSH_OPTS docker-compose-node.yml ubuntu@$ip:~/hotstuff/docker-compose.yml || {
+  #     echo "❌ node$i 上传 docker-compose-node.yml 失败"
+  #     exit 1
+  #   }
+  # fi
   
   scp $SSH_OPTS envs/node$i.env ubuntu@$ip:~/hotstuff/.env || {
     echo "❌ node$i 上传 .env 失败"

@@ -3,10 +3,10 @@
 services:
   hotstuff-client:
     image: georgiaxr/hs-test:latest
-    container_name: hotstuff_client
-    hostname: client
+    container_name: hotstuff_adv
+    hostname: adversary
     network_mode: host
-    command: ["client"]  # 🟡 运行客户端二进制
+    command: ["docker_node_adversary"]
     environment:
       - CLIENT_ID=${CLIENT_ID}
       - CLIENT_MODE=${CLIENT_MODE}
@@ -22,5 +22,3 @@ services:
     restart: "no"
     profiles:
       - client
-    # command: 
-    #   - ['docker_node_adversary']

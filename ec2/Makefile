@@ -52,6 +52,9 @@ start:
 	@sleep 15
 	@ssh $(SSH_OPTS) $(CLIENT) "cd ~/hotstuff && docker compose --profile client up -d || docker-compose --profile client up -d"
 	@echo "✅ 实验启动完成"
+	@echo "⏱️ 等待 3 分钟后自动停止实验..."
+	@sleep 200
+	@$(MAKE) stop
 
 stop:
 	@echo "🛑 停止实验..."
@@ -61,7 +64,8 @@ stop:
 	done; \
 	wait
 	@ssh $(SSH_OPTS) $(CLIENT) "cd ~/hotstuff && (docker compose --profile client down || docker-compose --profile client down)"
-	@echo "✅ 实验停止完成"
+	@echo "✅ 实验停止完成, 准备收集日志"
+	@$(MAKE) logs
 
 logs:
 	@echo "📦 收集日志..."
@@ -73,7 +77,7 @@ logs:
 	scp $(SSH_OPTS) -r $(CLIENT):~/hotstuff/logs ./ec2-logs/logs-client & \
 	wait
 	@echo "✅ 日志收集完成"
-
+	@$(MAKE) clean
 
 hosts-clean:
 	@echo "🔐 清理旧 known_hosts 记录（仅限 EC2 IP）..."
