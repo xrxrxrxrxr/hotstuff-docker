@@ -6,7 +6,9 @@ use std::net::SocketAddr;
 use std::env;
 use std::fs::{File, create_dir_all};
 use std::time::{Duration, Instant};
+use sha2::digest::consts::U328;
 use tracing::{info, warn, error};
+use tracing_subscriber::field::debug;
 use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 use std::thread;
 use std::fs;
@@ -357,9 +359,9 @@ impl ClientNode {
         let is_latency = false;
 
         // let mut batch_size = std::cmp::max(100, config.target_tps / 5);
-        let mut batch_size=config.target_tps / 5;
-         if batch_size==0 { batch_size=1; }
-         if batch_size>100 { batch_size=100; } // 限制最大批次大小为100
+        let mut batch_size=config.target_tps / (5 * node_num as u32);
+        //  if batch_size==0 { batch_size=1; }
+        //  if batch_size>100 { batch_size=100; } // 限制最大批次大小为100
         let mut batch_interval = Duration::from_millis(200);
 
         if is_latency {
@@ -377,6 +379,8 @@ impl ClientNode {
             for node_offset in 0..node_num {
                 let node_id = node_least_id + node_offset;
                 let transactions = self.tx_generator.generate_batch(batch_size as usize);
+                let tx_num= transactions.len() as u64;
+                info!("📝 生成批次 {}: {} 个交易, 目标节点 {}", batch_counter + 1, tx_num, node_id);
                 
                 // 先通知延迟跟踪器记录发送时间
                 let tx_ids: Vec<u64> = transactions.iter().map(|tx| tx.id).collect();

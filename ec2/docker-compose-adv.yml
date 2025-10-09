@@ -1,0 +1,26 @@
+# version: '3.8'
+
+services:
+  hotstuff-client:
+    image: georgiaxr/hs-test:latest
+    container_name: hotstuff_client
+    hostname: client
+    network_mode: host
+    command: ["client"]  # 🟡 运行客户端二进制
+    environment:
+      - CLIENT_ID=${CLIENT_ID}
+      - CLIENT_MODE=${CLIENT_MODE}
+      - NODE_LEAST_ID=${NODE_LEAST_ID}
+      - NODE_NUM=${NODE_NUM}
+      - NODE_HOSTS=${NODE_HOSTS}
+      - TARGET_TPS=${TARGET_TPS}
+      - TEST_DURATION=${TEST_DURATION}
+      - RUST_LOG=${RUST_LOG}
+    volumes:
+      - ./logs:/logs
+      - ./logs:/log
+    restart: "no"
+    profiles:
+      - client
+    # command: 
+    #   - ['docker_node_adversary']
