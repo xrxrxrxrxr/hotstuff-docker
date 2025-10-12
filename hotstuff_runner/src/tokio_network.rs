@@ -2,10 +2,10 @@
 //! Tokio-based async TCP network implementation (length-prefixed framing)
 //! Compatible with `hotstuff_rs::networking::network::Network` trait.
 
-use crate::tcp_network::TcpNetworkConfig as TokioNetworkConfig; // reuse existing config struct
+// use crate::tcp_network::TcpNetworkConfig as TokioNetworkConfig; // reuse existing config struct
+use borsh::{BorshDeserialize, BorshSerialize};
 use crossbeam::channel::{unbounded, Receiver, Sender};
 use ed25519_dalek::VerifyingKey;
-use borsh::{BorshSerialize, BorshDeserialize};
 use hotstuff_rs::block_sync::messages::BlockSyncMessage;
 use hotstuff_rs::networking::messages::{Message, ProgressMessage};
 use hotstuff_rs::networking::network::Network;
@@ -27,6 +27,13 @@ use tracing::{debug, error, info, warn};
 // Simple frame header to resync reliably
 const NET_MAGIC: u32 = 0x48534E57; // 'HSNW'
 const MAX_MSG_SIZE: usize = 10 * 1024 * 1024; // 10MB
+
+#[derive(Clone)]
+pub struct TokioNetworkConfig {
+    pub my_addr: SocketAddr,
+    pub peer_addrs: HashMap<VerifyingKey, SocketAddr>,
+    pub my_key: VerifyingKey,
+}
 
 // Message type tags (mirror of tcp_network.rs)
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -50,7 +57,9 @@ struct NetworkMessage {
     message_bytes: Vec<u8>,
 }
 
-fn message_to_bytes(message: &Message) -> Result<(MessageType, Vec<u8>), Box<dyn std::error::Error>> {
+fn message_to_bytes(
+    message: &Message,
+) -> Result<(MessageType, Vec<u8>), Box<dyn std::error::Error>> {
     let message_type = match message {
         Message::ProgressMessage(progress_msg) => match progress_msg {
             ProgressMessage::HotStuffMessage(_) => MessageType::HotStuff,
@@ -69,7 +78,10 @@ fn message_to_bytes(message: &Message) -> Result<(MessageType, Vec<u8>), Box<dyn
     Ok((message_type, bytes))
 }
 
-fn bytes_to_message(_message_type: MessageType, bytes: &[u8]) -> Result<Message, Box<dyn std::error::Error>> {
+fn bytes_to_message(
+    _message_type: MessageType,
+    bytes: &[u8],
+) -> Result<Message, Box<dyn std::error::Error>> {
     let message = Message::try_from_slice(bytes).map_err(|e| {
         error!("反序列化消息失败: {}", e);
         format!("Message deserialization failed: {}", e)
@@ -148,11 +160,16 @@ impl TokioNetwork {
         }
     }
 
-    fn send_frame_to_peer(&self, peer_key: &VerifyingKey, frame: Vec<u8>) -> Result<(), Box<dyn std::error::Error>> {
+    fn send_frame_to_peer(
+        &self,
+        peer_key: &VerifyingKey,
+        frame: Vec<u8>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         if *peer_key == self.config.my_key {
             // loopback: decode and deliver
             if let Ok(net_msg) = bincode::deserialize::<NetworkMessage>(&frame[8..]) {
-                if let Ok(message) = bytes_to_message(net_msg.message_type, &net_msg.message_bytes) {
+                if let Ok(message) = bytes_to_message(net_msg.message_type, &net_msg.message_bytes)
+                {
                     let _ = self.message_tx.send((self.config.my_key, message));
                 }
             }
@@ -165,16 +182,25 @@ impl TokioNetwork {
                 match e {
                     mpsc::error::TrySendError::Full(_f) => {
                         // 不要阻塞 runtime 线程，直接丢弃该帧（可调大 HS_PEER_QUEUE_CAP 以减少丢弃）。
-                        warn!("peer {:?} 发送队列满，丢弃一帧以避免阻塞", peer_key.to_bytes()[0..4].to_vec());
+                        warn!(
+                            "peer {:?} 发送队列满，丢弃一帧以避免阻塞",
+                            peer_key.to_bytes()[0..4].to_vec()
+                        );
                     }
                     mpsc::error::TrySendError::Closed(_) => {
-                        error!("peer {:?} 发送队列已关闭", peer_key.to_bytes()[0..4].to_vec());
+                        error!(
+                            "peer {:?} 发送队列已关闭",
+                            peer_key.to_bytes()[0..4].to_vec()
+                        );
                     }
                 }
             }
             Ok(())
         } else {
-            warn!("peer {:?} 无 writer 队列", peer_key.to_bytes()[0..4].to_vec());
+            warn!(
+                "peer {:?} 无 writer 队列",
+                peer_key.to_bytes()[0..4].to_vec()
+            );
             Err("无 writer 队列".into())
         }
     }
@@ -313,7 +339,13 @@ async fn peer_writer_task(peer: VerifyingKey, addr: SocketAddr, mut rx: mpsc::Re
                 s
             }
             Err(e) => {
-                warn!("peer {:?} 连接失败 {}: {}，等待 {:?}", peer.to_bytes()[0..4].to_vec(), addr, e, backoff);
+                warn!(
+                    "peer {:?} 连接失败 {}: {}，等待 {:?}",
+                    peer.to_bytes()[0..4].to_vec(),
+                    addr,
+                    e,
+                    backoff
+                );
                 sleep(backoff).await;
                 backoff = (backoff * 2).min(Duration::from_secs(3));
                 continue;
@@ -411,7 +443,11 @@ impl Network for TokioNetwork {
 
         for peer_key in self.config.peer_addrs.keys() {
             if let Err(e) = self.send_frame_to_peer(peer_key, frame.clone()) {
-                error!("广播发送失败给 {:?}: {}", peer_key.to_bytes()[0..4].to_vec(), e);
+                error!(
+                    "广播发送失败给 {:?}: {}",
+                    peer_key.to_bytes()[0..4].to_vec(),
+                    e
+                );
             }
         }
     }

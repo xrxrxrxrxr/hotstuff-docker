@@ -1,25 +1,22 @@
 // hotstuff_runner/src/lib.rs
 pub mod app;
-pub mod network;
-pub mod kv_store;
-pub mod tcp_network;
-pub mod tokio_network;
-pub mod tcp_node;
-pub mod stats;
-pub mod pompe;
-pub mod pompe_network;
-pub mod diagnose;
-pub mod lockfree_types;
 pub mod event;
-pub mod utils;
+pub mod kv_store;
+pub mod pompe;
 pub mod pompe_adversary;
+pub mod pompe_network;
+pub mod utils;
+pub mod stats;
+pub mod tcp_node;
+pub mod tokio_network;
+
+pub mod smrol;
+pub use smrol::{PnfifoBc, SmrolMessage, SmrolThresholdSig};
 
 // 重新导出常用类型
 pub use app::TestApp;
-pub use network::{TestNetwork, NodeNetwork};
 pub use kv_store::MemoryKVStore;
 pub use stats::PerformanceStats;
-pub mod detailed_performance_metrics;
 
 use std::io::Write;
 

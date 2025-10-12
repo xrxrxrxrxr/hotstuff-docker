@@ -1,7 +1,7 @@
 //! 简化的系统事件定义 - 支持模块间通信
 
+use serde::{Deserialize, Serialize};
 use std::time::Instant;
-use serde::{Serialize, Deserialize};
 
 // 客户端交易结构
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -29,7 +29,17 @@ pub enum SystemEvent {
         tx_id: u64,
         // timestamp_us: u64,
     },
-    
+
+    /// SMROL 共识层调用 HotStuff 前的 ordering 完成
+    SmrolOrderingCompleted {
+        tx_ids: Vec<u64>,
+    },
+
+    /// Pompe 已将交易推入 HotStuff 队列
+    PushedToHotStuff {
+        tx_ids: Vec<u64>,
+    },
+
     /// HotStuff 区块提交完成
     HotStuffCommitted {
         block_height: u64,
@@ -56,10 +66,10 @@ pub enum SystemEvent {
     },
 }
 
-
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum ResponseCommand {
     Ordering1Response { tx_ids: Vec<u64> },
+    SmrolOrderingResponse { tx_ids: Vec<u64> },
     HotStuffCommitted { tx_ids: Vec<u64> },
     Error { tx_ids: Vec<u64>, error_msg: String },
 }

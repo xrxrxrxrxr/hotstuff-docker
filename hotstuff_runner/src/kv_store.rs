@@ -29,7 +29,7 @@ impl KVStore for MemoryKVStore {
 
     fn write(&mut self, write_batch: Self::WriteBatch) {
         let mut data = self.data.write().unwrap();
-        
+
         for operation in write_batch.operations {
             match operation {
                 WriteOp::Set(key, value) => {
@@ -49,9 +49,7 @@ impl KVStore for MemoryKVStore {
 
     fn snapshot(&self) -> Self::Snapshot<'_> {
         let data = self.data.read().unwrap();
-        MemorySnapshot {
-            data: data.clone(),
-        }
+        MemorySnapshot { data: data.clone() }
     }
 }
 
@@ -72,7 +70,8 @@ impl WriteBatch for MemoryWriteBatch {
     }
 
     fn set(&mut self, key: &[u8], value: &[u8]) {
-        self.operations.push(WriteOp::Set(key.to_vec(), value.to_vec()));
+        self.operations
+            .push(WriteOp::Set(key.to_vec(), value.to_vec()));
     }
 
     fn delete(&mut self, key: &[u8]) {

@@ -11,7 +11,7 @@ services:
     environment:
       - NODE_ID=0
       - NODE_PORT=${NODE_PORT}
-      - RUST_LOG=warn
+      - RUST_LOG=${LOG_LEVEL}
       - NODE_LEAST_ID=${NODE_LEAST_ID}
       - NODE_NUM=${NODE_NUM}
       - NODE_HOSTS=${NODE_HOSTS}
@@ -20,9 +20,10 @@ services:
       - POMPE_STABLE_PERIOD_MS=${POMPE_STABLE_PERIOD_MS}
       - POMPE_LEADER_NODE_ID=${POMPE_LEADER_NODE_ID}
     ports:
-      - "20000:20000" # pompe communication port
-      - "10000:10000" # node communication port
-      - "9000:9000" # client listen port
+      - "20000:20000"
+      - "10000:10000"
+      - "9000:9000"
+      - "21000:21000" 
     volumes:
       - ./logs:/logs
       - ./logs/node:/log
@@ -45,7 +46,7 @@ services:
     environment:
       - NODE_ID=1
       - NODE_PORT=${NODE_PORT}
-      - RUST_LOG=warn
+      - RUST_LOG=${LOG_LEVEL}
       - NODE_LEAST_ID=${NODE_LEAST_ID}
       - NODE_NUM=${NODE_NUM}
       - NODE_HOSTS=${NODE_HOSTS}
@@ -57,6 +58,7 @@ services:
       - "20001:20000"
       - "10001:10000"
       - "9001:9000"
+      - "21001:21000"  
     volumes:
       - ./logs:/logs
       - ./logs/node:/log
@@ -69,7 +71,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    command: ["docker_node_adversary"]
+    # command: ["docker_node_adversary"]
 
   node2:
     build: 
@@ -80,7 +82,7 @@ services:
     environment:
       - NODE_ID=2
       - NODE_PORT=${NODE_PORT}
-      - RUST_LOG=warn
+      - RUST_LOG=${LOG_LEVEL}
       - NODE_LEAST_ID=${NODE_LEAST_ID}
       - NODE_NUM=${NODE_NUM}
       - NODE_HOSTS=${NODE_HOSTS}
@@ -92,6 +94,7 @@ services:
       - "20002:20000"
       - "10002:10000"
       - "9002:9000"
+      - "21002:21000"
     volumes:
       - ./logs:/logs
       - ./logs/node:/log
@@ -114,7 +117,7 @@ services:
     environment:
       - NODE_ID=3
       - NODE_PORT=${NODE_PORT}
-      - RUST_LOG=warn
+      - RUST_LOG=${LOG_LEVEL}
       - NODE_LEAST_ID=${NODE_LEAST_ID}
       - NODE_NUM=${NODE_NUM}
       - NODE_HOSTS=${NODE_HOSTS}
@@ -126,6 +129,7 @@ services:
       - "20003:20000"
       - "10003:10000"
       - "9003:9000"
+      - "21003:21000"
     volumes:
       - ./logs:/logs
       - ./logs/node:/log
@@ -139,196 +143,22 @@ services:
       retries: 3
       start_period: 30s
 
-  # node4:
-  #   build: 
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: hotstuff_node4
-  #   hostname: node4
-  #   environment:
-  #     - NODE_ID=4
-  #     - NODE_PORT=${NODE_PORT}
-  #     - RUST_LOG=debug
-  #     - NODE_LEAST_ID=${NODE_LEAST_ID}
-  #     - NODE_NUM=${NODE_NUM}
-  #   ports:
-  #     - "10004:10004"
-  #     - "9004:9004"
-  #   volumes:
-  #     - ./logs:/logs
-  #     - ./logs/node:/log
-  #   networks:
-  #     - hotstuff_network
-  #   restart: unless-stopped
-  #   healthcheck:
-  #     test: ["CMD", "nc", "-z", "localhost", "10004"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 3
-  #     start_period: 30s
-    # command: sh -c "sleep 15 && docker_node"
-
-  # node5:
-  #   build: 
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: hotstuff_node5
-  #   hostname: node5
-  #   environment:
-  #     - NODE_ID=5
-  #     - NODE_PORT=${NODE_PORT}
-  #     - RUST_LOG=debug
-  #     - NODE_LEAST_ID=${NODE_LEAST_ID}
-  #     - NODE_NUM=${NODE_NUM}
-  #   ports:
-  #     - "10005:10005"
-  #     - "9005:9005"
-  #   volumes:
-  #     - ./logs:/logs
-  #     - ./logs/node:/log
-  #   networks:
-  #     - hotstuff_network
-  #   restart: unless-stopped
-  #   healthcheck:
-  #     test: ["CMD", "nc", "-z", "localhost", "10005"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 3
-  #     start_period: 30s
-  #   command: sh -c "sleep 5 && docker_node"
-  # node6:
-  #   build: 
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: hotstuff_node6
-  #   hostname: node6
-  #   environment:
-  #     - NODE_ID=6
-  #     - NODE_PORT=${NODE_PORT}
-  #     - RUST_LOG=info
-  #     - NODE_LEAST_ID=${NODE_LEAST_ID}
-  #     - NODE_NUM=${NODE_NUM}
-  #   ports:
-  #     - "10006:10006"
-  #     - "9006:9006"
-  #   volumes:
-  #     - ./logs:/logs
-  #     - ./logs/node:/log
-  #   networks:
-  #     - hotstuff_network
-  #   restart: unless-stopped
-  #   healthcheck:
-  #     test: ["CMD", "nc", "-z", "localhost", "10006"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 3
-  #     start_period: 30s
-  #   command: sh -c "sleep 8 && docker_node"
-
-  # node7:
-  #   build: 
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: hotstuff_node7
-  #   hostname: node7
-  #   environment:
-  #     - NODE_ID=7
-  #     - NODE_PORT=${NODE_PORT}
-  #     - RUST_LOG=info
-  #     - NODE_LEAST_ID=${NODE_LEAST_ID}
-  #     - NODE_NUM=${NODE_NUM}
-  #   ports:
-  #     - "10007:10007"
-  #     - "9007:9007"
-  #   volumes:
-  #     - ./logs:/logs
-  #     - ./logs/node:/log
-  #   networks:
-  #     - hotstuff_network
-  #   restart: unless-stopped
-  #   healthcheck:
-  #     test: ["CMD", "nc", "-z", "localhost", "10007"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 3
-  #     start_period: 30s
-  #   command: sh -c "sleep 10 && docker_node"
-
-  # node8:
-  #   build: 
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: hotstuff_node8
-  #   hostname: node8
-  #   environment:
-  #     - NODE_ID=8
-  #     - NODE_PORT=${NODE_PORT}
-  #     - RUST_LOG=info
-  #     - NODE_LEAST_ID=${NODE_LEAST_ID}
-  #     - NODE_NUM=${NODE_NUM}
-  #   ports:
-  #     - "10008:10008"
-  #     - "9008:9008"
-  #   volumes:
-  #     - ./logs:/logs
-  #     - ./logs/node:/log
-  #   networks:
-  #     - hotstuff_network
-  #   restart: unless-stopped
-  #   healthcheck:
-  #     test: ["CMD", "nc", "-z", "localhost", "10008"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 3
-  #     start_period: 30s
-
-  # node9:
-  #   build: 
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: hotstuff_node9
-  #   hostname: node9
-  #   environment:
-  #     - NODE_ID=9
-  #     - NODE_PORT=${NODE_PORT}
-  #     - RUST_LOG=debug
-  #     - NODE_LEAST_ID=${NODE_LEAST_ID}
-  #     - NODE_NUM=${NODE_NUM}
-  #   ports:
-  #     - "10009:10009"
-  #     - "9009:9009"
-  #   volumes:
-  #     - ./logs:/logs
-  #     - ./logs/node:/log
-  #   networks:
-  #     - hotstuff_network
-  #   restart: unless-stopped
-  #   healthcheck:
-  #     test: ["CMD", "nc", "-z", "localhost", "10009"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 3
-  #     start_period: 30s
-
-
-
-
-  # 客户端节点 - 交互模式
+  # client: interactive mode
   client:
     build: 
       context: .
       dockerfile: Dockerfile
     container_name: hotstuff_client
     hostname: client
-    command: ["client"]  # 覆盖默认命令
+    command: ["client"] 
     environment:
       - CLIENT_ID=client_1
       - CLIENT_MODE=interactive
-      - RUST_LOG=warn
+      - RUST_LOG=${LOG_LEVEL}
       - NODE_LEAST_ID=${NODE_LEAST_ID}
       - NODE_NUM=${NODE_NUM}
       - NODE_HOSTS=${NODE_HOSTS}
-      - POMPE_ENABLE=${POMPE_ENABLE} # 启用 Pompe
+      - POMPE_ENABLE=${POMPE_ENABLE} # Pompe
     volumes:
       - ./logs:/logs
       - ./logs/node:/log
@@ -349,37 +179,38 @@ services:
       dockerfile: Dockerfile
     container_name: hotstuff_perf_tester
     hostname: perf_tester
-    command: ["client"]  # ← 这里指定运行 client_node 二进制文件
+    command: ["client"]  
     volumes:
       - ./logs:/logs
     environment:
       - CLIENT_ID=perf_tester_001
-      - CLIENT_MODE=load_test  # ← 这个环境变量很重要
-      - TARGET_TPS=1000         # ← 目标 1000 TPS
-      - TEST_DURATION=300      # ← 运行 5 分钟
-      - RUST_LOG=warn
-      - POMPE_ENABLE=${POMPE_ENABLE} # 启用 Pompe
+      - CLIENT_MODE=load_test  
+      - TARGET_TPS=1000        
+      - TEST_DURATION=300      
+      - RUST_LOG=${LOG_LEVEL}
+      - POMPE_ENABLE=${POMPE_ENABLE} 
       - NODE_HOSTS=${NODE_HOSTS}
     profiles:
       - perf_test
 
+# client: load test mode
   load_tester:
     build: 
       context: .
       dockerfile: Dockerfile
     container_name: hotstuff_load_tester
     hostname: load_tester
-    command: ["client"]  # 覆盖默认命令
+    command: ["client"]  
     environment:
       - CLIENT_ID=load_tester_001
       - CLIENT_MODE=load_test
       - TARGET_TPS=${TARGET_TPS}
       - TEST_DURATION=300
-      - RUST_LOG=warn
-      - NODE_LEAST_ID=${NODE_LEAST_ID}  # 确保这些环境变量已设置
+      - RUST_LOG=${LOG_LEVEL}
+      - NODE_LEAST_ID=${NODE_LEAST_ID}  
       - NODE_NUM=${NODE_NUM}
       - NODE_HOSTS=${NODE_HOSTS}
-      - POMPE_ENABLE=${POMPE_ENABLE} # 启用 Pompe
+      - POMPE_ENABLE=${POMPE_ENABLE}
     volumes:
       - ./logs:/logs
       - ./logs/node:/log

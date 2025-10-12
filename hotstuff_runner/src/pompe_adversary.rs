@@ -503,7 +503,7 @@ impl PompeManager {
                 };
                 if let Some((sender_id, message)) = message_opt {
                     match message {
-                        PompeMessage::Ordering2Request { tx_hash, median_timestamp, initiator_node_id , signatures} => {
+                        PompeMessage::Ordering2Request { tx_hash, median_timestamp, initiator_node_id ,signatures} => {
                             if let Some(ref net) = network {
                                 Self::handle_ordering2_request_lockfree(
                                     node_id, &state, &net, &lockfree_adapter, &config,
@@ -560,7 +560,7 @@ impl PompeManager {
     ) {
         let processing_start = std::time::Instant::now();
         
-        warn!("🎯 [handle_ordering1_request] Node {} 处理请求: tx_id={}, hash={}", node_id, transaction.id ,&tx_hash[0..8]);
+        debug!("🎯 [handle_ordering1_request] Node {} 处理请求: tx_id={}, hash={}", node_id, transaction.id ,&tx_hash[0..8]);
         
         let should_respond = if state.ordering1_responses.contains_key(&tx_hash) {
             false
@@ -680,8 +680,7 @@ impl PompeManager {
             debug!("✅ [处理性能] Node {} handle_ordering1_response 处理完成: {:?}, 来自 Node {}, hash = {}", node_id, processing_duration, sender_node_id, tx_hash);
         }
 
-        // 😈 attack
-        warn!("😈 [Adversary] Node {} holds Ordering2 Request: hash = {}", node_id, &tx_hash[0..8]);
+        // warn!("😈 [Adversary] Node {} holds Ordering2 Request: hash = {}", node_id, &tx_hash[0..8]);
 
         // if let Some(median) = should_proceed {
         //     let msg = PompeMessage::Ordering2Request {
@@ -791,7 +790,7 @@ impl PompeManager {
                 error!("❌ [Ordering2-2-LockFree] 异步发送失败: {}", e);
             }
         });
-        // 😈 attack: hold the response to delay other nodes
+        
         // let state_clone = Arc::clone(state);
         // let lockfree_adapter_clone = lockfree_adapter.clone();
         // let config_clone = config.clone();

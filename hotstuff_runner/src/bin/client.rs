@@ -1,8 +1,11 @@
 // 修改后的高效客户端节点 - 分离状态架构
 // hotstuff_runner/src/bin/client.rs
 
+use ed25519_dalek::SigningKey;
+use rand::Rng;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::net::SocketAddr;
+use std::collections::HashSet;
 use std::env;
 use std::fs::{File, create_dir_all};
 use std::time::{Duration, Instant};
@@ -12,13 +15,11 @@ use tracing_subscriber::field::debug;
 use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 use std::thread;
 use std::fs;
-use ed25519_dalek::SigningKey;
-use serde::{Serialize, Deserialize};
-use tokio::net::TcpStream;
-use tokio::io::{AsyncWriteExt, AsyncReadExt};
-use rand::Rng;
+use std::net::SocketAddr;
 use std::sync::Arc;
-use std::collections::HashSet;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::net::TcpStream;
+use tokio::sync::Mutex;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TestTransaction {
@@ -43,16 +44,18 @@ pub struct ClientNode {
     connections: HashMap<usize, PersistentConnection>,
     tx_generator: TransactionGenerator,
     stats: ClientStats,
-    response_tx: Option<tokio::sync::mpsc::UnboundedSender<ResponseCommand>>, 
+    response_tx: Option<tokio::sync::mpsc::UnboundedSender<ResponseCommand>>,
 }
 
 // 分离状态：延迟跟踪器（独立运行）
 pub struct LatencyTracker {
     send_timestamps: HashMap<u64, Instant>,
+    pushed_timestamps: HashMap<u64, Instant>,
     ordering_latencies: Vec<u128>,
     consensus_latencies: Vec<u128>,
-    ordering_recorded: HashSet<u64>, 
-    consensus_recorded: HashSet<u64>
+    pushed_to_consensus_latencies: Vec<u128>,
+    ordering_recorded: HashSet<u64>,
+    consensus_recorded: HashSet<u64>,
 }
 
 // 分离状态：统计报告器（独立运行）
@@ -64,6 +67,8 @@ pub struct StatsReporter {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum ResponseCommand {
     Ordering1Response { tx_ids: Vec<u64> },
+    SmrolOrderingResponse { tx_ids: Vec<u64> },
+    PushedToHotStuff { tx_ids: Vec<u64> },
     HotStuffCommitted { tx_ids: Vec<u64> },
     Error { tx_ids: Vec<u64>, error_msg: String },
 }
@@ -101,8 +106,10 @@ impl LatencyTracker {
     pub fn new() -> Self {
         Self {
             send_timestamps: HashMap::new(),
+            pushed_timestamps: HashMap::new(),
             ordering_latencies: Vec::new(),
             consensus_latencies: Vec::new(),
+            pushed_to_consensus_latencies: Vec::new(),
             ordering_recorded: HashSet::new(),
             consensus_recorded: HashSet::new(),
         }
@@ -112,7 +119,7 @@ impl LatencyTracker {
         self.send_timestamps.insert(tx_id, Instant::now());
     }
 
-    // 🔥 修改：支持批量处理 ordering 响应
+    //  修改：支持批量处理 ordering 响应
     pub fn handle_ordering_response(&mut self, tx_ids: Vec<u64>) {
         for tx_id in tx_ids {
             // 只记录第一次
@@ -121,15 +128,24 @@ impl LatencyTracker {
             }
             if let Some(send_time) = self.send_timestamps.get(&tx_id) {
                 let latency = send_time.elapsed().as_micros();
-                let latency_ms=latency as f64 / 1000.0;
+                let latency_ms = latency as f64 / 1000.0;
                 self.ordering_latencies.push(latency);
                 self.ordering_recorded.insert(tx_id);
-                info!("📊 交易 {} ordering延迟: {}ms", tx_id, latency_ms);
+                if tx_id % 1000 == 0 {
+                    info!("📊 交易 {} ordering延迟: {}ms", tx_id, latency_ms);
+                }
             }
         }
     }
 
-    // 🔥 修改：支持批量处理 consensus 响应
+    pub fn handle_pushed_to_hotstuff(&mut self, tx_ids: Vec<u64>) {
+        let now = Instant::now();
+        for tx_id in tx_ids {
+            self.pushed_timestamps.entry(tx_id).or_insert(now);
+        }
+    }
+
+    //  修改：支持批量处理 consensus 响应
     pub fn handle_consensus_response(&mut self, tx_ids: Vec<u64>) {
         for tx_id in tx_ids {
             if self.consensus_recorded.contains(&tx_id) {
@@ -137,29 +153,44 @@ impl LatencyTracker {
             }
             if let Some(send_time) = self.send_timestamps.remove(&tx_id) {
                 let latency = send_time.elapsed().as_micros();
-                let latency_ms=latency as f64 / 1000.0;
+                let latency_ms = latency as f64 / 1000.0;
                 self.consensus_latencies.push(latency);
                 self.consensus_recorded.insert(tx_id);
-                info!("📊 交易 {} consensus延迟: {}ms", tx_id, latency_ms);
+                if tx_id % 1000 == 0 {
+                    info!("📊 交易 {} consensus延迟: {}ms", tx_id, latency_ms);
+                }   
+            }
+            if let Some(pushed_time) = self.pushed_timestamps.remove(&tx_id) {
+                let latency = pushed_time.elapsed().as_micros();
+                self.pushed_to_consensus_latencies.push(latency);
+                let latency_ms = latency as f64 / 1000.0;
+                if tx_id % 1000 == 0 {
+                    info!("📊 交易 {} pushed2hotstuff->consensus 延迟: {}ms", tx_id, latency_ms);
+                }
             }
         }
     }
 
     pub fn get_stats(&self) -> (usize, usize) {
-        (self.ordering_latencies.len(), self.consensus_latencies.len())
+        (
+            self.ordering_latencies.len(),
+            self.consensus_latencies.len(),
+        )
     }
 
     pub fn print_ordering_stats(&self) {
-        if self.ordering_latencies.is_empty() { return; }
-        
+        if self.ordering_latencies.is_empty() {
+            return;
+        }
+
         let mut sorted = self.ordering_latencies.clone();
         sorted.sort();
-        
+
         let avg = sorted.iter().sum::<u128>() as f64 / sorted.len() as f64;
         let p50 = sorted[sorted.len() / 2];
         let p95 = sorted[sorted.len() * 95 / 100];
         let p99 = sorted[sorted.len() * 99 / 100];
-        
+
         info!("📈 Ordering延迟统计 (样本: {}):", sorted.len());
         info!("  平均值: {:.2} ms", avg as f64 / 1000.0);
         info!("  P50: {} ms", p50 as f64 / 1000.0);
@@ -168,17 +199,42 @@ impl LatencyTracker {
     }
 
     pub fn print_consensus_stats(&self) {
-        if self.consensus_latencies.is_empty() { return; }
-        
+        if self.consensus_latencies.is_empty() {
+            return;
+        }
+
         let mut sorted = self.consensus_latencies.clone();
         sorted.sort();
-        
+
         let avg = sorted.iter().sum::<u128>() as f64 / sorted.len() as f64;
         let p50 = sorted[sorted.len() / 2];
         let p95 = sorted[sorted.len() * 95 / 100];
         let p99 = sorted[sorted.len() * 99 / 100];
-        
+
         info!("📈 Consensus延迟统计 (样本: {}):", sorted.len());
+        info!("  平均值: {:.2} ms", avg as f64 / 1000.0);
+        info!("  P50: {} ms", p50 as f64 / 1000.0);
+        info!("  P95: {} ms", p95 as f64 / 1000.0);
+        info!("  P99: {} ms", p99 as f64 / 1000.0);
+    }
+
+    pub fn print_pushed_to_consensus_stats(&self) {
+        if self.pushed_to_consensus_latencies.is_empty() {
+            return;
+        }
+
+        let mut sorted = self.pushed_to_consensus_latencies.clone();
+        sorted.sort();
+
+        let avg = sorted.iter().sum::<u128>() as f64 / sorted.len() as f64;
+        let p50 = sorted[sorted.len() / 2];
+        let p95 = sorted[sorted.len() * 95 / 100];
+        let p99 = sorted[sorted.len() * 99 / 100];
+
+        info!(
+            "📈 Pushed2HotStuff->Consensus延迟统计 (样本: {}):",
+            sorted.len()
+        );
         info!("  平均值: {:.2} ms", avg as f64 / 1000.0);
         info!("  P50: {} ms", p50 as f64 / 1000.0);
         info!("  P95: {} ms", p95 as f64 / 1000.0);
@@ -189,22 +245,44 @@ impl LatencyTracker {
         info!("📊 ============= 综合延迟统计报告 =============");
         self.print_ordering_stats();
         self.print_consensus_stats();
-        
+        self.print_pushed_to_consensus_stats();
+
         if !self.ordering_latencies.is_empty() && !self.consensus_latencies.is_empty() {
-            let avg_ordering_ms = self.ordering_latencies.iter().sum::<u128>() as f64 / self.ordering_latencies.len() as f64 / 1000.0;
-            let avg_consensus_ms = self.consensus_latencies.iter().sum::<u128>() as f64 / self.consensus_latencies.len() as f64 / 1000.0;
-            
+            let avg_ordering_ms = self.ordering_latencies.iter().sum::<u128>() as f64
+                / self.ordering_latencies.len() as f64
+                / 1000.0;
+            let avg_consensus_ms = self.consensus_latencies.iter().sum::<u128>() as f64
+                / self.consensus_latencies.len() as f64
+                / 1000.0;
+
             info!("📊 延迟对比分析:");
             info!("  Ordering平均延迟: {:.2} ms", avg_ordering_ms);
             info!("  Consensus平均延迟: {:.2} ms", avg_consensus_ms);
-            info!("  Consensus/Ordering比值: {:.2}x", avg_consensus_ms / avg_ordering_ms);
+            info!(
+                "  Consensus/Ordering比值: {:.2}x",
+                avg_consensus_ms / avg_ordering_ms
+            );
+            if !self.pushed_to_consensus_latencies.is_empty() {
+                let avg_pushed_consensus_ms = self.pushed_to_consensus_latencies.iter().sum::<u128>()
+                    as f64
+                    / self.pushed_to_consensus_latencies.len() as f64
+                    / 1000.0;
+                info!(
+                    "  Pushed2HotStuff->Consensus平均延迟: {:.2} ms",
+                    avg_pushed_consensus_ms
+                );
+            }
         }
         info!("📊 ==========================================");
     }
 
-    pub fn save_latency_data(&self, ordering_file: &str, consensus_file: &str) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn save_latency_data(
+        &self,
+        ordering_file: &str,
+        consensus_file: &str,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         use std::io::Write;
-        
+
         if !self.ordering_latencies.is_empty() {
             let mut file = File::create(ordering_file)?;
             writeln!(file, "latency_us")?;
@@ -249,20 +327,16 @@ pub enum ClientCommand {
         transactions: Vec<TestTransaction>,
         reply_tx: tokio::sync::oneshot::Sender<Result<usize, Box<dyn std::error::Error + Send>>>,
     },
-    RecordSendTimes {
-        tx_ids: Vec<u64>,
-    },
     PrintStats,
     GetConnectionCount {
         reply_tx: tokio::sync::oneshot::Sender<usize>,
     },
 }
 
-
 impl ClientNode {
     pub fn new(client_id: String) -> Self {
         info!("🚀 初始化客户端核心: {}", client_id);
-        
+
         let tx_generator = TransactionGenerator::new(client_id.clone());
 
         Self {
@@ -273,22 +347,24 @@ impl ClientNode {
             response_tx: None,
         }
     }
-    pub fn set_response_sender(&mut self, response_tx: tokio::sync::mpsc::UnboundedSender<ResponseCommand>) {
+    pub fn set_response_sender(
+        &mut self,
+        response_tx: tokio::sync::mpsc::UnboundedSender<ResponseCommand>,
+    ) {
         self.response_tx = Some(response_tx);
     }
 
     pub async fn establish_connections(
-        &mut self, 
-        node_least_id: usize, 
+        &mut self,
+        node_least_id: usize,
         node_num: usize,
         response_tx: tokio::sync::mpsc::UnboundedSender<ResponseCommand>,
     ) -> Result<(), Box<dyn std::error::Error>> {
         info!("🌐 建立到所有节点的持久连接...");
         self.response_tx = Some(response_tx.clone());
-         
 
         for node_id in node_least_id..(node_least_id + node_num) {
-            match PersistentConnection::new(node_id,response_tx.clone()).await {
+            match PersistentConnection::new(node_id, response_tx.clone()).await {
                 Ok(conn) => {
                     self.connections.insert(node_id, conn);
                     info!("✅ 连接到节点 {} 成功", node_id);
@@ -304,8 +380,8 @@ impl ClientNode {
     }
 
     pub async fn send_batch_to_node(
-        &mut self, 
-        node_id: usize, 
+        &mut self,
+        node_id: usize,
         transactions: Vec<TestTransaction>,
     ) -> Result<usize, Box<dyn std::error::Error>> {
         if let Some(connection) = self.connections.get_mut(&node_id) {
@@ -318,11 +394,11 @@ impl ClientNode {
                 Err(e) => {
                     error!("❌ 批量发送到节点 {} 失败: {}", node_id, e);
                     self.stats.record_failed(transactions.len() as u64);
-                    
+
                     // 尝试重新连接
                     if let Some(response_tx) = &self.response_tx {
-                    info!("🔄 尝试重新连接到节点 {}", node_id);
-                        match PersistentConnection::new(node_id,response_tx.clone()).await {
+                        info!("🔄 尝试重新连接到节点 {}", node_id);
+                        match PersistentConnection::new(node_id, response_tx.clone()).await {
                             Ok(new_conn) => {
                                 self.connections.insert(node_id, new_conn);
                                 info!("✅ 重新连接到节点 {} 成功", node_id);
@@ -346,14 +422,16 @@ impl ClientNode {
     }
 
     pub async fn run_load_test(
-        &mut self, 
-        config: LoadTestConfig, 
-        node_least_id: usize, 
-        node_num: usize, 
-        cmd_tx: tokio::sync::mpsc::UnboundedSender<ClientCommand>,
+        &mut self,
+        config: LoadTestConfig,
+        node_least_id: usize,
+        node_num: usize,
+        latency_tracker: Arc<Mutex<LatencyTracker>>,
     ) {
-        info!("🚀 开始负载测试 - TPS目标: {}, 持续时间: {}秒", 
-            config.target_tps, config.duration_secs);
+        info!(
+            "🚀 开始负载测试 - TPS目标: {}, 持续时间: {}秒",
+            config.target_tps, config.duration_secs
+        );
 
         // 参数调整点：降低发送频率测latency
         let is_latency = false;
@@ -376,23 +454,38 @@ impl ClientNode {
         let mut batch_counter = 0;
 
         while Instant::now() < end_time {
-            for node_offset in 0..node_num {
+            for node_offset in 0..node_num {// 🔥🔥 调试修改点
+            // for node_offset in 0..2 {
                 let node_id = node_least_id + node_offset;
+                // let node_id = node_least_id; // 🔥🔥 调试修改点：只发给第一个节点
                 let transactions = self.tx_generator.generate_batch(batch_size as usize);
-                // let tx_num= transactions.len() as u64;
-                // info!("📝 生成批次 {}: {} 个交易, 目标节点 {}", batch_counter + 1, tx_num, node_id);
-                
+
                 // 先通知延迟跟踪器记录发送时间
                 let tx_ids: Vec<u64> = transactions.iter().map(|tx| tx.id).collect();
-                let _ = cmd_tx.send(ClientCommand::RecordSendTimes { tx_ids });
+                {
+                    let mut tracker = latency_tracker.lock().await;
+                    for tx_id in &tx_ids {
+                        tracker.record_send_time(*tx_id);
+                    }
+                }
 
                 match self.send_batch_to_node(node_id, transactions).await {
                     Ok(sent_count) => {
                         total_sent += sent_count;
-                        info!("📦 批次 {} 发送 {} 个交易到节点 {}", batch_counter + 1, sent_count, node_id);
+                        info!(
+                            "📦 批次 {} 发送 {} 个交易到节点 {}",
+                            batch_counter + 1,
+                            sent_count,
+                            node_id
+                        );
                     }
                     Err(e) => {
-                        warn!("批次 {} 发送到节点 {} 失败: {}", batch_counter + 1, node_id, e);
+                        warn!(
+                            "批次 {} 发送到节点 {} 失败: {}",
+                            batch_counter + 1,
+                            node_id,
+                            e
+                        );
                     }
                 }
             }
@@ -404,6 +497,8 @@ impl ClientNode {
             }
 
             tokio::time::sleep(batch_interval).await;
+            // 🔥🔥 调试修改点：120秒一个交易
+            // tokio::time::sleep(Duration::from_millis(100)).await;
         }
 
         info!("🏁 负载测试完成，总计发送 {} 个交易", total_sent);
@@ -411,15 +506,15 @@ impl ClientNode {
     }
 
     pub async fn run_interactive_mode(
-        &mut self, 
-        node_least_id: usize, 
-        node_num: usize, 
-        cmd_tx: tokio::sync::mpsc::UnboundedSender<ClientCommand>, 
+        &mut self,
+        node_least_id: usize,
+        node_num: usize,
+        latency_tracker: Arc<Mutex<LatencyTracker>>,
     ) {
         info!("🎮 进入交互模式");
 
         let mut tx_counter = 0;
-        
+
         loop {
             let batch_size = 5;
             let transactions = self.tx_generator.generate_batch(batch_size);
@@ -427,12 +522,20 @@ impl ClientNode {
 
             // 先通知延迟跟踪器记录发送时间
             let tx_ids: Vec<u64> = transactions.iter().map(|tx| tx.id).collect();
-            let _ = cmd_tx.send(ClientCommand::RecordSendTimes { tx_ids });
+            {
+                let mut tracker = latency_tracker.lock().await;
+                for tx_id in &tx_ids {
+                    tracker.record_send_time(*tx_id);
+                }
+            }
 
             match self.send_batch_to_node(target_node, transactions).await {
                 Ok(sent_count) => {
                     tx_counter += sent_count;
-                    info!("✅ 成功发送 {} 个交易到节点 {}, 总计: {}", sent_count, target_node, tx_counter);
+                    info!(
+                        "✅ 成功发送 {} 个交易到节点 {}, 总计: {}",
+                        sent_count, target_node, tx_counter
+                    );
                 }
                 Err(e) => {
                     error!("❌ 发送批次失败到节点 {}: {}", target_node, e);
@@ -478,7 +581,7 @@ impl TransactionGenerator {
 
     pub fn generate_transaction(&mut self) -> TestTransaction {
         let mut rng = rand::thread_rng();
-        
+
         let from_idx = rng.gen_range(0, self.accounts.len());
         let mut to_idx = rng.gen_range(0, self.accounts.len());
         while to_idx == from_idx {
@@ -554,11 +657,7 @@ impl ClientStats {
 
         info!(
             "📊 客户端统计 - 发送: {}, 确认: {}, 失败: {}, TPS: {:.2}, 成功率: {:.1}%",
-            self.total_sent,
-            self.total_confirmed,
-            self.total_failed,
-            tps,
-            success_rate
+            self.total_sent, self.total_confirmed, self.total_failed, tps, success_rate
         );
     }
 }
@@ -585,7 +684,7 @@ impl PersistentConnection {
         info!("🔗 建立持久连接到节点 {}: {}", node_id, addr_str);
 
         let stream = TcpStream::connect(&addr_str).await?;
-    
+
         // 🔥 关键：分离读写流
         let (read_half, write_half) = stream.into_split();
 
@@ -603,10 +702,15 @@ impl PersistentConnection {
         })
     }
 
-    pub async fn send_batch(&mut self, transactions: &[TestTransaction], client_id: &str) -> Result<usize, Box<dyn std::error::Error>> {
+    pub async fn send_batch(
+        &mut self,
+        transactions: &[TestTransaction],
+        client_id: &str,
+    ) -> Result<usize, Box<dyn std::error::Error>> {
         let mut batch_buffer = Vec::new();
 
         let is_pompe = true; /////// 调试修改点
+        let is_smrol: bool = false;
 
         if is_pompe {
             for transaction in transactions {
@@ -615,11 +719,26 @@ impl PersistentConnection {
                     transaction: Some(transaction.clone()),
                     client_id: client_id.to_string(),
                 };
-            
+
                 let serialized = serde_json::to_vec(&client_message)?;
                 let message_length = serialized.len() as u32;
                 // 平均消息长度 170 bytes
                 // info!("📦 ******* 客户端发送pompe消息，长度: {} bytes", message_length);
+
+                batch_buffer.extend_from_slice(&message_length.to_be_bytes());
+                batch_buffer.extend_from_slice(&serialized);
+            }
+        } else if is_smrol {
+            for transaction in transactions {
+                let client_message = ClientMessage {
+                    message_type: "smrol_transaction".to_string(),
+                    transaction: Some(transaction.clone()),
+                    client_id: client_id.to_string(),
+                };
+
+                let serialized = serde_json::to_vec(&client_message)?;
+                let message_length = serialized.len() as u32;
+                // info!("📦 ******* 客户端发送消息，长度: {} bytes", message_length);
 
                 batch_buffer.extend_from_slice(&message_length.to_be_bytes());
                 batch_buffer.extend_from_slice(&serialized);
@@ -631,7 +750,7 @@ impl PersistentConnection {
                     transaction: Some(transaction.clone()),
                     client_id: client_id.to_string(),
                 };
-            
+
                 let serialized = serde_json::to_vec(&client_message)?;
                 let message_length = serialized.len() as u32;
                 // info!("📦 ******* 客户端发送消息，长度: {} bytes", message_length);
@@ -676,7 +795,7 @@ fn setup_tracing_logger(mode: &str) {
         .append(true)
         .open(format!("logs/{}.log", path))
         .expect("无法打开日志文件");
-    
+
     let result = tracing_subscriber::registry()
         // .with(EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("warn")))
         .with(
@@ -684,17 +803,17 @@ fn setup_tracing_logger(mode: &str) {
                 .with_writer(std::io::stdout)
                 .with_target(true)
                 .with_thread_ids(true)
-                .with_ansi(true)
+                .with_ansi(true),
         )
         .with(
             fmt::layer()
                 .with_writer(log_file)
                 .with_target(true)
                 .with_thread_ids(true)
-                .with_ansi(false)
+                .with_ansi(false),
         )
         .try_init();
-    
+
     match result {
         Ok(_) => info!("📝 客户端日志系统初始化成功"),
         Err(_) => warn!("⚠️ 日志系统已经初始化过了，跳过"),
@@ -708,55 +827,65 @@ async fn handle_node_responses(
     response_tx: tokio::sync::mpsc::UnboundedSender<ResponseCommand>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut length_buf = [0u8; 4];
-    
+
     info!("🎧 启动节点 {} 的响应接收器", node_id);
-    
+
     loop {
         match read_half.read_exact(&mut length_buf).await {
             Ok(_) => {
                 let message_length = u32::from_be_bytes(length_buf) as usize;
-                
+
                 if message_length > 1024 * 1024 {
                     warn!("⚠️ 从节点 {} 收到过大响应: {}", node_id, message_length);
                     continue;
                 }
-                
+
                 let mut message_buf = vec![0u8; message_length];
                 read_half.read_exact(&mut message_buf).await?;
-                
-                // 🔥 解析响应消息，支持批量 tx_ids
-                if let Ok(response_json) = serde_json::from_slice::<serde_json::Value>(&message_buf) {
-                    if let Some(message_type) = response_json.get("message_type").and_then(|v| v.as_str()) {
-                        
-                        // 🔥 支持单个 tx_id 或 tx_ids 数组
+
+                //  解析响应消息，支持批量 tx_ids
+                if let Ok(response_json) = serde_json::from_slice::<serde_json::Value>(&message_buf)
+                {
+                    if let Some(message_type) =
+                        response_json.get("message_type").and_then(|v| v.as_str())
+                    {
+                        //  支持单个 tx_id 或 tx_ids 数组
                         let tx_ids = if let Some(tx_ids_array) = response_json.get("tx_ids") {
                             // 批量交易 ID
                             serde_json::from_value::<Vec<u64>>(tx_ids_array.clone())
                                 .unwrap_or_else(|_| Vec::new())
-                        } else if let Some(tx_id) = response_json.get("tx_id").and_then(|v| v.as_u64()) {
+                        } else if let Some(tx_id) =
+                            response_json.get("tx_id").and_then(|v| v.as_u64())
+                        {
                             // 单个交易 ID（向后兼容）
                             vec![tx_id]
                         } else {
                             warn!("⚠️ 响应消息中没有 tx_id 或 tx_ids");
                             continue;
                         };
-                        
+
                         if tx_ids.is_empty() {
                             warn!("⚠️ 响应消息中 tx_ids 为空");
                             continue;
                         }
-                        
+
                         let tx_ids_len = tx_ids.len(); // Store length before moving tx_ids
-                        
+
                         let response_cmd = match message_type {
                             "pompe_ordering1_response" => {
                                 ResponseCommand::Ordering1Response { tx_ids }
                             }
-                            "consensus_response" => {
-                                ResponseCommand::HotStuffCommitted { tx_ids }
+                            "smrol_ordering_response" => {
+                                ResponseCommand::SmrolOrderingResponse { tx_ids }
                             }
+                            // "smrol_ordering1_response" => {
+                            //     ResponseCommand::Ordering1Response { tx_ids }
+                            // }
+                            "pushed2hotstuff" => ResponseCommand::PushedToHotStuff { tx_ids },
+                            "consensus_response" => ResponseCommand::HotStuffCommitted { tx_ids },
                             "error_response" => {
-                                let error_msg = response_json.get("error_msg")
+                                let error_msg = response_json
+                                    .get("error_msg")
                                     .and_then(|v| v.as_str())
                                     .unwrap_or("未知错误")
                                     .to_string();
@@ -767,10 +896,10 @@ async fn handle_node_responses(
                                 continue;
                             }
                         };
-                        
+
                         // 发送批量响应命令
                         let _ = response_tx.send(response_cmd);
-                        // info!("✅ 从节点 {} 处理批量响应: {} {} 个交易", 
+                        // info!("✅ 从节点 {} 处理批量响应: {} {} 个交易",
                         //       node_id, message_type, tx_ids_len);
                     }
                 } else {
@@ -783,7 +912,7 @@ async fn handle_node_responses(
             }
         }
     }
-    
+
     Ok(())
 }
 
@@ -792,7 +921,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client_id = env::var("CLIENT_ID").unwrap_or_else(|_| "client_1".to_string());
     let mode = env::var("CLIENT_MODE").unwrap_or_else(|_| "interactive".to_string());
     setup_tracing_logger(mode.as_str());
-    
+
     let node_least_id: usize = env::var("NODE_LEAST_ID")
         .unwrap_or_else(|_| "0".to_string())
         .parse()
@@ -808,55 +937,62 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let (cmd_tx, mut cmd_rx) = tokio::sync::mpsc::unbounded_channel::<ClientCommand>();
     let (response_tx, mut response_rx) = tokio::sync::mpsc::unbounded_channel::<ResponseCommand>();
 
-    // 启动延迟跟踪器任务
-    let latency_cmd_tx = cmd_tx.clone();
-    tokio::spawn(async move {
-        let mut latency_tracker = LatencyTracker::new();
-        let mut stats_reporter = StatsReporter::new();
+    let latency_tracker = Arc::new(Mutex::new(LatencyTracker::new()));
 
-        loop {
-            tokio::select! {
-                Some(cmd) = cmd_rx.recv() => {
-                    match cmd {
-                        ClientCommand::RecordSendTimes { tx_ids } => {
-                            for tx_id in tx_ids {
-                                latency_tracker.record_send_time(tx_id);
+    // 启动延迟跟踪器任务
+    {
+        let tracker = Arc::clone(&latency_tracker);
+        tokio::spawn(async move {
+            let mut cmd_rx = cmd_rx;
+            let mut response_rx = response_rx;
+            let mut stats_reporter = StatsReporter::new();
+
+            loop {
+                tokio::select! {
+                    Some(cmd) = cmd_rx.recv() => {
+                        match cmd {
+                            ClientCommand::PrintStats => {
+                                let tracker_guard = tracker.lock().await;
+                                tracker_guard.print_comprehensive_stats();
                             }
-                        }
-                        ClientCommand::PrintStats => {
-                            latency_tracker.print_comprehensive_stats();
-                        }
-                        _ => {} // 其他命令由主任务处理
-                    }
-                }
-                Some(response_cmd) = response_rx.recv() => {
-                    match response_cmd {
-                        // 🔥 修改：处理批量 ordering 响应
-                        ResponseCommand::Ordering1Response { tx_ids } => {
-                            // info!("🎉 收到 {} 个 Ordering1 响应 for {:?}", tx_ids.len(), tx_ids);
-                            latency_tracker.handle_ordering_response(tx_ids);
-                        }
-                        // 🔥 修改：处理批量 consensus 响应
-                        ResponseCommand::HotStuffCommitted { tx_ids } => { 
-                            // info!("🎉 收到 {} 个 Consensus 响应", tx_ids.len());
-                            latency_tracker.handle_consensus_response(tx_ids);
-                        }
-                        ResponseCommand::Error { tx_ids, error_msg } => {
-                            error!("❌ {} 个交易处理失败: {}", tx_ids.len(), error_msg);
-                            for tx_id in tx_ids {
-                                error!("❌ 交易 {} 失败", tx_id);
-                            }
+                            _ => {} // 其他命令由主任务处理
                         }
                     }
-                    
-                    stats_reporter.record_response();
-                    if stats_reporter.should_print_stats() {
-                        latency_tracker.print_comprehensive_stats();
+                    Some(response_cmd) = response_rx.recv() => {
+                        {
+                            let mut tracker_guard = tracker.lock().await;
+                            match response_cmd {
+                                ResponseCommand::Ordering1Response { tx_ids } => {
+                                    tracker_guard.handle_ordering_response(tx_ids);
+                                }
+                                ResponseCommand::SmrolOrderingResponse { tx_ids } => {
+                                    tracker_guard.handle_ordering_response(tx_ids);
+                                }
+                                ResponseCommand::PushedToHotStuff { tx_ids } => {
+                                    tracker_guard.handle_pushed_to_hotstuff(tx_ids);
+                                }
+                                ResponseCommand::HotStuffCommitted { tx_ids } => {
+                                    tracker_guard.handle_consensus_response(tx_ids);
+                                }
+                                ResponseCommand::Error { tx_ids, error_msg } => {
+                                    error!("❌ {} 个交易处理失败: {}", tx_ids.len(), error_msg);
+                                    for tx_id in tx_ids {
+                                        error!("❌ 交易 {} 失败", tx_id);
+                                    }
+                                }
+                            }
+                        }
+
+                        stats_reporter.record_response();
+                        if stats_reporter.should_print_stats() {
+                            let tracker_guard = tracker.lock().await;
+                            tracker_guard.print_comprehensive_stats();
+                        }
                     }
                 }
             }
-        }
-    });
+        });
+    }
 
     // 创建并启动客户端核心
     let mut client_core = ClientNode::new(client_id);
@@ -866,7 +1002,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tokio::time::sleep(Duration::from_secs(20)).await;
 
     // 建立连接
-    if let Err(e) = client_core.establish_connections(node_least_id, node_num, response_tx.clone()).await {
+    if let Err(e) = client_core
+        .establish_connections(node_least_id, node_num, response_tx.clone())
+        .await
+    {
         error!("❌ 建立连接失败: {}", e);
         return Err(e);
     }
@@ -890,17 +1029,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 duration_secs: duration,
             };
 
-            client_core.run_load_test(config, node_least_id, node_num, cmd_tx.clone()).await;
+            client_core
+                .run_load_test(
+                    config,
+                    node_least_id,
+                    node_num,
+                    Arc::clone(&latency_tracker),
+                )
+                .await;
 
             info!("✅ 负载测试完成，等待响应处理...");
             tokio::time::sleep(Duration::from_secs(30)).await;
-            
+
             // 请求打印最终报告
             let _ = cmd_tx.send(ClientCommand::PrintStats);
             tokio::time::sleep(Duration::from_secs(2)).await;
         }
         _ => {
-            client_core.run_interactive_mode(node_least_id, node_num, cmd_tx.clone()).await;
+            client_core
+                .run_interactive_mode(node_least_id, node_num, Arc::clone(&latency_tracker))
+                .await;
         }
     }
 

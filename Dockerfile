@@ -12,10 +12,10 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # 1️⃣ 先拷贝 Cargo 清单文件（用于缓存依赖）
-COPY Cargo.toml Cargo.lock ./
 COPY hotstuff_runner/Cargo.toml hotstuff_runner/Cargo.toml
+COPY hotstuff_rs/Cargo.toml     hotstuff_rs/Cargo.toml
 
-# 2️⃣ 预构建依赖（不含你自己的代码）以命中缓存
+# 2️⃣ 预构建依赖
 RUN mkdir -p hotstuff_runner/src && echo "fn main(){}" > hotstuff_runner/src/main.rs
 
 RUN --mount=type=cache,target=/usr/local/cargo/registry \

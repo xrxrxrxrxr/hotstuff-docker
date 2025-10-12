@@ -101,3 +101,11 @@ clean-ec2:
 		ssh $(SSH_OPTS) ubuntu@$$ip "sudo rm -rf ~/hotstuff" || echo "⚠️ $$ip 清理失败"; \
 	done
 	@echo "✅ 清理完成"
+
+clean-images:
+	@echo "🧼 清理 EC2 节点上的旧镜像..."
+	@for node in $(NODES) $(CLIENT); do \
+		echo "→ $$node"; \
+		ssh $(SSH_OPTS) $$node "docker system prune -a -f --volumes"; \
+	done
+	@echo "✅ 镜像清理完成"
