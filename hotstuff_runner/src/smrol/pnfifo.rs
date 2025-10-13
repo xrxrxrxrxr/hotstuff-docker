@@ -4,6 +4,7 @@ use crate::smrol::crypto::{
 use crate::smrol::message::SmrolMessage;
 use crate::smrol::network::{SmrolNetworkMessage, SmrolTcpNetwork};
 use ed25519_dalek::{Signer, SigningKey, VerifyingKey};
+use tracing_subscriber::field::debug;
 use std::collections::{HashMap, HashSet};
 use std::net::SocketAddr;
 use std::sync::{atomic::AtomicU64, Arc};
@@ -41,9 +42,6 @@ impl PnfifoSlotState {
     }
 }
 
-const FINAL_BROADCAST_MAX_RETRIES: usize = 5;
-const FINAL_BROADCAST_INITIAL_DELAY_MS: u64 = 50;
-const FINAL_BROADCAST_MAX_DELAY_MS: u64 = 1_000;
 
 // 专用通道的 PROPOSAL 消息
 #[derive(Debug, Clone)]
@@ -247,10 +245,14 @@ impl PnfifoBc {
         debug!("[PNFIFO] Node {} sent VOTE for Leader {} slot {}", node_id, leader_id, slot);
 
         // PNFIFO 内部等待：等待 FINAL 到达（实现 flag_s 语义）
-        Self::wait_for_final_internal(node_id, slots, slot_output_notifiers, leader_id, slot).await;
-
-        debug!("[PNFIFO] Node {} completed processing Leader {} slot {}", 
+        debug!("[PNFIFO] Node {} 开始 waiting for FINAL for Leader {} slot {}", 
             node_id, leader_id, slot);
+        // Self::wait_for_final_internal(node_id, slots, slot_output_notifiers, leader_id, slot).await;
+        debug!("[PNFIFO] Node {} 结束 waiting for FINAL for Leader {} slot {}", 
+            node_id, leader_id, slot);
+
+        // debug!("[PNFIFO] Node {} completed processing Leader {} slot {}", 
+        //     node_id, leader_id, slot);
 
         Ok(())
     }
@@ -558,7 +560,7 @@ impl PnfifoBc {
 
         if should_finalize {
             if let Some((value, combined_signature)) = finalize_data {
-                PnfifoBc::broadcast_final_with_retry(
+                PnfifoBc::broadcast_final(
                     Arc::clone(network),
                     node_id,
                     leader_id,
@@ -573,7 +575,7 @@ impl PnfifoBc {
         Ok(())
     }
 
-    async fn broadcast_final_with_retry(
+    async fn broadcast_final(
         network: Arc<SmrolTcpNetwork>,
         node_id: usize,
         leader_id: usize,
@@ -581,65 +583,26 @@ impl PnfifoBc {
         value: Vec<u8>,
         combined_signature: Vec<u8>,
     ) -> Result<(), String> {
-        let mut delay = Duration::from_millis(FINAL_BROADCAST_INITIAL_DELAY_MS);
+        let message = SmrolMessage::PnfifoFinal {
+            leader_id,
+            sender_id: node_id,
+            slot,
+            value,
+            combined_signature,
+        };
 
-        for attempt in 1..=FINAL_BROADCAST_MAX_RETRIES {
-            let message = SmrolMessage::PnfifoFinal {
-                leader_id,
-                sender_id: node_id,
-                slot,
-                value: value.clone(),
-                combined_signature: combined_signature.clone(),
-            };
+        let network_msg = SmrolNetworkMessage {
+            from_node_id: node_id,
+            to_node_id: None,
+            message,
+            timestamp: std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_micros() as u64,
+            message_id: format!("pnfifo-final:{}:{}:{}", node_id, slot, Uuid::new_v4()),
+        };
 
-            let network_msg = SmrolNetworkMessage {
-                from_node_id: node_id,
-                to_node_id: None,
-                message,
-                timestamp: std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)
-                    .unwrap()
-                    .as_micros() as u64,
-                message_id: format!(
-                    "pnfifo-final:{}:{}:{}:{}",
-                    node_id, slot, attempt,
-                    Uuid::new_v4()
-                ),
-            };
-
-            match network.send_message(network_msg).await {
-                Ok(_) => {
-                    if attempt == 1 {
-                        debug!("[PNFIFO] 🚀 BROADCASTING FINAL for slot {} leader {}", slot, leader_id);
-                    }
-                    if attempt > 1 {
-                        info!("[PNFIFO] Node {} slot {} FINAL retry {} succeeded", 
-                            node_id, slot, attempt);
-                    } else {
-                        debug!("[PNFIFO] Node {} broadcast slot {} FINAL", node_id, slot);
-                    }
-                    return Ok(());
-                }
-                Err(err) => {
-                    if attempt == FINAL_BROADCAST_MAX_RETRIES {
-                        return Err(format!(
-                            "FINAL broadcast failed after {} attempts: {}",
-                            FINAL_BROADCAST_MAX_RETRIES, err
-                        ));
-                    }
-
-                    warn!(
-                        "[PNFIFO] Node {} slot {} FINAL attempt {} failed: {}, retrying in {}ms",
-                        node_id, slot, attempt, err, delay.as_millis()
-                    );
-
-                    sleep(delay).await;
-                    delay = (delay * 2).min(Duration::from_millis(FINAL_BROADCAST_MAX_DELAY_MS));
-                }
-            }
-        }
-
-        Err("FINAL broadcast retry logic exited unexpectedly".to_string())
+        network.send_message(network_msg).await
     }
 
     async fn handle_final_static(

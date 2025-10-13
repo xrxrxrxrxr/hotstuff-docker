@@ -444,6 +444,7 @@ impl SmrolTcpNetwork {
                         SmrolMessage::SeqRequest { .. }
                         | SmrolMessage::SeqResponse { .. }
                         | SmrolMessage::SeqOrder { .. }
+                        | SmrolMessage::SeqMedian { .. }
                         | SmrolMessage::SeqFinal { .. } => {
                             if let Err(e) = sequencing_tx.send((sender_id, smrol_msg.message)) {
                                 error!("❌ [SMROL-TCP] Sequencing消息分发失败: {}", e);
@@ -619,6 +620,7 @@ impl SmrolTcpNetwork {
             SmrolMessage::SeqRequest { .. }
             | SmrolMessage::SeqResponse { .. }
             | SmrolMessage::SeqOrder { .. }
+            | SmrolMessage::SeqMedian { .. }
             | SmrolMessage::SeqFinal { .. } => self
                 .sequencing_tx
                 .send((sender_id, message.message.clone()))
@@ -796,6 +798,28 @@ impl SmrolTcpNetwork {
         self.send_message(network_msg).await
     }
 
+    pub async fn send_seq_response(&self, to: usize, resp: crate::smrol::sequencing::SeqResponse) -> Result<(), String> {
+        let message = SmrolMessage::SeqResponse {
+            vc: resp.vc,
+            signature_share: resp.sigma,
+            sender_id: self.node_id,
+            sequence_number: resp.s,
+        };
+
+        let network_msg = SmrolNetworkMessage {
+            from_node_id: self.node_id,
+            to_node_id: Some(to),  // ← 点对点
+            message,
+            timestamp: std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_millis() as u64,
+            message_id: format!("seq_resp_{}_{}", self.node_id, uuid::Uuid::new_v4()),
+        };
+
+        self.send_message(network_msg).await
+    }
+
     /// 广播SEQ-ORDER消息
     pub async fn multicast_seq_order(
         &self,
@@ -809,8 +833,8 @@ impl SmrolTcpNetwork {
             .map(|record| (record.sender, record.sequence, record.signature.clone()))
             .collect();
 
-        let sequences: Vec<u64> = responses.iter().map(|(_, seq, _)| *seq).collect();
-        let median = self.calculate_median(&sequences);
+        // let sequences: Vec<u64> = responses.iter().map(|(_, seq, _)| *seq).collect();
+        // let median = self.calculate_median(&sequences);
 
         let message = SmrolMessage::SeqOrder {
             vc: order.vc.clone(),
@@ -830,14 +854,17 @@ impl SmrolTcpNetwork {
         };
 
         debug!(
-            "📤 [SMROL-TCP] Node {} 广播SEQ-ORDER, median: {}",
-            self.node_id, median
+            "📤 [SMROL-TCP] Node {} 广播SEQ-ORDER as leader",
+            self.node_id
         );
 
-        self.send_message(network_msg).await
+        let result = self.send_message(network_msg).await;
+        warn!("📤 [Network] Node {} sent SEQ-ORDER to outbound queue: {:?}",
+            self.node_id, result);
+        result
     }
 
-    /// 发送SEQ-MEDIAN消息到指定节点 (注意：现有message.rs没有SeqMedian，用SeqOrder代替)
+    /// 发送SEQ-MEDIAN消息到指定节点
     pub async fn send_seq_median(
         &self,
         to: usize,
@@ -845,10 +872,10 @@ impl SmrolTcpNetwork {
     ) -> Result<(), String> {
         use crate::smrol::message::SmrolMessage;
 
-        // 由于现有message.rs没有SeqMedian，我们复用SeqOrder结构来携带单个记录
-        let message = SmrolMessage::SeqOrder {
+        let message = SmrolMessage::SeqMedian {
             vc: median.vc.clone(),
-            responses: vec![(self.node_id, median.s_tx, median.sigma_seq.clone())],
+            median_sequence: median.s_tx,
+            proof: median.sigma_seq.clone(),
             sender_id: self.node_id,
         };
 

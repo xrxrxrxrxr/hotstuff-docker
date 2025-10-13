@@ -8,6 +8,7 @@ use crate::smrol::{
 };
 use bincode::de;
 use serde::{Deserialize, Serialize};
+use tracing_subscriber::field::debug;
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::sync::Arc;
 use threshold_crypto::{PublicKeySet, SecretKeyShare, Signature, SignatureShare, SIG_SIZE};
@@ -178,6 +179,12 @@ impl TransactionSequencing {
         } else {
             let assigned_s = self.seq_i;
             self.seq_i += 1;
+            debug!(
+                "🧮 [Sequencing] Line 2:7-11 node={} local seq_i={}, just assigned {}",
+                self.process_id,
+                self.seq_i,
+                assigned_s
+            );
             self.tx_sequence_map.insert(vc_tx.clone(), assigned_s);
             assigned_s
         };
@@ -201,6 +208,7 @@ impl TransactionSequencing {
             .or_insert(encoded.clone());
 
         if sender == self.process_id {
+            self.originated_vcs.insert(vc_tx.clone());
             warn!("[Sequencing] Node {} added to originated_vcs, now has {} vcs",
             self.process_id, self.originated_vcs.len());// *
         }
@@ -233,7 +241,9 @@ impl TransactionSequencing {
             s,
             sigma,
         };
-        self.network.multicast_seq_response(response).await?;
+        // self.network.multicast_seq_response(response).await?;
+        // Debug: send response back to original requester only
+        self.network.send_seq_response(sender, response).await?;
 
         // Check if we have deferred FINAL messages waiting for this vc
         let mut finalized_entry: Option<TransactionEntry> = None;
@@ -256,7 +266,8 @@ impl TransactionSequencing {
         sender: usize,
         resp: SeqResponse,
     ) -> Result<(), String> {
-        if self.originated_vcs.contains(&resp.vc) {
+        // point to point so skip the check
+        // if self.originated_vcs.contains(&resp.vc) {
             warn!(
                 "📥 [Sequencing] 收到来自 Node {} 的SEQ-RESPONSE as leader",
                 sender
@@ -274,6 +285,9 @@ impl TransactionSequencing {
                     });
 
                 let collected = self.s_vec_map[&resp.vc].len();
+                if collected > 2 * self.f + 1 {
+                    return Ok(());
+                }
                 debug!(
                     "🧾 [Sequencing] node={} collected {} / {} responses for vc={}",
                     self.process_id,
@@ -283,21 +297,24 @@ impl TransactionSequencing {
                 );
 
                 // Check if collected 2f+1 sequences (Line 22)
-                if self.s_vec_map[&resp.vc].len() == 2 * self.f + 1 {
+                if collected == 2 * self.f + 1 {
                     let records = self.s_vec_map[&resp.vc].clone();
                     let seq_order = SeqOrder {
                         vc: resp.vc.clone(),
                         records,
                     };
                     debug!(
-                        "📤 [Sequencing] node={} broadcasting SEQ-ORDER for vc={}",
+                        "📤 [Sequencing] node={} broadcasting SEQ-ORDER for vc={}, s={}",
                         self.process_id,
-                        hex::encode(&resp.vc[..std::cmp::min(8, resp.vc.len())])
+                        hex::encode(&resp.vc[..std::cmp::min(8, resp.vc.len())]),
+                        resp.s
                     );
                     self.network.multicast_seq_order(seq_order).await?;
                 }
+            }else {
+                debug!("❌ [Sequencing] Invalid signature in SEQ-RESPONSE from Node {}", sender);
             }
-        }
+        // }
         Ok(())
     }
 
@@ -346,8 +363,8 @@ impl TransactionSequencing {
         median: SeqMedian,
     ) -> Result<(), String> {
         debug!("📥 [Sequencing] 收到来自 {} 的SEQ-MEDIAN", sender);
-
-        if self.originated_vcs.contains(&median.vc) {
+        // point to point so skip the check
+        // if self.originated_vcs.contains(&median.vc) {
             // Original SEQ-REQUEST sender gathers median shares (Algorithm 2, line 30)
             if self.verify_threshold_share(&median, sender)? {
                 // line 31
@@ -397,7 +414,7 @@ impl TransactionSequencing {
                     self.threshold_sigs.remove(&median.s_tx);
                 }
             }
-        }
+        // }
         Ok(())
     }
 
@@ -629,6 +646,9 @@ impl TransactionSequencing {
                 sender_id: _,
                 sequence_number,
             } => {
+                debug!("📥 [Sequencing] Node {} processing SeqResponse from {} for vc={}, s={}",
+                self.process_id, sender_id, hex::encode(&vc[..8]), sequence_number);
+            
                 let resp = SeqResponse {
                     vc,
                     s: sequence_number,
@@ -640,28 +660,45 @@ impl TransactionSequencing {
             SmrolMessage::SeqOrder {
                 vc,
                 responses,
-                sender_id: _,
+                sender_id,
             } => {
-                if responses.len() == 1 {
-                    let (origin, s_tx, sigma_seq) = responses.into_iter().next().unwrap();
-                    let median_msg = SeqMedian {
-                        vc,
-                        s_tx,
-                        sigma_seq,
-                    };
-                    self.handle_seq_median(origin, median_msg).await?;
-                } else {
-                    let records = responses
-                        .into_iter()
-                        .map(|(sender, sequence, signature)| SeqResponseRecord {
-                            sender,
-                            sequence,
-                            signature,
-                        })
-                        .collect();
-                    let order = SeqOrder { vc, records };
-                    self.handle_seq_order(sender_id, order).await?;
-                }
+                debug!(
+                    "📥 [Sequencing] Node {} processing SeqOrder from {} for vc={}, responses={}",
+                    self.process_id,
+                    sender_id,
+                    hex::encode(&vc[..8]),
+                    responses.len()
+                );
+                let records = responses
+                    .into_iter()
+                    .map(|(sender, sequence, signature)| SeqResponseRecord {
+                        sender,
+                        sequence,
+                        signature,
+                    })
+                    .collect();
+                let order = SeqOrder { vc, records };
+                self.handle_seq_order(sender_id, order).await?;
+                Ok(None)
+            }
+            SmrolMessage::SeqMedian {
+                vc,
+                median_sequence,
+                proof,
+                sender_id,
+            } => {
+                debug!(
+                    "📥 [Sequencing] Node {} processing SeqMedian from {} for vc={}",
+                    self.process_id,
+                    sender_id,
+                    hex::encode(&vc[..8])
+                );
+                let median_msg = SeqMedian {
+                    vc,
+                    s_tx: median_sequence,
+                    sigma_seq: proof,
+                };
+                self.handle_seq_median(sender_id, median_msg).await?;
                 Ok(None)
             }
             SmrolMessage::SeqFinal {

@@ -43,6 +43,12 @@ pub enum SmrolMessage {
         responses: Vec<(usize, u64, Vec<u8>)>,
         sender_id: usize,
     },
+    SeqMedian {
+        vc: Vec<u8>,
+        median_sequence: u64,
+        proof: Vec<u8>,
+        sender_id: usize,
+    },
     SeqFinal {
         vc: Vec<u8>,
         final_sequence: u64,
