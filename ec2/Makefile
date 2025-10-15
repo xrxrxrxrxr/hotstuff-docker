@@ -52,8 +52,8 @@ start:
 	@sleep 15
 	@ssh $(SSH_OPTS) $(CLIENT) "cd ~/hotstuff && docker compose --profile client up -d || docker-compose --profile client up -d"
 	@echo "✅ 实验启动完成"
-	@echo "⏱️ 等待 3 分钟后自动停止实验..."
-	@sleep 200
+	@echo "⏱️ 等待 2 分钟后自动停止实验..."
+	@sleep 150
 	@$(MAKE) stop
 
 stop:

@@ -1,0 +1,19 @@
+2025-10-15T04:43:54.054227Z  WARN ThreadId(01) hotstuff_runner::tcp_node: Node 2 视图超时设置为 2000 ms
+2025-10-15T04:43:54.055742Z  INFO ThreadId(01) hotstuff_runner::smrol::pnfifo: [PNFIFO] Node 2 initializing, threshold: 3/4
+2025-10-15T04:43:54.056130Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-15T04:43:54.056462Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 2 连接到节点 3 失败: Connection refused (os error 111)
+2025-10-15T04:43:54.059925Z  INFO ThreadId(01) hotstuff_runner::smrol::pnfifo: [PNFIFO] Node 2 network listener started
+2025-10-15T04:43:54.060072Z  WARN ThreadId(12) hotstuff_runner::smrol::network: peer 1 连接失败 172.31.18.47:21001: Connection refused (os error 111)，等待 100ms
+2025-10-15T04:43:54.060166Z  INFO ThreadId(03) hotstuff_runner::smrol::pnfifo: [PNFIFO] Node 2 started dedicated task for Leader 2
+2025-10-15T04:43:54.060180Z  INFO ThreadId(03) hotstuff_runner::smrol::pnfifo: [PNFIFO] Node 2 started dedicated task for Leader 3
+2025-10-15T04:43:54.060185Z  INFO ThreadId(03) hotstuff_runner::smrol::pnfifo: [PNFIFO] Node 2 started dedicated task for Leader 1
+2025-10-15T04:43:54.060398Z  WARN ThreadId(13) hotstuff_runner::smrol::network: peer 3 连接失败 172.31.30.167:21003: Connection refused (os error 111)，等待 100ms
+2025-10-15T04:43:54.060629Z  INFO ThreadId(02) hotstuff_runner::smrol::pnfifo: [PNFIFO] Node 2 started dedicated task for Leader 0
+2025-10-15T04:43:54.060670Z  INFO ThreadId(03) hotstuff_runner::smrol::pnfifo: [PNFIFO] Node 2 network listener started
+2025-10-15T04:43:54.061726Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-15T04:43:59.061705Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-15T04:43:59.066214Z  WARN ThreadId(01) docker_node: 节点 0 端口 20000 暂不可达: failed to lookup address information: Temporary failure in name resolution
+2025-10-15T04:43:59.070267Z  WARN ThreadId(01) docker_node: 节点 1 端口 20001 暂不可达: failed to lookup address information: Temporary failure in name resolution
+2025-10-15T04:43:59.075760Z  WARN ThreadId(01) docker_node: 节点 2 端口 20002 暂不可达: failed to lookup address information: Temporary failure in name resolution
+2025-10-15T04:43:59.078599Z  WARN ThreadId(01) docker_node: 节点 3 端口 20003 暂不可达: failed to lookup address information: Temporary failure in name resolution
+2025-10-15T04:44:04.061037Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)

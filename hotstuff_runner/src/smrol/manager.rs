@@ -171,21 +171,25 @@ impl SmrolManager {
         tokio::spawn(async move {
             let mut rx = sequencing_rx.lock().await;
             while let Some((sender_id, message)) = rx.recv().await {
-                let result = {
-                    let mut sequencing = sequencing_handle.lock().await;
-                    sequencing.handle_smrol_message(sender_id, message).await
-                };
-
-                match result {
-                    Ok(Some(entry)) => {
-                        // line 38: add_sequenced_transaction(entry) to Mi and finalization
-                        if let Err(e) = manager_for_seq.add_sequenced_transaction(entry).await {
-                            error!("[SMROL] 共识输入登记失败: {}", e);
+                let sequencing_clone = Arc::clone(&sequencing_handle);
+                let manager_clone = Arc::clone(&manager_for_seq);
+                tokio::spawn(async move {
+                    match TransactionSequencing::handle_smrol_message(
+                        sequencing_clone,
+                        sender_id,
+                        message,
+                    )
+                    .await
+                    {
+                        Ok(Some(entry)) => {
+                            if let Err(e) = manager_clone.add_sequenced_transaction(entry).await {
+                                error!("[SMROL] 共识输入登记失败: {}", e);
+                            }
                         }
+                        Ok(None) => {}
+                        Err(e) => error!("处理Sequencing消息失败: {}", e),
                     }
-                    Ok(None) => {}
-                    Err(e) => error!("处理Sequencing消息失败: {}", e),
-                }
+                });
             }
             debug!(
                 "ℹ️ [SMROL] Sequencing loop exited for node {}",

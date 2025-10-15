@@ -131,9 +131,9 @@ impl LatencyTracker {
                 let latency_ms = latency as f64 / 1000.0;
                 self.ordering_latencies.push(latency);
                 self.ordering_recorded.insert(tx_id);
-                if tx_id % 1000 == 0 {
+                // if tx_id % 1000 == 0 {
                     info!("📊 交易 {} ordering延迟: {}ms", tx_id, latency_ms);
-                }
+                // }
             }
         }
     }
@@ -156,9 +156,9 @@ impl LatencyTracker {
                 let latency_ms = latency as f64 / 1000.0;
                 self.consensus_latencies.push(latency);
                 self.consensus_recorded.insert(tx_id);
-                if tx_id % 1000 == 0 {
+                // if tx_id % 1000 == 0 {
                     info!("📊 交易 {} consensus延迟: {}ms", tx_id, latency_ms);
-                }   
+                // }   
             }
             if let Some(pushed_time) = self.pushed_timestamps.remove(&tx_id) {
                 let latency = pushed_time.elapsed().as_micros();

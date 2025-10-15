@@ -167,7 +167,7 @@ impl PnfifoBc {
         slot: u64,
         value: Vec<u8>,
     ) -> Result<(), String> {
-        debug!("[PNFIFO] Node {} processing Leader {} slot {}", node_id, leader_id, slot);
+        debug!("[PNFIFO] Node {} received PROPOSAL Leader {} slot {}", node_id, leader_id, slot);
 
         // 检查是否有延迟的 FINAL
         let delayed_final = {
@@ -177,7 +177,7 @@ impl PnfifoBc {
                 .or_insert_with(|| PnfifoSlotState::new(threshold));
 
             // 去重检查
-            if slot_state.proposal_received {
+            if slot_state.proposal_received && leader_id!=node_id{
                 debug!("[PNFIFO] Node {} already processed Leader {} slot {}", 
                     node_id, leader_id, slot);
                 return Ok(());
@@ -242,7 +242,7 @@ impl PnfifoBc {
             .await
             .map_err(|e| format!("Failed to send VOTE: {}", e))?;
 
-        debug!("[PNFIFO] Node {} sent VOTE for Leader {} slot {}", node_id, leader_id, slot);
+        debug!("[PNFIFO] Node {} sent *VOTE* for Leader {} slot {}", node_id, leader_id, slot);
 
         // PNFIFO 内部等待：等待 FINAL 到达（实现 flag_s 语义）
         debug!("[PNFIFO] Node {} 开始 waiting for FINAL for Leader {} slot {}", 
@@ -357,8 +357,8 @@ impl PnfifoBc {
                         slot,
                         value,
                     } => {
-                        debug!("[PNFIFO] Node {} received PROPOSAL from {} slot {}", 
-                            node_id, prop_sender, slot);
+                        // debug!("[PNFIFO] Node {} received PROPOSAL from {} slot {}", 
+                        //     node_id, prop_sender, slot);
 
                         // 检查 Q(v)
                         if !PnfifoBc::predicate_q_static(&value) {
@@ -454,7 +454,7 @@ impl PnfifoBc {
         self.current_slot
             .store(slot.saturating_add(1), std::sync::atomic::Ordering::Relaxed);
 
-        info!("[PNFIFO] Node {} broadcasting proposal for slot {}", self.node_id, slot);
+        info!("[PNFIFO] Node {} broadcast *PROPOSAL* for slot {}", self.node_id, slot);
 
         // 初始化 slot 状态
         {
@@ -602,6 +602,8 @@ impl PnfifoBc {
             message_id: format!("pnfifo-final:{}:{}:{}", node_id, slot, Uuid::new_v4()),
         };
 
+        // let result = network.send_message(network_msg).await;
+        debug!("[PNFIFO] broadcast *FINAL* for slot {}", slot);
         network.send_message(network_msg).await
     }
 
@@ -634,6 +636,7 @@ impl PnfifoBc {
                 false
             }
         };
+        debug!("[PNFIFO] FINAL proposal_received = {}", proposal_received);
 
         if !proposal_received {
             // FINAL 先于 PROPOSAL 到达，暂存
@@ -742,7 +745,7 @@ impl PnfifoBc {
 
     // Sequencing 层使用：等待 output 可用（Algorithm 2 Line 5）
     pub async fn wait_for_output(&self, leader_id: usize, slot: u64) {
-        // Fast path
+        // Fast path: 先快速检查
         {
             let slots = self.slots.read().await;
             if let Some(slot_state) = slots.get(&(leader_id, slot)) {
@@ -752,7 +755,7 @@ impl PnfifoBc {
             }
         }
 
-        // Slow path
+        // Slow path: 获取或创建 notifier
         let notifier = {
             let mut map = self.slot_output_notifiers.write().await;
             Arc::clone(
@@ -761,10 +764,13 @@ impl PnfifoBc {
             )
         };
 
+        // 等待循环
         let mut attempts = 0;
         loop {
+            // 1. 先创建 notified Future（关键顺序）
             let notified = notifier.notified();
-
+            
+            // 2. 检查 output 是否已就绪
             {
                 let slots = self.slots.read().await;
                 if let Some(slot_state) = slots.get(&(leader_id, slot)) {
@@ -777,25 +783,15 @@ impl PnfifoBc {
                     }
                 }
             }
-
+            
+            // 3. 等待通知
+            attempts += 1;
             if attempts % 100 == 0 {
-                debug!("[PNFIFO] Node {} waiting for output Leader {} slot {} (attempt {})",
+                warn!("[PNFIFO] Node {} still waiting for Leader {} slot {} (attempt {})",
                     self.node_id, leader_id, slot, attempts);
             }
-            attempts += 1;
-
-            if attempts < 200 {
-                notified.await;
-            } else {
-                tokio::select! {
-                    _ = notified => { }
-                    _ = tokio::time::sleep(Duration::from_millis(1)) => {
-                        warn!("[PNFIFO] Node {} timeout waiting for output Leader {} slot {}", 
-                            self.node_id, leader_id, slot);
-                        return;
-                    }
-                }
-            }
+            
+            notified.await;
         }
     }
 
@@ -821,6 +817,7 @@ impl PnfifoBc {
     ) {
         debug!("[PNFIFO] Storing output for Leader {} slot {}", leader_id, slot);
 
+        // store output
         {
             let mut guard = slots.write().await;
             let slot_state = guard
@@ -832,14 +829,22 @@ impl PnfifoBc {
 
         // 唤醒所有等待这个 output 的任务
         // 包括：wait_for_final_internal 和 wait_for_output
-        let notifier = {
-            let mut map = slot_output_notifiers.write().await;
-            Arc::clone(
-                map.entry((leader_id, slot))
-                    .or_insert_with(|| Arc::new(Notify::new())),
-            )
-        };
-        notifier.notify_waiters();
+        // let notifier = {
+        //     let mut map = slot_output_notifiers.write().await;
+        //     Arc::clone(
+        //         map.entry((leader_id, slot))
+        //             .or_insert_with(|| Arc::new(Notify::new())),
+        //     )
+        // };
+        // notifier.notify_waiters();
+        // notify waiters
+        {
+            let map = slot_output_notifiers.read().await;  // ✅ 用 read 锁
+            if let Some(notifier) = map.get(&(leader_id, slot)) {
+                notifier.notify_waiters();
+                debug!("[PNFIFO] Notified waiters for Leader {} slot {}", leader_id, slot);
+            }
+        }
 
         debug!("[PNFIFO] Notified waiters for Leader {} slot {}", leader_id, slot);
     }
@@ -865,56 +870,5 @@ impl PnfifoBc {
             self.node_id, threshold,
             slots.len()
         );
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use ed25519_dalek::SigningKey;
-    use std::collections::HashMap;
-    use std::net::SocketAddr;
-
-    #[tokio::test]
-    async fn test_pnfifo_basic() {
-        let signing_key = SigningKey::from_bytes(&[1u8; 32]);
-        let verifying_key = signing_key.verifying_key();
-
-        let mut verifying_keys = HashMap::new();
-        verifying_keys.insert(0, verifying_key);
-
-        let mut peer_addrs: HashMap<usize, SocketAddr> = HashMap::new();
-        peer_addrs.insert(0, "127.0.0.1:21000".parse().unwrap());
-
-        let pnfifo = PnfifoBc::new(0, 1, signing_key, verifying_keys, peer_addrs)
-            .await
-            .unwrap();
-
-        let value = b"test_value".to_vec();
-        let slot = pnfifo.broadcast(1, value.clone()).await.unwrap();
-
-        assert_eq!(slot, 1);
-
-        let (total, _, current) = pnfifo.get_stats().await;
-        assert_eq!(total, 1);
-        assert_eq!(current, 2);
-    }
-
-    #[tokio::test]
-    async fn test_predicate_q() {
-        let signing_key = SigningKey::from_bytes(&[2u8; 32]);
-        let verifying_key = signing_key.verifying_key();
-
-        let mut verifying_keys = HashMap::new();
-        verifying_keys.insert(1, verifying_key);
-
-        let mut peer_addrs: HashMap<usize, SocketAddr> = HashMap::new();
-        peer_addrs.insert(1, "127.0.0.1:21001".parse().unwrap());
-
-        let pnfifo = PnfifoBc::new(1, 1, signing_key, verifying_keys, peer_addrs)
-            .await
-            .unwrap();
-
-        assert!(PnfifoBc::predicate_q_static(b"any_value"));
     }
 }

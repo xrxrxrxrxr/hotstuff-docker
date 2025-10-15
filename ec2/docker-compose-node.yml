@@ -2,7 +2,7 @@
 
 services:
   hotstuff-node:
-    image: georgiaxr/hs-test:latest
+    image: georgiaxr/hs-test:smrol
     container_name: hotstuff_node${NODE_ID}
     hostname: node${NODE_ID}
     network_mode: host  

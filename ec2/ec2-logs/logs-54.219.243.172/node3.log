@@ -1,0 +1,17 @@
+2025-10-15T04:43:54.100267Z  WARN ThreadId(01) hotstuff_runner::tcp_node: Node 3 视图超时设置为 2000 ms
+2025-10-15T04:43:54.101525Z  INFO ThreadId(01) hotstuff_runner::smrol::pnfifo: [PNFIFO] Node 3 initializing, threshold: 3/4
+2025-10-15T04:43:54.101915Z ERROR ThreadId(11) hotstuff_runner::pompe_network: ❌ Node 3 连接到节点 1 失败: Connection refused (os error 111)
+2025-10-15T04:43:54.104281Z  INFO ThreadId(02) hotstuff_runner::smrol::pnfifo: [PNFIFO] Node 3 started dedicated task for Leader 3
+2025-10-15T04:43:54.104323Z  INFO ThreadId(03) hotstuff_runner::smrol::pnfifo: [PNFIFO] Node 3 started dedicated task for Leader 2
+2025-10-15T04:43:54.104496Z  INFO ThreadId(02) hotstuff_runner::smrol::pnfifo: [PNFIFO] Node 3 started dedicated task for Leader 1
+2025-10-15T04:43:54.104507Z  INFO ThreadId(03) hotstuff_runner::smrol::pnfifo: [PNFIFO] Node 3 started dedicated task for Leader 0
+2025-10-15T04:43:54.104659Z  INFO ThreadId(01) hotstuff_runner::smrol::pnfifo: [PNFIFO] Node 3 network listener started
+2025-10-15T04:43:54.104709Z  INFO ThreadId(03) hotstuff_runner::smrol::pnfifo: [PNFIFO] Node 3 network listener started
+2025-10-15T04:43:54.105887Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-15T04:43:56.101362Z  WARN ThreadId(09) hotstuff_runner::tcp_node: Node 3 View 0 超时，可能导致延迟累积
+2025-10-15T04:43:59.105632Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (1.0 msg/conn)
+2025-10-15T04:43:59.112505Z  WARN ThreadId(01) docker_node: 节点 0 端口 20000 暂不可达: failed to lookup address information: Temporary failure in name resolution
+2025-10-15T04:43:59.114196Z  WARN ThreadId(01) docker_node: 节点 1 端口 20001 暂不可达: failed to lookup address information: Temporary failure in name resolution
+2025-10-15T04:43:59.118036Z  WARN ThreadId(01) docker_node: 节点 2 端口 20002 暂不可达: failed to lookup address information: Temporary failure in name resolution
+2025-10-15T04:43:59.119986Z  WARN ThreadId(01) docker_node: 节点 3 端口 20003 暂不可达: failed to lookup address information: Temporary failure in name resolution
+2025-10-15T04:44:04.106040Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (1.0 msg/conn)

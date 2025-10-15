@@ -13,14 +13,20 @@ WORKDIR /app
 
 # 1️⃣ 先拷贝 Cargo 清单文件（用于缓存依赖）
 COPY hotstuff_runner/Cargo.toml hotstuff_runner/Cargo.toml
+COPY hotstuff_runner/Cargo.lock hotstuff_runner/Cargo.lock
 COPY hotstuff_rs/Cargo.toml     hotstuff_rs/Cargo.toml
+COPY hotstuff_rs/Cargo.lock     hotstuff_rs/Cargo.lock
+COPY hotstuff_rs/src            hotstuff_rs/src
 
 # 2️⃣ 预构建依赖
-RUN mkdir -p hotstuff_runner/src && echo "fn main(){}" > hotstuff_runner/src/main.rs
+RUN mkdir -p hotstuff_runner/src/bin \
+    && for bin in docker_node client docker_node_adversary; do \
+        printf 'fn main() {}\n' > "hotstuff_runner/src/bin/${bin}.rs"; \
+    done
 
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/app/target \
-    cargo build --release --bin docker_node || true
+    cargo build --manifest-path hotstuff_runner/Cargo.toml --release --locked --bins
 
 # 复制整个项目（包括hotstuff_runner子目录）
 COPY . .
