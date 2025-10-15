@@ -124,7 +124,7 @@ impl TransactionSequencing {
         let s = self.k; // Get current sequence number k
         self.k += 1;
 
-        debug!(
+        info!(
             "🚀 [Sequencing] node={} generate SEQ-REQUEST (k={}, tx_id={})",
             self.process_id, s, tx.id
         );
@@ -148,7 +148,7 @@ impl TransactionSequencing {
         let vc_tx = vc_root.to_vec();
         self.originated_vcs.insert(vc_tx.clone());
 
-        debug!("[Sequencing] Node {} broadcasted *SEQ-REQUEST* k={}, originated_vcs.len() = {}",
+        info!("[Sequencing] Node {} broadcast *SEQ-REQUEST* k={}, originated_vcs.len() = {}",
             self.process_id, s, self.originated_vcs.len());
 
         Ok(())
@@ -160,8 +160,8 @@ impl TransactionSequencing {
         sender: usize,
         req: SeqRequest,
     ) -> Result<Option<TransactionEntry>, String> {
-        debug!(
-            "📥 [Sequencing] Line 2:4: 收到来自 {} 的**SEQ-REQUEST**, seq_num: {}",
+        info!(
+            "📥 [Sequencing] Line 2:4: received SEQ-REQUEST, node {} seq_num: {}",
             sender, req.seq_num
         );
         let wait_time = Instant::now();
@@ -172,10 +172,10 @@ impl TransactionSequencing {
             return Ok(None);
         }
 
-        // debug!(
-        //     "✅ [Sequencing] Line 2:5: Log condition verified for SEQ-REQUEST from {} with seq_num {}. Continue to Line 12-14",
-        //     sender, req.seq_num
-        // );
+        debug!(
+            "✅ [Sequencing] Line 2:5: Log condition verified for SEQ-REQUEST from {} with seq_num {}. Continue to Line 12-14",
+            sender, req.seq_num
+        );
 
         let encode_time=Instant::now();
 
@@ -238,13 +238,13 @@ impl TransactionSequencing {
             let delay = spawn_time.elapsed();
             let wait=wait_time.elapsed();
             let encode=encode_time.elapsed();
-            warn!("[Sequencing-Timing] ⏰ FIFO broadcast task spawn started after {:?} delay, wait {:?} for log condition check, encoding time {:?}.", delay,wait-encode, encode-delay);
+            debug!("[Sequencing-Timing] ⏰ FIFO broadcast task spawn started after {:?} delay, wait {:?} for log condition check, encoding time {:?}.", delay,wait-encode, encode-delay);
             if let Err(err) = pnfifo.broadcast(slot_for_pnfifo, vc_for_pnfifo).await {
                 warn!("❌ [Sequencing] PNFIFO broadcast failed: {}", err);
             } else {
                 debug!(
-                    "📡 [Sequencing] Line 2:15 node={} forwarded sequence {} vc to PNFIFO slot {}",
-                    process_id, s, slot_for_pnfifo
+                    "📡 [Sequencing] Line 2:15 node={} forwarded req.seq_num {} vc to PNFIFO slot {}",
+                    process_id, req.seq_num, slot_for_pnfifo
                 );
             }
         });
@@ -265,7 +265,7 @@ impl TransactionSequencing {
         // self.network.multicast_seq_response(response).await?;
         // Debug: send response back to original requester only
         self.network.send_seq_response(sender, response).await?;
-        debug!("[Sequencing] Sent *SEQ-RESPONSE* to node {}, s = {}",sender, s);
+        info!("[Sequencing] Sent *SEQ-RESPONSE* to node {}, s = {}",sender, s);
 
         // Check if we have deferred FINAL messages waiting for this vc
         let mut finalized_entry: Option<TransactionEntry> = None;
@@ -290,8 +290,8 @@ impl TransactionSequencing {
     ) -> Result<(), String> {
         // point to point so skip the check
         // if self.originated_vcs.contains(&resp.vc) {
-            debug!(
-                "📥 [Sequencing] 收到来自 Node {} 的**SEQ-RESPONSE** as leader",
+            info!(
+                "📥 [Sequencing] received SEQ-RESPONSE from Node {} as leader",
                 sender
             );
             // Original SEQ-REQUEST sender collects sequence responses (Algorithm 2, line 19)
@@ -326,7 +326,7 @@ impl TransactionSequencing {
                         records,
                     };
                     self.network.multicast_seq_order(seq_order).await?;
-                    debug!(
+                    info!(
                         "📤 [Sequencing] node={} broadcasting *SEQ-ORDER* for vc={}, s={}",
                         self.process_id,
                         hex::encode(&resp.vc[..std::cmp::min(8, resp.vc.len())]),
@@ -334,7 +334,7 @@ impl TransactionSequencing {
                     );
                 }
             }else {
-                debug!("❌ [Sequencing] Invalid signature in SEQ-RESPONSE from Node {}", sender);
+                warn!("❌ [Sequencing] Invalid signature in SEQ-RESPONSE from Node {}", sender);
             }
         // }
         Ok(())
@@ -342,12 +342,12 @@ impl TransactionSequencing {
 
     // Handle SEQ-ORDER message - Lines 24-28
     pub async fn handle_seq_order(&mut self, sender: usize, order: SeqOrder) -> Result<(), String> {
-        debug!("📥 [Sequencing] 收到来自 Node {} 的**SEQ-ORDER**", sender);
+        info!("📥 [Sequencing] Node {} received SEQ-ORDER", sender);
 
         if self.verify_seq_order(&order) {
             let sequences: Vec<u64> = order.records.iter().map(|r| r.sequence).collect();
             let median = self.calculate_median(&sequences); // line 26
-            info!(
+            debug!(
                 "✅ [Sequencing] Verified SEQ-ORDER from Node {} with median sequence {}",
                 sender, median
             );
@@ -374,7 +374,7 @@ impl TransactionSequencing {
                 sigma_seq,
             };
             self.network.send_seq_median(sender, seq_median).await?;
-            debug!(
+            info!(
                 "[Sequencing] Node={} sent *SEQ-MEDIAN* vc={} median={}",
                 self.process_id,
                 hex::encode(&order.vc[..std::cmp::min(8, order.vc.len())]),
@@ -390,7 +390,7 @@ impl TransactionSequencing {
         sender: usize,
         median: SeqMedian,
     ) -> Result<(), String> {
-        debug!("📥 [Sequencing] 收到来自 {} 的**SEQ-MEDIAN**", sender);
+        info!("📥 [Sequencing] 收到来自 {} 的**SEQ-MEDIAN**", sender);
         // point to point so skip the check
         // if self.originated_vcs.contains(&median.vc) {
             // Original SEQ-REQUEST sender gathers median shares (Algorithm 2, line 30)
@@ -438,7 +438,7 @@ impl TransactionSequencing {
                         sigma: combined_sig.to_bytes().to_vec(),
                     };
                     self.network.multicast_seq_final(seq_final).await?;
-                    debug!("[Sequencing] Node {} broadcast *SEQ-FINAL* {} for vc = {:?}",self.process_id, sender, hex::encode(&median.vc[..std::cmp::min(8, median.vc.len())]));
+                    info!("[Sequencing] Node {} broadcast *SEQ-FINAL* {} for vc = {:?}",self.process_id, sender, hex::encode(&median.vc[..std::cmp::min(8, median.vc.len())]));
                     // 清理已使用的shares，避免重复广播
                     self.threshold_sigs.remove(&median.s_tx);
                 }
@@ -452,11 +452,12 @@ impl TransactionSequencing {
         &mut self,
         final_msg: SeqFinal,
     ) -> Result<Option<TransactionEntry>, String> {
-        debug!("📥 [Sequencing] 收到**SEQ-FINAL**消息");
-        debug!("[Sequencing] SEQ-FINAL vc={}, pending_txs contains: {}", 
+        info!("📥 [Sequencing] Node {} received SEQ-FINAL, vc={}, pending_txs contains: {}", self.process_id, hex::encode(&final_msg.vc[..8]), self.pending_txs.contains_key(&final_msg.vc));
+        debug!("[Sequencing] SEQ-FINAL vc={}, pending_txs contains: {}",
             hex::encode(&final_msg.vc[..8]),
             self.pending_txs.contains_key(&final_msg.vc));
 
+        // NOTE: 改成原子操作？
         if self.verify_combined_signature(&final_msg)? {
             let (in_vc_ledger, in_mi) = {
                 let finalization = self.finalization.lock().await;
@@ -475,6 +476,11 @@ impl TransactionSequencing {
             }
 
             if !self.pending_txs.contains_key(&final_msg.vc) {
+                info!(
+                    "⏳ [Sequencing] node={} SEQ-FINAL vc={} not ready, caching for later processing",
+                    self.process_id,
+                    hex::encode(&final_msg.vc[..std::cmp::min(8, final_msg.vc.len())])
+                );
                 self.store_pending_final(final_msg);
                 return Ok(None);
             }
@@ -506,14 +512,14 @@ impl TransactionSequencing {
         }
         let target_slot = seq_num - 1;
         debug!(
-            "⏱️ [Sequencing] Checking log condition: leader {}, target_slot {}",
+            "⏱️ [Sequencing] wait_for_log_condition - start wait_for_output: leader {}, target_slot {}",
             leader_id, target_slot
         );
         let t0=Instant::now();
         self.pnfifo.wait_for_output(leader_id, target_slot).await;
         let wait=t0.elapsed();
-        debug!(
-            "⏱️ [Sequencing] log condition satisfied: leader {} target_slot {}, waited {:?} for Line 5 condition.",
+        info!(
+            "⏱️ [Sequencing] wait_for_log_condition - end wait_for_output: leader {} target_slot {}, waited {:?} for Line 5 condition.",
             leader_id, target_slot,wait
         );
         true
@@ -767,7 +773,7 @@ impl TransactionSequencing {
     }
 
     fn store_pending_final(&mut self, final_msg: SeqFinal) {
-        debug!(
+        info!(
             "⏳ [Sequencing] node={} 缓存SEQ-FINAL等待载荷: vc={} s_tx={}",
             self.process_id,
             hex::encode(&final_msg.vc[..std::cmp::min(8, final_msg.vc.len())]),
@@ -782,7 +788,14 @@ impl TransactionSequencing {
     fn finalize_ready_final(&mut self, final_msg: SeqFinal) -> Option<TransactionEntry> {
         if !self.pending_txs.contains_key(&final_msg.vc) {
             // 事务尚未就绪，重新缓存等待
+            let msg = final_msg.clone();
             self.store_pending_final(final_msg);
+            debug!(
+                "⏳ [Sequencing] node={} 重新缓存SEQ-FINAL等待 finalize_ready_final 载荷: vc={} s_tx={}",
+                self.process_id,
+                hex::encode(&msg.vc[..std::cmp::min(8, msg.vc.len())]),
+                msg.s_tx
+            );
             return None;
         }
 

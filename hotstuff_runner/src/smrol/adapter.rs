@@ -33,7 +33,7 @@ impl SmrolHotStuffAdapter {
                 queue.push(tx);
             }
             warn!(
-                "📤 [SMROL→HotStuff] delivered {} transactions for epoch {}",
+                "🎉 [SMROL→HotStuff] delivered {} transactions for epoch {}",
                 count, epoch
             );
         } else {

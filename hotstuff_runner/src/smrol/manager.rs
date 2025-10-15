@@ -178,9 +178,11 @@ impl SmrolManager {
                 )
                 .await;
 
+                // result is Result<Option<TransactionEntry>, String> ready for consensus if Some
                 match result {
                     Ok(Some(entry)) => {
                         // line 38: add_sequenced_transaction(entry) to Mi and finalization
+                        info!("[Manager] Sequencing output ready add_sequenced_transaction: vc_tx={} s_tx={}", hex::encode(&entry.vc_tx[..std::cmp::min(8, entry.vc_tx.len())]), entry.s_tx);
                         if let Err(e) = manager_for_seq.add_sequenced_transaction(entry).await {
                             error!("[SMROL] 共识输入登记失败: {}", e);
                         }
@@ -198,7 +200,9 @@ impl SmrolManager {
         let consensus_rx = self.network.get_consensus_receiver();
         let consensus_handle = Arc::clone(&self.consensus);
         let manager_for_consensus = Arc::clone(&self);
+        info!("🔄 [Manager] Node {} start_message_loop spawning handle_consensus_message", self.node_id);
         tokio::spawn(async move {
+            info!("🔄 [Manager] handle_consensus_message started for node {}", manager_for_consensus.node_id);
             let mut rx = consensus_rx.lock().await;
             while let Some((sender_id, message)) = rx.recv().await {
                 let mut consensus = consensus_handle.lock().await;
@@ -249,8 +253,8 @@ impl SmrolManager {
             finalization.add_to_mi(epoch, entry_for_finalization);
         }
 
-        debug!(
-            "🧮 [SMROL] 登记Sequencing输出, add to M_i: epoch={} vc_bytes={} s_tx={} pending={} K={}",
+        info!(
+            "🧮 [Manager] 登记Sequencing输出, add to finalization M_i: epoch={} vc_bytes={} s_tx={} pending={} K={}",
             epoch, entry_meta.0, entry_meta.1, pending, self.config.capital_k
         );
 
