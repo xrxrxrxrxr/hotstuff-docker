@@ -172,10 +172,10 @@ impl TransactionSequencing {
             return Ok(None);
         }
 
-        debug!(
-            "✅ [Sequencing] Line 2:5: Log condition verified for SEQ-REQUEST from {} with seq_num {}. Continue to Line 12-14",
-            sender, req.seq_num
-        );
+        // debug!(
+        //     "✅ [Sequencing] Line 2:5: Log condition verified for SEQ-REQUEST from {} with seq_num {}. Continue to Line 12-14",
+        //     sender, req.seq_num
+        // );
 
         let encode_time=Instant::now();
 
@@ -238,7 +238,7 @@ impl TransactionSequencing {
             let delay = spawn_time.elapsed();
             let wait=wait_time.elapsed();
             let encode=encode_time.elapsed();
-            warn!("[Sequencing-Timing] ⏰ spawn task started after {:?} delay, wait {:?} for log condition check, encoding time {:?}.", delay,wait-encode, encode-delay);
+            warn!("[Sequencing-Timing] ⏰ FIFO broadcast task spawn started after {:?} delay, wait {:?} for log condition check, encoding time {:?}.", delay,wait-encode, encode-delay);
             if let Err(err) = pnfifo.broadcast(slot_for_pnfifo, vc_for_pnfifo).await {
                 warn!("❌ [Sequencing] PNFIFO broadcast failed: {}", err);
             } else {
@@ -513,7 +513,7 @@ impl TransactionSequencing {
         self.pnfifo.wait_for_output(leader_id, target_slot).await;
         let wait=t0.elapsed();
         debug!(
-            "⏱️ [Sequencing] Line 5 log_condition satisfied for leader {} slot {}, waited {:?} for Line 5 condition.",
+            "⏱️ [Sequencing] log condition satisfied: leader {} target_slot {}, waited {:?} for Line 5 condition.",
             leader_id, target_slot,wait
         );
         true
@@ -842,7 +842,7 @@ impl TransactionSequencing {
         while let Some((sender_id, message)) = rx.recv().await {
             let sequencing_clone = Arc::clone(&sequencing_handle);
             let node_for_log = node_id;
-            tokio::spawn(async move {
+            // tokio::spawn(async move {
                 match TransactionSequencing::handle_smrol_message(sequencing_clone, sender_id, message).await {
                     Ok(Some(_entry)) => {
                         debug!(
@@ -853,7 +853,7 @@ impl TransactionSequencing {
                     Ok(None) => {}
                     Err(e) => error!("❌ [Sequencing] 并发消息处理失败: {}", e),
                 }
-            });
+            // });
         }
 
         warn!("⚠️ [Sequencing] Node {} 消息处理循环退出", node_id);

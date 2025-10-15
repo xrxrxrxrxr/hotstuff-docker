@@ -22,7 +22,7 @@ struct PnfifoSlotState {
     votes: HashMap<usize, Vec<u8>>,
     threshold_sig: SmrolThresholdSig,
     proposal_received: bool,
-    final_received: bool,
+    final_stored: bool,
     pending_final: Option<(Vec<u8>, Vec<u8>)>,
     final_broadcasted: bool,
 }
@@ -35,7 +35,7 @@ impl PnfifoSlotState {
             votes: HashMap::new(),
             threshold_sig: SmrolThresholdSig::new(threshold),
             proposal_received: false,
-            final_received: false,
+            final_stored: false,
             pending_final: None,
             final_broadcasted: false,
         }
@@ -269,7 +269,7 @@ impl PnfifoBc {
         {
             let slots_guard = slots.read().await;
             if let Some(slot_state) = slots_guard.get(&(leader_id, slot)) {
-                if slot_state.final_received {
+                if slot_state.final_stored {
                     return;
                 }
             }
@@ -289,11 +289,11 @@ impl PnfifoBc {
             // 先订阅
             let notified = notifier.notified();
 
-            // 再检查 final_received
+            // 再检查 final_stored
             {
                 let slots_guard = slots.read().await;
                 if let Some(slot_state) = slots_guard.get(&(leader_id, slot)) {
-                    if slot_state.final_received {
+                    if slot_state.final_stored {
                         if attempts > 0 {
                             debug!("[PNFIFO] Node {} received FINAL for Leader {} slot {} after {} waits",
                                 node_id, leader_id, slot, attempts);
@@ -626,7 +626,7 @@ impl PnfifoBc {
         let proposal_received = {
             let slots_guard = slots.read().await;
             if let Some(slot_state) = slots_guard.get(&(leader_id, slot)) {
-                if slot_state.final_received {
+                if slot_state.final_stored {
                     debug!("[PNFIFO] Node {} already processed FINAL for Leader {} slot {}", 
                         node_id, leader_id, slot);
                     return Ok(());
@@ -636,7 +636,7 @@ impl PnfifoBc {
                 false
             }
         };
-        debug!("[PNFIFO] FINAL proposal_received = {}", proposal_received);
+        debug!("[PNFIFO] FINAL proposal_received = {} (leader {} slot {})", proposal_received, leader_id,slot);
 
         if !proposal_received {
             // FINAL 先于 PROPOSAL 到达，暂存
@@ -645,8 +645,24 @@ impl PnfifoBc {
                 .entry((leader_id, slot))
                 .or_insert_with(|| PnfifoSlotState::new(threshold));
 
-            if slot_state.final_received {
+            if slot_state.final_stored {
                 return Ok(());
+            }
+
+            if slot_state.proposal_received {
+                drop(slots_guard);
+                return Self::finalize_with_signature_static(
+                    node_id,
+                    slots,
+                    slot_output_notifiers,
+                    threshold,
+                    verifying_keys,
+                    leader_id,
+                    slot,
+                    value,
+                    combined_signature,
+                )
+                .await;
             }
 
             slot_state.pending_final = Some((value, combined_signature));
@@ -700,15 +716,16 @@ impl PnfifoBc {
                         .entry((leader_id, slot))
                         .or_insert_with(|| PnfifoSlotState::new(threshold));
 
-                    if slot_state.final_received {
+                    if slot_state.final_stored {
                         debug!("[PNFIFO] Node {} already processed FINAL for Leader {} slot {}", 
                             node_id, leader_id, slot);
-                        return Ok(());
+                        // drop(slots_guard);
+                        false
+                    }else{
+                        slot_state.value.get_or_insert_with(|| value.clone());
+                        slot_state.pending_final = None;
+                        true
                     }
-
-                    slot_state.value.get_or_insert_with(|| value.clone());
-                    slot_state.pending_final = None;
-                    true
                 };
 
                 if should_store {
@@ -750,6 +767,7 @@ impl PnfifoBc {
             let slots = self.slots.read().await;
             if let Some(slot_state) = slots.get(&(leader_id, slot)) {
                 if slot_state.output.is_some() {
+                    debug!("(wait_for_output) fast-path completed. leader {} slot {}", leader_id, slot);
                     return;
                 }
             }
@@ -824,7 +842,7 @@ impl PnfifoBc {
                 .entry((leader_id, slot))
                 .or_insert_with(|| PnfifoSlotState::new(threshold));
             slot_state.output = Some((value, signature));
-            slot_state.final_received = true;
+            slot_state.final_stored = true;
         }
 
         // 唤醒所有等待这个 output 的任务
