@@ -230,24 +230,30 @@ impl TransactionSequencing {
         }
 
         // Input to PNFIFO-BC (Line 15)
-        let pnfifo = Arc::clone(&self.pnfifo);
-        let vc_for_pnfifo = vc_tx.clone();
-        let slot_for_pnfifo = s;
-        let spawn_time = Instant::now();
-        tokio::spawn(async move {
-            let delay = spawn_time.elapsed();
-            let wait=wait_time.elapsed();
-            let encode=encode_time.elapsed();
-            debug!("[Sequencing-Timing] ⏰ FIFO broadcast task spawn started after {:?} delay, wait {:?} for log condition check, encoding time {:?}.", delay,wait-encode, encode-delay);
-            if let Err(err) = pnfifo.broadcast(slot_for_pnfifo, vc_for_pnfifo).await {
-                warn!("❌ [Sequencing] PNFIFO broadcast failed: {}", err);
-            } else {
+        let enqueue_start = Instant::now();
+        let wait = wait_time.elapsed();
+        let encode = encode_time.elapsed();
+        let queue_result = self.pnfifo.broadcast(s, vc_tx.clone()).await;
+        let enqueue_delay = enqueue_start.elapsed();
+
+        debug!(
+            "[Sequencing-Timing] ⏰ FIFO broadcast enqueued after {:?}, wait {:?}, encoding {:?}.",
+            enqueue_delay,
+            wait,
+            encode,
+        );
+
+        match queue_result {
+            Ok(_) => {
                 debug!(
                     "📡 [Sequencing] Line 2:15 node={} forwarded req.seq_num {} vc to PNFIFO slot {}",
-                    process_id, req.seq_num, slot_for_pnfifo
+                    process_id, req.seq_num, s
                 );
             }
-        });
+            Err(err) => {
+                warn!("❌ [Sequencing] PNFIFO broadcast enqueue failed: {}", err);
+            }
+        }
 
         // Sign and respond (Lines 16-17)
         let message = format!("sequence:{}:{}", hex::encode(&vc_tx), s);

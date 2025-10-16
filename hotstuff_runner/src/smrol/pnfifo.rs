@@ -57,7 +57,7 @@ pub struct PnfifoBc {
     threshold: usize,
 
     // 算法状态
-    current_slot: AtomicU64,
+    current_slot: Arc<AtomicU64>,
     slots: Arc<RwLock<HashMap<(usize, u64), PnfifoSlotState>>>,
     slot_output_notifiers: Arc<RwLock<HashMap<(usize, u64), Arc<Notify>>>>,
 
@@ -70,6 +70,7 @@ pub struct PnfifoBc {
 
     // 每个 leader 的专用通道发送端
     leader_proposal_senders: HashMap<usize, mpsc::UnboundedSender<ProposalTask>>,
+    broadcast_tx: mpsc::Sender<(u64, Vec<u8>)>,
 }
 
 impl PnfifoBc {
@@ -95,6 +96,7 @@ impl PnfifoBc {
 
         let slots = Arc::new(RwLock::new(HashMap::new()));
         let slot_output_notifiers = Arc::new(RwLock::new(HashMap::new()));
+        let current_slot = Arc::new(AtomicU64::new(1));
 
         let mut leader_proposal_senders = HashMap::new();
 
@@ -140,17 +142,60 @@ impl PnfifoBc {
             leader_proposal_senders.insert(leader_id, tx);
         }
 
+        let (broadcast_tx, mut broadcast_rx) =
+            mpsc::channel::<(u64, Vec<u8>)>(Self::broadcast_queue_capacity());
+        let slots_for_broadcast = Arc::clone(&slots);
+        let current_slot_for_broadcast = Arc::clone(&current_slot);
+        let network_for_broadcast = Arc::clone(&network);
+        let node_id_for_broadcast = node_id;
+        let threshold_for_broadcast = threshold;
+
+        tokio::spawn(async move {
+            info!(
+                "[PNFIFO] Node {} broadcast worker started (capacity: {})",
+                node_id_for_broadcast,
+                Self::broadcast_queue_capacity()
+            );
+
+            while let Some((slot, value)) = broadcast_rx.recv().await {
+                if let Err(e) = Self::broadcast_proposal_static(
+                    node_id_for_broadcast,
+                    &current_slot_for_broadcast,
+                    &slots_for_broadcast,
+                    threshold_for_broadcast,
+                    &network_for_broadcast,
+                    slot,
+                    value,
+                )
+                .await
+                {
+                    error!(
+                        "[PNFIFO] Node {} failed to broadcast proposal for slot {}: {}",
+                        node_id_for_broadcast,
+                        slot,
+                        e
+                    );
+                }
+            }
+
+            warn!(
+                "[PNFIFO] Node {} broadcast worker exited (channel closed)",
+                node_id_for_broadcast
+            );
+        });
+
         Ok(Self {
             node_id,
             total_nodes,
             threshold,
-            current_slot: AtomicU64::new(1),
+            current_slot,
             slots,
             slot_output_notifiers,
             signing_key,
             verifying_keys,
             network,
             leader_proposal_senders,
+            broadcast_tx,
         })
     }
 
@@ -451,47 +496,81 @@ impl PnfifoBc {
     }
 
     pub async fn broadcast(&self, slot: u64, value: Vec<u8>) -> Result<u64, String> {
-        self.current_slot
-            .store(slot.saturating_add(1), std::sync::atomic::Ordering::Relaxed);
+        self.broadcast_tx
+            .send((slot, value))
+            .await
+            .map_err(|e| format!("broadcast queue send failed: {}", e))?;
 
-        info!("[PNFIFO] Node {} broadcast *PROPOSAL* for slot {}", self.node_id, slot);
+        debug!(
+            "[PNFIFO] Node {} enqueued slot {} for broadcast (queue)",
+            self.node_id,
+            slot
+        );
 
-        // 初始化 slot 状态
+        Ok(slot)
+    }
+
+    fn broadcast_queue_capacity() -> usize {
+        std::env::var("PNFIFO_BROADCAST_QUEUE_CAP")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(1024)
+    }
+
+    async fn broadcast_proposal_static(
+        node_id: usize,
+        current_slot: &Arc<AtomicU64>,
+        slots: &Arc<RwLock<HashMap<(usize, u64), PnfifoSlotState>>>,
+        threshold: usize,
+        network: &Arc<SmrolTcpNetwork>,
+        slot: u64,
+        value: Vec<u8>,
+    ) -> Result<(), String> {
+        current_slot.store(
+            slot.saturating_add(1),
+            std::sync::atomic::Ordering::Relaxed,
+        );
+
+        info!("[PNFIFO] Node {} broadcast *PROPOSAL* for slot {}", node_id, slot);
+
         {
-            let mut slots = self.slots.write().await;
-            let slot_state = slots
-                .entry((self.node_id, slot))
-                .or_insert_with(|| PnfifoSlotState::new(self.threshold));
+            let mut slots_guard = slots.write().await;
+            let slot_state = slots_guard
+                .entry((node_id, slot))
+                .or_insert_with(|| PnfifoSlotState::new(threshold));
             slot_state.value = Some(value.clone());
             slot_state.proposal_received = true;
         }
 
-        // 广播 PROPOSAL
         let proposal = SmrolMessage::PnfifoProposal {
-            sender_id: self.node_id,
+            sender_id: node_id,
             slot,
             value: value.clone(),
         };
 
         let network_msg = SmrolNetworkMessage {
-            from_node_id: self.node_id,
+            from_node_id: node_id,
             to_node_id: None,
             message: proposal,
             timestamp: std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
                 .unwrap()
                 .as_micros() as u64,
-            message_id: format!("pnfifo-proposal:{}:{}:{}", 
-                self.node_id, slot, Uuid::new_v4()),
+            message_id: format!("pnfifo-proposal:{}:{}:{}", node_id, slot, Uuid::new_v4()),
         };
 
-        self.network
+        network
             .send_message(network_msg)
             .await
             .map_err(|e| format!("PROPOSAL broadcast failed: {}", e))?;
 
-        debug!("[PNFIFO] Node {} completed slot {} PROPOSAL broadcast", self.node_id, slot);
-        Ok(slot)
+        debug!(
+            "[PNFIFO] Node {} completed slot {} PROPOSAL broadcast (worker)",
+            node_id,
+            slot
+        );
+
+        Ok(())
     }
 
     async fn handle_vote_static(
