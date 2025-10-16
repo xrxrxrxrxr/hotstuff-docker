@@ -167,7 +167,7 @@ impl PnfifoBc {
         slot: u64,
         value: Vec<u8>,
     ) -> Result<(), String> {
-        debug!("[PNFIFO] Node {} received PROPOSAL Leader {} slot {}", node_id, leader_id, slot);
+        info!("[PNFIFO] Node {} received PROPOSAL Leader {} slot {}", node_id, leader_id, slot);
 
         // 检查是否有延迟的 FINAL
         let delayed_final = {
@@ -242,7 +242,7 @@ impl PnfifoBc {
             .await
             .map_err(|e| format!("Failed to send VOTE: {}", e))?;
 
-        debug!("[PNFIFO] Node {} sent *VOTE* for Leader {} slot {}", node_id, leader_id, slot);
+        info!("[PNFIFO] Node {} sent *VOTE* for Leader {} slot {}", node_id, leader_id, slot);
 
         // PNFIFO 内部等待：等待 FINAL 到达（实现 flag_s 语义）
         debug!("[PNFIFO] Node {} 开始 waiting for FINAL for Leader {} slot {}", 
@@ -506,7 +506,7 @@ impl PnfifoBc {
         slot: u64,
         signature_share: Vec<u8>,
     ) -> Result<(), String> {
-        debug!("[PNFIFO] Node {} received VOTE from {} for slot {} leader {}", 
+        info!("[PNFIFO] Node {} received VOTE from {} for slot {} leader {}", 
             node_id, sender_id, slot, leader_id);
 
         let mut should_finalize = false;
@@ -603,7 +603,7 @@ impl PnfifoBc {
         };
 
         // let result = network.send_message(network_msg).await;
-        debug!("[PNFIFO] broadcast *FINAL* for slot {}", slot);
+        info!("[PNFIFO] broadcast *FINAL* for slot {}", slot);
         network.send_message(network_msg).await
     }
 
@@ -619,7 +619,7 @@ impl PnfifoBc {
         value: Vec<u8>,
         combined_signature: Vec<u8>,
     ) -> Result<(), String> {
-        debug!("[PNFIFO] Node {} received FINAL from {} for Leader {} slot {}", 
+        info!("[PNFIFO] Node {} received FINAL from {} for Leader {} slot {}", 
             node_id, sender_id, leader_id, slot);
 
         // 检查是否已收到 PROPOSAL
@@ -708,7 +708,7 @@ impl PnfifoBc {
             threshold,
         ) {
             Ok(true) => {
-                debug!("[PNFIFO] Node {} slot {} FINAL signature verified", node_id, slot);
+                // debug!("[PNFIFO] Node {} slot {} FINAL signature verified", node_id, slot);
 
                 let should_store = {
                     let mut slots_guard = slots.write().await;
@@ -864,7 +864,7 @@ impl PnfifoBc {
             }
         }
 
-        debug!("[PNFIFO] Notified waiters for Leader {} slot {}", leader_id, slot);
+        // debug!("[PNFIFO] Notified waiters for Leader {} slot {}", leader_id, slot);
     }
 
     pub async fn get_stats(&self) -> (usize, usize, u64) {

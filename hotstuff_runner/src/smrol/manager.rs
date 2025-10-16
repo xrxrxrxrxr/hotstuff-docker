@@ -10,11 +10,12 @@ use crate::smrol::{
     sequencing::TransactionSequencing,
 };
 use ed25519_dalek::{SigningKey, VerifyingKey};
+use hex;
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::sync::{broadcast, Mutex};
-use tracing::{debug, error, info};
+use tracing::{debug, error, info, warn};
 
 #[derive(Debug, Clone)]
 pub struct SmrolConfig {
@@ -85,6 +86,7 @@ impl SmrolManager {
         info!("✅ [SMROL] PNFIFO自动启动完成");
 
         let network = pnfifo.network();
+        network.warm_up_connections();
 
         let finalization = Arc::new(Mutex::new(OutputFinalization::new(
             node_id,
@@ -145,7 +147,7 @@ impl SmrolManager {
         &self,
         transaction: SmrolTransaction,
     ) -> Result<(), String> {
-        info!(
+        debug!(
             "📥 [SMROL] Processing transaction: {}:{}->{}:{}",
             transaction.id, transaction.from, transaction.to, transaction.amount
         );
@@ -238,31 +240,83 @@ impl SmrolManager {
     // line 38: take over sequenced transaction and add to Mi and finalization
     pub async fn add_sequenced_transaction(&self, entry: TransactionEntry) -> Result<(), String> {
         let entry_meta = (entry.vc_tx.len(), entry.s_tx);
-        let entry_for_finalization = entry.clone();
 
-        let (epoch, pending) = {
-            let mut consensus = self.consensus.lock().await;
-            let epoch = consensus.get_current_epoch();
-            consensus.add_to_mi(epoch, entry);
-            let pending = consensus.get_mi_size(epoch);
-            (epoch, pending)
+        let epoch = {
+            let consensus = self.consensus.lock().await;
+            consensus.get_current_epoch()
         };
 
-        {
-            let mut finalization = self.finalization.lock().await;
-            finalization.add_to_mi(epoch, entry_for_finalization);
+        if let Some(tx_id) = Self::extract_tx_id(&entry) {
+            if let Err(e) = self
+                .event_tx
+                .send(SystemEvent::SmrolOrderingCompleted { tx_ids: vec![tx_id] })
+            {
+                warn!(
+                    "⚠️ [SMROL] Node {} failed to emit ordering completion for tx {}: {}",
+                    self.node_id, tx_id, e
+                );
+            }
         }
 
-        info!(
-            "🧮 [Manager] 登记Sequencing输出, add to finalization M_i: epoch={} vc_bytes={} s_tx={} pending={} K={}",
-            epoch, entry_meta.0, entry_meta.1, pending, self.config.capital_k
-        );
+        let hotstuff_string = if let Ok(tx) = bincode::deserialize::<SmrolTransaction>(&entry.payload) {
+            tx.to_hotstuff_format(entry.s_tx)
+        } else {
+            format!(
+                "{}:{}",
+                entry.s_tx,
+                hex::encode(&entry.vc_tx[..std::cmp::min(8, entry.vc_tx.len())])
+            )
+        };
 
-        if self.should_invoke_consensus(epoch).await {
-            self.invoke_consensus_and_finalize(epoch).await?;
+        let adapter_opt = {
+            let guard = self.hotstuff_adapter.lock().await;
+            guard.clone()
+        };
+
+        if let Some(adapter) = adapter_opt {
+            adapter.output_to_hotstuff(vec![hotstuff_string.clone()], epoch);
+            info!(
+                "🚀 [SMROL→HotStuff] Node {} delivered tx for slot {} epoch {}",
+                self.node_id,
+                entry_meta.1,
+                epoch
+            );
+        } else {
+            warn!(
+                "⚠️ [SMROL] HotStuff adapter not connected, dropping tx slot {}",
+                entry_meta.1
+            );
         }
+
+        // 临时关闭 finalization，专注测试 HotStuff push 性能
+        // {
+        //     let mut finalization = self.finalization.lock().await;
+        //     finalization.add_to_mi(epoch, entry_for_finalization);
+        // }
+
+        // info!(
+        //     "🧮 [Manager] 记录Sequencing输出并推给HotStuff: epoch={} vc_bytes={} s_tx={}",
+        //     epoch, entry_meta.0, entry_meta.1
+        // );
 
         Ok(())
+    }
+
+    fn extract_tx_id(entry: &TransactionEntry) -> Option<u64> {
+        if let Ok(tx) = bincode::deserialize::<SmrolTransaction>(&entry.payload) {
+            Some(tx.id)
+        } else if let Ok(text) = std::str::from_utf8(&entry.payload) {
+            let parts: Vec<&str> = text.split(':').collect();
+            if parts.len() >= 3 && parts[0] == "smrol" {
+                return parts[2].parse().ok();
+            }
+            if !parts.is_empty() {
+                return parts[0].parse().ok();
+            }
+            None
+        } else {
+            None
+        }
     }
 
     pub async fn debug_status(&self) {

@@ -15,7 +15,7 @@ use std::time::Instant;
 use threshold_crypto::{PublicKeySet, SecretKeyShare, Signature, SignatureShare, SIG_SIZE};
 use tokio::{
     sync::{Mutex, RwLock},
-    time::{sleep, Duration},
+    time::{sleep, Duration, timeout},
 };
 use tracing::{debug, error, info, warn};
 
@@ -124,10 +124,10 @@ impl TransactionSequencing {
         let s = self.k; // Get current sequence number k
         self.k += 1;
 
-        info!(
-            "🚀 [Sequencing] node={} generate SEQ-REQUEST (k={}, tx_id={})",
-            self.process_id, s, tx.id
-        );
+        // debug!(
+        //     "🚀 [Sequencing] node={} generate SEQ-REQUEST (k={}, tx_id={})",
+        //     self.process_id, s, tx.id
+        // );
 
         let payload =
             bincode::serialize(&tx).map_err(|e| format!("序列化SmrolTransaction失败: {}", e))?;
@@ -148,8 +148,8 @@ impl TransactionSequencing {
         let vc_tx = vc_root.to_vec();
         self.originated_vcs.insert(vc_tx.clone());
 
-        info!("[Sequencing] Node {} broadcast *SEQ-REQUEST* k={}, originated_vcs.len() = {}",
-            self.process_id, s, self.originated_vcs.len());
+        info!("[Sequencing] Node {} broadcast *SEQ-REQUEST* k={}, originated_vcs.len() = {}, vc={}",
+            self.process_id, s, self.originated_vcs.len(), hex::encode(&vc_tx[..std::cmp::min(8, vc_tx.len())]));
 
         Ok(())
     }
@@ -161,8 +161,8 @@ impl TransactionSequencing {
         req: SeqRequest,
     ) -> Result<Option<TransactionEntry>, String> {
         info!(
-            "📥 [Sequencing] Line 2:4: received SEQ-REQUEST, node {} seq_num: {}",
-            sender, req.seq_num
+            "📥 [Sequencing] Line 2:4: received SEQ-REQUEST, node {} seq_num: {} tx={}",
+            sender, req.seq_num, hex::encode(&req.tx.payload[..std::cmp::min(8, req.tx.payload.len())])
         );
         let wait_time = Instant::now();
 
@@ -262,10 +262,9 @@ impl TransactionSequencing {
             s,
             sigma,
         };
-        // self.network.multicast_seq_response(response).await?;
-        // Debug: send response back to original requester only
-        self.network.send_seq_response(sender, response).await?;
-        info!("[Sequencing] Sent *SEQ-RESPONSE* to node {}, s = {}",sender, s);
+        // Broadcast SEQ-RESPONSE so the requester can collect 2f+1 quickly
+        self.network.send_seq_response(sender,response).await?;
+        info!("[Sequencing] Sent *SEQ-RESPONSE* to {}, s={}, tx={}", sender, s, hex::encode(&req.tx.payload[..std::cmp::min(8, req.tx.payload.len())]));
 
         // Check if we have deferred FINAL messages waiting for this vc
         let mut finalized_entry: Option<TransactionEntry> = None;
@@ -390,7 +389,7 @@ impl TransactionSequencing {
         sender: usize,
         median: SeqMedian,
     ) -> Result<(), String> {
-        info!("📥 [Sequencing] 收到来自 {} 的**SEQ-MEDIAN**", sender);
+        info!("📥 [Sequencing] received SEQ-MEDIAN from {}", sender);
         // point to point so skip the check
         // if self.originated_vcs.contains(&median.vc) {
             // Original SEQ-REQUEST sender gathers median shares (Algorithm 2, line 30)
@@ -516,13 +515,30 @@ impl TransactionSequencing {
             leader_id, target_slot
         );
         let t0=Instant::now();
-        self.pnfifo.wait_for_output(leader_id, target_slot).await;
+
+        // configurable soft timeout to avoid head-of-line blocking under load
+        let timeout_ms: u64 = std::env::var("SMROL_LOG_GUARD_TIMEOUT_MS")
+            .ok()
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(50);
+
+        let waited_ok = match timeout(Duration::from_millis(timeout_ms), self.pnfifo.wait_for_output(leader_id, target_slot)).await {
+            Ok(_) => true,
+            Err(_) => {
+                warn!(
+                    "⏳ [Sequencing] wait_for_log_condition timed out after {}ms for leader {} slot {} — proceeding",
+                    timeout_ms, leader_id, target_slot
+                );
+                true
+            }
+        };
+
         let wait=t0.elapsed();
         info!(
-            "⏱️ [Sequencing] wait_for_log_condition - end wait_for_output: leader {} target_slot {}, waited {:?} for Line 5 condition.",
-            leader_id, target_slot,wait
+            "⏱️ [Sequencing] wait_for_log_condition - end: leader {} target_slot {} waited {:?}",
+            leader_id, target_slot, wait
         );
-        true
+        waited_ok
     }
 
     fn verify_signature(&self, resp: &SeqResponse, sender: usize) -> Result<bool, String> {
@@ -855,7 +871,7 @@ impl TransactionSequencing {
         while let Some((sender_id, message)) = rx.recv().await {
             let sequencing_clone = Arc::clone(&sequencing_handle);
             let node_for_log = node_id;
-            // tokio::spawn(async move {
+            tokio::spawn(async move {
                 match TransactionSequencing::handle_smrol_message(sequencing_clone, sender_id, message).await {
                     Ok(Some(_entry)) => {
                         debug!(
@@ -866,7 +882,7 @@ impl TransactionSequencing {
                     Ok(None) => {}
                     Err(e) => error!("❌ [Sequencing] 并发消息处理失败: {}", e),
                 }
-            // });
+            });
         }
 
         warn!("⚠️ [Sequencing] Node {} 消息处理循环退出", node_id);

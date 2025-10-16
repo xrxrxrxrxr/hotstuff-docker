@@ -54,9 +54,6 @@ pub struct SmrolTcpNetwork {
     consensus_tx: mpsc::UnboundedSender<(usize, SmrolMessage)>,
     consensus_rx: Arc<tokio::sync::Mutex<mpsc::UnboundedReceiver<(usize, SmrolMessage)>>>,
 
-    outbound_tx: mpsc::UnboundedSender<SmrolNetworkMessage>,
-    outbound_rx: Arc<tokio::sync::Mutex<mpsc::UnboundedReceiver<SmrolNetworkMessage>>>,
-
     peer_writers: Arc<RwLock<HashMap<usize, mpsc::Sender<Vec<u8>>>>>,
 
     // 消息去重机制
@@ -75,7 +72,7 @@ impl SmrolTcpNetwork {
         std::env::var("SMROL_PEER_QUEUE_CAP")
             .ok()
             .and_then(|s| s.parse().ok())
-            .unwrap_or(32768)
+            .unwrap_or(131072)
     }
 
     fn runtime_handle(&self) -> Option<Handle> {
@@ -100,8 +97,6 @@ impl SmrolTcpNetwork {
         let (pnfifo_tx, pnfifo_rx) = mpsc::unbounded_channel();
         let (sequencing_tx, sequencing_rx) = mpsc::unbounded_channel();
         let (consensus_tx, consensus_rx) = mpsc::unbounded_channel();
-        let (outbound_tx, outbound_rx) = mpsc::unbounded_channel();
-
         // 创建专用运行时
         let rt_threads: usize = std::env::var("SMROL_RT_THREADS")
             .ok()
@@ -133,8 +128,6 @@ impl SmrolTcpNetwork {
             sequencing_rx: Arc::new(tokio::sync::Mutex::new(sequencing_rx)),
             consensus_tx,
             consensus_rx: Arc::new(tokio::sync::Mutex::new(consensus_rx)),
-            outbound_tx,
-            outbound_rx: Arc::new(tokio::sync::Mutex::new(outbound_rx)),
             peer_writers: Arc::new(RwLock::new(HashMap::new())),
             sent_messages: Arc::new(std::sync::Mutex::new(HashMap::new())),
             sent_messages_count: Arc::new(std::sync::atomic::AtomicU64::new(0)),
@@ -347,8 +340,6 @@ impl SmrolTcpNetwork {
             }
         });
 
-        self.start_outbound_processor().await;
-
         Ok(())
     }
 
@@ -489,96 +480,6 @@ impl SmrolTcpNetwork {
         Ok(())
     }
 
-    // 启动出站消息处理 (并行广播优化)
-    pub async fn start_outbound_processor(&self) {
-        let outbound_rx = Arc::clone(&self.outbound_rx);
-        let node_id = self.node_id;
-        let dispatcher = self.clone();
-
-        self.spawn_on_runtime(async move {
-            info!("📤 [SMROL-TCP] Node {} 启动出站消息处理器", node_id);
-
-            let mut rx = outbound_rx.lock().await;
-
-            while let Some(smrol_msg) = rx.recv().await {
-                let is_pnfifo = matches!(
-                    &smrol_msg.message,
-                    SmrolMessage::PnfifoProposal { .. }
-                        | SmrolMessage::PnfifoVote { .. }
-                        | SmrolMessage::PnfifoFinal { .. }
-                );
-
-                if is_pnfifo {
-                    dispatcher.process_outbound_message(smrol_msg).await;
-                    continue;
-                }
-
-                let network = dispatcher.clone();
-                if let Some(handle) = network.runtime_handle() {
-                    handle.spawn(async move {
-                        network.process_outbound_message(smrol_msg).await;
-                    });
-                } else {
-                    tokio::spawn(async move {
-                        network.process_outbound_message(smrol_msg).await;
-                    });
-                }
-            }
-        });
-    }
-
-    async fn process_outbound_message(&self, smrol_msg: SmrolNetworkMessage) {
-        let node_id = self.node_id;
-
-        if let Some(target_id) = smrol_msg.to_node_id {
-            if target_id == node_id {
-                if let Err(e) = self.deliver_to_local_processors(&smrol_msg).await {
-                    error!("❌ [SMROL-TCP] Node {} 本地派发消息失败: {}", node_id, e);
-                }
-                return;
-            }
-
-            match SmrolTcpNetwork::frame_message(&smrol_msg) {
-                Ok(frame) => {
-                    if let Err(e) = self.queue_frame(target_id, frame).await {
-                        error!(
-                            "❌ [SMROL-TCP] Node {} 发送消息到{}失败: {}",
-                            node_id, target_id, e
-                        );
-                    }
-                }
-                Err(e) => {
-                    error!("❌ [SMROL-TCP] Node {} 序列化消息失败: {}", node_id, e);
-                }
-            }
-
-            return;
-        }
-
-        match SmrolTcpNetwork::frame_message(&smrol_msg) {
-            Ok(frame) => {
-                for (&peer_id, _) in &self.peer_nodes {
-                    if peer_id == node_id {
-                        if let Err(e) = self.deliver_to_local_processors(&smrol_msg).await {
-                            error!("❌ [SMROL-TCP] Node {} 本地派发消息失败: {}", node_id, e);
-                        }
-                        continue;
-                    }
-
-                    if let Err(e) = self.queue_frame(peer_id, frame.clone()).await {
-                        warn!(
-                            "⚠️ [SMROL-TCP] Node {} 广播到{}失败: {}",
-                            node_id, peer_id, e
-                        );
-                    }
-                }
-            }
-            Err(e) => {
-                error!("❌ [SMROL-TCP] Node {} 序列化消息失败: {}", node_id, e);
-            }
-        }
-    }
-
     // 发送消息（公共接口） - 添加自消息绕过 + 消息去重
     pub async fn send_message(&self, mut message: SmrolNetworkMessage) -> Result<(), String> {
         // 自消息绕过优化
@@ -625,9 +526,47 @@ impl SmrolTcpNetwork {
             );
         }
 
-        self.outbound_tx
-            .send(message)
-            .map_err(|e| format!("发送消息到队列失败: {}", e))
+        if let Some(target_id) = message.to_node_id {
+            if target_id == self.node_id {
+                return self.deliver_to_local_processors(&message).await;
+            }
+
+            let frame = SmrolTcpNetwork::frame_message(&message)?;
+            return self.queue_frame(target_id, frame).await;
+        }
+
+        let frame = SmrolTcpNetwork::frame_message(&message)?;
+        let mut last_error: Option<String> = None;
+
+        for (&peer_id, _) in &self.peer_nodes {
+            if peer_id == self.node_id {
+                if let Err(e) = self.deliver_to_local_processors(&message).await {
+                    error!(
+                        "❌ [SMROL-TCP] Node {} 本地派发消息失败: {}",
+                        self.node_id,
+                        e
+                    );
+                    last_error = Some(e);
+                }
+                continue;
+            }
+
+            if let Err(e) = self.queue_frame(peer_id, frame.clone()).await {
+                warn!(
+                    "⚠️ [SMROL-TCP] Node {} 广播到{}失败: {}",
+                    self.node_id,
+                    peer_id,
+                    e
+                );
+                last_error = Some(e);
+            }
+        }
+
+        if let Some(err) = last_error {
+            Err(err)
+        } else {
+            Ok(())
+        }
     }
 
     // pub async fn receive_message(&self) -> Option<SmrolNetworkMessage> {
@@ -674,21 +613,67 @@ impl SmrolTcpNetwork {
         let net = self.clone();
 
         self.spawn_on_runtime(async move {
+            tokio::time::sleep(Duration::from_millis(500)).await;
+
             for nid in peers {
-                // 发送预热消息 (假设SmrolMessage有Warmup变体)
-                let warmup_msg = SmrolNetworkMessage {
-                    from_node_id: net.node_id,
-                    to_node_id: Some(nid),
-                    message: SmrolMessage::default(), // 需要根据实际SmrolMessage调整
-                    timestamp: std::time::SystemTime::now()
-                        .duration_since(std::time::UNIX_EPOCH)
-                        .unwrap()
-                        .as_micros() as u64,
-                    message_id: format!("warmup_{}_{}", net.node_id, nid),
-                };
-                let _ = net.send_message(warmup_msg).await;
+                let mut attempt: u32 = 0;
+                let mut backoff = Duration::from_millis(200);
+                let max_attempts: u32 = std::env::var("SMROL_WARMUP_ATTEMPTS")
+                    .ok()
+                    .and_then(|v| v.parse().ok())
+                    .unwrap_or(8);
+
+                loop {
+                    attempt += 1;
+                    let warmup_msg = SmrolNetworkMessage {
+                        from_node_id: net.node_id,
+                        to_node_id: Some(nid),
+                        message: SmrolMessage::default(),
+                        timestamp: std::time::SystemTime::now()
+                            .duration_since(std::time::UNIX_EPOCH)
+                            .unwrap()
+                            .as_micros() as u64,
+                        message_id: format!("warmup_{}_{}_{}", net.node_id, nid, attempt),
+                    };
+
+                    match net.send_message(warmup_msg.clone()).await {
+                        Ok(_) => {
+                            debug!(
+                                "🔌 [SMROL-TCP] Node {} warmup to peer {} succeeded on attempt {}",
+                                net.node_id, nid, attempt
+                            );
+                            break;
+                        }
+                        Err(e) => {
+                            warn!(
+                                "⚠️ [SMROL-TCP] Node {} warmup to peer {} failed (attempt {}): {}",
+                                net.node_id,
+                                nid,
+                                attempt,
+                                e
+                            );
+
+                            if attempt >= max_attempts {
+                                warn!(
+                                    "⚠️ [SMROL-TCP] Node {} warmup giving up on peer {} after {} attempts",
+                                    net.node_id,
+                                    nid,
+                                    attempt
+                                );
+                                break;
+                            }
+
+                            tokio::time::sleep(backoff).await;
+                            backoff = (backoff * 2).min(Duration::from_secs(5));
+                        }
+                    }
+                }
             }
-            info!("🔌 [SMROL-TCP] Node {} 连接预热任务完成", net.node_id);
+
+            info!(
+                "🔌 [SMROL-TCP] Node {} 连接预热任务完成",
+                net.node_id
+            );
         });
     }
 
@@ -847,6 +832,10 @@ impl SmrolTcpNetwork {
             message_id: format!("seq_resp_{}_{}", self.node_id, uuid::Uuid::new_v4()),
         };
 
+        debug!(
+            "📤 [SMROL-TCP] Node {} send_seq_response 发送SEQ-RESPONSE到节点{}, sequence s = {}",
+            self.node_id, to, resp.s
+        );
         self.send_message(network_msg).await
     }
 
@@ -889,7 +878,7 @@ impl SmrolTcpNetwork {
         );
 
         let result = self.send_message(network_msg).await;
-        warn!("📤 [Network] Node {} sent SEQ-ORDER to outbound queue: {:?}",
+        warn!("📤 [Network] Node {} send SEQ-ORDER result: {:?}",
             self.node_id, result);
         result
     }
@@ -1005,8 +994,6 @@ impl Clone for SmrolTcpNetwork {
             sequencing_rx: Arc::clone(&self.sequencing_rx),
             consensus_tx: self.consensus_tx.clone(),
             consensus_rx: Arc::clone(&self.consensus_rx),
-            outbound_tx: self.outbound_tx.clone(),
-            outbound_rx: Arc::clone(&self.outbound_rx),
             peer_writers: Arc::clone(&self.peer_writers),
             sent_messages: Arc::clone(&self.sent_messages),
             sent_messages_count: Arc::clone(&self.sent_messages_count),
