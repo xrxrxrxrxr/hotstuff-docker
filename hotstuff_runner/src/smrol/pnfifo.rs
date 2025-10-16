@@ -51,6 +51,23 @@ struct ProposalTask {
 }
 
 #[derive(Debug)]
+struct VoteTask {
+    leader_id: usize,
+    sender_id: usize,
+    slot: u64,
+    signature_share: Vec<u8>,
+}
+
+#[derive(Debug)]
+struct FinalTask {
+    leader_id: usize,
+    sender_id: usize,
+    slot: u64,
+    value: Vec<u8>,
+    combined_signature: Vec<u8>,
+}
+
+#[derive(Debug)]
 pub struct PnfifoBc {
     node_id: usize,
     total_nodes: usize,
@@ -71,6 +88,8 @@ pub struct PnfifoBc {
     // 每个 leader 的专用通道发送端
     leader_proposal_senders: HashMap<usize, mpsc::UnboundedSender<ProposalTask>>,
     broadcast_tx: mpsc::Sender<(u64, Vec<u8>)>,
+    vote_tx: mpsc::Sender<VoteTask>,
+    final_tx: mpsc::Sender<FinalTask>,
 }
 
 impl PnfifoBc {
@@ -184,6 +203,99 @@ impl PnfifoBc {
             );
         });
 
+        let (vote_tx, mut vote_rx) =
+            mpsc::channel::<VoteTask>(Self::vote_queue_capacity());
+        let slots_for_vote = Arc::clone(&slots);
+        let notif_for_vote = Arc::clone(&slot_output_notifiers);
+        let verifying_keys_for_vote = verifying_keys.clone();
+        let network_for_vote = Arc::clone(&network);
+        let threshold_for_vote = threshold;
+        let node_id_for_vote = node_id;
+
+        tokio::spawn(async move {
+            info!(
+                "[PNFIFO] Node {} vote worker started (capacity: {})",
+                node_id_for_vote,
+                Self::vote_queue_capacity()
+            );
+
+            while let Some(task) = vote_rx.recv().await {
+                if let Err(e) = PnfifoBc::handle_vote_static(
+                    node_id_for_vote,
+                    &slots_for_vote,
+                    &notif_for_vote,
+                    threshold_for_vote,
+                    &verifying_keys_for_vote,
+                    &network_for_vote,
+                    task.leader_id,
+                    task.sender_id,
+                    task.slot,
+                    task.signature_share,
+                )
+                .await
+                {
+                    error!(
+                        "[PNFIFO] Node {} failed to handle vote slot {} leader {}: {}",
+                        node_id_for_vote,
+                        task.slot,
+                        task.leader_id,
+                        e
+                    );
+                }
+            }
+
+            warn!(
+                "[PNFIFO] Node {} vote worker exited (channel closed)",
+                node_id_for_vote
+            );
+        });
+
+        let (final_tx, mut final_rx) =
+            mpsc::channel::<FinalTask>(Self::final_queue_capacity());
+        let slots_for_final = Arc::clone(&slots);
+        let notif_for_final = Arc::clone(&slot_output_notifiers);
+        let verifying_keys_for_final = verifying_keys.clone();
+        let threshold_for_final = threshold;
+        let node_id_for_final = node_id;
+
+        tokio::spawn(async move {
+            info!(
+                "[PNFIFO] Node {} final worker started (capacity: {})",
+                node_id_for_final,
+                Self::final_queue_capacity()
+            );
+
+            while let Some(task) = final_rx.recv().await {
+                if let Err(e) = PnfifoBc::handle_final_static(
+                    node_id_for_final,
+                    &slots_for_final,
+                    &notif_for_final,
+                    threshold_for_final,
+                    &verifying_keys_for_final,
+                    task.leader_id,
+                    task.sender_id,
+                    task.slot,
+                    task.value,
+                    task.combined_signature,
+                )
+                .await
+                {
+                    error!(
+                        "[PNFIFO] Node {} failed to handle final slot {} leader {}: {}",
+                        node_id_for_final,
+                        task.slot,
+                        task.leader_id,
+                        e
+                    );
+                }
+            }
+
+            warn!(
+                "[PNFIFO] Node {} final worker exited (channel closed)",
+                node_id_for_final
+            );
+        });
+
         Ok(Self {
             node_id,
             total_nodes,
@@ -196,6 +308,8 @@ impl PnfifoBc {
             network,
             leader_proposal_senders,
             broadcast_tx,
+            vote_tx,
+            final_tx,
         })
     }
 
@@ -384,11 +498,8 @@ impl PnfifoBc {
         let pnfifo_rx = self.network.get_pnfifo_receiver();
         let node_id = self.node_id;
         let leader_proposal_senders = self.leader_proposal_senders.clone();
-        let slots = Arc::clone(&self.slots);
-        let slot_output_notifiers = Arc::clone(&self.slot_output_notifiers);
-        let threshold = self.threshold;
-        let verifying_keys = self.verifying_keys.clone();
-        let network = Arc::clone(&self.network);
+        let vote_tx = self.vote_tx.clone();
+        let final_tx = self.final_tx.clone();
 
         tokio::spawn(async move {
             info!("[PNFIFO] Node {} network listener started", node_id);
@@ -429,30 +540,22 @@ impl PnfifoBc {
                         slot,
                         signature_share,
                     } => {
-                        // spawn 处理 VOTE
-                        let slots = Arc::clone(&slots);
-                        let slot_output_notifiers = Arc::clone(&slot_output_notifiers);
-                        let verifying_keys = verifying_keys.clone();
-                        let network = Arc::clone(&network);
-
-                        tokio::spawn(async move {
-                            if let Err(e) = PnfifoBc::handle_vote_static(
-                                node_id,
-                                &slots,
-                                &slot_output_notifiers,
-                                threshold,
-                                &verifying_keys,
-                                &network,
+                        if let Err(e) = vote_tx
+                            .send(VoteTask {
                                 leader_id,
-                                vote_sender,
+                                sender_id: vote_sender,
                                 slot,
                                 signature_share,
-                            )
+                            })
                             .await
-                            {
-                                error!("[PNFIFO] Failed to handle VOTE: {}", e);
-                            }
-                        });
+                        {
+                            error!(
+                                "[PNFIFO] Failed to enqueue vote for leader {}, slot {}: {}",
+                                leader_id,
+                                slot,
+                                e
+                            );
+                        }
                     }
 
                     SmrolMessage::PnfifoFinal {
@@ -462,29 +565,23 @@ impl PnfifoBc {
                         value,
                         combined_signature,
                     } => {
-                        // spawn 处理 FINAL
-                        let slots = Arc::clone(&slots);
-                        let slot_output_notifiers = Arc::clone(&slot_output_notifiers);
-                        let verifying_keys = verifying_keys.clone();
-
-                        tokio::spawn(async move {
-                            if let Err(e) = PnfifoBc::handle_final_static(
-                                node_id,
-                                &slots,
-                                &slot_output_notifiers,
-                                threshold,
-                                &verifying_keys,
+                        if let Err(e) = final_tx
+                            .send(FinalTask {
                                 leader_id,
-                                final_sender,
+                                sender_id: final_sender,
                                 slot,
                                 value,
                                 combined_signature,
-                            )
+                            })
                             .await
-                            {
-                                error!("[PNFIFO] Failed to handle FINAL: {}", e);
-                            }
-                        });
+                        {
+                            error!(
+                                "[PNFIFO] Failed to enqueue final for leader {}, slot {}: {}",
+                                leader_id,
+                                slot,
+                                e
+                            );
+                        }
                     }
 
                     _ => {
@@ -515,6 +612,20 @@ impl PnfifoBc {
             .ok()
             .and_then(|v| v.parse().ok())
             .unwrap_or(1024)
+    }
+
+    fn vote_queue_capacity() -> usize {
+        std::env::var("PNFIFO_VOTE_QUEUE_CAP")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(4096)
+    }
+
+    fn final_queue_capacity() -> usize {
+        std::env::var("PNFIFO_FINAL_QUEUE_CAP")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(4096)
     }
 
     async fn broadcast_proposal_static(
