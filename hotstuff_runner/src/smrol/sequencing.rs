@@ -14,7 +14,7 @@ use std::sync::Arc;
 use std::time::Instant;
 use threshold_crypto::{PublicKeySet, SecretKeyShare, Signature, SignatureShare, SIG_SIZE};
 use tokio::{
-    sync::{Mutex, RwLock},
+    sync::{mpsc, Mutex, RwLock},
     time::{sleep, Duration, timeout},
 };
 use tracing::{debug, error, info, warn};
@@ -84,6 +84,12 @@ pub struct TransactionSequencing {
     pub tx_sequence_map: HashMap<Vec<u8>, u64>,
     pub originated_vcs: HashSet<Vec<u8>>,
     pub pending_seq_finals: HashMap<Vec<u8>, Vec<SeqFinal>>,
+}
+
+#[derive(Debug)]
+struct SequencingTask {
+    sender_id: usize,
+    message: SmrolMessage,
 }
 
 impl TransactionSequencing {
@@ -874,24 +880,72 @@ impl TransactionSequencing {
 
         let mut rx = sequencing_rx.lock().await;
 
-        while let Some((sender_id, message)) = rx.recv().await {
-            let sequencing_clone = Arc::clone(&sequencing_handle);
-            let node_for_log = node_id;
-            tokio::spawn(async move {
-                match TransactionSequencing::handle_smrol_message(sequencing_clone, sender_id, message).await {
+        let queue_capacity = Self::inbound_queue_capacity();
+        let (task_tx, mut task_rx) = mpsc::channel::<SequencingTask>(queue_capacity);
+        let worker_handle = Arc::clone(&sequencing_handle);
+        let worker_node = node_id;
+
+        tokio::spawn(async move {
+            info!(
+                "[Sequencing] Node {} sequencing worker started (capacity: {})",
+                worker_node,
+                queue_capacity
+            );
+
+            while let Some(task) = task_rx.recv().await {
+                match TransactionSequencing::handle_smrol_message(
+                    Arc::clone(&worker_handle),
+                    task.sender_id,
+                    task.message,
+                )
+                .await
+                {
                     Ok(Some(_entry)) => {
                         debug!(
-                            "[Sequencing] Node {} 并发处理完成一条消息并产生共识条目",
-                            node_for_log
+                            "[Sequencing] Node {} processed message and produced entry",
+                            worker_node
                         );
                     }
                     Ok(None) => {}
-                    Err(e) => error!("❌ [Sequencing] 并发消息处理失败: {}", e),
+                    Err(e) => error!(
+                        "❌ [Sequencing] Node {} worker failed to process message: {}",
+                        worker_node,
+                        e
+                    ),
                 }
-            });
+            }
+
+            warn!(
+                "⚠️ [Sequencing] Node {} sequencing worker exited (channel closed)",
+                worker_node
+            );
+        });
+
+        while let Some((sender_id, message)) = rx.recv().await {
+            if let Err(e) = task_tx
+                .send(SequencingTask {
+                    sender_id,
+                    message,
+                })
+                .await
+            {
+                error!(
+                    "❌ [Sequencing] Node {} failed to enqueue sequencing message from {}: {}",
+                    node_id,
+                    sender_id,
+                    e
+                );
+            }
         }
 
         warn!("⚠️ [Sequencing] Node {} 消息处理循环退出", node_id);
         Ok(())
+    }
+
+    fn inbound_queue_capacity() -> usize {
+        std::env::var("SEQUENCING_QUEUE_CAP")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(2048)
     }
 }

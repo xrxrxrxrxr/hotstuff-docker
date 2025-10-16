@@ -199,24 +199,31 @@ impl SmrolManager {
             );
         });
 
-        let consensus_rx = self.network.get_consensus_receiver();
-        let consensus_handle = Arc::clone(&self.consensus);
-        let manager_for_consensus = Arc::clone(&self);
-        info!("🔄 [Manager] Node {} start_message_loop spawning handle_consensus_message", self.node_id);
-        tokio::spawn(async move {
-            info!("🔄 [Manager] handle_consensus_message started for node {}", manager_for_consensus.node_id);
-            let mut rx = consensus_rx.lock().await;
-            while let Some((sender_id, message)) = rx.recv().await {
-                let mut consensus = consensus_handle.lock().await;
-                if let Err(e) = consensus.handle_consensus_message(sender_id, message).await {
-                    error!("处理Consensus消息失败: {}", e);
-                }
-            }
-            debug!(
-                "ℹ️ [SMROL] Consensus loop exited for node {}",
-                manager_for_consensus.node_id
-            );
-        });
+        // Note: consensus/Finalization pipeline temporarily disabled; sequencing outputs
+        // push directly into HotStuff via adapter. Keep the legacy consensus listener
+        // disabled to avoid spawning redundant tasks and holding extra locks.
+        // If SMROL consensus is re-enabled, restore the loop below.
+        // let consensus_rx = self.network.get_consensus_receiver();
+        // let consensus_handle = Arc::clone(&self.consensus);
+        // let manager_for_consensus = Arc::clone(&self);
+        // info!("🔄 [Manager] Node {} start_message_loop spawning handle_consensus_message", self.node_id);
+        // tokio::spawn(async move {
+        //     info!(
+        //         "🔄 [Manager] handle_consensus_message started for node {}",
+        //         manager_for_consensus.node_id
+        //     );
+        //     let mut rx = consensus_rx.lock().await;
+        //     while let Some((sender_id, message)) = rx.recv().await {
+        //         let mut consensus = consensus_handle.lock().await;
+        //         if let Err(e) = consensus.handle_consensus_message(sender_id, message).await {
+        //             error!("处理Consensus消息失败: {}", e);
+        //         }
+        //     }
+        //     debug!(
+        //         "ℹ️ [SMROL] Consensus loop exited for node {}",
+        //         manager_for_consensus.node_id
+        //     );
+        // });
 
         info!("✅ [SMROL] 消息处理循环已启动");
         Ok(())
