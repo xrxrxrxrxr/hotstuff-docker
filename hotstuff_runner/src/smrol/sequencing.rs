@@ -146,16 +146,16 @@ impl TransactionSequencing {
         self.network.multicast_seq_request(seq_request).await?; // Line 3： seq_request(seq_i, tx_serialized)
 
         //debug: insert to originated vc earlier but with additional computation
-        let data_shards = std::cmp::max(1, self.f + 1);
-        let total_shards = std::cmp::max(data_shards, self.n);
-        let encoded = ErasurePackage::encode(&payload_clone, data_shards, total_shards)
-            .map_err(|e| format!("纠删码编码失败: {}", e))?;
-        let vc_root = encoded.merkle_root();
-        let vc_tx = vc_root.to_vec();
-        self.originated_vcs.insert(vc_tx.clone());
+        // let data_shards = std::cmp::max(1, self.f + 1);
+        // let total_shards = std::cmp::max(data_shards, self.n);
+        // let encoded = ErasurePackage::encode(&payload_clone, data_shards, total_shards)
+        //     .map_err(|e| format!("纠删码编码失败: {}", e))?;
+        // let vc_root = encoded.merkle_root();
+        // let vc_tx = vc_root.to_vec();
+        // self.originated_vcs.insert(vc_tx.clone());
 
-        info!("[Sequencing] Node {} broadcast *SEQ-REQUEST* k={}, originated_vcs.len() = {}, vc={}",
-            self.process_id, s, self.originated_vcs.len(), hex::encode(&vc_tx[..std::cmp::min(8, vc_tx.len())]));
+        info!("[Sequencing] Node {} broadcast *SEQ-REQUEST* k={}, originated_vcs.len() = {}",
+            self.process_id, s, self.originated_vcs.len());
 
         Ok(())
     }
@@ -165,6 +165,8 @@ impl TransactionSequencing {
         &mut self,
         sender: usize,
         req: SeqRequest,
+        encoded_package: ErasurePackage,
+        encode_duration: Duration,
     ) -> Result<Option<TransactionEntry>, String> {
         info!(
             "📥 [Sequencing] Line 2:4: received SEQ-REQUEST, node {} seq_num: {} tx={}",
@@ -183,15 +185,7 @@ impl TransactionSequencing {
             sender, req.seq_num
         );
 
-        let encode_time=Instant::now();
-
-        // Encode transaction with Reed-Solomon erasure coding (Lines 12-14)
-        let data_shards = std::cmp::max(1, self.f + 1);
-        let total_shards = std::cmp::max(data_shards, self.n);
-        let encoded = ErasurePackage::encode(&req.tx.payload, data_shards, total_shards)
-            .map_err(|e| format!("纠删码编码失败: {}", e))?;
-
-        let vc_root = encoded.merkle_root();
+        let vc_root = encoded_package.merkle_root();
         let vc_tx = vc_root.to_vec();
         self.buf.insert(vc_tx.clone());
 
@@ -227,7 +221,7 @@ impl TransactionSequencing {
             .or_insert_with(|| req.tx.clone());
         self.erasure_store
             .entry(vc_tx.clone())
-            .or_insert(encoded.clone());
+            .or_insert(encoded_package.clone());
 
         if sender == self.process_id {
             self.originated_vcs.insert(vc_tx.clone());
@@ -238,7 +232,6 @@ impl TransactionSequencing {
         // Input to PNFIFO-BC (Line 15)
         let enqueue_start = Instant::now();
         let wait = wait_time.elapsed();
-        let encode = encode_time.elapsed();
         let queue_result = self.pnfifo.broadcast(s, vc_tx.clone()).await;
         let enqueue_delay = enqueue_start.elapsed();
 
@@ -246,7 +239,7 @@ impl TransactionSequencing {
             "[Sequencing-Timing] ⏰ FIFO broadcast enqueued after {:?}, wait {:?}, encoding {:?}.",
             enqueue_delay,
             wait,
-            encode,
+            encode_duration,
         );
 
         match queue_result {
@@ -702,7 +695,14 @@ impl TransactionSequencing {
                     seq_num: sequence_number,
                     tx: Transaction { payload },
                 };
-                self.handle_seq_request(sender_id, req).await
+                let data_shards = std::cmp::max(1, self.f + 1);
+                let total_shards = std::cmp::max(data_shards, self.n);
+                let encode_start = Instant::now();
+                let encoded = ErasurePackage::encode(&req.tx.payload, data_shards, total_shards)
+                    .map_err(|e| format!("纠删码编码失败: {}", e))?;
+                let encode_elapsed = encode_start.elapsed();
+                self.handle_seq_request(sender_id, req, encoded, encode_elapsed)
+                    .await
             }
             SmrolMessage::SeqResponse {
                 vc,

@@ -7,14 +7,19 @@ use crate::smrol::{
     message::{SmrolMessage, SmrolTransaction},
     network::SmrolTcpNetwork,
     pnfifo::PnfifoBc,
-    sequencing::TransactionSequencing,
+    sequencing::{
+        SeqFinal, SeqMedian, SeqOrder, SeqRequest, SeqResponse, SeqResponseRecord, Transaction,
+        TransactionSequencing,
+    },
 };
+use crate::smrol::crypto::ErasurePackage;
 use ed25519_dalek::{SigningKey, VerifyingKey};
 use hex;
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
-use tokio::sync::{broadcast, Mutex};
+use std::time::Instant;
+use tokio::sync::{broadcast, mpsc, Mutex};
 use tracing::{debug, error, info, warn};
 
 #[derive(Debug, Clone)]
@@ -39,6 +44,36 @@ impl Default for SmrolConfig {
     }
 }
 
+#[derive(Debug)]
+struct SeqRequestTask {
+    sender_id: usize,
+    request: SeqRequest,
+}
+
+#[derive(Debug)]
+struct SeqResponseTask {
+    sender_id: usize,
+    response: SeqResponse,
+}
+
+#[derive(Debug)]
+struct SeqOrderTask {
+    sender_id: usize,
+    order: SeqOrder,
+}
+
+#[derive(Debug)]
+struct SeqMedianTask {
+    sender_id: usize,
+    median: SeqMedian,
+}
+
+#[derive(Debug)]
+struct SeqFinalTask {
+    sender_id: usize,
+    final_msg: SeqFinal,
+}
+
 pub struct SmrolManager {
     pub node_id: usize,
     pub config: SmrolConfig,
@@ -53,6 +88,7 @@ pub struct SmrolManager {
 
     pub signing_key: SigningKey,
     pub verifying_keys: HashMap<usize, VerifyingKey>,
+    broadcast_tx: mpsc::Sender<SmrolTransaction>,
 }
 
 impl SmrolManager {
@@ -117,18 +153,74 @@ impl SmrolManager {
             event_tx.clone(),
         );
 
+        let sequencing_arc = Arc::new(Mutex::new(sequencing));
+        let consensus_arc = Arc::new(Mutex::new(consensus));
+
+        let broadcast_capacity = Self::smrol_broadcast_queue_capacity();
+        let broadcast_workers = Self::smrol_broadcast_worker_count();
+        let (broadcast_tx, broadcast_rx) =
+            mpsc::channel::<SmrolTransaction>(broadcast_capacity);
+        let broadcast_rx = Arc::new(tokio::sync::Mutex::new(broadcast_rx));
+
+        for worker_id in 0..broadcast_workers {
+            let sequencing_for_worker = Arc::clone(&sequencing_arc);
+            let rx = Arc::clone(&broadcast_rx);
+            tokio::spawn(async move {
+                info!(
+                    "[SMROL] Broadcast worker {} started with capacity {}",
+                    worker_id,
+                    broadcast_capacity
+                );
+
+                loop {
+                    let transaction = {
+                        let mut guard = rx.lock().await;
+                        guard.recv().await
+                    };
+
+                    let Some(transaction) = transaction else {
+                        warn!(
+                            "⚠️ [SMROL] Broadcast worker {} exited (channel closed)",
+                            worker_id
+                        );
+                        break;
+                    };
+
+                    let tx_id = transaction.id;
+                    let result = {
+                        let mut sequencing = sequencing_for_worker.lock().await;
+                        sequencing.smrol_broadcast(transaction).await
+                    };
+
+                    match result {
+                        Ok(_) => debug!(
+                            "✅ [SMROL] Broadcast worker {} dispatched tx_id={} to sequencing",
+                            worker_id,
+                            tx_id
+                        ),
+                        Err(e) => error!(
+                            "[SMROL] Broadcast worker {} sequencing broadcast failed: {}",
+                            worker_id,
+                            e
+                        ),
+                    }
+                }
+            });
+        }
+
         Ok(Self {
             node_id,
             config,
             n,
             network,
-            consensus: Arc::new(Mutex::new(consensus)),
-            sequencing: Arc::new(Mutex::new(sequencing)),
+            consensus: consensus_arc,
+            sequencing: sequencing_arc,
             finalization,
             hotstuff_adapter: Mutex::new(None),
             event_tx,
             signing_key,
             verifying_keys,
+            broadcast_tx,
         })
     }
 
@@ -152,15 +244,10 @@ impl SmrolManager {
             transaction.id, transaction.from, transaction.to, transaction.amount
         );
 
-        let tx_id = transaction.id;
-        let sequencing_handle = Arc::clone(&self.sequencing);
-        tokio::spawn(async move {
-            let mut sequencing = sequencing_handle.lock().await;
-            match sequencing.smrol_broadcast(transaction).await {
-                Ok(_) => debug!("✅ [SMROL] Broadcast completed. Transaction tx_id={} dispatched to sequencing layer", tx_id),
-                Err(e) => error!("[SMROL] Sequencing broadcast failed: {}", e),
-            }
-        });
+        if let Err(e) = self.broadcast_tx.send(transaction).await {
+            return Err(format!("SMROL broadcast queue send failed: {}", e));
+        }
+
         Ok(())
     }
 
@@ -168,35 +255,301 @@ impl SmrolManager {
         info!("🔄 [SMROL] Message loop starting for node {}", self.node_id);
 
         let sequencing_rx = self.network.get_sequencing_receiver();
-        let sequencing_handle = Arc::clone(&self.sequencing);
-        let manager_for_seq = Arc::clone(&self);
+
+        let (request_tx, request_rx) =
+            mpsc::channel(Self::seq_request_queue_capacity());
+        let (response_tx, response_rx) =
+            mpsc::channel(Self::seq_response_queue_capacity());
+        let (order_tx, order_rx) = mpsc::channel(Self::seq_order_queue_capacity());
+        let (median_tx, median_rx) = mpsc::channel(Self::seq_median_queue_capacity());
+        let (final_tx, final_rx) = mpsc::channel(Self::seq_final_queue_capacity());
+
+        {
+            let sequencing_handle = Arc::clone(&self.sequencing);
+            let manager_clone = Arc::clone(&self);
+            tokio::spawn(async move {
+                info!(
+                    "[Sequencing] Request worker started with capacity {}",
+                    Self::seq_request_queue_capacity()
+                );
+                let mut rx = request_rx;
+                let f_param = manager_clone.config.f;
+                let n_param = manager_clone.n;
+                while let Some(task) = rx.recv().await {
+                    let SeqRequestTask { sender_id, request } = task;
+                    let data_shards = std::cmp::max(1, f_param + 1);
+                    let total_shards = std::cmp::max(data_shards, n_param);
+                    let encode_start = Instant::now();
+                    let encoded = match ErasurePackage::encode(
+                        &request.tx.payload,
+                        data_shards,
+                        total_shards,
+                    ) {
+                        Ok(pkg) => pkg,
+                        Err(e) => {
+                            error!("纠删码编码失败: {}", e);
+                            continue;
+                        }
+                    };
+                    let encode_elapsed = encode_start.elapsed();
+
+                    let result = {
+                        let mut sequencing = sequencing_handle.lock().await;
+                        sequencing
+                            .handle_seq_request(sender_id, request, encoded, encode_elapsed)
+                            .await
+                    };
+
+                    match result {
+                        Ok(Some(entry)) => {
+                            info!(
+                                "[Manager] Sequencing output ready add_sequenced_transaction: vc_tx={} s_tx={}",
+                                hex::encode(&entry.vc_tx[..std::cmp::min(8, entry.vc_tx.len())]),
+                                entry.s_tx
+                            );
+                            if let Err(e) = manager_clone.add_sequenced_transaction(entry).await {
+                                error!("[SMROL] 共识输入登记失败: {}", e);
+                            }
+                        }
+                        Ok(None) => {}
+                        Err(e) => error!("处理 Sequencing 请求消息失败: {}", e),
+                    }
+                }
+                warn!(
+                    "⚠️ [Sequencing] Request worker exited (channel closed)"
+                );
+            });
+        }
+
+        {
+            let sequencing_handle = Arc::clone(&self.sequencing);
+            tokio::spawn(async move {
+                info!(
+                    "[Sequencing] Response worker started with capacity {}",
+                    Self::seq_response_queue_capacity()
+                );
+                let mut rx = response_rx;
+                while let Some(task) = rx.recv().await {
+                    let SeqResponseTask { sender_id, response } = task;
+                    let result = {
+                        let mut sequencing = sequencing_handle.lock().await;
+                        sequencing.handle_seq_response(sender_id, response).await
+                    };
+
+                    if let Err(e) = result {
+                        error!("处理 Sequencing 响应消息失败: {}", e);
+                    }
+                }
+                warn!(
+                    "⚠️ [Sequencing] Response worker exited (channel closed)"
+                );
+            });
+        }
+
+        {
+            let sequencing_handle = Arc::clone(&self.sequencing);
+            tokio::spawn(async move {
+                info!(
+                    "[Sequencing] Order worker started with capacity {}",
+                    Self::seq_order_queue_capacity()
+                );
+                let mut rx = order_rx;
+                while let Some(task) = rx.recv().await {
+                    let SeqOrderTask { sender_id, order } = task;
+                    let result = {
+                        let mut sequencing = sequencing_handle.lock().await;
+                        sequencing.handle_seq_order(sender_id, order).await
+                    };
+
+                    if let Err(e) = result {
+                        error!("处理 Sequencing Order 消息失败: {}", e);
+                    }
+                }
+                warn!("⚠️ [Sequencing] Order worker exited (channel closed)");
+            });
+        }
+
+        {
+            let sequencing_handle = Arc::clone(&self.sequencing);
+            tokio::spawn(async move {
+                info!(
+                    "[Sequencing] Median worker started with capacity {}",
+                    Self::seq_median_queue_capacity()
+                );
+                let mut rx = median_rx;
+                while let Some(task) = rx.recv().await {
+                    let SeqMedianTask { sender_id, median } = task;
+                    let result = {
+                        let mut sequencing = sequencing_handle.lock().await;
+                        sequencing.handle_seq_median(sender_id, median).await
+                    };
+
+                    if let Err(e) = result {
+                        error!("处理 Sequencing Median 消息失败: {}", e);
+                    }
+                }
+                warn!("⚠️ [Sequencing] Median worker exited (channel closed)");
+            });
+        }
+
+        {
+            let sequencing_handle = Arc::clone(&self.sequencing);
+            let manager_clone = Arc::clone(&self);
+            tokio::spawn(async move {
+                info!(
+                    "[Sequencing] Final worker started with capacity {}",
+                    Self::seq_final_queue_capacity()
+                );
+                let mut rx = final_rx;
+                while let Some(task) = rx.recv().await {
+                    let SeqFinalTask { sender_id: _, final_msg } = task;
+                    let result = {
+                        let mut sequencing = sequencing_handle.lock().await;
+                        sequencing.handle_seq_final(final_msg).await
+                    };
+
+                    match result {
+                        Ok(Some(entry)) => {
+                            info!(
+                                "[Manager] Sequencing FINAL output ready vc_tx={} s_tx={}",
+                                hex::encode(&entry.vc_tx[..std::cmp::min(8, entry.vc_tx.len())]),
+                                entry.s_tx
+                            );
+                            if let Err(e) = manager_clone.add_sequenced_transaction(entry).await {
+                                error!("[SMROL] 共识输入登记失败: {}", e);
+                            }
+                        }
+                        Ok(None) => {}
+                        Err(e) => error!("处理 Sequencing Final 消息失败: {}", e),
+                    }
+                }
+                warn!("⚠️ [Sequencing] Final worker exited (channel closed)");
+            });
+        }
+
+        let request_tx_clone = request_tx.clone();
+        let response_tx_clone = response_tx.clone();
+        let order_tx_clone = order_tx.clone();
+        let median_tx_clone = median_tx.clone();
+        let final_tx_clone = final_tx.clone();
+
         tokio::spawn(async move {
             let mut rx = sequencing_rx.lock().await;
             while let Some((sender_id, message)) = rx.recv().await {
-                let result = TransactionSequencing::handle_smrol_message(
-                    Arc::clone(&sequencing_handle),
-                    sender_id,
-                    message,
-                )
-                .await;
+                match message {
+                    SmrolMessage::SeqRequest {
+                        transaction,
+                        sequence_number,
+                        ..
+                    } => {
+                        match bincode::serialize(&transaction) {
+                            Ok(payload) => {
+                                let task = SeqRequestTask {
+                                    sender_id,
+                                    request: SeqRequest {
+                                        seq_num: sequence_number,
+                                        tx: Transaction { payload },
+                                    },
+                                };
 
-                // result is Result<Option<TransactionEntry>, String> ready for consensus if Some
-                match result {
-                    Ok(Some(entry)) => {
-                        // line 38: add_sequenced_transaction(entry) to Mi and finalization
-                        info!("[Manager] Sequencing output ready add_sequenced_transaction: vc_tx={} s_tx={}", hex::encode(&entry.vc_tx[..std::cmp::min(8, entry.vc_tx.len())]), entry.s_tx);
-                        if let Err(e) = manager_for_seq.add_sequenced_transaction(entry).await {
-                            error!("[SMROL] 共识输入登记失败: {}", e);
+                                if let Err(e) = request_tx_clone.send(task).await {
+                                    error!(
+                                        "无法入队 SeqRequest 消息: {}",
+                                        e
+                                    );
+                                }
+                            }
+                            Err(e) => error!(
+                                "序列化 SmrolTransaction 失败: {}",
+                                e
+                            ),
                         }
                     }
-                    Ok(None) => {}
-                    Err(e) => error!("处理Sequencing消息失败: {}", e),
+                    SmrolMessage::SeqResponse {
+                        vc,
+                        signature_share,
+                        sequence_number,
+                        ..
+                    } => {
+                        let task = SeqResponseTask {
+                            sender_id,
+                            response: SeqResponse {
+                                vc,
+                                s: sequence_number,
+                                sigma: signature_share,
+                            },
+                        };
+
+                        if let Err(e) = response_tx_clone.send(task).await {
+                            error!("无法入队 SeqResponse 消息: {}", e);
+                        }
+                    }
+                    SmrolMessage::SeqOrder { vc, responses, .. } => {
+                        let records = responses
+                            .into_iter()
+                            .map(|(sender, sequence, signature)| SeqResponseRecord {
+                                sender,
+                                sequence,
+                                signature,
+                            })
+                            .collect();
+                        let task = SeqOrderTask {
+                            sender_id,
+                            order: SeqOrder { vc, records },
+                        };
+
+                        if let Err(e) = order_tx_clone.send(task).await {
+                            error!("无法入队 SeqOrder 消息: {}", e);
+                        }
+                    }
+                    SmrolMessage::SeqMedian {
+                        vc,
+                        median_sequence,
+                        proof,
+                        ..
+                    } => {
+                        let task = SeqMedianTask {
+                            sender_id,
+                            median: SeqMedian {
+                                vc,
+                                s_tx: median_sequence,
+                                sigma_seq: proof,
+                            },
+                        };
+
+                        if let Err(e) = median_tx_clone.send(task).await {
+                            error!("无法入队 SeqMedian 消息: {}", e);
+                        }
+                    }
+                    SmrolMessage::SeqFinal {
+                        vc,
+                        final_sequence,
+                        combined_signature,
+                        ..
+                    } => {
+                        let task = SeqFinalTask {
+                            sender_id,
+                            final_msg: SeqFinal {
+                                vc,
+                                s_tx: final_sequence,
+                                sigma: combined_signature,
+                            },
+                        };
+
+                        if let Err(e) = final_tx_clone.send(task).await {
+                            error!("无法入队 SeqFinal 消息: {}", e);
+                        }
+                    }
+                    _ => {
+                        debug!(
+                            "[SMROL] Node {} 收到非 Sequencing 消息: {:?}",
+                            sender_id,
+                            std::mem::discriminant(&message)
+                        );
+                    }
                 }
             }
-            debug!(
-                "ℹ️ [SMROL] Sequencing loop exited for node {}",
-                manager_for_seq.node_id
-            );
+            debug!("ℹ️ [SMROL] Sequencing input loop exited");
         });
 
         // Note: consensus/Finalization pipeline temporarily disabled; sequencing outputs
@@ -307,6 +660,56 @@ impl SmrolManager {
         // );
 
         Ok(())
+    }
+
+    fn seq_request_queue_capacity() -> usize {
+        std::env::var("SMROL_SEQ_REQUEST_QUEUE_CAP")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(512)
+    }
+
+    fn seq_response_queue_capacity() -> usize {
+        std::env::var("SMROL_SEQ_RESPONSE_QUEUE_CAP")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(2048)
+    }
+
+    fn seq_order_queue_capacity() -> usize {
+        std::env::var("SMROL_SEQ_ORDER_QUEUE_CAP")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(512)
+    }
+
+    fn seq_median_queue_capacity() -> usize {
+        std::env::var("SMROL_SEQ_MEDIAN_QUEUE_CAP")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(512)
+    }
+
+    fn seq_final_queue_capacity() -> usize {
+        std::env::var("SMROL_SEQ_FINAL_QUEUE_CAP")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(512)
+    }
+
+    fn smrol_broadcast_queue_capacity() -> usize {
+        std::env::var("SMROL_BROADCAST_QUEUE_CAP")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(1024)
+    }
+
+    fn smrol_broadcast_worker_count() -> usize {
+        std::env::var("SMROL_BROADCAST_WORKERS")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .map(|n: usize| n.max(1))
+            .unwrap_or(2)
     }
 
     fn extract_tx_id(entry: &TransactionEntry) -> Option<u64> {

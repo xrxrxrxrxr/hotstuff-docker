@@ -9,7 +9,7 @@ use std::collections::{HashMap, HashSet};
 use std::net::SocketAddr;
 use std::sync::{atomic::AtomicU64, Arc};
 use tokio::{
-    sync::{mpsc, Notify, RwLock},
+    sync::{mpsc, Notify, RwLock, Mutex as TokioMutex},
     time::{sleep, Duration},
 };
 use tracing::{debug, error, info, warn};
@@ -161,140 +161,198 @@ impl PnfifoBc {
             leader_proposal_senders.insert(leader_id, tx);
         }
 
-        let (broadcast_tx, mut broadcast_rx) =
+        let (broadcast_tx, broadcast_rx) =
             mpsc::channel::<(u64, Vec<u8>)>(Self::broadcast_queue_capacity());
+        let broadcast_rx = Arc::new(TokioMutex::new(broadcast_rx));
+        let broadcast_workers = Self::broadcast_worker_count();
         let slots_for_broadcast = Arc::clone(&slots);
         let current_slot_for_broadcast = Arc::clone(&current_slot);
         let network_for_broadcast = Arc::clone(&network);
         let node_id_for_broadcast = node_id;
         let threshold_for_broadcast = threshold;
 
-        tokio::spawn(async move {
-            info!(
-                "[PNFIFO] Node {} broadcast worker started (capacity: {})",
-                node_id_for_broadcast,
-                Self::broadcast_queue_capacity()
-            );
-
-            while let Some((slot, value)) = broadcast_rx.recv().await {
-                if let Err(e) = Self::broadcast_proposal_static(
+        for worker_id in 0..broadcast_workers {
+            let slots_for_worker = Arc::clone(&slots_for_broadcast);
+            let current_slot_worker = Arc::clone(&current_slot_for_broadcast);
+            let network_worker = Arc::clone(&network_for_broadcast);
+            let rx = Arc::clone(&broadcast_rx);
+            tokio::spawn(async move {
+                info!(
+                    "[PNFIFO] Node {} broadcast worker {} started (capacity: {})",
                     node_id_for_broadcast,
-                    &current_slot_for_broadcast,
-                    &slots_for_broadcast,
-                    threshold_for_broadcast,
-                    &network_for_broadcast,
-                    slot,
-                    value,
-                )
-                .await
-                {
-                    error!(
-                        "[PNFIFO] Node {} failed to broadcast proposal for slot {}: {}",
+                    worker_id,
+                    Self::broadcast_queue_capacity()
+                );
+
+                loop {
+                    let task = {
+                        let mut guard = rx.lock().await;
+                        guard.recv().await
+                    };
+
+                    let Some((slot, value)) = task else {
+                        warn!(
+                            "[PNFIFO] Node {} broadcast worker {} exited (channel closed)",
+                            node_id_for_broadcast,
+                            worker_id
+                        );
+                        break;
+                    };
+
+                    if let Err(e) = Self::broadcast_proposal_static(
                         node_id_for_broadcast,
+                        &current_slot_worker,
+                        &slots_for_worker,
+                        threshold_for_broadcast,
+                        &network_worker,
                         slot,
-                        e
-                    );
+                        value,
+                    )
+                    .await
+                    {
+                        error!(
+                            "[PNFIFO] Node {} broadcast worker {} failed to process slot {}: {}",
+                            node_id_for_broadcast,
+                            worker_id,
+                            slot,
+                            e
+                        );
+                    }
                 }
-            }
+            });
+        }
 
-            warn!(
-                "[PNFIFO] Node {} broadcast worker exited (channel closed)",
-                node_id_for_broadcast
-            );
-        });
-
-        let (vote_tx, mut vote_rx) =
+        let (vote_tx, vote_rx) =
             mpsc::channel::<VoteTask>(Self::vote_queue_capacity());
+        let vote_rx = Arc::new(TokioMutex::new(vote_rx));
+        let vote_workers = Self::vote_worker_count();
         let slots_for_vote = Arc::clone(&slots);
         let notif_for_vote = Arc::clone(&slot_output_notifiers);
-        let verifying_keys_for_vote = verifying_keys.clone();
         let network_for_vote = Arc::clone(&network);
+        let verifying_keys_for_vote = Arc::new(verifying_keys.clone());
         let threshold_for_vote = threshold;
         let node_id_for_vote = node_id;
 
-        tokio::spawn(async move {
-            info!(
-                "[PNFIFO] Node {} vote worker started (capacity: {})",
-                node_id_for_vote,
-                Self::vote_queue_capacity()
-            );
-
-            while let Some(task) = vote_rx.recv().await {
-                if let Err(e) = PnfifoBc::handle_vote_static(
+        for worker_id in 0..vote_workers {
+            let slots_worker = Arc::clone(&slots_for_vote);
+            let notif_worker = Arc::clone(&notif_for_vote);
+            let network_worker = Arc::clone(&network_for_vote);
+            let verifying_worker = Arc::clone(&verifying_keys_for_vote);
+            let rx = Arc::clone(&vote_rx);
+            tokio::spawn(async move {
+                info!(
+                    "[PNFIFO] Node {} vote worker {} started (capacity: {})",
                     node_id_for_vote,
-                    &slots_for_vote,
-                    &notif_for_vote,
-                    threshold_for_vote,
-                    &verifying_keys_for_vote,
-                    &network_for_vote,
-                    task.leader_id,
-                    task.sender_id,
-                    task.slot,
-                    task.signature_share,
-                )
-                .await
-                {
-                    error!(
-                        "[PNFIFO] Node {} failed to handle vote slot {} leader {}: {}",
+                    worker_id,
+                    Self::vote_queue_capacity()
+                );
+
+                loop {
+                    let task = {
+                        let mut guard = rx.lock().await;
+                        guard.recv().await
+                    };
+
+                    let Some(task) = task else {
+                        warn!(
+                            "[PNFIFO] Node {} vote worker {} exited (channel closed)",
+                            node_id_for_vote,
+                            worker_id
+                        );
+                        break;
+                    };
+
+                    if let Err(e) = PnfifoBc::handle_vote_static(
                         node_id_for_vote,
-                        task.slot,
+                        &slots_worker,
+                        &notif_worker,
+                        threshold_for_vote,
+                        &*verifying_worker,
+                        &network_worker,
                         task.leader_id,
-                        e
-                    );
+                        task.sender_id,
+                        task.slot,
+                        task.signature_share,
+                    )
+                    .await
+                    {
+                        error!(
+                            "[PNFIFO] Node {} vote worker {} failed slot {} leader {}: {}",
+                            node_id_for_vote,
+                            worker_id,
+                            task.slot,
+                            task.leader_id,
+                            e
+                        );
+                    }
                 }
-            }
+            });
+        }
 
-            warn!(
-                "[PNFIFO] Node {} vote worker exited (channel closed)",
-                node_id_for_vote
-            );
-        });
-
-        let (final_tx, mut final_rx) =
+        let (final_tx, final_rx) =
             mpsc::channel::<FinalTask>(Self::final_queue_capacity());
+        let final_rx = Arc::new(TokioMutex::new(final_rx));
+        let final_workers = Self::final_worker_count();
         let slots_for_final = Arc::clone(&slots);
         let notif_for_final = Arc::clone(&slot_output_notifiers);
-        let verifying_keys_for_final = verifying_keys.clone();
+        let verifying_keys_for_final = Arc::new(verifying_keys.clone());
         let threshold_for_final = threshold;
         let node_id_for_final = node_id;
 
-        tokio::spawn(async move {
-            info!(
-                "[PNFIFO] Node {} final worker started (capacity: {})",
-                node_id_for_final,
-                Self::final_queue_capacity()
-            );
-
-            while let Some(task) = final_rx.recv().await {
-                if let Err(e) = PnfifoBc::handle_final_static(
+        for worker_id in 0..final_workers {
+            let slots_worker = Arc::clone(&slots_for_final);
+            let notif_worker = Arc::clone(&notif_for_final);
+            let verifying_worker = Arc::clone(&verifying_keys_for_final);
+            let rx = Arc::clone(&final_rx);
+            tokio::spawn(async move {
+                info!(
+                    "[PNFIFO] Node {} final worker {} started (capacity: {})",
                     node_id_for_final,
-                    &slots_for_final,
-                    &notif_for_final,
-                    threshold_for_final,
-                    &verifying_keys_for_final,
-                    task.leader_id,
-                    task.sender_id,
-                    task.slot,
-                    task.value,
-                    task.combined_signature,
-                )
-                .await
-                {
-                    error!(
-                        "[PNFIFO] Node {} failed to handle final slot {} leader {}: {}",
-                        node_id_for_final,
-                        task.slot,
-                        task.leader_id,
-                        e
-                    );
-                }
-            }
+                    worker_id,
+                    Self::final_queue_capacity()
+                );
 
-            warn!(
-                "[PNFIFO] Node {} final worker exited (channel closed)",
-                node_id_for_final
-            );
-        });
+                loop {
+                    let task = {
+                        let mut guard = rx.lock().await;
+                        guard.recv().await
+                    };
+
+                    let Some(task) = task else {
+                        warn!(
+                            "[PNFIFO] Node {} final worker {} exited (channel closed)",
+                            node_id_for_final,
+                            worker_id
+                        );
+                        break;
+                    };
+
+                    if let Err(e) = PnfifoBc::handle_final_static(
+                        node_id_for_final,
+                        &slots_worker,
+                        &notif_worker,
+                        threshold_for_final,
+                        &*verifying_worker,
+                        task.leader_id,
+                        task.sender_id,
+                        task.slot,
+                        task.value,
+                        task.combined_signature,
+                    )
+                    .await
+                    {
+                        error!(
+                            "[PNFIFO] Node {} final worker {} failed slot {} leader {}: {}",
+                            node_id_for_final,
+                            worker_id,
+                            task.slot,
+                            task.leader_id,
+                            e
+                        );
+                    }
+                }
+            });
+        }
 
         Ok(Self {
             node_id,
@@ -612,6 +670,30 @@ impl PnfifoBc {
             .ok()
             .and_then(|v| v.parse().ok())
             .unwrap_or(1024)
+    }
+
+    fn broadcast_worker_count() -> usize {
+        std::env::var("PNFIFO_BROADCAST_WORKERS")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .map(|n: usize| n.max(1))
+            .unwrap_or(2)
+    }
+
+    fn vote_worker_count() -> usize {
+        std::env::var("PNFIFO_VOTE_WORKERS")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .map(|n: usize| n.max(1))
+            .unwrap_or(4)
+    }
+
+    fn final_worker_count() -> usize {
+        std::env::var("PNFIFO_FINAL_WORKERS")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .map(|n: usize| n.max(1))
+            .unwrap_or(4)
     }
 
     fn vote_queue_capacity() -> usize {
