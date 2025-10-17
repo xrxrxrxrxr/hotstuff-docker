@@ -749,7 +749,8 @@ impl SmrolManager {
         //         debug!("ℹ️ [SMROL] Sequencing input loop exited");
         //     });
         // }
-
+        
+        // fan-out incoming sequencing messages with less cloning
         let request_tx_clone = request_tx.clone();
         let response_tx_clone = response_tx.clone();
         let order_tx_clone = order_tx.clone();

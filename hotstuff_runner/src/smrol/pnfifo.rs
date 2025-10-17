@@ -4,7 +4,7 @@ use crate::smrol::crypto::{
 use crate::smrol::message::SmrolMessage;
 use crate::smrol::network::{SmrolNetworkMessage, SmrolTcpNetwork};
 use ed25519_dalek::{Signer, SigningKey, VerifyingKey};
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::{
     atomic::{AtomicU64, AtomicUsize, Ordering},
@@ -17,6 +17,7 @@ use tokio::{
 use tracing::{debug, error, info, warn};
 use tracing_subscriber::field::debug;
 use uuid::Uuid;
+use dashmap::DashMap;
 
 #[derive(Debug)]
 struct PnfifoSlotState {
@@ -77,7 +78,7 @@ pub struct PnfifoBc {
 
     // 算法状态
     current_slot: Arc<AtomicU64>,
-    slots: Arc<RwLock<HashMap<(usize, u64), PnfifoSlotState>>>,
+    slots: Arc<DashMap<(usize, u64), PnfifoSlotState>>,
     slot_output_notifiers: Arc<RwLock<HashMap<(usize, u64), Arc<Notify>>>>,
 
     // 密码学
@@ -115,7 +116,7 @@ impl PnfifoBc {
             .await
             .map_err(|e| format!("Failed to start PNFIFO network: {}", e))?;
 
-        let slots = Arc::new(RwLock::new(HashMap::new()));
+        let slots = Arc::new(DashMap::new());
         let slot_output_notifiers = Arc::new(RwLock::new(HashMap::new()));
         let current_slot = Arc::new(AtomicU64::new(1));
 
@@ -433,7 +434,7 @@ impl PnfifoBc {
     // PNFIFO 内部：处理 leader 的 proposal（在专用通道任务中运行）
     async fn process_leader_proposal(
         node_id: usize,
-        slots: &Arc<RwLock<HashMap<(usize, u64), PnfifoSlotState>>>,
+        slots: &Arc<DashMap<(usize, u64), PnfifoSlotState>>,
         slot_output_notifiers: &Arc<RwLock<HashMap<(usize, u64), Arc<Notify>>>>,
         signing_key: &SigningKey,
         verifying_keys: &HashMap<usize, VerifyingKey>,
@@ -449,11 +450,12 @@ impl PnfifoBc {
         );
 
         // 检查是否有延迟的 FINAL
+        let mut skip_vote = false;
         let delayed_final = {
-            let mut slots_guard = slots.write().await;
-            let slot_state = slots_guard
+            let mut entry = slots
                 .entry((leader_id, slot))
                 .or_insert_with(|| PnfifoSlotState::new(threshold));
+            let slot_state = entry.value_mut();
 
             // 去重检查
             if slot_state.proposal_received && leader_id != node_id {
@@ -461,15 +463,20 @@ impl PnfifoBc {
                     "[PNFIFO] Node {} already processed Leader {} slot {}",
                     node_id, leader_id, slot
                 );
-                return Ok(());
+                skip_vote = true;
+                None
+            } else {
+                slot_state.proposal_received = true;
+                slot_state.value = Some(value.clone());
+
+                // 取出可能存在的 pending_final
+                slot_state.pending_final.take()
             }
-
-            slot_state.proposal_received = true;
-            slot_state.value = Some(value.clone());
-
-            // 取出可能存在的 pending_final
-            slot_state.pending_final.take()
         };
+
+        if skip_vote {
+            return Ok(());
+        }
 
         // 如果有延迟的 FINAL，先处理它
         if let Some((final_value, final_signature)) = delayed_final {
@@ -552,18 +559,15 @@ impl PnfifoBc {
     // PNFIFO 内部使用：等待 FINAL 处理完成（对应 Algorithm 1 的 flag_s = 0）
     async fn wait_for_final_internal(
         node_id: usize,
-        slots: &Arc<RwLock<HashMap<(usize, u64), PnfifoSlotState>>>,
+        slots: &Arc<DashMap<(usize, u64), PnfifoSlotState>>,
         slot_output_notifiers: &Arc<RwLock<HashMap<(usize, u64), Arc<Notify>>>>,
         leader_id: usize,
         slot: u64,
     ) {
         // Fast path: 快速检查
-        {
-            let slots_guard = slots.read().await;
-            if let Some(slot_state) = slots_guard.get(&(leader_id, slot)) {
-                if slot_state.final_stored {
-                    return;
-                }
+        if let Some(slot_state) = slots.get(&(leader_id, slot)) {
+            if slot_state.final_stored {
+                return;
             }
         }
 
@@ -582,16 +586,15 @@ impl PnfifoBc {
             let notified = notifier.notified();
 
             // 再检查 final_stored
-            {
-                let slots_guard = slots.read().await;
-                if let Some(slot_state) = slots_guard.get(&(leader_id, slot)) {
-                    if slot_state.final_stored {
-                        if attempts > 0 {
-                            debug!("[PNFIFO] Node {} received FINAL for Leader {} slot {} after {} waits",
-                                node_id, leader_id, slot, attempts);
-                        }
-                        return;
+            if let Some(slot_state) = slots.get(&(leader_id, slot)) {
+                if slot_state.final_stored {
+                    if attempts > 0 {
+                        debug!(
+                            "[PNFIFO] Node {} received FINAL for Leader {} slot {} after {} waits",
+                            node_id, leader_id, slot, attempts
+                        );
                     }
+                    return;
                 }
             }
 
@@ -789,7 +792,7 @@ impl PnfifoBc {
     async fn broadcast_proposal_static(
         node_id: usize,
         current_slot: &Arc<AtomicU64>,
-        slots: &Arc<RwLock<HashMap<(usize, u64), PnfifoSlotState>>>,
+        slots: &Arc<DashMap<(usize, u64), PnfifoSlotState>>,
         threshold: usize,
         network: &Arc<SmrolTcpNetwork>,
         slot: u64,
@@ -803,10 +806,10 @@ impl PnfifoBc {
         );
 
         {
-            let mut slots_guard = slots.write().await;
-            let slot_state = slots_guard
+            let mut entry = slots
                 .entry((node_id, slot))
                 .or_insert_with(|| PnfifoSlotState::new(threshold));
+            let slot_state = entry.value_mut();
             slot_state.value = Some(value.clone());
             slot_state.proposal_received = true;
         }
@@ -843,7 +846,7 @@ impl PnfifoBc {
 
     async fn handle_vote_static(
         node_id: usize,
-        slots: &Arc<RwLock<HashMap<(usize, u64), PnfifoSlotState>>>,
+        slots: &Arc<DashMap<(usize, u64), PnfifoSlotState>>,
         slot_output_notifiers: &Arc<RwLock<HashMap<(usize, u64), Arc<Notify>>>>,
         threshold: usize,
         verifying_keys: &HashMap<usize, VerifyingKey>,
@@ -862,51 +865,53 @@ impl PnfifoBc {
         let mut finalize_data = None;
 
         {
-            let mut slots_guard = slots.write().await;
-            if let Some(slot_state) = slots_guard.get_mut(&(leader_id, slot)) {
-                if let Some(ref value) = slot_state.value {
-                    let message_to_verify = PnfifoBc::create_vote_message_static(slot, value);
+            let mut entry = slots
+                .entry((leader_id, slot))
+                .or_insert_with(|| PnfifoSlotState::new(threshold));
+            let slot_state = entry.value_mut();
 
-                    if let Some(verifying_key) = verifying_keys.get(&sender_id) {
-                        if verify_signature_share(
-                            &signature_share,
-                            &message_to_verify,
-                            verifying_key,
-                        ) {
-                            if !slot_state.votes.contains_key(&sender_id) {
-                                slot_state.votes.insert(sender_id, signature_share.clone());
+            if let Some(ref value) = slot_state.value {
+                let message_to_verify = PnfifoBc::create_vote_message_static(slot, value);
 
-                                let reached = slot_state
-                                    .threshold_sig
-                                    .add_share(sender_id, signature_share.clone());
+                if let Some(verifying_key) = verifying_keys.get(&sender_id) {
+                    if verify_signature_share(
+                        &signature_share,
+                        &message_to_verify,
+                        verifying_key,
+                    ) {
+                        if !slot_state.votes.contains_key(&sender_id) {
+                            slot_state.votes.insert(sender_id, signature_share.clone());
 
-                                if slot_state.votes.len() <= threshold {
-                                    debug!(
-                                        "[PNFIFO] Node {} accepted VOTE from {} (slot {} leader {}), votes: {}/{}",
-                                        node_id, sender_id, slot, leader_id,
-                                        slot_state.votes.len(), threshold
+                            let reached = slot_state
+                                .threshold_sig
+                                .add_share(sender_id, signature_share.clone());
+
+                            if slot_state.votes.len() <= threshold {
+                                debug!(
+                                    "[PNFIFO] Node {} accepted VOTE from {} (slot {} leader {}), votes: {}/{}",
+                                    node_id, sender_id, slot, leader_id,
+                                    slot_state.votes.len(), threshold
+                                );
+                            }
+
+                            if reached && !slot_state.final_broadcasted {
+                                if let Ok(combined_sig) = slot_state.threshold_sig.combine() {
+                                    slot_state.final_broadcasted = true;
+                                    finalize_data = Some((value.clone(), combined_sig));
+                                    should_finalize = true;
+
+                                    info!(
+                                        "[PNFIFO] Node {} reached threshold for slot {} leader {}",
+                                        node_id, slot, leader_id
                                     );
                                 }
-
-                                if reached && !slot_state.final_broadcasted {
-                                    if let Ok(combined_sig) = slot_state.threshold_sig.combine() {
-                                        slot_state.final_broadcasted = true;
-                                        finalize_data = Some((value.clone(), combined_sig));
-                                        should_finalize = true;
-
-                                        info!(
-                                            "[PNFIFO] Node {} reached threshold for slot {} leader {}",
-                                            node_id, slot, leader_id
-                                        );
-                                    }
-                                }
                             }
-                        } else {
-                            warn!(
-                                "[PNFIFO] Node {} rejected invalid signature from {}",
-                                node_id, sender_id
-                            );
                         }
+                    } else {
+                        warn!(
+                            "[PNFIFO] Node {} rejected invalid signature from {}",
+                            node_id, sender_id
+                        );
                     }
                 }
             }
@@ -963,7 +968,7 @@ impl PnfifoBc {
 
     async fn handle_final_static(
         node_id: usize,
-        slots: &Arc<RwLock<HashMap<(usize, u64), PnfifoSlotState>>>,
+        slots: &Arc<DashMap<(usize, u64), PnfifoSlotState>>,
         slot_output_notifiers: &Arc<RwLock<HashMap<(usize, u64), Arc<Notify>>>>,
         threshold: usize,
         verifying_keys: &HashMap<usize, VerifyingKey>,
@@ -979,39 +984,55 @@ impl PnfifoBc {
         );
 
         // 检查是否已收到 PROPOSAL
+        let mut already_finalized = false;
         let proposal_received = {
-            let slots_guard = slots.read().await;
-            if let Some(slot_state) = slots_guard.get(&(leader_id, slot)) {
+            if let Some(slot_state) = slots.get(&(leader_id, slot)) {
                 if slot_state.final_stored {
                     debug!(
                         "[PNFIFO] Node {} already processed FINAL for Leader {} slot {}",
                         node_id, leader_id, slot
                     );
-                    return Ok(());
+                    already_finalized = true;
                 }
                 slot_state.proposal_received
             } else {
                 false
             }
         };
+
+        if already_finalized {
+            return Ok(());
+        }
         debug!(
             "[PNFIFO] FINAL proposal_received = {} (leader {} slot {})",
             proposal_received, leader_id, slot
         );
 
         if !proposal_received {
-            // FINAL 先于 PROPOSAL 到达，暂存
-            let mut slots_guard = slots.write().await;
-            let slot_state = slots_guard
-                .entry((leader_id, slot))
-                .or_insert_with(|| PnfifoSlotState::new(threshold));
+            let mut finalize_immediately = false;
+            {
+                let mut entry = slots
+                    .entry((leader_id, slot))
+                    .or_insert_with(|| PnfifoSlotState::new(threshold));
+                let slot_state = entry.value_mut();
 
-            if slot_state.final_stored {
-                return Ok(());
+                if slot_state.final_stored {
+                    return Ok(());
+                }
+
+                if slot_state.proposal_received {
+                    finalize_immediately = true;
+                } else {
+                    slot_state.pending_final = Some((value.clone(), combined_signature.clone()));
+                    debug!(
+                        "[PNFIFO] Node {} stored pending FINAL for Leader {} slot {} (waiting for PROPOSAL)",
+                        node_id, leader_id, slot
+                    );
+                    return Ok(());
+                }
             }
 
-            if slot_state.proposal_received {
-                drop(slots_guard);
+            if finalize_immediately {
                 return Self::finalize_with_signature_static(
                     node_id,
                     slots,
@@ -1025,13 +1046,6 @@ impl PnfifoBc {
                 )
                 .await;
             }
-
-            slot_state.pending_final = Some((value, combined_signature));
-            debug!(
-                "[PNFIFO] Node {} stored pending FINAL for Leader {} slot {} (waiting for PROPOSAL)",
-                node_id, leader_id, slot
-            );
-            return Ok(());
         }
 
         // PROPOSAL 已收到，直接 finalize
@@ -1051,7 +1065,7 @@ impl PnfifoBc {
 
     async fn finalize_with_signature_static(
         node_id: usize,
-        slots: &Arc<RwLock<HashMap<(usize, u64), PnfifoSlotState>>>,
+        slots: &Arc<DashMap<(usize, u64), PnfifoSlotState>>,
         slot_output_notifiers: &Arc<RwLock<HashMap<(usize, u64), Arc<Notify>>>>,
         threshold: usize,
         verifying_keys: &HashMap<usize, VerifyingKey>,
@@ -1072,17 +1086,16 @@ impl PnfifoBc {
                 // debug!("[PNFIFO] Node {} slot {} FINAL signature verified", node_id, slot);
 
                 let should_store = {
-                    let mut slots_guard = slots.write().await;
-                    let slot_state = slots_guard
+                    let mut entry = slots
                         .entry((leader_id, slot))
                         .or_insert_with(|| PnfifoSlotState::new(threshold));
+                    let slot_state = entry.value_mut();
 
                     if slot_state.final_stored {
                         debug!(
                             "[PNFIFO] Node {} already processed FINAL for Leader {} slot {}",
                             node_id, leader_id, slot
                         );
-                        // drop(slots_guard);
                         false
                     } else {
                         slot_state.value.get_or_insert_with(|| value.clone());
@@ -1122,8 +1135,7 @@ impl PnfifoBc {
     }
 
     pub async fn get_output(&self, leader_id: usize, slot: u64) -> Option<(Vec<u8>, Vec<u8>)> {
-        let slots = self.slots.read().await;
-        slots
+        self.slots
             .get(&(leader_id, slot))
             .and_then(|state| state.output.clone())
     }
@@ -1131,16 +1143,13 @@ impl PnfifoBc {
     // Sequencing 层使用：等待 output 可用（Algorithm 2 Line 5）
     pub async fn wait_for_output(&self, leader_id: usize, slot: u64) {
         // Fast path: 先快速检查
-        {
-            let slots = self.slots.read().await;
-            if let Some(slot_state) = slots.get(&(leader_id, slot)) {
-                if slot_state.output.is_some() {
-                    debug!(
-                        "(wait_for_output) fast-path completed. leader {} slot {}",
-                        leader_id, slot
-                    );
-                    return;
-                }
+        if let Some(slot_state) = self.slots.get(&(leader_id, slot)) {
+            if slot_state.output.is_some() {
+                debug!(
+                    "(wait_for_output) fast-path completed. leader {} slot {}",
+                    leader_id, slot
+                );
+                return;
             }
         }
 
@@ -1160,18 +1169,15 @@ impl PnfifoBc {
             let notified = notifier.notified();
 
             // 2. 检查 output 是否已就绪
-            {
-                let slots = self.slots.read().await;
-                if let Some(slot_state) = slots.get(&(leader_id, slot)) {
-                    if slot_state.output.is_some() {
-                        if attempts > 0 {
-                            debug!(
-                                "[PNFIFO] Node {} got output for Leader {} slot {} after {} waits",
-                                self.node_id, leader_id, slot, attempts
-                            );
-                        }
-                        return;
+            if let Some(slot_state) = self.slots.get(&(leader_id, slot)) {
+                if slot_state.output.is_some() {
+                    if attempts > 0 {
+                        debug!(
+                            "[PNFIFO] Node {} got output for Leader {} slot {} after {} waits",
+                            self.node_id, leader_id, slot, attempts
+                        );
                     }
+                    return;
                 }
             }
 
@@ -1200,7 +1206,7 @@ impl PnfifoBc {
     }
 
     async fn store_output_static(
-        slots: &Arc<RwLock<HashMap<(usize, u64), PnfifoSlotState>>>,
+        slots: &Arc<DashMap<(usize, u64), PnfifoSlotState>>,
         slot_output_notifiers: &Arc<RwLock<HashMap<(usize, u64), Arc<Notify>>>>,
         threshold: usize,
         leader_id: usize,
@@ -1215,10 +1221,10 @@ impl PnfifoBc {
 
         // store output
         {
-            let mut guard = slots.write().await;
-            let slot_state = guard
+            let mut entry = slots
                 .entry((leader_id, slot))
                 .or_insert_with(|| PnfifoSlotState::new(threshold));
+            let slot_state = entry.value_mut();
             slot_state.output = Some((value, signature));
             slot_state.final_stored = true;
         }
@@ -1249,9 +1255,12 @@ impl PnfifoBc {
     }
 
     pub async fn get_stats(&self) -> (usize, usize, u64) {
-        let slots = self.slots.read().await;
-        let total_slots = slots.len();
-        let completed_slots = slots.values().filter(|s| s.output.is_some()).count();
+        let total_slots = self.slots.len();
+        let completed_slots = self
+            .slots
+            .iter()
+            .filter(|entry| entry.value().output.is_some())
+            .count();
         let current_slot = self.current_slot.load(std::sync::atomic::Ordering::Relaxed);
 
         (total_slots, completed_slots, current_slot)
@@ -1261,14 +1270,16 @@ impl PnfifoBc {
         let current = self.current_slot.load(std::sync::atomic::Ordering::Relaxed);
         let threshold = current.saturating_sub(keep_recent);
 
-        let mut slots = self.slots.write().await;
-        slots.retain(|&(_, slot_number), _| slot_number > threshold);
+        self.slots.retain(|key, _| {
+            let (_, slot_number) = *key;
+            slot_number > threshold
+        });
 
         debug!(
             "[PNFIFO] Node {} cleaned slots < {}, retained {} slots",
             self.node_id,
             threshold,
-            slots.len()
+            self.slots.len()
         );
     }
 }
