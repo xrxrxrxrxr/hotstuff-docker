@@ -467,17 +467,21 @@ impl TransactionSequencing {
                     .threshold_sigs
                     .entry(median.s_tx)
                     .or_insert_with(BTreeMap::new);
-                entry.insert(sender, share);
-                let len = entry.len();
-                let ready = if len == self.f + 1 {
-                    let shares: Vec<(usize, SignatureShare)> =
-                        entry.iter().map(|(id, share)| (*id, share.clone())).collect();
-                    state.threshold_sigs.remove(&median.s_tx);
-                    Some(shares)
+
+                if entry.len() >= self.f + 1 {
+                    (entry.len(), None)
                 } else {
-                    None
-                };
-                (len, ready)
+                    entry.insert(sender, share);
+                    let len = entry.len();
+                    let ready = if len == self.f + 1 {
+                        let shares: Vec<(usize, SignatureShare)> =
+                            entry.iter().map(|(id, share)| (*id, share.clone())).collect();
+                        Some(shares)
+                    } else {
+                        None
+                    };
+                    (len, ready)
+                }
             };
 
             debug!(
