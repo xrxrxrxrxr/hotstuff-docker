@@ -2,26 +2,27 @@
 //! 完全无锁化的Pompe BFT实现 - 支持crossbeam无锁队列
 
 use crate::pompe_network::PompeNetwork;
+use crate::utils;
 use crossbeam::queue::SegQueue;
 use dashmap::DashMap;
-use tokio::signal;
-use std::time::{SystemTime, UNIX_EPOCH, Duration, Instant};
-use serde::{Serialize, Deserialize};
-use tokio::sync::mpsc;
-use hotstuff_rs::types::crypto_primitives::VerifyingKey;
 use ed25519_dalek::SigningKey;
+use hotstuff_rs::types::crypto_primitives::VerifyingKey;
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, HashMap, VecDeque};
 use std::net::SocketAddr;
-use crate::utils;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, RwLock};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+use tokio::signal;
+use tokio::sync::mpsc;
 use tracing::{debug, error, info, warn};
 // Switch Pompe internal queues to tokio::mpsc (async, non-blocking)
+use crate::{
+    event::SystemEvent,
+    utils::{generate_dummy_signatures, verify_dummy_signatures, DigitalSignature},
+};
 use tokio::sync::mpsc as async_mpsc;
-use crate::{event::SystemEvent, utils::{DigitalSignature,generate_dummy_signatures,verify_dummy_signatures} };
-
-
 
 #[derive(Serialize, Deserialize, Clone, Debug, Hash, PartialEq, Eq)]
 pub struct PompeTransaction {
@@ -129,7 +130,7 @@ pub enum PompeMessage {
         tx_hash: String,
         median_timestamp: u64,
         initiator_node_id: usize,
-        signatures: Vec<DigitalSignature>, 
+        signatures: Vec<DigitalSignature>,
     },
     Ordering2Response {
         tx_hash: String,
@@ -771,13 +772,28 @@ impl PompeManager {
                 };
                 if let Some((sender_id, message)) = message_opt {
                     match message {
-                        PompeMessage::Ordering2Request { tx_hash, median_timestamp, initiator_node_id ,signatures} => {
+                        PompeMessage::Ordering2Request {
+                            tx_hash,
+                            median_timestamp,
+                            initiator_node_id,
+                            signatures,
+                        } => {
                             if let Some(ref net) = network {
                                 Self::handle_ordering2_request_lockfree(
-                                    node_id, &state, &net, &lockfree_adapter, &config,
-                                    sender_id, tx_hash, median_timestamp, initiator_node_id, &event_tx,
-                                    is_leader_flag_for_o2.clone(), signatures
-                                ).await;
+                                    node_id,
+                                    &state,
+                                    &net,
+                                    &lockfree_adapter,
+                                    &config,
+                                    sender_id,
+                                    tx_hash,
+                                    median_timestamp,
+                                    initiator_node_id,
+                                    &event_tx,
+                                    is_leader_flag_for_o2.clone(),
+                                    signatures,
+                                )
+                                .await;
                             }
                         }
                         _ => {}
@@ -988,7 +1004,13 @@ impl PompeManager {
             let generate_start = std::time::Instant::now();
             let signatures = generate_dummy_signatures(nfaulty);
             let generate_duration = generate_start.elapsed();
-            debug!("⏱️ [签名生成] Node {} 生成签名耗时: {:?}, hash = {}, signatures={}", node_id, generate_duration, &tx_hash[0..8], signatures.len());
+            debug!(
+                "⏱️ [签名生成] Node {} 生成签名耗时: {:?}, hash = {}, signatures={}",
+                node_id,
+                generate_duration,
+                &tx_hash[0..8],
+                signatures.len()
+            );
             let msg = PompeMessage::Ordering2Request {
                 tx_hash: tx_hash.clone(),
                 median_timestamp: median,
@@ -1025,14 +1047,24 @@ impl PompeManager {
         signatures: Vec<DigitalSignature>,
     ) {
         let processing_start = std::time::Instant::now();
-        
-        debug!("🚀 [Ordering2-2-LockFree] Node {} 处理请求: {}", node_id, &tx_hash[0..8]);
+
+        debug!(
+            "🚀 [Ordering2-2-LockFree] Node {} 处理请求: {}",
+            node_id,
+            &tx_hash[0..8]
+        );
 
         // verify 2f+1 signatures
         let verify_start = std::time::Instant::now();
         let verified = verify_dummy_signatures(&signatures, &tx_hash);
         let verify_duration = verify_start.elapsed();
-        debug!("⏱️ [签名验证] Node {} 验证签名耗时: {:?}, hash = {}, signatures={}", node_id, verify_duration, &tx_hash[0..8], signatures.len());
+        debug!(
+            "⏱️ [签名验证] Node {} 验证签名耗时: {:?}, hash = {}, signatures={}",
+            node_id,
+            verify_duration,
+            &tx_hash[0..8],
+            signatures.len()
+        );
 
         let current_stable_point = state
             .stable_point
@@ -1369,7 +1401,9 @@ impl PompeManager {
             adapter.push_batch(txs.clone());
             info!("⚡ [定时输出] Node {} 刷新输出 {} 个交易", node_id, count);
             if !tx_ids.is_empty() {
-                let _ = event_tx.send(SystemEvent::PushedToHotStuff { tx_ids: tx_ids.clone() });
+                let _ = event_tx.send(SystemEvent::PushedToHotStuff {
+                    tx_ids: tx_ids.clone(),
+                });
                 debug!(
                     "📡 [Flusher] Node {} 发送 pushed2hotstuff 事件: {:?}",
                     node_id, tx_ids

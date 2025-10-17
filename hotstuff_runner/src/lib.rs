@@ -5,10 +5,10 @@ pub mod kv_store;
 pub mod pompe;
 pub mod pompe_adversary;
 pub mod pompe_network;
-pub mod utils;
 pub mod stats;
 pub mod tcp_node;
 pub mod tokio_network;
+pub mod utils;
 
 pub mod smrol;
 pub use smrol::{PnfifoBc, SmrolMessage, SmrolThresholdSig};

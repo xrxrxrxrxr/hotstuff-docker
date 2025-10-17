@@ -29,9 +29,9 @@ use std::fs::{create_dir_all, File};
 use std::net::SocketAddr;
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::sync::Arc;
-use std::time::Duration;
-use std::time::Instant;      
 use std::sync::OnceLock;
+use std::time::Duration;
+use std::time::Instant;
 
 static HOST_MAP: OnceLock<HashMap<String, String>> = OnceLock::new();
 
@@ -58,7 +58,8 @@ pub fn resolve_target(target_id: usize, port: u16) -> String {
         .unwrap_or_else(|| panic!("Target {} not found in NODE_HOSTS", target_name));
 
     format!("{}:{}", host_ip, port)
-}use tokio::io::{AsyncReadExt, AsyncWriteExt};
+}
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::{broadcast, mpsc, Notify};
 use tracing::{debug, error, info, warn};
@@ -197,7 +198,7 @@ fn create_peer_address(i: usize) -> Result<SocketAddr, String> {
     let port = 10000;
     let addr_str = resolve_target(i, port);
     // let addr_str = format!("{}:{}", hostname, port);
-    
+
     info!("Trying to resolve address: {}", addr_str);
 
     match std::net::ToSocketAddrs::to_socket_addrs(&addr_str) {

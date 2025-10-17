@@ -17,9 +17,13 @@ use ed25519_dalek::{SigningKey, VerifyingKey};
 use hex;
 use std::collections::HashMap;
 use std::net::SocketAddr;
-use std::sync::Arc;
-use std::time::Instant;
+use std::sync::{
+    atomic::{AtomicUsize, Ordering},
+    Arc,
+};
+use std::time::{Duration, Instant};
 use tokio::sync::{broadcast, mpsc, Mutex};
+use tokio::time::interval;
 use tracing::{debug, error, info, warn};
 
 #[derive(Debug, Clone)]
@@ -81,7 +85,7 @@ pub struct SmrolManager {
 
     pub network: Arc<SmrolTcpNetwork>,
     pub consensus: Arc<Mutex<Consensus>>,
-    pub sequencing: Arc<Mutex<TransactionSequencing>>,
+    pub sequencing: Arc<TransactionSequencing>,
     pub finalization: Arc<Mutex<OutputFinalization>>,
     hotstuff_adapter: Mutex<Option<Arc<SmrolHotStuffAdapter>>>,
     pub event_tx: broadcast::Sender<SystemEvent>,
@@ -153,7 +157,7 @@ impl SmrolManager {
             event_tx.clone(),
         );
 
-        let sequencing_arc = Arc::new(Mutex::new(sequencing));
+        let sequencing_arc = Arc::new(sequencing);
         let consensus_arc = Arc::new(Mutex::new(consensus));
 
         let broadcast_capacity = Self::smrol_broadcast_queue_capacity();
@@ -187,10 +191,7 @@ impl SmrolManager {
                     };
 
                     let tx_id = transaction.id;
-                    let result = {
-                        let mut sequencing = sequencing_for_worker.lock().await;
-                        sequencing.smrol_broadcast(transaction).await
-                    };
+                    let result = sequencing_for_worker.smrol_broadcast(transaction).await;
 
                     match result {
                         Ok(_) => debug!(
@@ -256,27 +257,54 @@ impl SmrolManager {
 
         let sequencing_rx = self.network.get_sequencing_receiver();
 
-        let (request_tx, request_rx) =
-            mpsc::channel(Self::seq_request_queue_capacity());
-        let (response_tx, response_rx) =
-            mpsc::channel(Self::seq_response_queue_capacity());
-        let (order_tx, order_rx) = mpsc::channel(Self::seq_order_queue_capacity());
-        let (median_tx, median_rx) = mpsc::channel(Self::seq_median_queue_capacity());
-        let (final_tx, final_rx) = mpsc::channel(Self::seq_final_queue_capacity());
+        let request_capacity = Self::seq_request_queue_capacity();
+        let response_capacity = Self::seq_response_queue_capacity();
+        let order_capacity = Self::seq_order_queue_capacity();
+        let median_capacity = Self::seq_median_queue_capacity();
+        let final_capacity = Self::seq_final_queue_capacity();
+
+        let request_workers = Self::seq_request_worker_count();
+        let response_workers = Self::seq_response_worker_count();
+        let order_workers = Self::seq_order_worker_count();
+        let median_workers = Self::seq_median_worker_count();
+        let final_workers = Self::seq_final_worker_count();
+
+        let (request_tx, mut request_rx) = mpsc::channel::<SeqRequestTask>(request_capacity);
+        let (response_tx, mut response_rx) = mpsc::channel::<SeqResponseTask>(response_capacity);
+        let (order_tx, mut order_rx) = mpsc::channel::<SeqOrderTask>(order_capacity);
+        let (median_tx, mut median_rx) = mpsc::channel::<SeqMedianTask>(median_capacity);
+        let (final_tx, mut final_rx) = mpsc::channel::<SeqFinalTask>(final_capacity);
 
         {
+            let sequencing_handle = Arc::clone(&self.sequencing);
+            let interval_secs = Self::seq_cleanup_interval_secs();
+            tokio::spawn(async move {
+                let mut ticker = interval(Duration::from_secs(interval_secs));
+                loop {
+                    ticker.tick().await;
+                    sequencing_handle.cleanup_expired_state().await;
+                }
+            });
+        }
+
+        // Request workers
+        let mut request_worker_txs = Vec::with_capacity(request_workers);
+        let f_param = self.config.f;
+        let n_param = self.n;
+        for worker_id in 0..request_workers {
+            let (worker_tx, mut worker_rx) = mpsc::channel::<SeqRequestTask>(request_capacity);
+            request_worker_txs.push(worker_tx);
+
             let sequencing_handle = Arc::clone(&self.sequencing);
             let manager_clone = Arc::clone(&self);
             tokio::spawn(async move {
                 info!(
-                    "[Sequencing] Request worker started with capacity {}",
-                    Self::seq_request_queue_capacity()
+                    "[Sequencing] Request worker {} started (capacity {})",
+                    worker_id,
+                    request_capacity
                 );
-                let mut rx = request_rx;
-                let f_param = manager_clone.config.f;
-                let n_param = manager_clone.n;
-                while let Some(task) = rx.recv().await {
-                    let SeqRequestTask { sender_id, request } = task;
+
+                while let Some(SeqRequestTask { sender_id, request }) = worker_rx.recv().await {
                     let data_shards = std::cmp::max(1, f_param + 1);
                     let total_shards = std::cmp::max(data_shards, n_param);
                     let encode_start = Instant::now();
@@ -293,12 +321,37 @@ impl SmrolManager {
                     };
                     let encode_elapsed = encode_start.elapsed();
 
-                    let result = {
-                        let mut sequencing = sequencing_handle.lock().await;
-                        sequencing
-                            .handle_seq_request(sender_id, request, encoded, encode_elapsed)
-                            .await
-                    };
+                    let pnfifo_clone = Arc::clone(&sequencing_handle.pnfifo);
+                    let process_id = sequencing_handle.process_id;
+
+                    let (wait_ok, wait_duration) =
+                        TransactionSequencing::wait_for_log_condition_static(
+                            &pnfifo_clone,
+                            process_id,
+                            sender_id,
+                            request.seq_num,
+                        )
+                        .await;
+
+                    if !wait_ok {
+                        warn!(
+                            "❌ [Sequencing] Request worker {} log condition failed sender {} seq {}",
+                            worker_id,
+                            sender_id,
+                            request.seq_num
+                        );
+                        continue;
+                    }
+
+                    let result = sequencing_handle
+                        .handle_seq_request(
+                            sender_id,
+                            request,
+                            encoded,
+                            wait_duration,
+                            encode_elapsed,
+                        )
+                        .await;
 
                     match result {
                         Ok(Some(entry)) => {
@@ -312,101 +365,224 @@ impl SmrolManager {
                             }
                         }
                         Ok(None) => {}
-                        Err(e) => error!("处理 Sequencing 请求消息失败: {}", e),
+                        Err(e) => error!(
+                            "处理 Sequencing 请求消息失败 (worker {}): {}",
+                            worker_id,
+                            e
+                        ),
                     }
                 }
+
                 warn!(
-                    "⚠️ [Sequencing] Request worker exited (channel closed)"
+                    "⚠️ [Sequencing] Request worker {} exited (channel closed)",
+                    worker_id
                 );
             });
         }
-
+        let request_senders = Arc::new(request_worker_txs);
+        let request_index = Arc::new(AtomicUsize::new(0));
         {
+            let request_senders = Arc::clone(&request_senders);
+            let request_index = Arc::clone(&request_index);
+            tokio::spawn(async move {
+                while let Some(task) = request_rx.recv().await {
+                    let len = request_senders.len();
+                    let idx = request_index.fetch_add(1, Ordering::Relaxed) % len.max(1);
+                    if let Err(e) = request_senders[idx].send(task).await {
+                        warn!(
+                            "[Sequencing] Request dispatcher failed to enqueue to worker {}: {}",
+                            idx,
+                            e
+                        );
+                    }
+                }
+
+                warn!("⚠️ [Sequencing] Request dispatcher exited (channel closed)");
+            });
+        }
+
+        // Response workers
+        let mut response_worker_txs = Vec::with_capacity(response_workers);
+        for worker_id in 0..response_workers {
+            let (worker_tx, mut worker_rx) = mpsc::channel::<SeqResponseTask>(response_capacity);
+            response_worker_txs.push(worker_tx);
+
             let sequencing_handle = Arc::clone(&self.sequencing);
             tokio::spawn(async move {
                 info!(
-                    "[Sequencing] Response worker started with capacity {}",
-                    Self::seq_response_queue_capacity()
+                    "[Sequencing] Response worker {} started (capacity {})",
+                    worker_id,
+                    response_capacity
                 );
-                let mut rx = response_rx;
-                while let Some(task) = rx.recv().await {
-                    let SeqResponseTask { sender_id, response } = task;
-                    let result = {
-                        let mut sequencing = sequencing_handle.lock().await;
-                        sequencing.handle_seq_response(sender_id, response).await
-                    };
 
-                    if let Err(e) = result {
-                        error!("处理 Sequencing 响应消息失败: {}", e);
+                while let Some(SeqResponseTask { sender_id, response }) = worker_rx.recv().await {
+                    if let Err(e) = sequencing_handle
+                        .handle_seq_response(sender_id, response)
+                        .await
+                    {
+                        error!(
+                            "处理 Sequencing 响应消息失败 (worker {}): {}",
+                            worker_id,
+                            e
+                        );
                     }
                 }
+
                 warn!(
-                    "⚠️ [Sequencing] Response worker exited (channel closed)"
+                    "⚠️ [Sequencing] Response worker {} exited (channel closed)",
+                    worker_id
                 );
             });
         }
-
+        let response_senders = Arc::new(response_worker_txs);
+        let response_index = Arc::new(AtomicUsize::new(0));
         {
+            let response_senders = Arc::clone(&response_senders);
+            let response_index = Arc::clone(&response_index);
+            tokio::spawn(async move {
+                while let Some(task) = response_rx.recv().await {
+                    let len = response_senders.len();
+                    let idx = response_index.fetch_add(1, Ordering::Relaxed) % len.max(1);
+                    if let Err(e) = response_senders[idx].send(task).await {
+                        warn!(
+                            "[Sequencing] Response dispatcher failed to enqueue to worker {}: {}",
+                            idx,
+                            e
+                        );
+                    }
+                }
+
+                warn!("⚠️ [Sequencing] Response dispatcher exited (channel closed)");
+            });
+        }
+
+        // Order workers
+        let mut order_worker_txs = Vec::with_capacity(order_workers);
+        for worker_id in 0..order_workers {
+            let (worker_tx, mut worker_rx) = mpsc::channel::<SeqOrderTask>(order_capacity);
+            order_worker_txs.push(worker_tx);
+
             let sequencing_handle = Arc::clone(&self.sequencing);
             tokio::spawn(async move {
                 info!(
-                    "[Sequencing] Order worker started with capacity {}",
-                    Self::seq_order_queue_capacity()
+                    "[Sequencing] Order worker {} started (capacity {})",
+                    worker_id,
+                    order_capacity
                 );
-                let mut rx = order_rx;
-                while let Some(task) = rx.recv().await {
-                    let SeqOrderTask { sender_id, order } = task;
-                    let result = {
-                        let mut sequencing = sequencing_handle.lock().await;
-                        sequencing.handle_seq_order(sender_id, order).await
-                    };
 
-                    if let Err(e) = result {
-                        error!("处理 Sequencing Order 消息失败: {}", e);
+                while let Some(SeqOrderTask { sender_id, order }) = worker_rx.recv().await {
+                    if let Err(e) = sequencing_handle
+                        .handle_seq_order(sender_id, order)
+                        .await
+                    {
+                        error!(
+                            "处理 Sequencing Order 消息失败 (worker {}): {}",
+                            worker_id,
+                            e
+                        );
                     }
                 }
-                warn!("⚠️ [Sequencing] Order worker exited (channel closed)");
+
+                warn!(
+                    "⚠️ [Sequencing] Order worker {} exited (channel closed)",
+                    worker_id
+                );
+            });
+        }
+        let order_senders = Arc::new(order_worker_txs);
+        let order_index = Arc::new(AtomicUsize::new(0));
+        {
+            let order_senders = Arc::clone(&order_senders);
+            let order_index = Arc::clone(&order_index);
+            tokio::spawn(async move {
+                while let Some(task) = order_rx.recv().await {
+                    let len = order_senders.len();
+                    let idx = order_index.fetch_add(1, Ordering::Relaxed) % len.max(1);
+                    if let Err(e) = order_senders[idx].send(task).await {
+                        warn!(
+                            "[Sequencing] Order dispatcher failed to enqueue to worker {}: {}",
+                            idx,
+                            e
+                        );
+                    }
+                }
+
+                warn!("⚠️ [Sequencing] Order dispatcher exited (channel closed)");
             });
         }
 
-        {
+        // Median workers
+        let mut median_worker_txs = Vec::with_capacity(median_workers);
+        for worker_id in 0..median_workers {
+            let (worker_tx, mut worker_rx) = mpsc::channel::<SeqMedianTask>(median_capacity);
+            median_worker_txs.push(worker_tx);
+
             let sequencing_handle = Arc::clone(&self.sequencing);
             tokio::spawn(async move {
                 info!(
-                    "[Sequencing] Median worker started with capacity {}",
-                    Self::seq_median_queue_capacity()
+                    "[Sequencing] Median worker {} started (capacity {})",
+                    worker_id,
+                    median_capacity
                 );
-                let mut rx = median_rx;
-                while let Some(task) = rx.recv().await {
-                    let SeqMedianTask { sender_id, median } = task;
-                    let result = {
-                        let mut sequencing = sequencing_handle.lock().await;
-                        sequencing.handle_seq_median(sender_id, median).await
-                    };
 
-                    if let Err(e) = result {
-                        error!("处理 Sequencing Median 消息失败: {}", e);
+                while let Some(SeqMedianTask { sender_id, median }) = worker_rx.recv().await {
+                    if let Err(e) = sequencing_handle
+                        .handle_seq_median(sender_id, median)
+                        .await
+                    {
+                        error!(
+                            "处理 Sequencing Median 消息失败 (worker {}): {}",
+                            worker_id,
+                            e
+                        );
                     }
                 }
-                warn!("⚠️ [Sequencing] Median worker exited (channel closed)");
+
+                warn!(
+                    "⚠️ [Sequencing] Median worker {} exited (channel closed)",
+                    worker_id
+                );
+            });
+        }
+        let median_senders = Arc::new(median_worker_txs);
+        let median_index = Arc::new(AtomicUsize::new(0));
+        {
+            let median_senders = Arc::clone(&median_senders);
+            let median_index = Arc::clone(&median_index);
+            tokio::spawn(async move {
+                while let Some(task) = median_rx.recv().await {
+                    let len = median_senders.len();
+                    let idx = median_index.fetch_add(1, Ordering::Relaxed) % len.max(1);
+                    if let Err(e) = median_senders[idx].send(task).await {
+                        warn!(
+                            "[Sequencing] Median dispatcher failed to enqueue to worker {}: {}",
+                            idx,
+                            e
+                        );
+                    }
+                }
+
+                warn!("⚠️ [Sequencing] Median dispatcher exited (channel closed)");
             });
         }
 
-        {
+        // Final workers
+        let mut final_worker_txs = Vec::with_capacity(final_workers);
+        for worker_id in 0..final_workers {
+            let (worker_tx, mut worker_rx) = mpsc::channel::<SeqFinalTask>(final_capacity);
+            final_worker_txs.push(worker_tx);
+
             let sequencing_handle = Arc::clone(&self.sequencing);
             let manager_clone = Arc::clone(&self);
             tokio::spawn(async move {
                 info!(
-                    "[Sequencing] Final worker started with capacity {}",
-                    Self::seq_final_queue_capacity()
+                    "[Sequencing] Final worker {} started (capacity {})",
+                    worker_id,
+                    final_capacity
                 );
-                let mut rx = final_rx;
-                while let Some(task) = rx.recv().await {
-                    let SeqFinalTask { sender_id: _, final_msg } = task;
-                    let result = {
-                        let mut sequencing = sequencing_handle.lock().await;
-                        sequencing.handle_seq_final(final_msg).await
-                    };
+
+                while let Some(SeqFinalTask { sender_id: _, final_msg }) = worker_rx.recv().await {
+                    let result = sequencing_handle.handle_seq_final(final_msg).await;
 
                     match result {
                         Ok(Some(entry)) => {
@@ -420,12 +596,159 @@ impl SmrolManager {
                             }
                         }
                         Ok(None) => {}
-                        Err(e) => error!("处理 Sequencing Final 消息失败: {}", e),
+                        Err(e) => error!(
+                            "处理 Sequencing Final 消息失败 (worker {}): {}",
+                            worker_id,
+                            e
+                        ),
                     }
                 }
-                warn!("⚠️ [Sequencing] Final worker exited (channel closed)");
+
+                warn!(
+                    "⚠️ [Sequencing] Final worker {} exited (channel closed)",
+                    worker_id
+                );
             });
         }
+        let final_senders = Arc::new(final_worker_txs);
+        let final_index = Arc::new(AtomicUsize::new(0));
+        {
+            let final_senders = Arc::clone(&final_senders);
+            let final_index = Arc::clone(&final_index);
+            tokio::spawn(async move {
+                while let Some(task) = final_rx.recv().await {
+                    let len = final_senders.len();
+                    let idx = final_index.fetch_add(1, Ordering::Relaxed) % len.max(1);
+                    if let Err(e) = final_senders[idx].send(task).await {
+                        warn!(
+                            "[Sequencing] Final dispatcher failed to enqueue to worker {}: {}",
+                            idx,
+                            e
+                        );
+                    }
+                }
+
+                warn!("⚠️ [Sequencing] Final dispatcher exited (channel closed)");
+            });
+        }
+
+        // Fan-out incoming sequencing messages
+        // {
+        //     let sequencing_rx = Arc::clone(&sequencing_rx);
+        //     let request_tx = request_tx.clone();
+        //     let response_tx = response_tx.clone();
+        //     let order_tx = order_tx.clone();
+        //     let median_tx = median_tx.clone();
+        //     let final_tx = final_tx.clone();
+        //     tokio::spawn(async move {
+        //         let mut rx = sequencing_rx.lock().await;
+        //         while let Some((sender_id, message)) = rx.recv().await {
+        //             match message {
+        //                 SmrolMessage::SeqRequest {
+        //                     transaction,
+        //                     sequence_number,
+        //                     ..
+        //                 } => {
+        //                     match bincode::serialize(&transaction) {
+        //                         Ok(payload) => {
+        //                             let task = SeqRequestTask {
+        //                                 sender_id,
+        //                                 request: SeqRequest {
+        //                                     seq_num: sequence_number,
+        //                                     tx: Transaction { payload },
+        //                                 },
+        //                             };
+        //                             if let Err(e) = request_tx.send(task).await {
+        //                                 warn!("无法入队 SeqRequest 消息: {}", e);
+        //                             }
+        //                         }
+        //                         Err(e) => error!("序列化 SmrolTransaction 失败: {}", e),
+        //                     }
+        //                 }
+        //                 SmrolMessage::SeqResponse {
+        //                     vc,
+        //                     signature_share,
+        //                     sequence_number,
+        //                     ..
+        //                 } => {
+        //                     let task = SeqResponseTask {
+        //                         sender_id,
+        //                         response: SeqResponse {
+        //                             vc,
+        //                             s: sequence_number,
+        //                             sigma: signature_share,
+        //                         },
+        //                     };
+        //                     if let Err(e) = response_tx.send(task).await {
+        //                         warn!("无法入队 SeqResponse 消息: {}", e);
+        //                     }
+        //                 }
+        //                 SmrolMessage::SeqOrder { vc, responses, .. } => {
+        //                     let records = responses
+        //                         .into_iter()
+        //                         .map(|(sender, sequence, signature)| SeqResponseRecord {
+        //                             sender,
+        //                             sequence,
+        //                             signature,
+        //                         })
+        //                         .collect();
+        //                     let task = SeqOrderTask {
+        //                         sender_id,
+        //                         order: SeqOrder { vc, records },
+        //                     };
+        //                     if let Err(e) = order_tx.send(task).await {
+        //                         warn!("无法入队 SeqOrder 消息: {}", e);
+        //                     }
+        //                 }
+        //                 SmrolMessage::SeqMedian {
+        //                     vc,
+        //                     median_sequence,
+        //                     proof,
+        //                     ..
+        //                 } => {
+        //                     let task = SeqMedianTask {
+        //                         sender_id,
+        //                         median: SeqMedian {
+        //                             vc,
+        //                             s_tx: median_sequence,
+        //                             sigma_seq: proof,
+        //                         },
+        //                     };
+        //                     if let Err(e) = median_tx.send(task).await {
+        //                         warn!("无法入队 SeqMedian 消息: {}", e);
+        //                     }
+        //                 }
+        //                 SmrolMessage::SeqFinal {
+        //                     vc,
+        //                     final_sequence,
+        //                     combined_signature,
+        //                     ..
+        //                 } => {
+        //                     let task = SeqFinalTask {
+        //                         sender_id,
+        //                         final_msg: SeqFinal {
+        //                             vc,
+        //                             s_tx: final_sequence,
+        //                             sigma: combined_signature,
+        //                         },
+        //                     };
+        //                     if let Err(e) = final_tx.send(task).await {
+        //                         warn!("无法入队 SeqFinal 消息: {}", e);
+        //                     }
+        //                 }
+        //                 other => {
+        //                     debug!(
+        //                         "[SMROL] Node {} 收到非 Sequencing 消息: {:?}",
+        //                         sender_id,
+        //                         std::mem::discriminant(&other)
+        //                     );
+        //                 }
+        //             }
+        //         }
+
+        //         debug!("ℹ️ [SMROL] Sequencing input loop exited");
+        //     });
+        // }
 
         let request_tx_clone = request_tx.clone();
         let response_tx_clone = response_tx.clone();
@@ -669,11 +992,27 @@ impl SmrolManager {
             .unwrap_or(512)
     }
 
+    fn seq_request_worker_count() -> usize {
+        std::env::var("SMROL_SEQ_REQUEST_WORKERS")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .map(|n: usize| n.max(1))
+            .unwrap_or(2)
+    }
+
     fn seq_response_queue_capacity() -> usize {
         std::env::var("SMROL_SEQ_RESPONSE_QUEUE_CAP")
             .ok()
             .and_then(|v| v.parse().ok())
             .unwrap_or(2048)
+    }
+
+    fn seq_response_worker_count() -> usize {
+        std::env::var("SMROL_SEQ_RESPONSE_WORKERS")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .map(|n: usize| n.max(1))
+            .unwrap_or(2)
     }
 
     fn seq_order_queue_capacity() -> usize {
@@ -683,6 +1022,14 @@ impl SmrolManager {
             .unwrap_or(512)
     }
 
+    fn seq_order_worker_count() -> usize {
+        std::env::var("SMROL_SEQ_ORDER_WORKERS")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .map(|n: usize| n.max(1))
+            .unwrap_or(2)
+    }
+
     fn seq_median_queue_capacity() -> usize {
         std::env::var("SMROL_SEQ_MEDIAN_QUEUE_CAP")
             .ok()
@@ -690,11 +1037,35 @@ impl SmrolManager {
             .unwrap_or(512)
     }
 
+    fn seq_median_worker_count() -> usize {
+        std::env::var("SMROL_SEQ_MEDIAN_WORKERS")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .map(|n: usize| n.max(1))
+            .unwrap_or(2)
+    }
+
     fn seq_final_queue_capacity() -> usize {
         std::env::var("SMROL_SEQ_FINAL_QUEUE_CAP")
             .ok()
             .and_then(|v| v.parse().ok())
             .unwrap_or(512)
+    }
+
+    fn seq_final_worker_count() -> usize {
+        std::env::var("SMROL_SEQ_FINAL_WORKERS")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .map(|n: usize| n.max(1))
+            .unwrap_or(2)
+    }
+
+    fn seq_cleanup_interval_secs() -> u64 {
+        std::env::var("SMROL_SEQ_CLEANUP_INTERVAL_SECS")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .filter(|&v| v > 0)
+            .unwrap_or(30)
     }
 
     fn smrol_broadcast_queue_capacity() -> usize {

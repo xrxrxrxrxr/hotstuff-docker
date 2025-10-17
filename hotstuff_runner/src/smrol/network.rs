@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
-use std::time::{Duration,Instant};
+use std::time::{Duration, Instant};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::runtime::{Builder, Handle, Runtime};
@@ -222,16 +222,20 @@ impl SmrolTcpNetwork {
         match sender.try_send(frame.clone()) {
             Ok(_) => Ok(()),
             Err(TrySendError::Full(_)) => {
-                warn!("⚠️ [Network] Node {} peer {} queue FULL", self.node_id, target_id);
+                warn!(
+                    "⚠️ [Network] Node {} peer {} queue FULL",
+                    self.node_id, target_id
+                );
                 let t0 = Instant::now();
-                let result = sender
-                .send(frame)
-                .await;
+                let result = sender.send(frame).await;
                 let elapsed = t0.elapsed();
-            warn!("⚠️ [Network] Node {} peer {} queue send took {:?}", 
-                self.node_id, target_id, elapsed);
-            
-            result.map_err(|e| format!("发送队列已关闭: {}", e))}
+                warn!(
+                    "⚠️ [Network] Node {} peer {} queue send took {:?}",
+                    self.node_id, target_id, elapsed
+                );
+
+                result.map_err(|e| format!("发送队列已关闭: {}", e))
+            }
             Err(TrySendError::Closed(_)) => Err("发送队列已关闭".into()),
         }
     }
@@ -543,8 +547,7 @@ impl SmrolTcpNetwork {
                 if let Err(e) = self.deliver_to_local_processors(&message).await {
                     error!(
                         "❌ [SMROL-TCP] Node {} 本地派发消息失败: {}",
-                        self.node_id,
-                        e
+                        self.node_id, e
                     );
                     last_error = Some(e);
                 }
@@ -554,9 +557,7 @@ impl SmrolTcpNetwork {
             if let Err(e) = self.queue_frame(peer_id, frame.clone()).await {
                 warn!(
                     "⚠️ [SMROL-TCP] Node {} 广播到{}失败: {}",
-                    self.node_id,
-                    peer_id,
-                    e
+                    self.node_id, peer_id, e
                 );
                 last_error = Some(e);
             }
@@ -813,7 +814,11 @@ impl SmrolTcpNetwork {
         self.send_message(network_msg).await
     }
 
-    pub async fn send_seq_response(&self, to: usize, resp: crate::smrol::sequencing::SeqResponse) -> Result<(), String> {
+    pub async fn send_seq_response(
+        &self,
+        to: usize,
+        resp: crate::smrol::sequencing::SeqResponse,
+    ) -> Result<(), String> {
         let message = SmrolMessage::SeqResponse {
             vc: resp.vc,
             signature_share: resp.sigma,
@@ -823,7 +828,7 @@ impl SmrolTcpNetwork {
 
         let network_msg = SmrolNetworkMessage {
             from_node_id: self.node_id,
-            to_node_id: Some(to),  // ← 点对点
+            to_node_id: Some(to), // ← 点对点
             message,
             timestamp: std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
@@ -878,8 +883,10 @@ impl SmrolTcpNetwork {
         );
 
         let result = self.send_message(network_msg).await;
-        warn!("📤 [Network] Node {} send SEQ-ORDER result: {:?}",
-            self.node_id, result);
+        warn!(
+            "📤 [Network] Node {} send SEQ-ORDER result: {:?}",
+            self.node_id, result
+        );
         result
     }
 

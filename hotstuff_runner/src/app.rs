@@ -191,7 +191,12 @@ impl<K: KVStore> App<K> for TestApp {
 
         let produce_elapsed = produce_start.elapsed();
         // warn!("[produce_block] Node {} cost {:?} (tx={})", self.node_id, produce_elapsed, tx_count);
-        debug!("[Node {}] Produced block at view {} with {} transactions", self.node_id, request.cur_view().int(), tx_count);
+        debug!(
+            "[Node {}] Produced block at view {} with {} transactions",
+            self.node_id,
+            request.cur_view().int(),
+            tx_count
+        );
 
         ProduceBlockResponse {
             data_hash,

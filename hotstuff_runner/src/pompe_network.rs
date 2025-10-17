@@ -280,7 +280,6 @@ impl PompeNetwork {
             );
         }
 
-        
         let network_msg = PompeNetworkMessage {
             from_node_id: self.node_id,
             to_node_id: Some(target_node_id),
@@ -332,8 +331,10 @@ impl PompeNetwork {
         // 如果没有可用连接，建立新连接
         if !connection_used {
             let target_addr = resolve_target(target_node_id, 20000);
-            info!("🔗 Node {} Pompe resolve node addr {}: {}", 
-                  self.node_id, target_node_id, target_addr);
+            info!(
+                "🔗 Node {} Pompe resolve node addr {}: {}",
+                self.node_id, target_node_id, target_addr
+            );
             match TcpStream::connect(&target_addr).await {
                 Ok(stream) => {
                     // 降低延时抖动：禁用Nagle

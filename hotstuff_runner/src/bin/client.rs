@@ -4,22 +4,22 @@
 use ed25519_dalek::SigningKey;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
+use sha2::digest::consts::U328;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::env;
-use std::fs::{File, create_dir_all};
-use std::time::{Duration, Instant};
-use sha2::digest::consts::U328;
-use tracing::{info, warn, error};
-use tracing_subscriber::field::debug;
-use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
-use std::thread;
 use std::fs;
+use std::fs::{create_dir_all, File};
 use std::net::SocketAddr;
 use std::sync::Arc;
+use std::thread;
+use std::time::{Duration, Instant};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 use tokio::sync::Mutex;
+use tracing::{error, info, warn};
+use tracing_subscriber::field::debug;
+use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TestTransaction {
@@ -132,7 +132,7 @@ impl LatencyTracker {
                 self.ordering_latencies.push(latency);
                 self.ordering_recorded.insert(tx_id);
                 // if tx_id % 1000 == 0 {
-                    info!("📊 交易 {} ordering延迟: {}ms", tx_id, latency_ms);
+                info!("📊 交易 {} ordering延迟: {}ms", tx_id, latency_ms);
                 // }
             }
         }
@@ -157,15 +157,18 @@ impl LatencyTracker {
                 self.consensus_latencies.push(latency);
                 self.consensus_recorded.insert(tx_id);
                 // if tx_id % 1000 == 0 {
-                    info!("📊 交易 {} consensus延迟: {}ms", tx_id, latency_ms);
-                // }   
+                info!("📊 交易 {} consensus延迟: {}ms", tx_id, latency_ms);
+                // }
             }
             if let Some(pushed_time) = self.pushed_timestamps.remove(&tx_id) {
                 let latency = pushed_time.elapsed().as_micros();
                 self.pushed_to_consensus_latencies.push(latency);
                 let latency_ms = latency as f64 / 1000.0;
                 if tx_id % 1000 == 0 {
-                    info!("📊 交易 {} pushed2hotstuff->consensus 延迟: {}ms", tx_id, latency_ms);
+                    info!(
+                        "📊 交易 {} pushed2hotstuff->consensus 延迟: {}ms",
+                        tx_id, latency_ms
+                    );
                 }
             }
         }
@@ -263,10 +266,10 @@ impl LatencyTracker {
                 avg_consensus_ms / avg_ordering_ms
             );
             if !self.pushed_to_consensus_latencies.is_empty() {
-                let avg_pushed_consensus_ms = self.pushed_to_consensus_latencies.iter().sum::<u128>()
-                    as f64
-                    / self.pushed_to_consensus_latencies.len() as f64
-                    / 1000.0;
+                let avg_pushed_consensus_ms =
+                    self.pushed_to_consensus_latencies.iter().sum::<u128>() as f64
+                        / self.pushed_to_consensus_latencies.len() as f64
+                        / 1000.0;
                 info!(
                     "  Pushed2HotStuff->Consensus平均延迟: {:.2} ms",
                     avg_pushed_consensus_ms
@@ -437,8 +440,10 @@ impl ClientNode {
         let is_latency = false;
 
         // let mut batch_size = std::cmp::max(100, config.target_tps / 5);
-        let mut batch_size=config.target_tps / (5 * node_num as u32);
-        if batch_size==0 { batch_size=1; }
+        let mut batch_size = config.target_tps / (5 * node_num as u32);
+        if batch_size == 0 {
+            batch_size = 1;
+        }
         //  if batch_size>100 { batch_size=100; } // 限制最大批次大小为100
         let mut batch_interval = Duration::from_millis(200);
 
@@ -454,8 +459,9 @@ impl ClientNode {
         let mut batch_counter = 0;
 
         while Instant::now() < end_time {
-            for node_offset in 0..node_num {// 🔥🔥 调试修改点
-            // for node_offset in 0..2 {
+            for node_offset in 0..node_num {
+                // 🔥🔥 调试修改点
+                // for node_offset in 0..2 {
                 let node_id = node_least_id + node_offset;
                 // let node_id = node_least_id; // 🔥🔥 调试修改点：只发给第一个节点
                 let transactions = self.tx_generator.generate_batch(batch_size as usize);
@@ -1018,7 +1024,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .parse()
                 .unwrap_or(100);
             info!("目标TPS: {}", target_tps);
-            
+
             let duration: u64 = env::var("TEST_DURATION")
                 .unwrap_or_else(|_| "60".to_string())
                 .parse()
