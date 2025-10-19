@@ -2,7 +2,8 @@ use crate::smrol::crypto::{
     verify_combined_signature_bytes, verify_signature_share, SmrolThresholdSig,
 };
 use crate::smrol::message::SmrolMessage;
-use crate::smrol::network::{SmrolNetworkMessage, SmrolTcpNetwork};
+use crate::smrol::network::SmrolTcpNetwork;
+use dashmap::DashMap;
 use ed25519_dalek::{Signer, SigningKey, VerifyingKey};
 use std::collections::HashMap;
 use std::net::SocketAddr;
@@ -16,8 +17,6 @@ use tokio::{
 };
 use tracing::{debug, error, info, warn};
 use tracing_subscriber::field::debug;
-use uuid::Uuid;
-use dashmap::DashMap;
 
 #[derive(Debug)]
 struct PnfifoSlotState {
@@ -113,7 +112,6 @@ impl PnfifoBc {
         let network = Arc::new(SmrolTcpNetwork::new(node_id, peer_addrs));
         network
             .start_server()
-            .await
             .map_err(|e| format!("Failed to start PNFIFO network: {}", e))?;
 
         let slots = Arc::new(DashMap::new());
@@ -209,18 +207,14 @@ impl PnfifoBc {
                     {
                         error!(
                             "[PNFIFO] Node {} broadcast worker {} failed to process slot {}: {}",
-                            node_id_for_broadcast,
-                            worker_id,
-                            slot,
-                            e
+                            node_id_for_broadcast, worker_id, slot, e
                         );
                     }
                 }
 
                 warn!(
                     "[PNFIFO] Node {} broadcast worker {} exited (channel closed)",
-                    node_id_for_broadcast,
-                    worker_id
+                    node_id_for_broadcast, worker_id
                 );
             });
         }
@@ -259,8 +253,7 @@ impl PnfifoBc {
 
         let mut vote_worker_txs = Vec::with_capacity(vote_workers);
         for worker_id in 0..vote_workers {
-            let (worker_tx, mut worker_rx) =
-                mpsc::channel::<VoteTask>(Self::vote_queue_capacity());
+            let (worker_tx, mut worker_rx) = mpsc::channel::<VoteTask>(Self::vote_queue_capacity());
             vote_worker_txs.push(worker_tx);
 
             let slots_worker = Arc::clone(&slots_for_vote);
@@ -292,19 +285,14 @@ impl PnfifoBc {
                     {
                         error!(
                             "[PNFIFO] Node {} vote worker {} failed slot {} leader {}: {}",
-                            node_id_for_vote,
-                            worker_id,
-                            task.slot,
-                            task.leader_id,
-                            e
+                            node_id_for_vote, worker_id, task.slot, task.leader_id, e
                         );
                     }
                 }
 
                 warn!(
                     "[PNFIFO] Node {} vote worker {} exited (channel closed)",
-                    node_id_for_vote,
-                    worker_id
+                    node_id_for_vote, worker_id
                 );
             });
         }
@@ -319,9 +307,7 @@ impl PnfifoBc {
                 if let Err(e) = vote_senders_clone[idx].send(task).await {
                     warn!(
                         "[PNFIFO] Node {} vote dispatcher failed enqueue to worker {}: {}",
-                        node_id_for_vote,
-                        idx,
-                        e
+                        node_id_for_vote, idx, e
                     );
                 }
             }
@@ -374,19 +360,14 @@ impl PnfifoBc {
                     {
                         error!(
                             "[PNFIFO] Node {} final worker {} failed slot {} leader {}: {}",
-                            node_id_for_final,
-                            worker_id,
-                            task.slot,
-                            task.leader_id,
-                            e
+                            node_id_for_final, worker_id, task.slot, task.leader_id, e
                         );
                     }
                 }
 
                 warn!(
                     "[PNFIFO] Node {} final worker {} exited (channel closed)",
-                    node_id_for_final,
-                    worker_id
+                    node_id_for_final, worker_id
                 );
             });
         }
@@ -401,9 +382,7 @@ impl PnfifoBc {
                 if let Err(e) = final_senders_clone[idx].send(task).await {
                     warn!(
                         "[PNFIFO] Node {} final dispatcher failed enqueue to worker {}: {}",
-                        node_id_for_final,
-                        idx,
-                        e
+                        node_id_for_final, idx, e
                     );
                 }
             }
@@ -512,25 +491,8 @@ impl PnfifoBc {
             signature_share,
         };
 
-        let network_msg = SmrolNetworkMessage {
-            from_node_id: node_id,
-            to_node_id: Some(leader_id),
-            message: vote_msg,
-            timestamp: std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_micros() as u64,
-            message_id: format!(
-                "pnfifo-vote:{}:{}:{}:{}",
-                node_id,
-                leader_id,
-                slot,
-                Uuid::new_v4()
-            ),
-        };
-
         network
-            .send_message(network_msg)
+            .send_to_node(leader_id, vote_msg)
             .await
             .map_err(|e| format!("Failed to send VOTE: {}", e))?;
 
@@ -540,13 +502,10 @@ impl PnfifoBc {
         );
 
         // PNFIFO 内部等待：等待 FINAL 到达（实现 flag_s 语义）
+        // NOTE: 2025-10-18: 原始协议需要等待前一个 slot 完成 (flag_s=0)。
+        // 这里基于流水线架构，为了允许更高吞吐，先只打印日志，不实际阻塞。
         debug!(
-            "[PNFIFO] Node {} 开始 waiting for FINAL for Leader {} slot {}",
-            node_id, leader_id, slot
-        );
-        // Self::wait_for_final_internal(node_id, slots, slot_output_notifiers, leader_id, slot).await;
-        debug!(
-            "[PNFIFO] Node {} 结束 waiting for FINAL for Leader {} slot {}",
+            "[PNFIFO] Node {} skip waiting for FINAL for Leader {} slot {} (pipeline mode)",
             node_id, leader_id, slot
         );
 
@@ -820,19 +779,8 @@ impl PnfifoBc {
             value: value.clone(),
         };
 
-        let network_msg = SmrolNetworkMessage {
-            from_node_id: node_id,
-            to_node_id: None,
-            message: proposal,
-            timestamp: std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_micros() as u64,
-            message_id: format!("pnfifo-proposal:{}:{}:{}", node_id, slot, Uuid::new_v4()),
-        };
-
         network
-            .send_message(network_msg)
+            .broadcast(proposal)
             .await
             .map_err(|e| format!("PROPOSAL broadcast failed: {}", e))?;
 
@@ -874,11 +822,7 @@ impl PnfifoBc {
                 let message_to_verify = PnfifoBc::create_vote_message_static(slot, value);
 
                 if let Some(verifying_key) = verifying_keys.get(&sender_id) {
-                    if verify_signature_share(
-                        &signature_share,
-                        &message_to_verify,
-                        verifying_key,
-                    ) {
+                    if verify_signature_share(&signature_share, &message_to_verify, verifying_key) {
                         if !slot_state.votes.contains_key(&sender_id) {
                             slot_state.votes.insert(sender_id, signature_share.clone());
 
@@ -950,20 +894,8 @@ impl PnfifoBc {
             combined_signature,
         };
 
-        let network_msg = SmrolNetworkMessage {
-            from_node_id: node_id,
-            to_node_id: None,
-            message,
-            timestamp: std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_micros() as u64,
-            message_id: format!("pnfifo-final:{}:{}:{}", node_id, slot, Uuid::new_v4()),
-        };
-
-        // let result = network.send_message(network_msg).await;
         info!("[PNFIFO] broadcast *FINAL* for slot {}", slot);
-        network.send_message(network_msg).await
+        network.broadcast(message).await
     }
 
     async fn handle_final_static(
@@ -1270,16 +1202,39 @@ impl PnfifoBc {
         let current = self.current_slot.load(std::sync::atomic::Ordering::Relaxed);
         let threshold = current.saturating_sub(keep_recent);
 
+        let mut cleaned_slots = 0;
+        let mut cleaned_notifiers = 0;
+
+        // 清理旧slot状态
         self.slots.retain(|key, _| {
             let (_, slot_number) = *key;
-            slot_number > threshold
+            if slot_number <= threshold {
+                cleaned_slots += 1;
+                false
+            } else {
+                true
+            }
         });
 
-        debug!(
-            "[PNFIFO] Node {} cleaned slots < {}, retained {} slots",
-            self.node_id,
-            threshold,
-            self.slots.len()
-        );
+        // 清理旧notifier
+        {
+            let mut notifiers = self.slot_output_notifiers.write().await;
+            notifiers.retain(|key, _| {
+                let (_, slot_number) = *key;
+                if slot_number <= threshold {
+                    cleaned_notifiers += 1;
+                    false
+                } else {
+                    true
+                }
+            });
+        }
+
+        if cleaned_slots > 0 || cleaned_notifiers > 0 {
+            info!(
+                "[PNFIFO] Node {} cleaned {} slots and {} notifiers < {}, retained {} slots",
+                self.node_id, cleaned_slots, cleaned_notifiers, threshold, self.slots.len()
+            );
+        }
     }
 }

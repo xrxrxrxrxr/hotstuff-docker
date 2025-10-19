@@ -715,8 +715,8 @@ impl PersistentConnection {
     ) -> Result<usize, Box<dyn std::error::Error>> {
         let mut batch_buffer = Vec::new();
 
-        let is_pompe = false; /////// 调试修改点
-        let is_smrol: bool = true;
+        let is_pompe = true; /////// 调试修改点
+        let is_smrol: bool = false;
 
         if is_pompe {
             for transaction in transactions {

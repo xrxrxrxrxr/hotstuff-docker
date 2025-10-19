@@ -6,18 +6,20 @@ use crate::smrol::{
     network::SmrolTcpNetwork,
     pnfifo::PnfifoBc,
 };
-use bincode::de;
+use dashmap::{mapref::entry::Entry, DashMap, DashSet};
 use serde::{Deserialize, Serialize};
-use std::collections::{hash_map::Entry, BTreeMap, HashMap, HashSet};
-use std::sync::Arc;
+use std::collections::HashMap;
+use std::sync::{
+    atomic::{AtomicU64, Ordering},
+    Arc,
+};
 use std::time::Instant;
 use threshold_crypto::{PublicKeySet, SecretKeyShare, Signature, SignatureShare, SIG_SIZE};
 use tokio::{
-    sync::{mpsc, Mutex},
-    time::{sleep, timeout, Duration},
+    sync::Mutex,
+    time::{timeout, Duration},
 };
-use tracing::{debug, error, info, warn};
-use tracing_subscriber::field::debug;
+use tracing::{debug, info, warn};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Transaction {
@@ -64,41 +66,28 @@ pub struct SeqResponseRecord {
     pub signature: Vec<u8>,
 }
 
-#[derive(Debug)]
-struct RequestPhaseState {
-    seq_i: u64,
-    k: u64,
-    buf: HashSet<Vec<u8>>,
-    tx_sequence_map: HashMap<Vec<u8>, u64>,
-}
+#[derive(Clone, Copy, Eq, PartialEq, Hash, Debug)]
+pub struct VC([u8; 32]);
 
-impl Default for RequestPhaseState {
-    fn default() -> Self {
-        Self {
-            seq_i: 1,
-            k: 1,
-            buf: HashSet::new(),
-            tx_sequence_map: HashMap::new(),
-        }
+impl VC {
+    pub fn from_slice(bytes: &[u8]) -> Self {
+        assert!(bytes.len() >= 32, "VC length must be at least 32 bytes");
+        let mut arr = [0u8; 32];
+        arr.copy_from_slice(&bytes[..32]);
+        VC(arr)
     }
 }
 
-#[derive(Debug, Default)]
-struct SharedSequencingStore {
-    pending_txs: HashMap<Vec<u8>, Transaction>,
-    erasure_store: HashMap<Vec<u8>, ErasurePackage>,
-    originated_vcs: HashSet<Vec<u8>>,
-    pending_seq_finals: HashMap<Vec<u8>, Vec<SeqFinal>>,
+impl From<&[u8]> for VC {
+    fn from(bytes: &[u8]) -> Self {
+        VC::from_slice(bytes)
+    }
 }
 
-#[derive(Debug, Default)]
-struct ResponsePhaseState {
-    s_vec_map: HashMap<Vec<u8>, Vec<SeqResponseRecord>>,
-}
-
-#[derive(Debug, Default)]
-struct MedianPhaseState {
-    threshold_sigs: HashMap<u64, BTreeMap<usize, SignatureShare>>, // S[\bar{s}_tx] -> (j, sigma_seq_j)
+impl From<&Vec<u8>> for VC {
+    fn from(vec: &Vec<u8>) -> Self {
+        VC::from_slice(vec)
+    }
 }
 
 #[derive(Debug)]
@@ -111,10 +100,17 @@ pub struct TransactionSequencing {
     pub threshold_share: SecretKeyShare,
     pub threshold_public: PublicKeySet,
     pub finalization: Arc<Mutex<OutputFinalization>>,
-    request_state: Mutex<RequestPhaseState>,
-    shared_store: Mutex<SharedSequencingStore>,
-    response_state: Mutex<ResponsePhaseState>,
-    median_state: Mutex<MedianPhaseState>,
+    broadcast_seq: AtomicU64,
+    local_seq: AtomicU64,
+    buf: DashSet<VC>,
+    pending_txs: DashMap<VC, Transaction>,
+    erasure_store: DashMap<VC, ErasurePackage>,
+    originated_vcs: DashSet<VC>,
+    pending_seq_finals: DashMap<VC, Vec<SeqFinal>>,
+    response_shares: DashMap<VC, Vec<SeqResponseRecord>>,
+    completed_responses: DashSet<VC>,
+    median_shares: DashMap<VC, HashMap<usize, SignatureShare>>,
+    tx_sequence_map: DashMap<VC, u64>,
 }
 
 #[derive(Debug)]
@@ -143,21 +139,23 @@ impl TransactionSequencing {
             threshold_share,
             threshold_public,
             finalization,
-            request_state: Mutex::new(RequestPhaseState::default()),
-            shared_store: Mutex::new(SharedSequencingStore::default()),
-            response_state: Mutex::new(ResponsePhaseState::default()),
-            median_state: Mutex::new(MedianPhaseState::default()),
+            broadcast_seq: AtomicU64::new(1),
+            local_seq: AtomicU64::new(1),
+            buf: DashSet::new(),
+            pending_txs: DashMap::new(),
+            erasure_store: DashMap::new(),
+            originated_vcs: DashSet::new(),
+            pending_seq_finals: DashMap::new(),
+            response_shares: DashMap::new(),
+            completed_responses: DashSet::new(),
+            median_shares: DashMap::new(),
+            tx_sequence_map: DashMap::new(),
         }
     }
 
     // Function SMROL-broadcast(k, tx) - Line 1-3
     pub async fn smrol_broadcast(&self, tx: SmrolTransaction) -> Result<(), String> {
-        let s = {
-            let mut request = self.request_state.lock().await;
-            let current = request.k;
-            request.k += 1;
-            current
-        };
+        let s = self.broadcast_seq.fetch_add(1, Ordering::SeqCst);
 
         // debug!(
         //     "🚀 [Sequencing] node={} generate SEQ-REQUEST (k={}, tx_id={})",
@@ -170,7 +168,18 @@ impl TransactionSequencing {
             seq_num: s,
             tx: Transaction { payload },
         };
-        self.network.multicast_seq_request(seq_request).await?; // Line 3： seq_request(seq_i, tx_serialized)
+
+        let tx_hash = hex::encode(&seq_request.tx.payload[..std::cmp::min(8, seq_request.tx.payload.len())]);
+        let message = SmrolMessage::SeqRequest {
+            tx_hash,
+            transaction: tx.clone(),
+            sender_id: self.process_id,
+            sequence_number: s,
+        };
+        self.network
+            .broadcast(message)
+            .await
+            .map_err(|e| format!("广播SEQ-REQUEST失败: {}", e))?;
 
         //debug: insert to originated vc earlier but with additional computation
         // let data_shards = std::cmp::max(1, self.f + 1);
@@ -181,15 +190,10 @@ impl TransactionSequencing {
         // let vc_tx = vc_root.to_vec();
         // self.originated_vcs.insert(vc_tx.clone());
 
-        let originated_count = {
-            let store = self.shared_store.lock().await;
-            store.originated_vcs.len()
-        };
+        let originated_count = self.originated_vcs.len();
         info!(
             "[Sequencing] Node {} broadcast *SEQ-REQUEST* k={}, originated_vcs.len() = {}",
-            self.process_id,
-            s,
-            originated_count
+            self.process_id, s, originated_count
         );
 
         Ok(())
@@ -213,24 +217,20 @@ impl TransactionSequencing {
 
         let vc_root = encoded_package.merkle_root();
         let vc_tx = vc_root.to_vec();
+        let vc_key = VC::from_slice(&vc_tx);
+
+        self.buf.insert(vc_key);
 
         // Assign sequence number (Lines 7-11)
-        let s = {
-            let mut request = self.request_state.lock().await;
-            request.buf.insert(vc_tx.clone());
-
-            if let Some(existing) = request.tx_sequence_map.get(&vc_tx) {
-                *existing
-            } else {
-                let assigned_s = request.seq_i;
-                request.seq_i += 1;
+        let s = match self.tx_sequence_map.entry(vc_key) {
+            Entry::Occupied(entry) => *entry.get(),
+            Entry::Vacant(entry) => {
+                let assigned_s = self.local_seq.fetch_add(1, Ordering::SeqCst);
                 debug!(
-                    "🧮 [Sequencing] Line 2:7-11 node={} next local seq_i={}, just assigned {}",
-                    self.process_id, request.seq_i, assigned_s
+                    "🧮 [Sequencing] Line 2:7-11 node={} assigned new sequence {}",
+                    self.process_id, assigned_s
                 );
-                request
-                    .tx_sequence_map
-                    .insert(vc_tx.clone(), assigned_s);
+                entry.insert(assigned_s);
                 assigned_s
             }
         };
@@ -246,28 +246,26 @@ impl TransactionSequencing {
         let process_id = self.process_id;
 
         // Persist local mappings for later reconstruction and consensus input
-        let pending_finals = {
-            let mut store = self.shared_store.lock().await;
-            store
-                .pending_txs
-                .entry(vc_tx.clone())
-                .or_insert_with(|| req.tx.clone());
-            store
-                .erasure_store
-                .entry(vc_tx.clone())
-                .or_insert(encoded_package.clone());
+        self.pending_txs
+            .entry(vc_key)
+            .or_insert_with(|| req.tx.clone());
+        self.erasure_store
+            .entry(vc_key)
+            .or_insert(encoded_package.clone());
 
-            if sender == self.process_id {
-                store.originated_vcs.insert(vc_tx.clone());
-                debug!(
-                    "[Sequencing] Node {} added to originated_vcs, now has {} vcs",
-                    self.process_id,
-                    store.originated_vcs.len()
-                );
-            }
+        if sender == self.process_id {
+            self.originated_vcs.insert(vc_key);
+            debug!(
+                "[Sequencing] Node {} added to originated_vcs, now has {} vcs",
+                self.process_id,
+                self.originated_vcs.len()
+            );
+        }
 
-            store.pending_seq_finals.remove(&vc_tx)
-        };
+        let pending_finals = self
+            .pending_seq_finals
+            .remove(&vc_key)
+            .map(|(_, finals)| finals);
 
         // Input to PNFIFO-BC (Line 15)
         let enqueue_start = Instant::now();
@@ -299,13 +297,16 @@ impl TransactionSequencing {
             .to_bytes()
             .to_vec();
 
-        let response = SeqResponse {
+        let response_msg = SmrolMessage::SeqResponse {
             vc: vc_tx.clone(),
-            s,
-            sigma,
+            signature_share: sigma.clone(),
+            sender_id: self.process_id,
+            sequence_number: s,
         };
-        // Broadcast SEQ-RESPONSE so the requester can collect 2f+1 quickly
-        self.network.send_seq_response(sender, response).await?;
+        self.network
+            .send_to_node(sender, response_msg)
+            .await
+            .map_err(|e| format!("发送SEQ-RESPONSE失败: {}", e))?;
         info!(
             "[Sequencing] Sent *SEQ-RESPONSE* to {}, s={}, tx={}",
             sender,
@@ -342,27 +343,54 @@ impl TransactionSequencing {
         );
         // Original SEQ-REQUEST sender collects sequence responses (Algorithm 2, line 19)
         if self.verify_signature(&resp, sender)? {
-            // Collect sequence numbers for tx (Line 21)
-            let (collected, maybe_records) = {
-                let mut state = self.response_state.lock().await;
-                let entry = state
-                    .s_vec_map
-                    .entry(resp.vc.clone())
-                    .or_insert_with(Vec::new);
-                entry.push(SeqResponseRecord {
-                    sender,
-                    sequence: resp.s,
-                    signature: resp.sigma.clone(),
-                });
+            let vc_key = VC::from_slice(&resp.vc);
+            if self.completed_responses.contains(&vc_key) {
+                debug!(
+                    "🧾 [Sequencing] node={} already satisfied response threshold for vc={}, ignoring duplicate",
+                    self.process_id,
+                    hex::encode(&resp.vc[..std::cmp::min(8, resp.vc.len())])
+                );
+                return Ok(());
+            }
+            let threshold = 2 * self.f + 1;
+            let mut maybe_records: Option<Vec<SeqResponseRecord>> = None;
+            let collected;
 
-                let collected = entry.len();
-                let records = if collected == 2 * self.f + 1 {
-                    Some(entry.clone())
-                } else {
-                    None
-                };
-                (collected, records)
-            };
+            match self.response_shares.entry(vc_key) {
+                Entry::Occupied(mut occ) => {
+                    let records = occ.get_mut();
+                    if records.iter().any(|r| r.sender == sender) {
+                        collected = records.len();
+                    } else if records.len() >= threshold {
+                        collected = records.len();
+                    } else {
+                        records.push(SeqResponseRecord {
+                            sender,
+                            sequence: resp.s,
+                            signature: resp.sigma.clone(),
+                        });
+                        collected = records.len();
+                        if collected == threshold {
+                            let taken = std::mem::take(records);
+                            maybe_records = Some(taken);
+                        }
+                    }
+                }
+                Entry::Vacant(vac) => {
+                    let mut vec = Vec::with_capacity(threshold);
+                    vec.push(SeqResponseRecord {
+                        sender,
+                        sequence: resp.s,
+                        signature: resp.sigma.clone(),
+                    });
+                    collected = vec.len();
+                    if collected == threshold {
+                        maybe_records = Some(vec);
+                    } else {
+                        vac.insert(vec);
+                    }
+                }
+            }
 
             if collected > 2 * self.f + 1 {
                 return Ok(());
@@ -377,11 +405,21 @@ impl TransactionSequencing {
 
             // Check if collected 2f+1 sequences (Line 22)
             if let Some(records) = maybe_records {
-                let seq_order = SeqOrder {
+                self.completed_responses.insert(vc_key);
+                self.response_shares.remove(&vc_key);
+                let network_records: Vec<(usize, u64, Vec<u8>)> = records
+                    .iter()
+                    .map(|r| (r.sender, r.sequence, r.signature.clone()))
+                    .collect();
+                let order_msg = SmrolMessage::SeqOrder {
                     vc: resp.vc.clone(),
-                    records,
+                    responses: network_records,
+                    sender_id: self.process_id,
                 };
-                self.network.multicast_seq_order(seq_order).await?;
+                self.network
+                    .broadcast(order_msg)
+                    .await
+                    .map_err(|e| format!("广播SEQ-ORDER失败: {}", e))?;
                 info!(
                     "📤 [Sequencing] node={} broadcasting *SEQ-ORDER* for vc={}, s={}",
                     self.process_id,
@@ -427,12 +465,16 @@ impl TransactionSequencing {
                 .to_bytes()
                 .to_vec();
 
-            let seq_median = SeqMedian {
+            let median_msg = SmrolMessage::SeqMedian {
                 vc: order.vc.clone(),
-                s_tx: median,
-                sigma_seq,
+                median_sequence: median,
+                proof: sigma_seq,
+                sender_id: self.process_id,
             };
-            self.network.send_seq_median(sender, seq_median).await?;
+            self.network
+                .send_to_node(sender, median_msg)
+                .await
+                .map_err(|e| format!("发送SEQ-MEDIAN失败: {}", e))?;
             info!(
                 "[Sequencing] Node={} sent *SEQ-MEDIAN* vc={} median={}",
                 self.process_id,
@@ -444,43 +486,56 @@ impl TransactionSequencing {
     }
 
     // Handle SEQ-MEDIAN message - Lines 29-35
-    pub async fn handle_seq_median(
-        &self,
-        sender: usize,
-        median: SeqMedian,
-    ) -> Result<(), String> {
+    pub async fn handle_seq_median(&self, sender: usize, median: SeqMedian) -> Result<(), String> {
         info!("📥 [Sequencing] received SEQ-MEDIAN from {}", sender);
         // point to point so skip the check
         // if self.originated_vcs.contains(&median.vc) {
         // Original SEQ-REQUEST sender gathers median shares (Algorithm 2, line 30)
         if self.verify_threshold_share(&median, sender)? {
+            let vc_key = VC::from_slice(&median.vc);
+            let threshold = self.f + 1;
+
             // line 31
             let mut share_bytes = [0u8; SIG_SIZE];
             share_bytes.copy_from_slice(&median.sigma_seq);
             let share = SignatureShare::from_bytes(&share_bytes)
                 .map_err(|e| format!("无法解析threshold share: {}", e))?;
 
-            // Collect shares for threshold signature of entry [median.vc] (Line 32)
-            let (entry_len, ready_to_broadcast) = {
-                let mut state = self.median_state.lock().await;
-                let entry = state
-                    .threshold_sigs
-                    .entry(median.s_tx)
-                    .or_insert_with(BTreeMap::new);
-
-                if entry.len() >= self.f + 1 {
-                    (entry.len(), None)
-                } else {
-                    entry.insert(sender, share);
-                    let len = entry.len();
-                    let ready = if len == self.f + 1 {
-                        let shares: Vec<(usize, SignatureShare)> =
-                            entry.iter().map(|(id, share)| (*id, share.clone())).collect();
-                        Some(shares)
+            let mut ready_to_broadcast: Option<Vec<(usize, SignatureShare)>> = None;
+            let entry_len = match self.median_shares.entry(vc_key) {
+                Entry::Occupied(mut occ) => {
+                    let map = occ.get_mut();
+                    if map.contains_key(&sender) {
+                        map.len()
+                    } else if map.len() >= threshold {
+                        map.len()
                     } else {
-                        None
-                    };
-                    (len, ready)
+                        map.insert(sender, share);
+                        let len = map.len();
+                        if len == threshold {
+                            let taken_map = std::mem::take(map);
+                            occ.remove();
+                            ready_to_broadcast = Some(taken_map.into_iter().collect::<Vec<(
+                                usize,
+                                SignatureShare,
+                            )>>(
+                            ));
+                        }
+                        len
+                    }
+                }
+                Entry::Vacant(vac) => {
+                    let mut map = HashMap::with_capacity(threshold);
+                    map.insert(sender, share);
+                    let len = map.len();
+                    if len == threshold {
+                        ready_to_broadcast =
+                            Some(map.into_iter().collect::<Vec<(usize, SignatureShare)>>());
+                        len
+                    } else {
+                        vac.insert(map);
+                        len
+                    }
                 }
             };
 
@@ -508,12 +563,22 @@ impl TransactionSequencing {
                     median.s_tx
                 );
 
+                let sigma_bytes = combined_sig.to_bytes().to_vec();
                 let seq_final = SeqFinal {
                     vc: median.vc.clone(),
                     s_tx: median.s_tx,
-                    sigma: combined_sig.to_bytes().to_vec(),
+                    sigma: sigma_bytes.clone(),
                 };
-                self.network.multicast_seq_final(seq_final).await?;
+                let final_msg = SmrolMessage::SeqFinal {
+                    vc: seq_final.vc.clone(),
+                    final_sequence: seq_final.s_tx,
+                    combined_signature: sigma_bytes,
+                    sender_id: self.process_id,
+                };
+                self.network
+                    .broadcast(final_msg)
+                    .await
+                    .map_err(|e| format!("广播SEQ-FINAL失败: {}", e))?;
                 info!(
                     "[Sequencing] Node {} broadcast *SEQ-FINAL* {} for vc = {:?}",
                     self.process_id,
@@ -531,10 +596,9 @@ impl TransactionSequencing {
         &self,
         final_msg: SeqFinal,
     ) -> Result<Option<TransactionEntry>, String> {
-        let has_payload = {
-            let store = self.shared_store.lock().await;
-            store.pending_txs.contains_key(&final_msg.vc)
-        };
+        let vc_key = VC::from_slice(&final_msg.vc);
+        let has_payload =
+            self.pending_txs.contains_key(&vc_key) || self.erasure_store.contains_key(&vc_key);
 
         info!(
             "📥 [Sequencing] Node {} received SEQ-FINAL, vc={}, pending_txs contains: {}",
@@ -743,13 +807,11 @@ impl TransactionSequencing {
 
     // Public stats methods
     pub async fn get_pending_count(&self) -> usize {
-        let store = self.shared_store.lock().await;
-        store.pending_txs.len()
+        self.pending_txs.len()
     }
 
     pub async fn get_current_seq(&self) -> u64 {
-        let request = self.request_state.lock().await;
-        request.seq_i
+        self.local_seq.load(Ordering::SeqCst).saturating_sub(1)
     }
 
     fn state_limit() -> usize {
@@ -767,99 +829,96 @@ impl TransactionSequencing {
     pub async fn cleanup_expired_state(&self) {
         let limit = Self::state_limit();
 
-        {
-            let mut store = self.shared_store.lock().await;
-
-            if store.pending_txs.len() > limit {
-                let removed = store.pending_txs.len();
-                store.pending_txs.clear();
-                store.erasure_store.clear();
-                store.pending_seq_finals.clear();
-                debug!(
-                    "{} cleared {} pending_txs entries (and related caches)",
-                    Self::cleanup_log_prefix(),
-                    removed
-                );
-            }
-
-            if store.erasure_store.len() > limit {
-                let removed = store.erasure_store.len();
-                store.erasure_store.clear();
-                debug!(
-                    "{} cleared {} erasure_store entries",
-                    Self::cleanup_log_prefix(),
-                    removed
-                );
-            }
-
-            if store.pending_seq_finals.len() > limit {
-                let removed = store.pending_seq_finals.len();
-                store.pending_seq_finals.clear();
-                debug!(
-                    "{} cleared {} pending_seq_finals entries",
-                    Self::cleanup_log_prefix(),
-                    removed
-                );
-            }
-
-            if store.originated_vcs.len() > limit {
-                let removed = store.originated_vcs.len();
-                store.originated_vcs.clear();
-                debug!(
-                    "{} cleared {} originated_vcs entries",
-                    Self::cleanup_log_prefix(),
-                    removed
-                );
-            }
+        if self.pending_txs.len() > limit {
+            let removed = self.pending_txs.len();
+            self.pending_txs.clear();
+            self.erasure_store.clear();
+            self.pending_seq_finals.clear();
+            debug!(
+                "{} cleared {} pending_txs entries (and related caches)",
+                Self::cleanup_log_prefix(),
+                removed
+            );
         }
 
-        {
-            let mut response = self.response_state.lock().await;
-            if response.s_vec_map.len() > limit {
-                let removed = response.s_vec_map.len();
-                response.s_vec_map.clear();
-                debug!(
-                    "{} cleared {} response entries",
-                    Self::cleanup_log_prefix(),
-                    removed
-                );
-            }
+        if self.erasure_store.len() > limit {
+            let removed = self.erasure_store.len();
+            self.erasure_store.clear();
+            debug!(
+                "{} cleared {} erasure_store entries",
+                Self::cleanup_log_prefix(),
+                removed
+            );
         }
 
-        {
-            let mut median = self.median_state.lock().await;
-            if median.threshold_sigs.len() > limit {
-                let removed = median.threshold_sigs.len();
-                median.threshold_sigs.clear();
-                debug!(
-                    "{} cleared {} median entries",
-                    Self::cleanup_log_prefix(),
-                    removed
-                );
-            }
+        if self.pending_seq_finals.len() > limit {
+            let removed = self.pending_seq_finals.len();
+            self.pending_seq_finals.clear();
+            debug!(
+                "{} cleared {} pending_seq_finals entries",
+                Self::cleanup_log_prefix(),
+                removed
+            );
         }
 
-        {
-            let mut request = self.request_state.lock().await;
-            if request.tx_sequence_map.len() > limit {
-                let removed = request.tx_sequence_map.len();
-                request.tx_sequence_map.clear();
-                debug!(
-                    "{} cleared {} tx_sequence_map entries",
-                    Self::cleanup_log_prefix(),
-                    removed
-                );
-            }
+        if self.originated_vcs.len() > limit {
+            let removed = self.originated_vcs.len();
+            self.originated_vcs.clear();
+            debug!(
+                "{} cleared {} originated_vcs entries",
+                Self::cleanup_log_prefix(),
+                removed
+            );
+        }
 
-            if request.buf.len() > limit {
-                let removed = request.buf.len();
-                request.buf.clear();
-                debug!(
-                    "{} cleared {} buffered vcs",
-                    Self::cleanup_log_prefix(),
-                    removed
-                );
-            }
+        if self.response_shares.len() > limit {
+            let removed = self.response_shares.len();
+            self.response_shares.clear();
+            debug!(
+                "{} cleared {} response entries",
+                Self::cleanup_log_prefix(),
+                removed
+            );
+        }
+
+        if self.completed_responses.len() > limit {
+            let removed = self.completed_responses.len();
+            self.completed_responses.clear();
+            debug!(
+                "{} cleared {} completed response markers",
+                Self::cleanup_log_prefix(),
+                removed
+            );
+        }
+
+        if self.median_shares.len() > limit {
+            let removed = self.median_shares.len();
+            self.median_shares.clear();
+            debug!(
+                "{} cleared {} median entries",
+                Self::cleanup_log_prefix(),
+                removed
+            );
+        }
+
+        if self.tx_sequence_map.len() > limit {
+            let removed = self.tx_sequence_map.len();
+            self.tx_sequence_map.clear();
+            debug!(
+                "{} cleared {} tx_sequence_map entries",
+                Self::cleanup_log_prefix(),
+                removed
+            );
+        }
+
+        if self.buf.len() > limit {
+            let removed = self.buf.len();
+            self.buf.clear();
+            debug!(
+                "{} cleared {} buffered vcs",
+                Self::cleanup_log_prefix(),
+                removed
+            );
         }
     }
 
@@ -870,52 +929,36 @@ impl TransactionSequencing {
             hex::encode(&final_msg.vc[..std::cmp::min(8, final_msg.vc.len())]),
             final_msg.s_tx
         );
-        let mut store = self.shared_store.lock().await;
-        store
-            .pending_seq_finals
-            .entry(final_msg.vc.clone())
-            .or_default()
+        let vc_key = VC::from_slice(&final_msg.vc);
+        self.pending_seq_finals
+            .entry(vc_key)
+            .or_insert_with(Vec::new)
             .push(final_msg);
     }
 
     async fn finalize_ready_final(&self, final_msg: SeqFinal) -> Option<TransactionEntry> {
-        let payload = {
-            let mut store = self.shared_store.lock().await;
+        let vc_key = VC::from_slice(&final_msg.vc);
 
-            if !store.pending_txs.contains_key(&final_msg.vc) {
-                drop(store);
-                let msg = final_msg.clone();
-                self.store_pending_final(msg).await;
-                return None;
-            }
-
-            if let Some(tx) = store.pending_txs.remove(&final_msg.vc) {
-                let payload = tx.payload;
-                store
-                    .pending_txs
-                    .entry(final_msg.vc.clone())
-                    .or_insert(Transaction {
-                        payload: payload.clone(),
-                    });
-                payload
-            } else if let Some(bytes) = store
+        let payload = if let Some((_, tx)) = self.pending_txs.remove(&vc_key) {
+            tx.payload
+        } else {
+            let reconstructed = self
                 .erasure_store
-                .get(&final_msg.vc)
-                .and_then(|pkg| pkg.reconstruct_full().ok())
-            {
-                store
-                    .pending_txs
-                    .entry(final_msg.vc.clone())
-                    .or_insert(Transaction {
-                        payload: bytes.clone(),
-                    });
+                .get(&vc_key)
+                .and_then(|pkg| pkg.reconstruct_full().ok());
+
+            if let Some(bytes) = reconstructed {
+                self.erasure_store.remove(&vc_key);
                 bytes
             } else {
-                drop(store);
                 self.store_pending_final(final_msg).await;
                 return None;
             }
         };
+
+        self.pending_seq_finals.remove(&vc_key);
+        self.originated_vcs.remove(&vc_key);
+        self.completed_responses.remove(&vc_key);
 
         let entry = TransactionEntry {
             vc_tx: final_msg.vc.clone(),

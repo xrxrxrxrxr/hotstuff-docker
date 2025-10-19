@@ -2,7 +2,7 @@
 
 services:
   hotstuff-client:
-    image: georgiaxr/hs-test:smrol
+    image: georgiaxr/hs-test:latest
     container_name: hotstuff_client
     hostname: client
     network_mode: host

@@ -1,4 +1,5 @@
 use crate::event::SystemEvent;
+use crate::smrol::crypto::ErasurePackage;
 use crate::smrol::{
     adapter::SmrolHotStuffAdapter,
     consensus::{Consensus, TransactionEntry},
@@ -12,7 +13,6 @@ use crate::smrol::{
         TransactionSequencing,
     },
 };
-use crate::smrol::crypto::ErasurePackage;
 use ed25519_dalek::{SigningKey, VerifyingKey};
 use hex;
 use std::collections::HashMap;
@@ -125,6 +125,16 @@ impl SmrolManager {
         pnfifo.start().await?;
         info!("✅ [SMROL] PNFIFO自动启动完成");
 
+        // 启动PNFIFO定期清理任务，防止内存泄漏和延迟累积
+        let pnfifo_for_cleanup = Arc::clone(&pnfifo);
+        tokio::spawn(async move {
+            let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(30));
+            loop {
+                interval.tick().await;
+                pnfifo_for_cleanup.cleanup_old_slots(100).await; // 保留最近100个slot
+            }
+        });
+
         let network = pnfifo.network();
         network.warm_up_connections();
 
@@ -162,8 +172,7 @@ impl SmrolManager {
 
         let broadcast_capacity = Self::smrol_broadcast_queue_capacity();
         let broadcast_workers = Self::smrol_broadcast_worker_count();
-        let (broadcast_tx, broadcast_rx) =
-            mpsc::channel::<SmrolTransaction>(broadcast_capacity);
+        let (broadcast_tx, broadcast_rx) = mpsc::channel::<SmrolTransaction>(broadcast_capacity);
         let broadcast_rx = Arc::new(tokio::sync::Mutex::new(broadcast_rx));
 
         for worker_id in 0..broadcast_workers {
@@ -172,8 +181,7 @@ impl SmrolManager {
             tokio::spawn(async move {
                 info!(
                     "[SMROL] Broadcast worker {} started with capacity {}",
-                    worker_id,
-                    broadcast_capacity
+                    worker_id, broadcast_capacity
                 );
 
                 loop {
@@ -196,13 +204,11 @@ impl SmrolManager {
                     match result {
                         Ok(_) => debug!(
                             "✅ [SMROL] Broadcast worker {} dispatched tx_id={} to sequencing",
-                            worker_id,
-                            tx_id
+                            worker_id, tx_id
                         ),
                         Err(e) => error!(
                             "[SMROL] Broadcast worker {} sequencing broadcast failed: {}",
-                            worker_id,
-                            e
+                            worker_id, e
                         ),
                     }
                 }
@@ -300,8 +306,7 @@ impl SmrolManager {
             tokio::spawn(async move {
                 info!(
                     "[Sequencing] Request worker {} started (capacity {})",
-                    worker_id,
-                    request_capacity
+                    worker_id, request_capacity
                 );
 
                 while let Some(SeqRequestTask { sender_id, request }) = worker_rx.recv().await {
@@ -365,11 +370,9 @@ impl SmrolManager {
                             }
                         }
                         Ok(None) => {}
-                        Err(e) => error!(
-                            "处理 Sequencing 请求消息失败 (worker {}): {}",
-                            worker_id,
-                            e
-                        ),
+                        Err(e) => {
+                            error!("处理 Sequencing 请求消息失败 (worker {}): {}", worker_id, e)
+                        }
                     }
                 }
 
@@ -391,8 +394,7 @@ impl SmrolManager {
                     if let Err(e) = request_senders[idx].send(task).await {
                         warn!(
                             "[Sequencing] Request dispatcher failed to enqueue to worker {}: {}",
-                            idx,
-                            e
+                            idx, e
                         );
                     }
                 }
@@ -411,20 +413,19 @@ impl SmrolManager {
             tokio::spawn(async move {
                 info!(
                     "[Sequencing] Response worker {} started (capacity {})",
-                    worker_id,
-                    response_capacity
+                    worker_id, response_capacity
                 );
 
-                while let Some(SeqResponseTask { sender_id, response }) = worker_rx.recv().await {
+                while let Some(SeqResponseTask {
+                    sender_id,
+                    response,
+                }) = worker_rx.recv().await
+                {
                     if let Err(e) = sequencing_handle
                         .handle_seq_response(sender_id, response)
                         .await
                     {
-                        error!(
-                            "处理 Sequencing 响应消息失败 (worker {}): {}",
-                            worker_id,
-                            e
-                        );
+                        error!("处理 Sequencing 响应消息失败 (worker {}): {}", worker_id, e);
                     }
                 }
 
@@ -446,8 +447,7 @@ impl SmrolManager {
                     if let Err(e) = response_senders[idx].send(task).await {
                         warn!(
                             "[Sequencing] Response dispatcher failed to enqueue to worker {}: {}",
-                            idx,
-                            e
+                            idx, e
                         );
                     }
                 }
@@ -466,19 +466,14 @@ impl SmrolManager {
             tokio::spawn(async move {
                 info!(
                     "[Sequencing] Order worker {} started (capacity {})",
-                    worker_id,
-                    order_capacity
+                    worker_id, order_capacity
                 );
 
                 while let Some(SeqOrderTask { sender_id, order }) = worker_rx.recv().await {
-                    if let Err(e) = sequencing_handle
-                        .handle_seq_order(sender_id, order)
-                        .await
-                    {
+                    if let Err(e) = sequencing_handle.handle_seq_order(sender_id, order).await {
                         error!(
                             "处理 Sequencing Order 消息失败 (worker {}): {}",
-                            worker_id,
-                            e
+                            worker_id, e
                         );
                     }
                 }
@@ -501,8 +496,7 @@ impl SmrolManager {
                     if let Err(e) = order_senders[idx].send(task).await {
                         warn!(
                             "[Sequencing] Order dispatcher failed to enqueue to worker {}: {}",
-                            idx,
-                            e
+                            idx, e
                         );
                     }
                 }
@@ -521,19 +515,14 @@ impl SmrolManager {
             tokio::spawn(async move {
                 info!(
                     "[Sequencing] Median worker {} started (capacity {})",
-                    worker_id,
-                    median_capacity
+                    worker_id, median_capacity
                 );
 
                 while let Some(SeqMedianTask { sender_id, median }) = worker_rx.recv().await {
-                    if let Err(e) = sequencing_handle
-                        .handle_seq_median(sender_id, median)
-                        .await
-                    {
+                    if let Err(e) = sequencing_handle.handle_seq_median(sender_id, median).await {
                         error!(
                             "处理 Sequencing Median 消息失败 (worker {}): {}",
-                            worker_id,
-                            e
+                            worker_id, e
                         );
                     }
                 }
@@ -556,8 +545,7 @@ impl SmrolManager {
                     if let Err(e) = median_senders[idx].send(task).await {
                         warn!(
                             "[Sequencing] Median dispatcher failed to enqueue to worker {}: {}",
-                            idx,
-                            e
+                            idx, e
                         );
                     }
                 }
@@ -577,11 +565,14 @@ impl SmrolManager {
             tokio::spawn(async move {
                 info!(
                     "[Sequencing] Final worker {} started (capacity {})",
-                    worker_id,
-                    final_capacity
+                    worker_id, final_capacity
                 );
 
-                while let Some(SeqFinalTask { sender_id: _, final_msg }) = worker_rx.recv().await {
+                while let Some(SeqFinalTask {
+                    sender_id: _,
+                    final_msg,
+                }) = worker_rx.recv().await
+                {
                     let result = sequencing_handle.handle_seq_final(final_msg).await;
 
                     match result {
@@ -598,8 +589,7 @@ impl SmrolManager {
                         Ok(None) => {}
                         Err(e) => error!(
                             "处理 Sequencing Final 消息失败 (worker {}): {}",
-                            worker_id,
-                            e
+                            worker_id, e
                         ),
                     }
                 }
@@ -622,8 +612,7 @@ impl SmrolManager {
                     if let Err(e) = final_senders[idx].send(task).await {
                         warn!(
                             "[Sequencing] Final dispatcher failed to enqueue to worker {}: {}",
-                            idx,
-                            e
+                            idx, e
                         );
                     }
                 }
@@ -749,7 +738,7 @@ impl SmrolManager {
         //         debug!("ℹ️ [SMROL] Sequencing input loop exited");
         //     });
         // }
-        
+
         // fan-out incoming sequencing messages with less cloning
         let request_tx_clone = request_tx.clone();
         let response_tx_clone = response_tx.clone();
@@ -765,30 +754,22 @@ impl SmrolManager {
                         transaction,
                         sequence_number,
                         ..
-                    } => {
-                        match bincode::serialize(&transaction) {
-                            Ok(payload) => {
-                                let task = SeqRequestTask {
-                                    sender_id,
-                                    request: SeqRequest {
-                                        seq_num: sequence_number,
-                                        tx: Transaction { payload },
-                                    },
-                                };
+                    } => match bincode::serialize(&transaction) {
+                        Ok(payload) => {
+                            let task = SeqRequestTask {
+                                sender_id,
+                                request: SeqRequest {
+                                    seq_num: sequence_number,
+                                    tx: Transaction { payload },
+                                },
+                            };
 
-                                if let Err(e) = request_tx_clone.send(task).await {
-                                    error!(
-                                        "无法入队 SeqRequest 消息: {}",
-                                        e
-                                    );
-                                }
+                            if let Err(e) = request_tx_clone.send(task).await {
+                                error!("无法入队 SeqRequest 消息: {}", e);
                             }
-                            Err(e) => error!(
-                                "序列化 SmrolTransaction 失败: {}",
-                                e
-                            ),
                         }
-                    }
+                        Err(e) => error!("序列化 SmrolTransaction 失败: {}", e),
+                    },
                     SmrolMessage::SeqResponse {
                         vc,
                         signature_share,
@@ -931,10 +912,9 @@ impl SmrolManager {
         };
 
         if let Some(tx_id) = Self::extract_tx_id(&entry) {
-            if let Err(e) = self
-                .event_tx
-                .send(SystemEvent::SmrolOrderingCompleted { tx_ids: vec![tx_id] })
-            {
+            if let Err(e) = self.event_tx.send(SystemEvent::SmrolOrderingCompleted {
+                tx_ids: vec![tx_id],
+            }) {
                 warn!(
                     "⚠️ [SMROL] Node {} failed to emit ordering completion for tx {}: {}",
                     self.node_id, tx_id, e
@@ -942,15 +922,16 @@ impl SmrolManager {
             }
         }
 
-        let hotstuff_string = if let Ok(tx) = bincode::deserialize::<SmrolTransaction>(&entry.payload) {
-            tx.to_hotstuff_format(entry.s_tx)
-        } else {
-            format!(
-                "{}:{}",
-                entry.s_tx,
-                hex::encode(&entry.vc_tx[..std::cmp::min(8, entry.vc_tx.len())])
-            )
-        };
+        let hotstuff_string =
+            if let Ok(tx) = bincode::deserialize::<SmrolTransaction>(&entry.payload) {
+                tx.to_hotstuff_format(entry.s_tx)
+            } else {
+                format!(
+                    "{}:{}",
+                    entry.s_tx,
+                    hex::encode(&entry.vc_tx[..std::cmp::min(8, entry.vc_tx.len())])
+                )
+            };
 
         let adapter_opt = {
             let guard = self.hotstuff_adapter.lock().await;
@@ -961,9 +942,7 @@ impl SmrolManager {
             adapter.output_to_hotstuff(vec![hotstuff_string.clone()], epoch);
             info!(
                 "🚀 [SMROL→HotStuff] Node {} delivered tx for slot {} epoch {}",
-                self.node_id,
-                entry_meta.1,
-                epoch
+                self.node_id, entry_meta.1, epoch
             );
         } else {
             warn!(

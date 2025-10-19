@@ -6,7 +6,7 @@ use crate::event::SystemEvent;
 use crate::smrol::adapter::SmrolHotStuffAdapter;
 use crate::smrol::finalization::OutputFinalization;
 use crate::smrol::message::{SmrolMessage, SmrolTransaction};
-use crate::smrol::network::{SmrolNetworkMessage, SmrolTcpNetwork};
+use crate::smrol::network::SmrolTcpNetwork;
 use ed25519_dalek::{Signer, SigningKey, VerifyingKey};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -590,14 +590,7 @@ impl Consensus {
     }
 
     async fn broadcast_consensus_message(&self, message: SmrolMessage) -> Result<(), String> {
-        let network_msg = SmrolNetworkMessage {
-            from_node_id: self.process_id,
-            to_node_id: None,
-            message,
-            timestamp: Self::now_millis(),
-            message_id: format!("consensus_{}_{}", self.process_id, Uuid::new_v4()),
-        };
-        self.network.send_message(network_msg).await
+        self.network.broadcast(message).await
     }
 
     fn compute_merkle_root(entries: &[TransactionEntry]) -> [u8; 32] {
