@@ -6,6 +6,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use crossbeam::channel::{unbounded, Receiver, Sender};
 use ed25519_dalek::VerifyingKey;
+use futures::future::join_all;
 use hotstuff_rs::block_sync::messages::BlockSyncMessage;
 use hotstuff_rs::networking::messages::{Message, ProgressMessage};
 use hotstuff_rs::networking::network::Network;
@@ -18,10 +19,9 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use tokio::net::{TcpListener, TcpSocket, TcpStream};
+use tokio::net::{tcp::OwnedWriteHalf, TcpListener, TcpSocket, TcpStream};
 use tokio::runtime::{Builder, Runtime};
-use tokio::sync::mpsc;
-use tokio::time::{interval, sleep};
+use tokio::sync::Mutex as AsyncMutex;
 use tracing::{debug, error, info, warn};
 
 // Simple frame header to resync reliably
@@ -89,17 +89,19 @@ fn bytes_to_message(
     Ok(message)
 }
 
-#[derive(Clone)]
-struct PeerWriter {
-    tx: mpsc::Sender<Vec<u8>>, // bounded async channel for frames
-}
-
 pub struct TokioNetwork {
     config: TokioNetworkConfig,
     message_rx: Receiver<(VerifyingKey, Message)>,
     message_tx: Sender<(VerifyingKey, Message)>,
-    writer_queues: Arc<RwLock<HashMap<VerifyingKey, PeerWriter>>>,
+    connections: Arc<RwLock<HashMap<VerifyingKey, Arc<AsyncMutex<ConnectionState>>>>>,
     rt: Arc<Runtime>,
+}
+
+#[derive(Debug)]
+struct ConnectionState {
+    writer: tokio::net::tcp::OwnedWriteHalf,
+    last_used: std::time::Instant,
+    send_count: usize,
 }
 
 impl TokioNetwork {
@@ -112,11 +114,11 @@ impl TokioNetwork {
         );
         let (tx, rx) = unbounded();
 
-        let mut this = Self {
+        let this = Self {
             config: config.clone(),
             message_rx: rx,
             message_tx: tx,
-            writer_queues: Arc::new(RwLock::new(HashMap::new())),
+            connections: Arc::new(RwLock::new(HashMap::new())),
             rt: rt.clone(),
         };
 
@@ -132,77 +134,132 @@ impl TokioNetwork {
         // give listener a brief moment
         std::thread::sleep(Duration::from_millis(200));
 
-        this.spawn_peer_writers();
+        this.start_connection_maintenance();
         Ok(this)
     }
 
-    fn spawn_peer_writers(&mut self) {
-        // bounded queue capacity via env
-        let cap: usize = std::env::var("HS_PEER_QUEUE_CAP")
-            .ok()
-            .and_then(|s| s.parse().ok())
-            .unwrap_or(16384);
-
-        for (peer_key, addr) in &self.config.peer_addrs {
-            if *peer_key == self.config.my_key {
-                continue;
-            }
-            let (tx, rx) = mpsc::channel::<Vec<u8>>(cap);
-            self.writer_queues
-                .write()
-                .insert(*peer_key, PeerWriter { tx: tx.clone() });
-
-            let peer = *peer_key;
-            let peer_addr = *addr;
-            self.rt.spawn(async move {
-                peer_writer_task(peer, peer_addr, rx).await;
-            });
+    fn dispatch_local(&self, sender: VerifyingKey, message: Message) {
+        if let Err(e) = self.message_tx.send((sender, message)) {
+            error!("本地消息分发失败: {}", e);
         }
     }
 
-    fn send_frame_to_peer(
-        &self,
-        peer_key: &VerifyingKey,
-        frame: Vec<u8>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
-        if *peer_key == self.config.my_key {
-            // loopback: decode and deliver
-            if let Ok(net_msg) = bincode::deserialize::<NetworkMessage>(&frame[8..]) {
-                if let Ok(message) = bytes_to_message(net_msg.message_type, &net_msg.message_bytes)
-                {
-                    let _ = self.message_tx.send((self.config.my_key, message));
+    fn start_connection_maintenance(&self) {
+        let connections = Arc::clone(&self.connections);
+        let my_bytes = self.config.my_key.to_bytes();
+        self.rt.spawn(async move {
+            let mut ticker = tokio::time::interval(Duration::from_secs(60));
+            loop {
+                ticker.tick().await;
+                let snapshot = {
+                    let guard = connections.read();
+                    guard
+                        .iter()
+                        .map(|(peer, state)| (*peer, Arc::clone(state)))
+                        .collect::<Vec<_>>()
+                };
+
+                let mut stale = Vec::new();
+                for (peer, state) in snapshot {
+                    if state.lock().await.last_used.elapsed() > Duration::from_secs(600) {
+                        stale.push(peer);
+                    }
+                }
+
+                if !stale.is_empty() {
+                    let mut guard = connections.write();
+                    for peer in stale {
+                        guard.remove(&peer);
+                        debug!(
+                            "🧹 [TokioNetwork] {:?} cleared idle connection to {:?}",
+                            &my_bytes[0..4],
+                            &peer.to_bytes()[0..4]
+                        );
+                    }
                 }
             }
+        });
+    }
+
+    fn frame_for_message(&self, message: &Message) -> Result<Vec<u8>, String> {
+        let (msg_type, msg_bytes) =
+            message_to_bytes(message).map_err(|e| format!("消息序列化失败: {}", e))?;
+        let net_msg = NetworkMessage {
+            from: self.config.my_key.to_bytes().to_vec(),
+            message_type: msg_type,
+            message_bytes: msg_bytes,
+        };
+        let serialized =
+            bincode::serialize(&net_msg).map_err(|e| format!("bincode 序列化失败: {}", e))?;
+        let len = serialized.len() as u32;
+        let mut frame = Vec::with_capacity(8 + serialized.len());
+        frame.extend_from_slice(&NET_MAGIC.to_be_bytes());
+        frame.extend_from_slice(&len.to_be_bytes());
+        frame.extend_from_slice(&serialized);
+        Ok(frame)
+    }
+
+    async fn write_frame(writer: &mut OwnedWriteHalf, frame: &[u8]) -> Result<(), String> {
+        writer
+            .write_all(frame)
+            .await
+            .map_err(|e| format!("写入TCP帧失败: {}", e))
+    }
+
+    async fn connect_and_send(&self, peer: VerifyingKey, frame: Vec<u8>) -> Result<(), String> {
+        let addr = *self
+            .config
+            .peer_addrs
+            .get(&peer)
+            .ok_or_else(|| format!("未知节点: {:?}", &peer.to_bytes()[0..4]))?;
+
+        let stream = TcpStream::connect(addr)
+            .await
+            .map_err(|e| format!("连接 {} 失败: {}", addr, e))?;
+        stream
+            .set_nodelay(true)
+            .map_err(|e| format!("设置 TCP_NODELAY 失败: {}", e))?;
+        let (_reader, writer) = stream.into_split();
+
+        let state = Arc::new(AsyncMutex::new(ConnectionState {
+            writer,
+            last_used: std::time::Instant::now(),
+            send_count: 0,
+        }));
+
+        {
+            let mut guard = state.lock().await;
+            Self::write_frame(&mut guard.writer, &frame).await?;
+            guard.last_used = std::time::Instant::now();
+            guard.send_count += 1;
+        }
+
+        self.connections.write().insert(peer, state);
+        Ok(())
+    }
+
+    async fn send_frame_to_peer_async(
+        &self,
+        peer: VerifyingKey,
+        frame: Vec<u8>,
+    ) -> Result<(), String> {
+        if peer == self.config.my_key {
             return Ok(());
         }
 
-        if let Some(writer) = self.writer_queues.read().get(peer_key).cloned() {
-            // try fast path then block if necessary to preserve consensus messages
-            if let Err(e) = writer.tx.try_send(frame) {
-                match e {
-                    mpsc::error::TrySendError::Full(_f) => {
-                        // 不要阻塞 runtime 线程，直接丢弃该帧（可调大 HS_PEER_QUEUE_CAP 以减少丢弃）。
-                        warn!(
-                            "peer {:?} 发送队列满，丢弃一帧以避免阻塞",
-                            peer_key.to_bytes()[0..4].to_vec()
-                        );
-                    }
-                    mpsc::error::TrySendError::Closed(_) => {
-                        error!(
-                            "peer {:?} 发送队列已关闭",
-                            peer_key.to_bytes()[0..4].to_vec()
-                        );
-                    }
-                }
+        if let Some(conn) = self.connections.read().get(&peer).cloned() {
+            let mut guard = conn.lock().await;
+            if let Err(e) = Self::write_frame(&mut guard.writer, &frame).await {
+                drop(guard);
+                self.connections.write().remove(&peer);
+                return self.connect_and_send(peer, frame).await;
             }
-            Ok(())
-        } else {
-            warn!(
-                "peer {:?} 无 writer 队列",
-                peer_key.to_bytes()[0..4].to_vec()
-            );
-            Err("无 writer 队列".into())
+            guard.last_used = std::time::Instant::now();
+            guard.send_count += 1;
+            return Ok(());
         }
+
+        self.connect_and_send(peer, frame).await
     }
 }
 
@@ -325,73 +382,13 @@ async fn handle_connection(
     Ok(())
 }
 
-async fn peer_writer_task(peer: VerifyingKey, addr: SocketAddr, mut rx: mpsc::Receiver<Vec<u8>>) {
-    let mut ping = interval(Duration::from_secs(10));
-    let mut backoff = Duration::from_millis(100);
-
-    loop {
-        // connect with retry/backoff
-        let mut stream = match TcpStream::connect(addr).await {
-            Ok(s) => {
-                let _ = s.set_nodelay(true);
-                backoff = Duration::from_millis(100);
-                debug!("peer {:?} 已连接 {}", peer.to_bytes()[0..4].to_vec(), addr);
-                s
-            }
-            Err(e) => {
-                warn!(
-                    "peer {:?} 连接失败 {}: {}，等待 {:?}",
-                    peer.to_bytes()[0..4].to_vec(),
-                    addr,
-                    e,
-                    backoff
-                );
-                sleep(backoff).await;
-                backoff = (backoff * 2).min(Duration::from_secs(3));
-                continue;
-            }
-        };
-
-        loop {
-            tokio::select! {
-                biased;
-                _ = ping.tick() => {
-                    // send ping frame (magic + length 0)
-                    if let Err(e) = stream.write_all(&NET_MAGIC.to_be_bytes()).await.or_else(|_| Err(std::io::Error::new(std::io::ErrorKind::Other, "err"))) {
-                        warn!("peer {:?} ping 写失败: {}", peer.to_bytes()[0..4].to_vec(), e);
-                        break; // reconnect
-                    }
-                    if let Err(e) = stream.write_all(&0u32.to_be_bytes()).await {
-                        warn!("peer {:?} ping 写失败: {}", peer.to_bytes()[0..4].to_vec(), e);
-                        break;
-                    }
-                }
-                maybe = rx.recv() => {
-                    match maybe {
-                        Some(frame) => {
-                            if let Err(e) = stream.write_all(&frame).await {
-                                warn!("peer {:?} 写失败: {}，重连", peer.to_bytes()[0..4].to_vec(), e);
-                                break; // reconnect and retry later
-                            }
-                        }
-                        None => {
-                            debug!("peer {:?} 发送端关闭", peer.to_bytes()[0..4].to_vec());
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
 impl Clone for TokioNetwork {
     fn clone(&self) -> Self {
         Self {
             config: self.config.clone(),
             message_rx: self.message_rx.clone(),
             message_tx: self.message_tx.clone(),
-            writer_queues: self.writer_queues.clone(),
+            connections: self.connections.clone(),
             rt: self.rt.clone(),
         }
     }
@@ -416,69 +413,64 @@ impl Network for TokioNetwork {
 
     fn broadcast(&mut self, message: Message) {
         // serialize once per peer (keeps format identical to tcp_network)
-        let (msg_type, msg_bytes) = match message_to_bytes(&message) {
-            Ok(v) => v,
+        self.dispatch_local(self.config.my_key, message.clone());
+
+        let frame = match self.frame_for_message(&message) {
+            Ok(f) => f,
             Err(e) => {
                 error!("广播序列化失败: {}", e);
                 return;
             }
         };
-        let net_msg = NetworkMessage {
-            from: self.config.my_key.to_bytes().to_vec(),
-            message_type: msg_type,
-            message_bytes: msg_bytes,
-        };
-        let serialized = match bincode::serialize(&net_msg) {
-            Ok(b) => b,
-            Err(e) => {
-                error!("广播 bincode 失败: {}", e);
-                return;
-            }
-        };
-        let len = serialized.len() as u32;
-        let mut frame = Vec::with_capacity(8 + serialized.len());
-        frame.extend_from_slice(&NET_MAGIC.to_be_bytes());
-        frame.extend_from_slice(&len.to_be_bytes());
-        frame.extend_from_slice(&serialized);
 
-        for peer_key in self.config.peer_addrs.keys() {
-            if let Err(e) = self.send_frame_to_peer(peer_key, frame.clone()) {
-                error!(
-                    "广播发送失败给 {:?}: {}",
-                    peer_key.to_bytes()[0..4].to_vec(),
-                    e
-                );
+        let futures = self
+            .config
+            .peer_addrs
+            .keys()
+            .filter(|peer| **peer != self.config.my_key)
+            .map(|peer| {
+                let frame = frame.clone();
+                let net = self.clone();
+                let peer_key = *peer;
+                async move {
+                    if let Err(e) = net.send_frame_to_peer_async(peer_key, frame).await {
+                        Err((peer_key, e))
+                    } else {
+                        Ok(())
+                    }
+                }
+            })
+            .collect::<Vec<_>>();
+
+        if !futures.is_empty() {
+            let results = self.rt.block_on(async { join_all(futures).await });
+            for res in results {
+                if let Err((peer, e)) = res {
+                    error!("广播发送失败给 {:?}: {}", peer.to_bytes()[0..4].to_vec(), e);
+                }
             }
         }
     }
 
     fn send(&mut self, peer: VerifyingKey, message: Message) {
-        let (msg_type, msg_bytes) = match message_to_bytes(&message) {
-            Ok(v) => v,
+        if peer == self.config.my_key {
+            self.dispatch_local(self.config.my_key, message);
+            return;
+        }
+
+        let frame = match self.frame_for_message(&message) {
+            Ok(f) => f,
             Err(e) => {
                 error!("发送序列化失败: {}", e);
                 return;
             }
         };
-        let net_msg = NetworkMessage {
-            from: self.config.my_key.to_bytes().to_vec(),
-            message_type: msg_type,
-            message_bytes: msg_bytes,
-        };
-        let serialized = match bincode::serialize(&net_msg) {
-            Ok(b) => b,
-            Err(e) => {
-                error!("发送 bincode 失败: {}", e);
-                return;
-            }
-        };
-        let len = serialized.len() as u32;
-        let mut frame = Vec::with_capacity(8 + serialized.len());
-        frame.extend_from_slice(&NET_MAGIC.to_be_bytes());
-        frame.extend_from_slice(&len.to_be_bytes());
-        frame.extend_from_slice(&serialized);
 
-        if let Err(e) = self.send_frame_to_peer(&peer, frame) {
+        let net = self.clone();
+        let result = self
+            .rt
+            .block_on(async { net.send_frame_to_peer_async(peer, frame).await });
+        if let Err(e) = result {
             error!("发送失败给 {:?}: {}", peer.to_bytes()[0..4].to_vec(), e);
         }
     }

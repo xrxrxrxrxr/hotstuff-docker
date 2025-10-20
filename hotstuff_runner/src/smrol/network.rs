@@ -39,12 +39,8 @@ pub struct SmrolTcpNetwork {
     listen_port: u16,
     peer_nodes: HashMap<usize, SocketAddr>,
 
-    pnfifo_tx: async_mpsc::UnboundedSender<(usize, SmrolMessage)>,
-    pnfifo_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<(usize, SmrolMessage)>>>,
-    sequencing_tx: async_mpsc::UnboundedSender<(usize, SmrolMessage)>,
-    sequencing_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<(usize, SmrolMessage)>>>,
-    consensus_tx: async_mpsc::UnboundedSender<(usize, SmrolMessage)>,
-    consensus_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<(usize, SmrolMessage)>>>,
+    message_tx: async_mpsc::Sender<(usize, SmrolMessage)>,
+    message_rx: Arc<AsyncMutex<async_mpsc::Receiver<(usize, SmrolMessage)>>>,
 
     connections: Arc<RwLock<HashMap<usize, Arc<AsyncMutex<ConnectionState>>>>>,
     sent_messages: Arc<Mutex<HashMap<String, u64>>>,
@@ -56,9 +52,7 @@ impl SmrolTcpNetwork {
     pub fn new(node_id: usize, peer_nodes: HashMap<usize, SocketAddr>) -> Self {
         let listen_port = 21000 + node_id as u16;
 
-        let (pnfifo_tx, pnfifo_rx) = async_mpsc::unbounded_channel();
-        let (sequencing_tx, sequencing_rx) = async_mpsc::unbounded_channel();
-        let (consensus_tx, consensus_rx) = async_mpsc::unbounded_channel();
+        let (message_tx, message_rx) = async_mpsc::channel(Self::message_queue_capacity());
 
         let rt_threads: usize = std::env::var("SMROL_RT_THREADS")
             .ok()
@@ -82,12 +76,8 @@ impl SmrolTcpNetwork {
             node_id,
             listen_port,
             peer_nodes,
-            pnfifo_tx,
-            pnfifo_rx: Arc::new(AsyncMutex::new(pnfifo_rx)),
-            sequencing_tx,
-            sequencing_rx: Arc::new(AsyncMutex::new(sequencing_rx)),
-            consensus_tx,
-            consensus_rx: Arc::new(AsyncMutex::new(consensus_rx)),
+            message_tx,
+            message_rx: Arc::new(AsyncMutex::new(message_rx)),
             connections: Arc::new(RwLock::new(HashMap::new())),
             sent_messages: Arc::new(Mutex::new(HashMap::new())),
             rt: runtime,
@@ -126,7 +116,8 @@ impl SmrolTcpNetwork {
                                 }
                                 let net_clone = net.clone();
                                 tokio::spawn(async move {
-                                    if let Err(e) = handle_incoming_connection(stream, net_clone).await
+                                    if let Err(e) =
+                                        handle_incoming_connection(stream, net_clone).await
                                     {
                                         warn!("⚠️ [SMROL] inbound handler error: {}", e);
                                     }
@@ -176,7 +167,7 @@ impl SmrolTcpNetwork {
                 "📨 [SMROL] routing message to self: {:?}",
                 std::mem::discriminant(&message)
             );
-            self.dispatch_local(self.node_id, message)?;
+            self.enqueue_local(self.node_id, message).await?;
             return Ok(());
         }
 
@@ -271,7 +262,9 @@ impl SmrolTcpNetwork {
             }
             let net = self.clone();
             let msg = message.clone();
-            handles.push(tokio::spawn(async move { (nid, net.send_to_node(nid, msg).await) }));
+            handles.push(tokio::spawn(async move {
+                (nid, net.send_to_node(nid, msg).await)
+            }));
         }
 
         let mut last_err: Option<String> = None;
@@ -296,22 +289,6 @@ impl SmrolTcpNetwork {
         }
     }
 
-    pub fn get_pnfifo_receiver(&self) -> Arc<AsyncMutex<async_mpsc::UnboundedReceiver<(usize, SmrolMessage)>>> {
-        Arc::clone(&self.pnfifo_rx)
-    }
-
-    pub fn get_sequencing_receiver(
-        &self,
-    ) -> Arc<AsyncMutex<async_mpsc::UnboundedReceiver<(usize, SmrolMessage)>>> {
-        Arc::clone(&self.sequencing_rx)
-    }
-
-    pub fn get_consensus_receiver(
-        &self,
-    ) -> Arc<AsyncMutex<async_mpsc::UnboundedReceiver<(usize, SmrolMessage)>>> {
-        Arc::clone(&self.consensus_rx)
-    }
-
     fn start_connection_maintenance(&self) {
         let connections = Arc::clone(&self.connections);
         let sent_messages = Arc::clone(&self.sent_messages);
@@ -331,7 +308,10 @@ impl SmrolTcpNetwork {
                     }
                     for target in to_remove {
                         guard.remove(&target);
-                        info!("🧹 [SMROL] Node {} cleaned idle connection to {}", node_id, target);
+                        info!(
+                            "🧹 [SMROL] Node {} cleaned idle connection to {}",
+                            node_id, target
+                        );
                     }
                 }
 
@@ -355,29 +335,23 @@ impl SmrolTcpNetwork {
         });
     }
 
-    fn dispatch_local(&self, sender: usize, message: SmrolMessage) -> Result<(), String> {
-        match message {
-            msg @ SmrolMessage::PnfifoProposal { .. }
-            | msg @ SmrolMessage::PnfifoVote { .. }
-            | msg @ SmrolMessage::PnfifoFinal { .. } => self
-                .pnfifo_tx
-                .send((sender, msg))
-                .map_err(|e| format!("PNFIFO投递失败: {}", e)),
-            msg @ SmrolMessage::SeqRequest { .. }
-            | msg @ SmrolMessage::SeqResponse { .. }
-            | msg @ SmrolMessage::SeqOrder { .. }
-            | msg @ SmrolMessage::SeqMedian { .. }
-            | msg @ SmrolMessage::SeqFinal { .. } => self
-                .sequencing_tx
-                .send((sender, msg))
-                .map_err(|e| format!("Sequencing投递失败: {}", e)),
-            msg @ SmrolMessage::ConsensusProposal { .. }
-            | msg @ SmrolMessage::ConsensusVote { .. } => self
-                .consensus_tx
-                .send((sender, msg))
-                .map_err(|e| format!("Consensus投递失败: {}", e)),
-            SmrolMessage::Warmup => Ok(()),
-        }
+    pub async fn recv(&self) -> Option<(usize, SmrolMessage)> {
+        let mut guard = self.message_rx.lock().await;
+        guard.recv().await
+    }
+
+    async fn enqueue_local(&self, sender: usize, message: SmrolMessage) -> Result<(), String> {
+        self.message_tx
+            .send((sender, message))
+            .await
+            .map_err(|e| format!("消息入队失败: {}", e))
+    }
+
+    fn message_queue_capacity() -> usize {
+        std::env::var("SMROL_NETWORK_QUEUE_CAP")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(4096)
     }
 
     async fn send_message_on_writer(
@@ -405,12 +379,8 @@ impl Clone for SmrolTcpNetwork {
             node_id: self.node_id,
             listen_port: self.listen_port,
             peer_nodes: self.peer_nodes.clone(),
-            pnfifo_tx: self.pnfifo_tx.clone(),
-            pnfifo_rx: Arc::clone(&self.pnfifo_rx),
-            sequencing_tx: self.sequencing_tx.clone(),
-            sequencing_rx: Arc::clone(&self.sequencing_rx),
-            consensus_tx: self.consensus_tx.clone(),
-            consensus_rx: Arc::clone(&self.consensus_rx),
+            message_tx: self.message_tx.clone(),
+            message_rx: Arc::clone(&self.message_rx),
             connections: Arc::clone(&self.connections),
             sent_messages: Arc::clone(&self.sent_messages),
             rt: Arc::clone(&self.rt),
@@ -418,7 +388,10 @@ impl Clone for SmrolTcpNetwork {
     }
 }
 
-async fn handle_incoming_connection(stream: TcpStream, network: SmrolTcpNetwork) -> Result<(), String> {
+async fn handle_incoming_connection(
+    stream: TcpStream,
+    network: SmrolTcpNetwork,
+) -> Result<(), String> {
     let mut stream = stream;
     if let Err(e) = stream.set_nodelay(true) {
         warn!("⚠️ [SMROL] set_nodelay failed on incoming: {}", e);
@@ -461,7 +434,13 @@ async fn handle_incoming_connection(stream: TcpStream, network: SmrolTcpNetwork)
             processed.clear();
         }
 
-        network.dispatch_local(frame.from_node_id, frame.message)?;
+        if let Err(e) = network
+            .enqueue_local(frame.from_node_id, frame.message)
+            .await
+        {
+            warn!("⚠️ [SMROL] inbound enqueue failed: {}", e);
+            return Err(e);
+        }
     }
 }
 

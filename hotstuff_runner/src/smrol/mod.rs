@@ -18,3 +18,5 @@ pub use pnfifo::PnfifoBc;
 pub use sequencing::{
     SeqFinal, SeqMedian, SeqOrder, SeqRequest, SeqResponse, Transaction, TransactionSequencing,
 };
+
+pub type ModuleMessage = (usize, SmrolMessage);

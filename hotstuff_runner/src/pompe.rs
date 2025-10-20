@@ -2,19 +2,13 @@
 //! 完全无锁化的Pompe BFT实现 - 支持crossbeam无锁队列
 
 use crate::pompe_network::PompeNetwork;
-use crate::utils;
 use crossbeam::queue::SegQueue;
 use dashmap::DashMap;
-use ed25519_dalek::SigningKey;
-use hotstuff_rs::types::crypto_primitives::VerifyingKey;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use std::collections::{BTreeMap, HashMap, VecDeque};
-use std::net::SocketAddr;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, RwLock};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
-use tokio::signal;
 use tokio::sync::mpsc;
 use tracing::{debug, error, info, warn};
 // Switch Pompe internal queues to tokio::mpsc (async, non-blocking)
@@ -659,24 +653,24 @@ impl PompeManager {
                 let mut interval = tokio::time::interval(tokio::time::Duration::from_millis(
                     config.stable_period_ms,
                 ));
-                loop {
-                    interval.tick().await;
-                    // 使用与检查路径相同的逻辑
-                    if let Some(net) = &network_for_flush {
-                        if is_leader_flag.load(Ordering::SeqCst) {
-                            Self::check_and_output_to_hotstuff_lockfree(
-                                node_id,
-                                &state,
-                                &lockfree_adapter,
-                                &config,
-                                net,
-                                is_leader_flag.clone(),
-                                &event_tx_for_flush,
-                            )
-                            .await;
-                        }
-                    }
-                }
+                // loop {
+                //     interval.tick().await;
+                //     // 使用与检查路径相同的逻辑
+                //     if let Some(net) = &network_for_flush {
+                //         if is_leader_flag.load(Ordering::SeqCst) {
+                //             Self::check_and_output_to_hotstuff_lockfree(
+                //                 node_id,
+                //                 &state,
+                //                 &lockfree_adapter,
+                //                 &config,
+                //                 net,
+                //                 is_leader_flag.clone(),
+                //                 &event_tx_for_flush,
+                //             )
+                //             .await;
+                //         }
+                //     }
+                // }
             });
         }
 

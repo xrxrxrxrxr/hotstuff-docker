@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
-use tokio::sync::{broadcast, Mutex};
+use tokio::sync::{broadcast, RwLock};
 
 use crate::event::SystemEvent;
 use crate::smrol::adapter::SmrolHotStuffAdapter;
@@ -96,7 +96,7 @@ pub struct Consensus {
     pub pending_e: HashMap<u64, HashSet<Vec<u8>>>,
     pub epoch_states: HashMap<u64, EpochState>,
     hotstuff_adapter: Option<Arc<SmrolHotStuffAdapter>>,
-    finalization: Arc<Mutex<OutputFinalization>>,
+    finalization: Arc<RwLock<OutputFinalization>>,
     event_tx: broadcast::Sender<SystemEvent>,
 }
 
@@ -109,7 +109,7 @@ impl Consensus {
         network: Arc<SmrolTcpNetwork>,
         signing_key: SigningKey,
         verifying_keys: HashMap<usize, VerifyingKey>,
-        finalization: Arc<Mutex<OutputFinalization>>,
+        finalization: Arc<RwLock<OutputFinalization>>,
         event_tx: broadcast::Sender<SystemEvent>,
     ) -> Self {
         // let k = std::cmp::max(1, 2 * f + 1);
@@ -418,7 +418,7 @@ impl Consensus {
         };
 
         let finalized = {
-            let mut finalizer = self.finalization.lock().await;
+            let mut finalizer = self.finalization.write().await;
             finalizer.finalize_epoch(epoch, m_e, s_e, t_e).await?
         };
 

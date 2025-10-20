@@ -5,21 +5,22 @@ use crate::smrol::{
     message::{SmrolMessage, SmrolTransaction},
     network::SmrolTcpNetwork,
     pnfifo::PnfifoBc,
+    ModuleMessage,
 };
 use dashmap::{mapref::entry::Entry, DashMap, DashSet};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::{
     atomic::{AtomicU64, Ordering},
-    Arc,
+    Arc, Mutex as StdMutex, OnceLock,
 };
 use std::time::Instant;
 use threshold_crypto::{PublicKeySet, SecretKeyShare, Signature, SignatureShare, SIG_SIZE};
 use tokio::{
-    sync::Mutex,
+    sync::{mpsc as async_mpsc, RwLock},
     time::{timeout, Duration},
 };
-use tracing::{debug, info, warn};
+use tracing::{debug, error, info, warn};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Transaction {
@@ -90,16 +91,24 @@ impl From<&Vec<u8>> for VC {
     }
 }
 
-#[derive(Debug)]
+fn receiver_cell<T>(rx: T) -> OnceLock<StdMutex<Option<T>>> {
+    let cell = OnceLock::new();
+    if cell.set(StdMutex::new(Some(rx))).is_err() {
+        panic!("receiver already initialized");
+    }
+    cell
+}
+
 pub struct TransactionSequencing {
     pub f: usize,
     pub n: usize,
+    pnfifo_threshold: usize,
     pub process_id: usize, // node_id
     pub network: Arc<SmrolTcpNetwork>,
     pub pnfifo: Arc<PnfifoBc>,
     pub threshold_share: SecretKeyShare,
     pub threshold_public: PublicKeySet,
-    pub finalization: Arc<Mutex<OutputFinalization>>,
+    pub finalization: Arc<RwLock<OutputFinalization>>,
     broadcast_seq: AtomicU64,
     local_seq: AtomicU64,
     buf: DashSet<VC>,
@@ -111,12 +120,21 @@ pub struct TransactionSequencing {
     completed_responses: DashSet<VC>,
     median_shares: DashMap<VC, HashMap<usize, SignatureShare>>,
     tx_sequence_map: DashMap<VC, u64>,
-}
-
-#[derive(Debug)]
-struct SequencingTask {
-    sender_id: usize,
-    message: SmrolMessage,
+    seq_payloads: DashMap<u64, Vec<u8>>,
+    broadcast_tx: async_mpsc::Sender<SmrolMessage>,
+    inbound_tx: async_mpsc::Sender<ModuleMessage>,
+    inbound_rx: OnceLock<StdMutex<Option<async_mpsc::Receiver<ModuleMessage>>>>,
+    request_tx: async_mpsc::Sender<ModuleMessage>,
+    request_rx: OnceLock<StdMutex<Option<async_mpsc::Receiver<ModuleMessage>>>>,
+    response_tx: async_mpsc::Sender<ModuleMessage>,
+    response_rx: OnceLock<StdMutex<Option<async_mpsc::Receiver<ModuleMessage>>>>,
+    order_tx: async_mpsc::Sender<ModuleMessage>,
+    order_rx: OnceLock<StdMutex<Option<async_mpsc::Receiver<ModuleMessage>>>>,
+    median_tx: async_mpsc::Sender<ModuleMessage>,
+    median_rx: OnceLock<StdMutex<Option<async_mpsc::Receiver<ModuleMessage>>>>,
+    final_tx: async_mpsc::Sender<ModuleMessage>,
+    final_rx: OnceLock<StdMutex<Option<async_mpsc::Receiver<ModuleMessage>>>>,
+    sequenced_entry_tx: async_mpsc::Sender<TransactionEntry>,
 }
 
 impl TransactionSequencing {
@@ -124,15 +142,52 @@ impl TransactionSequencing {
         process_id: usize,
         n: usize,
         f: usize,
+        pnfifo_threshold: usize,
         network: Arc<SmrolTcpNetwork>,
         pnfifo: Arc<PnfifoBc>,
         threshold_share: SecretKeyShare,
         threshold_public: PublicKeySet,
-        finalization: Arc<Mutex<OutputFinalization>>,
+        finalization: Arc<RwLock<OutputFinalization>>,
+        sequenced_entry_tx: async_mpsc::Sender<TransactionEntry>,
     ) -> Self {
+        let (broadcast_tx, mut broadcast_rx) =
+            async_mpsc::channel::<SmrolMessage>(Self::broadcast_queue_capacity());
+        let network_clone = Arc::clone(&network);
+        let node_id = process_id;
+        network.spawn(async move {
+            info!("📡 [Sequencing] Node {} 启动广播处理器", node_id);
+            while let Some(msg) = broadcast_rx.recv().await {
+                if let Err(e) = network_clone.broadcast(msg).await {
+                    error!("❌ [Sequencing] 广播处理器失败: {}", e);
+                }
+            }
+            warn!(
+                "[Sequencing] Node {} 广播处理器退出 (channel closed)",
+                node_id
+            );
+        });
+
+        let (inbound_tx, inbound_rx) =
+            async_mpsc::channel::<ModuleMessage>(Self::inbound_queue_capacity());
+
+        let queue_capacity = Self::stage_queue_capacity();
+        let (request_tx, request_rx) = async_mpsc::channel::<ModuleMessage>(queue_capacity);
+        let (response_tx, response_rx) = async_mpsc::channel::<ModuleMessage>(queue_capacity);
+        let (order_tx, order_rx) = async_mpsc::channel::<ModuleMessage>(queue_capacity);
+        let (median_tx, median_rx) = async_mpsc::channel::<ModuleMessage>(queue_capacity);
+        let (final_tx, final_rx) = async_mpsc::channel::<ModuleMessage>(queue_capacity);
+
+        let inbound_rx_cell = receiver_cell(inbound_rx);
+        let request_rx_cell = receiver_cell(request_rx);
+        let response_rx_cell = receiver_cell(response_rx);
+        let order_rx_cell = receiver_cell(order_rx);
+        let median_rx_cell = receiver_cell(median_rx);
+        let final_rx_cell = receiver_cell(final_rx);
+
         Self {
             f,
             n,
+            pnfifo_threshold,
             process_id,
             network,
             pnfifo,
@@ -150,6 +205,21 @@ impl TransactionSequencing {
             completed_responses: DashSet::new(),
             median_shares: DashMap::new(),
             tx_sequence_map: DashMap::new(),
+            seq_payloads: DashMap::new(),
+            broadcast_tx,
+            inbound_tx,
+            inbound_rx: inbound_rx_cell,
+            request_tx,
+            request_rx: request_rx_cell,
+            response_tx,
+            response_rx: response_rx_cell,
+            order_tx,
+            order_rx: order_rx_cell,
+            median_tx,
+            median_rx: median_rx_cell,
+            final_tx,
+            final_rx: final_rx_cell,
+            sequenced_entry_tx,
         }
     }
 
@@ -169,17 +239,17 @@ impl TransactionSequencing {
             tx: Transaction { payload },
         };
 
-        let tx_hash = hex::encode(&seq_request.tx.payload[..std::cmp::min(8, seq_request.tx.payload.len())]);
+        let tx_hash =
+            hex::encode(&seq_request.tx.payload[..std::cmp::min(8, seq_request.tx.payload.len())]);
         let message = SmrolMessage::SeqRequest {
             tx_hash,
             transaction: tx.clone(),
             sender_id: self.process_id,
             sequence_number: s,
         };
-        self.network
-            .broadcast(message)
-            .await
-            .map_err(|e| format!("广播SEQ-REQUEST失败: {}", e))?;
+        if let Err(e) = self.broadcast_tx.send(message).await {
+            return Err(format!("广播SEQ-REQUEST失败: {}", e));
+        }
 
         //debug: insert to originated vc earlier but with additional computation
         // let data_shards = std::cmp::max(1, self.f + 1);
@@ -197,6 +267,608 @@ impl TransactionSequencing {
         );
 
         Ok(())
+    }
+
+    pub fn inbound_sender(&self) -> async_mpsc::Sender<ModuleMessage> {
+        self.inbound_tx.clone()
+    }
+
+    pub fn start_processing(self: &Arc<Self>) {
+        self.spawn_inbound_processor();
+        self.spawn_request_processor();
+        self.spawn_response_processor();
+        self.spawn_order_processor();
+        self.spawn_median_processor();
+        self.spawn_final_processor();
+    }
+
+    fn spawn_inbound_processor(self: &Arc<Self>) {
+        let Some(mut inbound_rx) = self.take_inbound_rx() else {
+            warn!(
+                "⚠️ [Sequencing] Node {} inbound receiver already taken",
+                self.process_id
+            );
+            return;
+        };
+
+        let sequencing = Arc::clone(self);
+        tokio::spawn(async move {
+            info!(
+                "[Sequencing] Node {} inbound processor started",
+                sequencing.process_id
+            );
+
+            while let Some((sender_id, message)) = inbound_rx.recv().await {
+                if let Err(e) = sequencing.route_inbound_message(sender_id, message).await {
+                    warn!(
+                        "⚠️ [Sequencing] Node {} inbound routing failed: {}",
+                        sequencing.process_id, e
+                    );
+                }
+            }
+
+            warn!(
+                "⚠️ [Sequencing] Node {} inbound processor exiting (channel closed)",
+                sequencing.process_id
+            );
+        });
+    }
+
+    async fn route_inbound_message(
+        &self,
+        sender_id: usize,
+        message: SmrolMessage,
+    ) -> Result<(), String> {
+        match message {
+            SmrolMessage::SeqRequest {
+                tx_hash,
+                transaction,
+                sender_id: msg_sender,
+                sequence_number,
+            } => {
+                if msg_sender != sender_id {
+                    warn!(
+                        "⚠️ [Sequencing] SeqRequest sender mismatch: msg={} net={}",
+                        msg_sender, sender_id
+                    );
+                }
+                self.request_tx
+                    .send((
+                        sender_id,
+                        SmrolMessage::SeqRequest {
+                            tx_hash,
+                            transaction,
+                            sender_id: msg_sender,
+                            sequence_number,
+                        },
+                    ))
+                    .await
+                    .map_err(|e| format!("seq-request queue send failed: {}", e))
+            }
+            SmrolMessage::SeqResponse {
+                vc,
+                signature_share,
+                sender_id: msg_sender,
+                sequence_number,
+            } => {
+                if msg_sender != sender_id {
+                    warn!(
+                        "⚠️ [Sequencing] SeqResponse sender mismatch: msg={} net={}",
+                        msg_sender, sender_id
+                    );
+                }
+                self.response_tx
+                    .send((
+                        sender_id,
+                        SmrolMessage::SeqResponse {
+                            vc,
+                            signature_share,
+                            sender_id: msg_sender,
+                            sequence_number,
+                        },
+                    ))
+                    .await
+                    .map_err(|e| format!("seq-response queue send failed: {}", e))
+            }
+            SmrolMessage::SeqOrder {
+                vc,
+                responses,
+                sender_id: msg_sender,
+            } => {
+                if msg_sender != sender_id {
+                    warn!(
+                        "⚠️ [Sequencing] SeqOrder sender mismatch: msg={} net={}",
+                        msg_sender, sender_id
+                    );
+                }
+                self.order_tx
+                    .send((
+                        sender_id,
+                        SmrolMessage::SeqOrder {
+                            vc,
+                            responses,
+                            sender_id: msg_sender,
+                        },
+                    ))
+                    .await
+                    .map_err(|e| format!("seq-order queue send failed: {}", e))
+            }
+            SmrolMessage::SeqMedian {
+                vc,
+                median_sequence,
+                proof,
+                sender_id: msg_sender,
+            } => {
+                if msg_sender != sender_id {
+                    warn!(
+                        "⚠️ [Sequencing] SeqMedian sender mismatch: msg={} net={}",
+                        msg_sender, sender_id
+                    );
+                }
+                self.median_tx
+                    .send((
+                        sender_id,
+                        SmrolMessage::SeqMedian {
+                            vc,
+                            median_sequence,
+                            proof,
+                            sender_id: msg_sender,
+                        },
+                    ))
+                    .await
+                    .map_err(|e| format!("seq-median queue send failed: {}", e))
+            }
+            SmrolMessage::SeqFinal {
+                vc,
+                final_sequence,
+                combined_signature,
+                sender_id: msg_sender,
+            } => {
+                if msg_sender != sender_id {
+                    warn!(
+                        "⚠️ [Sequencing] SeqFinal sender mismatch: msg={} net={}",
+                        msg_sender, sender_id
+                    );
+                }
+                self.final_tx
+                    .send((
+                        sender_id,
+                        SmrolMessage::SeqFinal {
+                            vc,
+                            final_sequence,
+                            combined_signature,
+                            sender_id: msg_sender,
+                        },
+                    ))
+                    .await
+                    .map_err(|e| format!("seq-final queue send failed: {}", e))
+            }
+            other => {
+                debug!(
+                    "[Sequencing] Node {} ignoring non-sequencing message {:?}",
+                    self.process_id,
+                    std::mem::discriminant(&other)
+                );
+                Ok(())
+            }
+        }
+    }
+
+    fn spawn_request_processor(self: &Arc<Self>) {
+        let Some(mut request_rx) = self.take_request_rx() else {
+            warn!(
+                "⚠️ [Sequencing] Node {} request receiver already taken",
+                self.process_id
+            );
+            return;
+        };
+
+        let sequencing = Arc::clone(self);
+        tokio::spawn(async move {
+            info!(
+                "[Sequencing] Node {} request processor started",
+                sequencing.process_id
+            );
+
+            while let Some((sender_id, message)) = request_rx.recv().await {
+                if let SmrolMessage::SeqRequest {
+                    tx_hash,
+                    transaction,
+                    sender_id: _msg_sender,
+                    sequence_number,
+                } = message
+                {
+                    if let Err(e) = sequencing
+                        .process_seq_request_message(
+                            sender_id,
+                            tx_hash,
+                            transaction,
+                            sequence_number,
+                        )
+                        .await
+                    {
+                        warn!(
+                            "⚠️ [Sequencing] Node {} request handling failed: {}",
+                            sequencing.process_id, e
+                        );
+                    }
+                } else {
+                    warn!(
+                        "⚠️ [Sequencing] Node {} unexpected message in request queue",
+                        sequencing.process_id
+                    );
+                }
+            }
+
+            warn!(
+                "⚠️ [Sequencing] Node {} request processor exiting (channel closed)",
+                sequencing.process_id
+            );
+        });
+    }
+
+    fn spawn_response_processor(self: &Arc<Self>) {
+        let Some(mut response_rx) = self.take_response_rx() else {
+            warn!(
+                "⚠️ [Sequencing] Node {} response receiver already taken",
+                self.process_id
+            );
+            return;
+        };
+
+        let sequencing = Arc::clone(self);
+        tokio::spawn(async move {
+            info!(
+                "[Sequencing] Node {} response processor started",
+                sequencing.process_id
+            );
+
+            while let Some((sender_id, message)) = response_rx.recv().await {
+                if let SmrolMessage::SeqResponse {
+                    vc,
+                    signature_share,
+                    sender_id: _msg_sender,
+                    sequence_number,
+                } = message
+                {
+                    if let Err(e) = sequencing
+                        .process_seq_response_message(
+                            sender_id,
+                            vc,
+                            signature_share,
+                            sequence_number,
+                        )
+                        .await
+                    {
+                        warn!(
+                            "⚠️ [Sequencing] Node {} response handling failed: {}",
+                            sequencing.process_id, e
+                        );
+                    }
+                } else {
+                    warn!(
+                        "⚠️ [Sequencing] Node {} unexpected message in response queue",
+                        sequencing.process_id
+                    );
+                }
+            }
+
+            warn!(
+                "⚠️ [Sequencing] Node {} response processor exiting (channel closed)",
+                sequencing.process_id
+            );
+        });
+    }
+
+    fn spawn_order_processor(self: &Arc<Self>) {
+        let Some(mut order_rx) = self.take_order_rx() else {
+            warn!(
+                "⚠️ [Sequencing] Node {} order receiver already taken",
+                self.process_id
+            );
+            return;
+        };
+
+        let sequencing = Arc::clone(self);
+        tokio::spawn(async move {
+            info!(
+                "[Sequencing] Node {} order processor started",
+                sequencing.process_id
+            );
+
+            while let Some((sender_id, message)) = order_rx.recv().await {
+                if let SmrolMessage::SeqOrder {
+                    vc,
+                    responses,
+                    sender_id: _msg_sender,
+                } = message
+                {
+                    if let Err(e) = sequencing
+                        .process_seq_order_message(sender_id, vc, responses)
+                        .await
+                    {
+                        warn!(
+                            "⚠️ [Sequencing] Node {} order handling failed: {}",
+                            sequencing.process_id, e
+                        );
+                    }
+                } else {
+                    warn!(
+                        "⚠️ [Sequencing] Node {} unexpected message in order queue",
+                        sequencing.process_id
+                    );
+                }
+            }
+
+            warn!(
+                "⚠️ [Sequencing] Node {} order processor exiting (channel closed)",
+                sequencing.process_id
+            );
+        });
+    }
+
+    fn spawn_median_processor(self: &Arc<Self>) {
+        let Some(mut median_rx) = self.take_median_rx() else {
+            warn!(
+                "⚠️ [Sequencing] Node {} median receiver already taken",
+                self.process_id
+            );
+            return;
+        };
+
+        let sequencing = Arc::clone(self);
+        tokio::spawn(async move {
+            info!(
+                "[Sequencing] Node {} median processor started",
+                sequencing.process_id
+            );
+
+            while let Some((sender_id, message)) = median_rx.recv().await {
+                if let SmrolMessage::SeqMedian {
+                    vc,
+                    median_sequence,
+                    proof,
+                    sender_id: _msg_sender,
+                } = message
+                {
+                    if let Err(e) = sequencing
+                        .process_seq_median_message(sender_id, vc, median_sequence, proof)
+                        .await
+                    {
+                        warn!(
+                            "⚠️ [Sequencing] Node {} median handling failed: {}",
+                            sequencing.process_id, e
+                        );
+                    }
+                } else {
+                    warn!(
+                        "⚠️ [Sequencing] Node {} unexpected message in median queue",
+                        sequencing.process_id
+                    );
+                }
+            }
+
+            warn!(
+                "⚠️ [Sequencing] Node {} median processor exiting (channel closed)",
+                sequencing.process_id
+            );
+        });
+    }
+
+    fn spawn_final_processor(self: &Arc<Self>) {
+        let Some(mut final_rx) = self.take_final_rx() else {
+            warn!(
+                "⚠️ [Sequencing] Node {} final receiver already taken",
+                self.process_id
+            );
+            return;
+        };
+
+        let sequencing = Arc::clone(self);
+        tokio::spawn(async move {
+            info!(
+                "[Sequencing] Node {} final processor started",
+                sequencing.process_id
+            );
+
+            while let Some((sender_id, message)) = final_rx.recv().await {
+                if let SmrolMessage::SeqFinal {
+                    vc,
+                    final_sequence,
+                    combined_signature,
+                    sender_id: _msg_sender,
+                } = message
+                {
+                    if let Err(e) = sequencing
+                        .process_seq_final_message(vc, final_sequence, combined_signature)
+                        .await
+                    {
+                        warn!(
+                            "⚠️ [Sequencing] Node {} final handling failed: {}",
+                            sequencing.process_id, e
+                        );
+                    }
+                } else {
+                    warn!(
+                        "⚠️ [Sequencing] Node {} unexpected message in final queue",
+                        sequencing.process_id
+                    );
+                }
+            }
+
+            warn!(
+                "⚠️ [Sequencing] Node {} final processor exiting (channel closed)",
+                sequencing.process_id
+            );
+        });
+    }
+
+    fn take_inbound_rx(&self) -> Option<async_mpsc::Receiver<ModuleMessage>> {
+        Self::take_from_cell(&self.inbound_rx)
+    }
+
+    fn take_request_rx(&self) -> Option<async_mpsc::Receiver<ModuleMessage>> {
+        Self::take_from_cell(&self.request_rx)
+    }
+
+    fn take_response_rx(&self) -> Option<async_mpsc::Receiver<ModuleMessage>> {
+        Self::take_from_cell(&self.response_rx)
+    }
+
+    fn take_order_rx(&self) -> Option<async_mpsc::Receiver<ModuleMessage>> {
+        Self::take_from_cell(&self.order_rx)
+    }
+
+    fn take_median_rx(&self) -> Option<async_mpsc::Receiver<ModuleMessage>> {
+        Self::take_from_cell(&self.median_rx)
+    }
+
+    fn take_final_rx(&self) -> Option<async_mpsc::Receiver<ModuleMessage>> {
+        Self::take_from_cell(&self.final_rx)
+    }
+
+    fn take_from_cell<T>(cell: &OnceLock<StdMutex<Option<T>>>) -> Option<T> {
+        let mutex = cell.get()?;
+        mutex.lock().expect("receiver lock poisoned").take()
+    }
+
+    async fn process_seq_request_message(
+        &self,
+        sender_id: usize,
+        tx_hash: String,
+        transaction: SmrolTransaction,
+        sequence_number: u64,
+    ) -> Result<(), String> {
+        let serialized =
+            bincode::serialize(&transaction).map_err(|e| format!("序列化失败: {}", e))?;
+        let encode_start = Instant::now();
+        let data_shards = std::cmp::max(1, self.pnfifo_threshold);
+        let total_shards = std::cmp::max(data_shards, self.n);
+        let encoded_package = ErasurePackage::encode(&serialized, data_shards, total_shards)
+            .map_err(|e| format!("纠删码编码失败: {}", e))?;
+        let encode_duration = encode_start.elapsed();
+
+        let seq_request = SeqRequest {
+            seq_num: sequence_number,
+            tx: Transaction {
+                payload: serialized,
+            },
+        };
+
+        let maybe_entry = self
+            .handle_seq_request(
+                sender_id,
+                seq_request,
+                encoded_package,
+                Duration::from_millis(0),
+                encode_duration,
+            )
+            .await?;
+
+        if let Some(entry) = maybe_entry {
+            self.emit_sequenced_entry(entry).await?;
+        }
+
+        debug!(
+            "[Sequencing] Node {} processed SeqRequest {}, sender={} seq={}",
+            self.process_id, tx_hash, sender_id, sequence_number
+        );
+
+        Ok(())
+    }
+
+    async fn process_seq_response_message(
+        &self,
+        sender_id: usize,
+        vc: Vec<u8>,
+        signature_share: Vec<u8>,
+        sequence_number: u64,
+    ) -> Result<(), String> {
+        let response = SeqResponse {
+            vc,
+            s: sequence_number,
+            sigma: signature_share,
+        };
+        self.handle_seq_response(sender_id, response).await
+    }
+
+    async fn process_seq_order_message(
+        &self,
+        sender_id: usize,
+        vc: Vec<u8>,
+        responses: Vec<(usize, u64, Vec<u8>)>,
+    ) -> Result<(), String> {
+        let records = responses
+            .into_iter()
+            .map(|(sender, sequence, signature)| SeqResponseRecord {
+                sender,
+                sequence,
+                signature,
+            })
+            .collect();
+        let order = SeqOrder { vc, records };
+        self.handle_seq_order(sender_id, order).await
+    }
+
+    async fn process_seq_median_message(
+        &self,
+        sender_id: usize,
+        vc: Vec<u8>,
+        median_sequence: u64,
+        proof: Vec<u8>,
+    ) -> Result<(), String> {
+        let median = SeqMedian {
+            vc,
+            s_tx: median_sequence,
+            sigma_seq: proof,
+        };
+        self.handle_seq_median(sender_id, median).await
+    }
+
+    async fn process_seq_final_message(
+        &self,
+        vc: Vec<u8>,
+        final_sequence: u64,
+        combined_signature: Vec<u8>,
+    ) -> Result<(), String> {
+        let final_msg = SeqFinal {
+            vc,
+            s_tx: final_sequence,
+            sigma: combined_signature,
+        };
+        let maybe_entry = self.handle_seq_final(final_msg).await?;
+        if let Some(entry) = maybe_entry {
+            self.emit_sequenced_entry(entry).await?;
+        }
+        Ok(())
+    }
+
+    async fn emit_sequenced_entry(&self, entry: TransactionEntry) -> Result<(), String> {
+        self.sequenced_entry_tx
+            .send(entry)
+            .await
+            .map_err(|e| format!("sequenced entry send failed: {}", e))
+    }
+
+    fn inbound_queue_capacity() -> usize {
+        std::env::var("SEQ_INBOUND_QUEUE_CAP")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(4096)
+    }
+
+    fn broadcast_queue_capacity() -> usize {
+        std::env::var("SEQ_BROADCAST_QUEUE_CAP")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(1024)
+    }
+
+    fn stage_queue_capacity() -> usize {
+        std::env::var("SEQ_STAGE_QUEUE_CAP")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(2048)
     }
 
     // Handle SEQ-REQUEST message - Lines 4-17
@@ -249,6 +921,8 @@ impl TransactionSequencing {
         self.pending_txs
             .entry(vc_key)
             .or_insert_with(|| req.tx.clone());
+        // store payload
+        self.seq_payloads.insert(s, req.tx.payload.clone());
         self.erasure_store
             .entry(vc_key)
             .or_insert(encoded_package.clone());
@@ -416,10 +1090,9 @@ impl TransactionSequencing {
                     responses: network_records,
                     sender_id: self.process_id,
                 };
-                self.network
-                    .broadcast(order_msg)
-                    .await
-                    .map_err(|e| format!("广播SEQ-ORDER失败: {}", e))?;
+                if let Err(e) = self.broadcast_tx.send(order_msg).await {
+                    return Err(format!("广播SEQ-ORDER失败: {}", e));
+                }
                 info!(
                     "📤 [Sequencing] node={} broadcasting *SEQ-ORDER* for vc={}, s={}",
                     self.process_id,
@@ -471,10 +1144,9 @@ impl TransactionSequencing {
                 proof: sigma_seq,
                 sender_id: self.process_id,
             };
-            self.network
-                .send_to_node(sender, median_msg)
-                .await
-                .map_err(|e| format!("发送SEQ-MEDIAN失败: {}", e))?;
+            if let Err(e) = self.network.send_to_node(sender, median_msg).await {
+                return Err(format!("发送SEQ-MEDIAN失败: {}", e));
+            }
             info!(
                 "[Sequencing] Node={} sent *SEQ-MEDIAN* vc={} median={}",
                 self.process_id,
@@ -575,10 +1247,9 @@ impl TransactionSequencing {
                     combined_signature: sigma_bytes,
                     sender_id: self.process_id,
                 };
-                self.network
-                    .broadcast(final_msg)
-                    .await
-                    .map_err(|e| format!("广播SEQ-FINAL失败: {}", e))?;
+                if let Err(e) = self.broadcast_tx.send(final_msg).await {
+                    return Err(format!("广播SEQ-FINAL失败: {}", e));
+                }
                 info!(
                     "[Sequencing] Node {} broadcast *SEQ-FINAL* {} for vc = {:?}",
                     self.process_id,
@@ -615,7 +1286,7 @@ impl TransactionSequencing {
         // NOTE: 改成原子操作？
         if self.verify_combined_signature(&final_msg)? {
             let (in_vc_ledger, in_mi) = {
-                let finalization = self.finalization.lock().await;
+                let finalization = self.finalization.read().await;
                 (
                     finalization.is_in_vc_ledger(&final_msg.vc),
                     finalization.is_in_mi(&final_msg.vc),
@@ -911,6 +1582,16 @@ impl TransactionSequencing {
             );
         }
 
+        if self.seq_payloads.len() > limit {
+            let removed = self.seq_payloads.len();
+            self.seq_payloads.clear();
+            debug!(
+                "{} cleared {} sequence payload entries",
+                Self::cleanup_log_prefix(),
+                removed
+            );
+        }
+
         if self.buf.len() > limit {
             let removed = self.buf.len();
             self.buf.clear();
@@ -939,9 +1620,13 @@ impl TransactionSequencing {
     async fn finalize_ready_final(&self, final_msg: SeqFinal) -> Option<TransactionEntry> {
         let vc_key = VC::from_slice(&final_msg.vc);
 
-        let payload = if let Some((_, tx)) = self.pending_txs.remove(&vc_key) {
+        let payload = if let Some((_, bytes)) = self.seq_payloads.remove(&final_msg.s_tx) {
+            self.pending_txs.remove(&vc_key);
+            bytes
+        } else if let Some((_, tx)) = self.pending_txs.remove(&vc_key) {
             tx.payload
         } else {
+            debug!("Try Reconstructing...");
             let reconstructed = self
                 .erasure_store
                 .get(&vc_key)

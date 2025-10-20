@@ -961,9 +961,8 @@ async fn main() -> Result<(), String> {
     );
 
     // Wire SMROL output directly into the shared HotStuff queue
-    let mut smrol_adapter = SmrolHotStuffAdapter::new();
+    let smrol_adapter = Arc::new(SmrolHotStuffAdapter::new());
     smrol_adapter.connect_to_queue(shared_tx_queue.clone());
-    let smrol_adapter = Arc::new(smrol_adapter);
     smrol_manager
         .set_hotstuff_adapter(Arc::clone(&smrol_adapter))
         .await;
