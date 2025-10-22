@@ -316,7 +316,7 @@ impl PnfifoBc {
             self.node_id, slot, enqueue_elapsed
         );
 
-        tokio::task::yield_now().await;
+        // tokio::task::yield_now().await;
         Ok(slot)
     }
 
@@ -603,7 +603,7 @@ impl PnfifoBc {
         broadcast_tx
             .send(message)
             .map_err(|e| format!("FINAL broadcast failed: {}", e))?;
-        tokio::task::yield_now().await;
+        // tokio::task::yield_now().await;
         Ok(())
     }
 

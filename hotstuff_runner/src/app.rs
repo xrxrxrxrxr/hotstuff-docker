@@ -81,7 +81,7 @@ impl TestApp {
 
 impl<K: KVStore> App<K> for TestApp {
     fn produce_block(&mut self, request: ProduceBlockRequest<K>) -> ProduceBlockResponse {
-        thread::sleep(Duration::from_millis(25));
+        // thread::sleep(Duration::from_millis(25));
         let view_number = request.cur_view().int();
         let produce_start = std::time::Instant::now();
         // warn!("[produce_block] Node {} Producing block for view {} (only current view)", self.node_id, view_number);
@@ -101,12 +101,12 @@ impl<K: KVStore> App<K> for TestApp {
             "Node {} [produce_block] 当前队列大小: {}, 本区块将尝试获取最多 {} 个交易",
             self.node_id, queue_size, actual_max
         );
-        if queue_size != 0 {
-            warn!(
-                "Node {} [produce_block] 当前队列大小: {}, 本区块将尝试获取最多 {} 个交易",
-                self.node_id, queue_size, actual_max
-            );
-        }
+        // if queue_size != 0 {
+        //     info!(
+        //         "Node {} [produce_block] 当前队列大小: {}, 本区块将尝试获取最多 {} 个交易",
+        //         self.node_id, queue_size, actual_max
+        //     );
+        // }
 
         if actual_max > 0 {
             transactions.reserve(actual_max); // 预分配容量
@@ -344,7 +344,7 @@ impl<K: KVStore> App<K> for TestApp {
     }
 
     fn validate_block(&mut self, request: ValidateBlockRequest<K>) -> ValidateBlockResponse {
-        thread::sleep(Duration::from_millis(25));
+        // thread::sleep(Duration::from_millis(25));
         self.validate_block_for_sync(request)
     }
 }

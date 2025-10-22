@@ -60,7 +60,11 @@ pub struct SmrolManager {
     pnfifo_proposal_tx: async_mpsc::UnboundedSender<(usize, ProposalMsg)>,
     pnfifo_vote_tx: async_mpsc::UnboundedSender<(usize, VoteMsg)>,
     pnfifo_final_tx: async_mpsc::UnboundedSender<(usize, FinalMsg)>,
-    sequencing_inbound_tx: async_mpsc::UnboundedSender<ModuleMessage>,
+    sequencing_request_tx: async_mpsc::UnboundedSender<ModuleMessage>,
+    sequencing_response_tx: async_mpsc::UnboundedSender<ModuleMessage>,
+    sequencing_order_tx: async_mpsc::UnboundedSender<ModuleMessage>,
+    sequencing_median_tx: async_mpsc::UnboundedSender<ModuleMessage>,
+    sequencing_final_tx: async_mpsc::UnboundedSender<ModuleMessage>,
     sequencing_output_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<TransactionEntry>>>,
     consensus_proposal_tx: async_mpsc::UnboundedSender<ModuleMessage>,
     consensus_proposal_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<ModuleMessage>>>,
@@ -154,7 +158,11 @@ impl SmrolManager {
 
         let sequencing_arc = Arc::new(sequencing);
         sequencing_arc.start_processing();
-        let sequencing_inbound_tx = sequencing_arc.inbound_sender();
+        let sequencing_request_tx = sequencing_arc.request_sender();
+        let sequencing_response_tx = sequencing_arc.response_sender();
+        let sequencing_order_tx = sequencing_arc.order_sender();
+        let sequencing_median_tx = sequencing_arc.median_sender();
+        let sequencing_final_tx = sequencing_arc.final_sender();
         let consensus_arc = Arc::new(RwLock::new(consensus));
 
         let broadcast_workers = Self::smrol_broadcast_worker_count();
@@ -221,7 +229,11 @@ impl SmrolManager {
             pnfifo_proposal_tx,
             pnfifo_vote_tx,
             pnfifo_final_tx,
-            sequencing_inbound_tx,
+            sequencing_request_tx,
+            sequencing_response_tx,
+            sequencing_order_tx,
+            sequencing_median_tx,
+            sequencing_final_tx,
             sequencing_output_rx,
             consensus_proposal_tx,
             consensus_proposal_rx,
@@ -256,7 +268,7 @@ impl SmrolManager {
             return Err(format!("SMROL broadcast queue send failed: {}", e));
         }
 
-        tokio::task::yield_now().await;
+        // // tokio::task::yield_now().await;
 
         Ok(())
     }
@@ -433,7 +445,7 @@ impl SmrolManager {
                         },
                     ))
                     .map_err(|e| format!("PNFIFO vote channel send failed: {}", e))?;
-                tokio::task::yield_now().await;
+                // // // tokio::task::yield_now().await;
                 Ok(())
             }
             SmrolMessage::PnfifoFinal {
@@ -461,39 +473,135 @@ impl SmrolManager {
                         },
                     ))
                     .map_err(|e| format!("PNFIFO final channel send failed: {}", e))?;
-                tokio::task::yield_now().await;
+                // // tokio::task::yield_now().await;
                 Ok(())
             }
-            m @ SmrolMessage::SeqRequest {
+            SmrolMessage::SeqRequest {
+                tx_hash,
+                transaction,
                 sender_id: msg_sender,
-                ..
-            }
-            | m @ SmrolMessage::SeqResponse {
-                sender_id: msg_sender,
-                ..
-            }
-            | m @ SmrolMessage::SeqOrder {
-                sender_id: msg_sender,
-                ..
-            }
-            | m @ SmrolMessage::SeqMedian {
-                sender_id: msg_sender,
-                ..
-            }
-            | m @ SmrolMessage::SeqFinal {
-                sender_id: msg_sender,
-                ..
+                sequence_number,
             } => {
                 if msg_sender != sender_id {
                     warn!(
-                        "⚠️ [SMROL] Sequencing sender mismatch: msg={} net={}",
+                        "⚠️ [SMROL] SeqRequest sender mismatch: msg={} net={}",
                         msg_sender, sender_id
                     );
                 }
-                self.sequencing_inbound_tx
-                    .send((sender_id, m))
-                    .map_err(|e| format!("Sequencing inbound queue send failed: {}", e))?;
-                tokio::task::yield_now().await;
+                self.sequencing_request_tx
+                    .send((
+                        sender_id,
+                        SmrolMessage::SeqRequest {
+                            tx_hash,
+                            transaction,
+                            sender_id: msg_sender,
+                            sequence_number,
+                        },
+                    ))
+                    .map_err(|e| format!("Sequencing request queue send failed: {}", e))?;
+                // // tokio::task::yield_now().await;
+                Ok(())
+            }
+            SmrolMessage::SeqResponse {
+                vc,
+                signature_share,
+                sender_id: msg_sender,
+                sequence_number,
+            } => {
+                if msg_sender != sender_id {
+                    warn!(
+                        "⚠️ [SMROL] SeqResponse sender mismatch: msg={} net={}",
+                        msg_sender, sender_id
+                    );
+                }
+                self.sequencing_response_tx
+                    .send((
+                        sender_id,
+                        SmrolMessage::SeqResponse {
+                            vc,
+                            signature_share,
+                            sender_id: msg_sender,
+                            sequence_number,
+                        },
+                    ))
+                    .map_err(|e| format!("Sequencing response queue send failed: {}", e))?;
+                // // tokio::task::yield_now().await;
+                Ok(())
+            }
+            SmrolMessage::SeqOrder {
+                vc,
+                responses,
+                sender_id: msg_sender,
+            } => {
+                if msg_sender != sender_id {
+                    warn!(
+                        "⚠️ [SMROL] SeqOrder sender mismatch: msg={} net={}",
+                        msg_sender, sender_id
+                    );
+                }
+                self.sequencing_order_tx
+                    .send((
+                        sender_id,
+                        SmrolMessage::SeqOrder {
+                            vc,
+                            responses,
+                            sender_id: msg_sender,
+                        },
+                    ))
+                    .map_err(|e| format!("Sequencing order queue send failed: {}", e))?;
+                // // tokio::task::yield_now().await;
+                Ok(())
+            }
+            SmrolMessage::SeqMedian {
+                vc,
+                median_sequence,
+                proof,
+                sender_id: msg_sender,
+            } => {
+                if msg_sender != sender_id {
+                    warn!(
+                        "⚠️ [SMROL] SeqMedian sender mismatch: msg={} net={}",
+                        msg_sender, sender_id
+                    );
+                }
+                self.sequencing_median_tx
+                    .send((
+                        sender_id,
+                        SmrolMessage::SeqMedian {
+                            vc,
+                            median_sequence,
+                            proof,
+                            sender_id: msg_sender,
+                        },
+                    ))
+                    .map_err(|e| format!("Sequencing median queue send failed: {}", e))?;
+                // // tokio::task::yield_now().await;
+                Ok(())
+            }
+            SmrolMessage::SeqFinal {
+                vc,
+                final_sequence,
+                combined_signature,
+                sender_id: msg_sender,
+            } => {
+                if msg_sender != sender_id {
+                    warn!(
+                        "⚠️ [SMROL] SeqFinal sender mismatch: msg={} net={}",
+                        msg_sender, sender_id
+                    );
+                }
+                self.sequencing_final_tx
+                    .send((
+                        sender_id,
+                        SmrolMessage::SeqFinal {
+                            vc,
+                            final_sequence,
+                            combined_signature,
+                            sender_id: msg_sender,
+                        },
+                    ))
+                    .map_err(|e| format!("Sequencing final queue send failed: {}", e))?;
+                // // tokio::task::yield_now().await;
                 Ok(())
             }
             msg @ SmrolMessage::ConsensusProposal {
@@ -509,7 +617,7 @@ impl SmrolManager {
                 self.consensus_proposal_tx
                     .send((sender_id, msg))
                     .map_err(|e| format!("Consensus proposal queue send failed: {}", e))?;
-                tokio::task::yield_now().await;
+                // // tokio::task::yield_now().await;
                 Ok(())
             }
             msg @ SmrolMessage::ConsensusVote {
@@ -525,7 +633,7 @@ impl SmrolManager {
                 self.consensus_vote_tx
                     .send((sender_id, msg))
                     .map_err(|e| format!("Consensus vote queue send failed: {}", e))?;
-                tokio::task::yield_now().await;
+                // // tokio::task::yield_now().await;
                 Ok(())
             }
             SmrolMessage::Warmup => Ok(()),
@@ -556,7 +664,9 @@ impl SmrolManager {
             consensus.get_current_epoch()
         };
 
-        if let Some(tx_id) = Self::extract_tx_id(&entry) {
+        let tx_id_opt = Self::extract_tx_id(&entry);
+
+        if let Some(tx_id) = tx_id_opt {
             if let Err(e) = self.event_tx.send(SystemEvent::SmrolOrderingCompleted {
                 tx_ids: vec![tx_id],
             }) {
@@ -584,6 +694,16 @@ impl SmrolManager {
                 "🚀 [SMROL→HotStuff] Node {} delivered tx for slot {} epoch {}",
                 self.node_id, entry_meta.1, epoch
             );
+            if let Some(tx_id) = tx_id_opt {
+                if let Err(e) = self.event_tx.send(SystemEvent::PushedToHotStuff {
+                    tx_ids: vec![tx_id],
+                }) {
+                    warn!(
+                        "⚠️ [SMROL] Node {} failed to emit pushed-to-hotstuff for tx {}: {}",
+                        self.node_id, tx_id, e
+                    );
+                }
+            }
         } else {
             warn!(
                 "⚠️ [SMROL] HotStuff adapter not connected, dropping tx slot {}",

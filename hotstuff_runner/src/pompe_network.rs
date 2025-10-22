@@ -6,7 +6,7 @@ use crate::resolve_target;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::tcp::OwnedWriteHalf;
 use tokio::net::{TcpListener, TcpStream};
@@ -24,12 +24,16 @@ pub struct PompeNetworkMessage {
     pub message_id: String, // 添加消息ID用于去重
 }
 
-// 🚨 新增：连接状态管理
 #[derive(Debug)]
-struct ConnectionState {
-    writer: OwnedWriteHalf,
-    last_used: std::time::Instant,
+struct ConnectionStats {
+    last_used: Instant,
     send_count: usize,
+}
+
+#[derive(Clone, Debug)]
+struct ConnectionHandle {
+    sender: async_mpsc::UnboundedSender<Arc<PompeNetworkMessage>>,
+    stats: Arc<Mutex<ConnectionStats>>,
 }
 
 // #[derive(Clone)]
@@ -44,7 +48,7 @@ pub struct PompeNetwork {
     // connection_pool: Arc<Mutex<HashMap<usize, Option<TcpStream>>>>,
     // 🚨 优化：连接池管理
     // 避免在 await 期间持有写锁：每个连接状态单独放入 AsyncMutex 中
-    connections: Arc<tokio::sync::RwLock<HashMap<usize, Arc<tokio::sync::Mutex<ConnectionState>>>>>,
+    connections: Arc<tokio::sync::RwLock<HashMap<usize, ConnectionHandle>>>,
     sent_messages: Arc<Mutex<HashMap<String, u64>>>, // 消息去重
     // 独立运行时，用于隔离 Pompe 网络与其他任务
     rt: Arc<Runtime>,
@@ -116,30 +120,29 @@ impl PompeNetwork {
 
         let rt = self.rt.clone();
         rt.spawn(async move {
-            let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(60)); // 每60秒清理一次
+            let mut interval = tokio::time::interval(Duration::from_secs(60)); // 每60秒清理一次
 
             loop {
                 interval.tick().await;
 
-                let mut connections_guard = connections.write().await;
-                let mut to_remove = Vec::new();
-
-                for (&target_node_id, conn_state) in connections_guard.iter() {
-                    // 清理超过10分钟未使用的连接
-                    if conn_state.lock().await.last_used.elapsed()
-                        > tokio::time::Duration::from_secs(600)
-                    {
-                        to_remove.push(target_node_id);
+                {
+                    let mut guard = connections.write().await;
+                    let mut to_remove = Vec::new();
+                    for (&target_node_id, handle) in guard.iter() {
+                        if let Ok(stats) = handle.stats.lock() {
+                            if stats.last_used.elapsed() > Duration::from_secs(600) {
+                                to_remove.push(target_node_id);
+                            }
+                        }
                     }
-                }
 
-                if !to_remove.is_empty() {
                     for node_id_to_remove in to_remove {
-                        connections_guard.remove(&node_id_to_remove);
-                        info!(
-                            "🧹 [连接维护] Node {} 清理到节点 {} 的空闲连接",
-                            node_id, node_id_to_remove
-                        );
+                        if guard.remove(&node_id_to_remove).is_some() {
+                            info!(
+                                "🧹 [连接维护] Node {} 清理到节点 {} 的空闲连接",
+                                node_id, node_id_to_remove
+                            );
+                        }
                     }
                 }
 
@@ -280,7 +283,7 @@ impl PompeNetwork {
             );
         }
 
-        let network_msg = PompeNetworkMessage {
+        let network_msg = Arc::new(PompeNetworkMessage {
             from_node_id: self.node_id,
             to_node_id: Some(target_node_id),
             message,
@@ -289,102 +292,144 @@ impl PompeNetwork {
                 .unwrap()
                 .as_micros() as u64,
             message_id,
-        };
+        });
 
-        // 🚨 尝试使用连接池中的连接
-        let mut connection_used = false;
-
-        // 先尝试使用现有连接（不在await期间持有写锁）
-        let existing_conn = {
-            let connections = self.connections.read().await;
-            connections.get(&target_node_id).cloned()
-        };
-        if let Some(conn_arc) = existing_conn {
-            let lock_start = std::time::Instant::now();
-            let mut conn_state = conn_arc.lock().await;
-            let lock_wait = lock_start.elapsed();
-            match self
-                .send_message_on_writer(&mut conn_state.writer, &network_msg)
-                .await
+        if let Some(handle) = {
+            let guard = self.connections.read().await;
+            guard.get(&target_node_id).cloned()
+        } {
+            if self
+                .enqueue_to_handle(handle.clone(), Arc::clone(&network_msg))
+                .await?
             {
-                Ok(_) => {
-                    conn_state.last_used = std::time::Instant::now();
-                    conn_state.send_count += 1;
-                    connection_used = true;
-                    debug!(
-                        "📤 Node {} -> Node {} 复用连接发送成功, 等锁: {:?}",
-                        self.node_id, target_node_id, lock_wait
-                    );
+                if let Ok(mut stats) = handle.stats.lock() {
+                    stats.last_used = Instant::now();
+                    stats.send_count += 1;
                 }
-                Err(_) => {
-                    // 连接可能已断开，移除它
-                    let mut connections = self.connections.write().await;
-                    connections.remove(&target_node_id);
-                    warn!(
-                        "⚠️ Node {} -> Node {} 连接断开，将重新建立",
-                        self.node_id, target_node_id
-                    );
-                }
+                return Ok(());
+            } else {
+                self.connections.write().await.remove(&target_node_id);
+                warn!(
+                    "⚠️ Node {} -> Node {} 现有连接不可用，准备重建",
+                    self.node_id, target_node_id
+                );
             }
         }
 
-        // 如果没有可用连接，建立新连接
-        if !connection_used {
-            let target_addr = resolve_target(target_node_id, 20000);
-            info!(
-                "🔗 Node {} Pompe resolve node addr {}: {}",
-                self.node_id, target_node_id, target_addr
+        let target_addr = resolve_target(target_node_id, 20000);
+        info!(
+            "🔗 Node {} Pompe resolve node addr {}: {}",
+            self.node_id, target_node_id, target_addr
+        );
+
+        let stream = TcpStream::connect(&target_addr).await.map_err(|e| {
+            error!(
+                "❌ Node {} 连接到节点 {} 失败: {}",
+                self.node_id, target_node_id, e
             );
-            match TcpStream::connect(&target_addr).await {
-                Ok(stream) => {
-                    // 降低延时抖动：禁用Nagle
-                    if let Err(e) = stream.set_nodelay(true) {
-                        warn!("⚠️ 设置TCP_NODELAY失败: {}", e);
-                    }
-                    let (_reader_half, mut writer_half) = stream.into_split();
-                    // 发送消息
-                    match self
-                        .send_message_on_writer(&mut writer_half, &network_msg)
-                        .await
-                    {
-                        Ok(_) => {
-                            // 🚨 关键：保存连接到池中
-                            let mut connections = self.connections.write().await;
-                            connections.insert(
-                                target_node_id,
-                                Arc::new(tokio::sync::Mutex::new(ConnectionState {
-                                    writer: writer_half,
-                                    last_used: std::time::Instant::now(),
-                                    send_count: 1,
-                                })),
-                            );
+            format!("连接失败: {}", e)
+        })?;
 
-                            debug!(
-                                "📤 Node {} -> Node {} 新连接发送成功并缓存",
-                                self.node_id, target_node_id
-                            );
-                        }
-                        Err(e) => {
-                            return Err(format!("新连接发送失败: {}", e));
-                        }
-                    }
-                }
-                Err(e) => {
-                    error!(
-                        "❌ Node {} 连接到节点 {} 失败: {}",
-                        self.node_id, target_node_id, e
-                    );
-                    return Err(format!("连接失败: {}", e));
-                }
-            }
+        if let Err(e) = stream.set_nodelay(true) {
+            warn!("⚠️ 设置TCP_NODELAY失败: {}", e);
         }
 
-        Ok(())
+        let (_reader_half, writer_half) = stream.into_split();
+        let (tx, rx) = async_mpsc::unbounded_channel::<Arc<PompeNetworkMessage>>();
+        let stats = Arc::new(Mutex::new(ConnectionStats {
+            last_used: Instant::now(),
+            send_count: 0,
+        }));
+        let handle = ConnectionHandle {
+            sender: tx.clone(),
+            stats: Arc::clone(&stats),
+        };
+
+        self.connections
+            .write()
+            .await
+            .insert(target_node_id, handle.clone());
+
+        self.spawn_writer_task(
+            target_node_id,
+            writer_half,
+            rx,
+            Arc::clone(&self.connections),
+            stats,
+        );
+
+        if self.enqueue_to_handle(handle.clone(), network_msg).await? {
+            if let Ok(mut stats) = handle.stats.lock() {
+                stats.last_used = Instant::now();
+                stats.send_count += 1;
+            }
+            Ok(())
+        } else {
+            self.connections.write().await.remove(&target_node_id);
+            Err(format!("发送到节点 {} 失败", target_node_id))
+        }
+    }
+
+    async fn enqueue_to_handle(
+        &self,
+        handle: ConnectionHandle,
+        msg: Arc<PompeNetworkMessage>,
+    ) -> Result<bool, String> {
+        match handle.sender.send(msg) {
+            Ok(()) => Ok(true),
+            Err(_e) => Ok(false),
+        }
+    }
+
+    fn spawn_writer_task(
+        &self,
+        target_node_id: usize,
+        mut writer: OwnedWriteHalf,
+        mut rx: async_mpsc::UnboundedReceiver<Arc<PompeNetworkMessage>>,
+        connections: Arc<tokio::sync::RwLock<HashMap<usize, ConnectionHandle>>>,
+        stats: Arc<Mutex<ConnectionStats>>,
+    ) {
+        let node_id = self.node_id;
+        self.spawn(async move {
+            while let Some(msg) = rx.recv().await {
+                let write_start = Instant::now();
+                if let Err(e) =
+                    PompeNetwork::send_message_on_writer(node_id, &mut writer, &msg).await
+                {
+                    warn!(
+                        "⚠️ [Pompe] {} -> {} writer task send failed: {}",
+                        node_id, target_node_id, e
+                    );
+                    break;
+                }
+
+                if let Ok(mut stats_guard) = stats.lock() {
+                    stats_guard.last_used = Instant::now();
+                    stats_guard.send_count += 1;
+                }
+
+                let elapsed = write_start.elapsed();
+                if elapsed > Duration::from_millis(5) {
+                    debug!(
+                        "⏱️ [Pompe] {} -> {} send slow: {:?}",
+                        node_id, target_node_id, elapsed
+                    );
+                }
+            }
+
+            let mut guard = connections.write().await;
+            if guard.remove(&target_node_id).is_some() {
+                info!(
+                    "🧹 [Pompe] Node {} closed writer to {}",
+                    node_id, target_node_id
+                );
+            }
+        });
     }
 
     // 🚨 新增：在指定流上发送消息的辅助方法
     async fn send_message_on_writer(
-        &self,
+        node_id: usize,
         writer: &mut OwnedWriteHalf,
         network_msg: &PompeNetworkMessage,
     ) -> Result<(), String> {
@@ -409,7 +454,7 @@ impl PompeNetwork {
         if ser_cost.as_micros() > 50 {
             debug!(
                 "⏱️ [Pompe-序列化] Node {} 序列化耗时: {:?} ({} bytes)",
-                self.node_id, ser_cost, message_length
+                node_id, ser_cost, message_length
             );
         }
         Ok(())
@@ -521,8 +566,10 @@ impl PompeNetwork {
         let connections = self.connections.read().await;
         let active_connections = connections.len();
         let mut total_messages: usize = 0;
-        for conn in connections.values() {
-            total_messages += conn.lock().await.send_count;
+        for handle in connections.values() {
+            if let Ok(stats) = handle.stats.lock() {
+                total_messages += stats.send_count;
+            }
         }
 
         if active_connections > 0 {

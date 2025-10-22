@@ -3,6 +3,7 @@ use ed25519_dalek::{Signature as Ed25519Signature, VerifyingKey};
 use log::{debug, warn};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::convert::TryFrom;
 use std::time::SystemTime;
 
 pub fn format_system_time(time: SystemTime) -> String {
@@ -68,9 +69,7 @@ pub fn verify_signatures(
             return false;
         }
 
-        let mut sig_buf = [0u8; 64];
-        sig_buf.copy_from_slice(&sig.signature);
-        let signature = match Ed25519Signature::try_from(&sig_buf[..]) {
+        let signature = match Ed25519Signature::try_from(sig.signature.as_slice()) {
             Ok(sig_obj) => sig_obj,
             Err(_) => {
                 warn!("⚠️ [签名验证] Node {} 签名解析失败", sig.node_id);

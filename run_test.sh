@@ -5,6 +5,31 @@ set -e
 
 CLIENT_MODE="load_test"
 PROFILE_MODE=false
+REBUILD_MODE=true
+
+POSITIONAL_ARGS=()
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --reuse|--no-build|--skip-build)
+            REBUILD_MODE=false
+            shift
+            ;;
+        --rebuild)
+            REBUILD_MODE=true
+            shift
+            ;;
+        *)
+            POSITIONAL_ARGS+=("$1")
+            shift
+            ;;
+    esac
+done
+
+if [ ${#POSITIONAL_ARGS[@]} -gt 0 ]; then
+    set -- "${POSITIONAL_ARGS[@]}"
+else
+    set --
+fi
 
 if [ "$1" = "profile_node0" ] || [ "$1" = "profile" ]; then
     PROFILE_MODE=true
@@ -16,7 +41,7 @@ elif [ "$1" = "interactive" ] || [ "$1" = "client" ]; then
     CLIENT_MODE="interactive"
 elif [ -n "$1" ]; then
     echo "❌ 无效的客户端模式: $1"
-    echo "使用方法: $0 [interactive|load_test|perf_test|profile_node0]"
+    echo "使用方法: $0 [interactive|load_test|perf_test|profile_node0] [--rebuild|--reuse]"
     exit 1
 fi
 
@@ -39,7 +64,15 @@ set +a
 PROFILE_CONTAINER="smrol_profile_node0"
 CLIENT_SERVICE=""
 
-echo "🏗️ 构建并启动集群..."
+COMPOSE_UP_FLAGS=(-d)
+if $REBUILD_MODE; then
+    COMPOSE_UP_FLAGS=(--build -d)
+fi
+if $REBUILD_MODE; then
+    echo "🏗️ 构建并启动集群..."
+else
+    echo "🔁 重用现有镜像启动集群..."
+fi
 if $PROFILE_MODE; then
     # start other nodes (node1..)
     other_nodes=()
@@ -47,20 +80,20 @@ if $PROFILE_MODE; then
         other_nodes+=("node${idx}")
     done
     if [ ${#other_nodes[@]} -gt 0 ]; then
-        docker-compose up --build -d "${other_nodes[@]}"
+        docker-compose up "${COMPOSE_UP_FLAGS[@]}" "${other_nodes[@]}"
     fi
 else
     case $CLIENT_MODE in
         "interactive")
-            docker-compose --profile interactive up --build -d
+            docker-compose --profile interactive up "${COMPOSE_UP_FLAGS[@]}"
             CLIENT_SERVICE="client"
             ;;
         "load_test")
-            docker-compose --profile load_test up --build -d
+            docker-compose --profile load_test up "${COMPOSE_UP_FLAGS[@]}"
             CLIENT_SERVICE="load_tester"
             ;;
         "perf_test")
-            docker-compose --profile perf_test up --build -d
+            docker-compose --profile perf_test up "${COMPOSE_UP_FLAGS[@]}"
             CLIENT_SERVICE="perf_tester"
             ;;
     esac
@@ -102,7 +135,7 @@ if $PROFILE_MODE; then
     # give profiler container time to compile/start
     sleep 20
 
-    docker-compose up --build -d load_tester
+    docker-compose up "${COMPOSE_UP_FLAGS[@]}" load_tester
     CLIENT_SERVICE="load_tester"
 fi
 
@@ -112,7 +145,7 @@ sleep 15
 end_id=$((NODE_LEAST_ID + NODE_NUM - 1))
 echo "🏥 检查节点健康状态..."
 for node_id in $(seq $NODE_LEAST_ID $end_id); do
-    echo -n "  Pompe node $node_id is: "
+    echo -n "  node $node_id is: "
     if $PROFILE_MODE && [ "$node_id" -eq 0 ]; then
         if docker ps --filter "name=$PROFILE_CONTAINER" --filter "status=running" | grep -q "$PROFILE_CONTAINER"; then
             echo "✅ profiling (container: $PROFILE_CONTAINER)"
@@ -189,4 +222,5 @@ echo "🛑 停止测试: docker-compose --profile \"*\" down"
 echo "- 2 分钟后自动停止 -"
 
 sleep 180
-docker-compose --profile "*" down
+# docker-compose --profile "*" down
+./stop.sh

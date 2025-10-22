@@ -8,6 +8,7 @@ use ed25519_dalek::{Signature as Ed25519Signature, Signer, SigningKey, Verifying
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
+use std::convert::TryFrom;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, RwLock};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
@@ -680,24 +681,6 @@ impl PompeManager {
                 let mut interval = tokio::time::interval(tokio::time::Duration::from_millis(
                     config.stable_period_ms,
                 ));
-                // loop {
-                //     interval.tick().await;
-                //     // 使用与检查路径相同的逻辑
-                //     if let Some(net) = &network_for_flush {
-                //         if is_leader_flag.load(Ordering::SeqCst) {
-                //             Self::check_and_output_to_hotstuff_lockfree(
-                //                 node_id,
-                //                 &state,
-                //                 &lockfree_adapter,
-                //                 &config,
-                //                 net,
-                //                 is_leader_flag.clone(),
-                //                 &event_tx_for_flush,
-                //             )
-                //             .await;
-                //         }
-                //     }
-                // }
             });
         }
 
@@ -1001,12 +984,10 @@ impl PompeManager {
             return;
         }
 
-        let mut sig_buf = [0u8; 64];
-        sig_buf.copy_from_slice(&signature_bytes);
-        let signature = match Ed25519Signature::try_from(&sig_buf[..]) {
-            Ok(sig_obj) => sig_obj,
-            Err(_) => {
-                warn!("⚠️ [Ordering1] 节点 {} 签名解析失败", sender_node_id);
+        let signature = match Ed25519Signature::try_from(signature_bytes.as_slice()) {
+            Ok(sig) => sig,
+            Err(e) => {
+                warn!("⚠️ [Ordering1] 节点 {} 签名解析失败: {}", sender_node_id, e);
                 return;
             }
         };
@@ -1072,13 +1053,15 @@ impl PompeManager {
             let generate_start = std::time::Instant::now();
             let signatures = extract_signatures(&signature_records);
             let generate_duration = generate_start.elapsed();
-            debug!(
-                "⏱️ [签名提取] Node {} 提取签名耗时: {:?}, hash = {}, signatures={}",
-                node_id,
-                generate_duration,
-                &tx_hash[0..8],
-                signatures.len()
-            );
+            if generate_duration > tokio::time::Duration::from_millis(2) {
+                warn!(
+                    "⚠️ [extract signature] Node {} extracting signature durantion: {:?}, hash = {}, signatures={}",
+                    node_id,
+                    generate_duration,
+                    &tx_hash[0..8],
+                    signatures.len()
+                );
+            }
             let msg = PompeMessage::Ordering2Request {
                 tx_hash: tx_hash.clone(),
                 median_timestamp: median,
@@ -1127,13 +1110,15 @@ impl PompeManager {
         let verify_start = std::time::Instant::now();
         let verified = verify_signatures(&signatures, &tx_hash, &verifying_keys);
         let verify_duration = verify_start.elapsed();
-        debug!(
-            "⏱️ [签名验证] Node {} 验证签名耗时: {:?}, hash = {}, signatures={}",
-            node_id,
-            verify_duration,
-            &tx_hash[0..8],
-            signatures.len()
-        );
+        if verify_duration > Duration::from_millis(2){
+            warn!(
+                "⏱️ [Verify signature] Node {} signature verfication duration: {:?}, hash = {}, signatures={}",
+                node_id,
+                verify_duration,
+                &tx_hash[0..8],
+                signatures.len()
+            );
+        }
 
         let current_stable_point = state
             .stable_point
@@ -1217,14 +1202,12 @@ impl PompeManager {
         };
 
         let network_clone = Arc::clone(network);
-        tokio::spawn(async move {
-            if let Err(e) = network_clone
-                .send_to_node(initiator_node_id, response)
-                .await
-            {
-                error!("❌ [Ordering2-2-LockFree] 异步发送失败: {}", e);
-            }
-        });
+        if let Err(e) = network_clone
+            .send_to_node(initiator_node_id, response)
+            .await
+        {
+            error!("❌ [Ordering2-2-LockFree] 异步发送失败: {}", e);
+        }
 
         let state_clone = Arc::clone(state);
         let lockfree_adapter_clone = lockfree_adapter.clone();
