@@ -1,6 +1,9 @@
 # Dockerfile
 FROM rust:latest as builder
 
+ARG ENABLE_TOKIO_CONSOLE=0
+ENV ENABLE_TOKIO_CONSOLE=${ENABLE_TOKIO_CONSOLE}
+
 # 安装必要的系统依赖
 RUN apt-get update && apt-get install -y \
     pkg-config \
@@ -26,6 +29,11 @@ RUN mkdir -p hotstuff_runner/src/bin \
 
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/app/target \
+    if [ "$ENABLE_TOKIO_CONSOLE" = "1" ]; then \
+        export RUSTFLAGS="--cfg tokio_unstable"; \
+    else \
+        unset RUSTFLAGS; \
+    fi; \
     cargo build --manifest-path hotstuff_runner/Cargo.toml --release --locked --bins
 
 # 复制整个项目（包括hotstuff_runner子目录）
@@ -35,6 +43,11 @@ COPY . .
 WORKDIR /app/hotstuff_runner
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/app/target \
+    if [ "$ENABLE_TOKIO_CONSOLE" = "1" ]; then \
+        export RUSTFLAGS="--cfg tokio_unstable"; \
+    else \
+        unset RUSTFLAGS; \
+    fi; \
     cargo build --release --bin docker_node && \
     cargo build --release --bin client && \
     cargo build --release --bin docker_node_adversary

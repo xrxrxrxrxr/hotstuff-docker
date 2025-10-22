@@ -147,6 +147,9 @@ if $PROFILE_MODE; then
     echo "   查看 profiler 输出: docker logs -f $PROFILE_CONTAINER"
 fi
 
+echo "🛰️ Tokio Console: 对应节点端口 = node0:6660, node1:6661, node2:6662, node3:6663"
+echo "   示例: tokio-console --connect 127.0.0.1:6660"
+
 echo ""
 case $CLIENT_MODE in
     "interactive")

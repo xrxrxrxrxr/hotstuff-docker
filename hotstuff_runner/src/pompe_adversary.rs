@@ -532,6 +532,7 @@ impl PompeManager {
                             timestamp_us,
                             node_id: sender_node_id,
                             initiator_node_id,
+                            signature,
                         } => {
                             if let Some(ref net) = network {
                                 Self::handle_ordering1_response_lockfree(
@@ -545,6 +546,7 @@ impl PompeManager {
                                     timestamp_us,
                                     sender_node_id,
                                     initiator_node_id,
+                                    signature,
                                 )
                                 .await;
                             }
@@ -697,6 +699,7 @@ impl PompeManager {
             timestamp_us,
             node_id,
             initiator_node_id,
+            signature: vec![0u8; 64],
         };
 
         let network_clone = Arc::clone(network);
@@ -739,6 +742,7 @@ impl PompeManager {
         timestamp_us: u64,
         sender_node_id: usize,
         initiator_node_id: usize,
+        _signature_bytes: Vec<u8>,
     ) {
         let processing_start = std::time::Instant::now();
 

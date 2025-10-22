@@ -6,6 +6,8 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
+      args:
+        ENABLE_TOKIO_CONSOLE: ${ENABLE_TOKIO_CONSOLE:-0}
     container_name: hotstuff_node0
     hostname: node0
     environment:
@@ -19,11 +21,14 @@ services:
       - POMPE_BATCH_SIZE=${POMPE_BATCH_SIZE}
       - POMPE_STABLE_PERIOD_MS=${POMPE_STABLE_PERIOD_MS}
       - POMPE_LEADER_NODE_ID=${POMPE_LEADER_NODE_ID}
+      - ENABLE_RUNTIME_PROFILING=${ENABLE_RUNTIME_PROFILING}
+      - TOKIO_CONSOLE_BIND=0.0.0.0:6669
     ports:
       - "20000:20000"
       - "10000:10000"
       - "9000:9000"
       - "21000:21000" 
+      - "6660:6669"
     volumes:
       - ./logs:/logs
       - ./logs/node:/log
@@ -41,6 +46,8 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
+      args:
+        ENABLE_TOKIO_CONSOLE: ${ENABLE_TOKIO_CONSOLE:-0}
     container_name: hotstuff_node1
     hostname: node1
     environment:
@@ -54,11 +61,14 @@ services:
       - POMPE_BATCH_SIZE=${POMPE_BATCH_SIZE}
       - POMPE_STABLE_PERIOD_MS=${POMPE_STABLE_PERIOD_MS}
       - POMPE_LEADER_NODE_ID=${POMPE_LEADER_NODE_ID}
+      - ENABLE_RUNTIME_PROFILING=${ENABLE_RUNTIME_PROFILING}
+      - TOKIO_CONSOLE_BIND=0.0.0.0:6669
     ports:
       - "20001:20000"
       - "10001:10000"
       - "9001:9000"
       - "21001:21000"  
+      - "6661:6669"
     volumes:
       - ./logs:/logs
       - ./logs/node:/log
@@ -77,6 +87,8 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
+      args:
+        ENABLE_TOKIO_CONSOLE: ${ENABLE_TOKIO_CONSOLE:-0}
     container_name: hotstuff_node2
     hostname: node2
     environment:
@@ -90,11 +102,14 @@ services:
       - POMPE_BATCH_SIZE=${POMPE_BATCH_SIZE}
       - POMPE_STABLE_PERIOD_MS=${POMPE_STABLE_PERIOD_MS}
       - POMPE_LEADER_NODE_ID=${POMPE_LEADER_NODE_ID}
+      - ENABLE_RUNTIME_PROFILING=${ENABLE_RUNTIME_PROFILING}
+      - TOKIO_CONSOLE_BIND=0.0.0.0:6669
     ports:
       - "20002:20000"
       - "10002:10000"
       - "9002:9000"
       - "21002:21000"
+      - "6662:6669"
     volumes:
       - ./logs:/logs
       - ./logs/node:/log
@@ -112,6 +127,8 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
+      args:
+        ENABLE_TOKIO_CONSOLE: ${ENABLE_TOKIO_CONSOLE:-0}
     container_name: hotstuff_node3
     hostname: node3
     environment:
@@ -125,11 +142,14 @@ services:
       - POMPE_BATCH_SIZE=${POMPE_BATCH_SIZE}
       - POMPE_STABLE_PERIOD_MS=${POMPE_STABLE_PERIOD_MS}
       - POMPE_LEADER_NODE_ID=${POMPE_LEADER_NODE_ID}
+      - ENABLE_RUNTIME_PROFILING=${ENABLE_RUNTIME_PROFILING}
+      - TOKIO_CONSOLE_BIND=0.0.0.0:6669
     ports:
       - "20003:20000"
       - "10003:10000"
       - "9003:9000"
       - "21003:21000"
+      - "6663:6669"
     volumes:
       - ./logs:/logs
       - ./logs/node:/log
@@ -148,17 +168,21 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
+      args:
+        ENABLE_TOKIO_CONSOLE: ${ENABLE_TOKIO_CONSOLE:-0}
     container_name: hotstuff_client
     hostname: client
     command: ["client"] 
     environment:
       - CLIENT_ID=client_1
       - CLIENT_MODE=interactive
+      - CLIENT_ORDERING_MODE=${CLIENT_ORDERING_MODE}
       - RUST_LOG=${LOG_LEVEL}
       - NODE_LEAST_ID=${NODE_LEAST_ID}
       - NODE_NUM=${NODE_NUM}
       - NODE_HOSTS=${NODE_HOSTS}
       - POMPE_ENABLE=${POMPE_ENABLE} # Pompe
+      - ENABLE_RUNTIME_PROFILING=${ENABLE_RUNTIME_PROFILING}
     volumes:
       - ./logs:/logs
       - ./logs/node:/log
@@ -177,6 +201,8 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
+      args:
+        ENABLE_TOKIO_CONSOLE: ${ENABLE_TOKIO_CONSOLE:-0}
     container_name: hotstuff_perf_tester
     hostname: perf_tester
     command: ["client"]  
@@ -185,11 +211,13 @@ services:
     environment:
       - CLIENT_ID=perf_tester_001
       - CLIENT_MODE=load_test  
+      - CLIENT_ORDERING_MODE=${CLIENT_ORDERING_MODE}
       - TARGET_TPS=1000        
       - TEST_DURATION=300      
       - RUST_LOG=${LOG_LEVEL}
       - POMPE_ENABLE=${POMPE_ENABLE} 
       - NODE_HOSTS=${NODE_HOSTS}
+      - ENABLE_RUNTIME_PROFILING=${ENABLE_RUNTIME_PROFILING}
     profiles:
       - perf_test
 
@@ -198,12 +226,15 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
+      args:
+        ENABLE_TOKIO_CONSOLE: ${ENABLE_TOKIO_CONSOLE:-0}
     container_name: hotstuff_load_tester
     hostname: load_tester
     command: ["client"]  
     environment:
       - CLIENT_ID=load_tester_001
       - CLIENT_MODE=load_test
+      - CLIENT_ORDERING_MODE=${CLIENT_ORDERING_MODE}
       - TARGET_TPS=${TARGET_TPS}
       - TEST_DURATION=300
       - RUST_LOG=${LOG_LEVEL}

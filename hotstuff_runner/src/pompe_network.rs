@@ -11,7 +11,7 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::tcp::OwnedWriteHalf;
 use tokio::net::{TcpListener, TcpStream};
 use tokio::runtime::{Builder, Runtime};
-use tokio::sync::mpsc;
+use tokio::sync::mpsc as async_mpsc;
 use tokio::sync::Mutex as AsyncMutex;
 use tracing::{debug, error, info, warn};
 
@@ -37,8 +37,8 @@ pub struct PompeNetwork {
     node_id: usize,
     pompe_port: u16,
     pub peer_node_ids: Vec<usize>,
-    message_tx: mpsc::UnboundedSender<(usize, PompeMessage)>,
-    message_rx: Arc<AsyncMutex<mpsc::UnboundedReceiver<(usize, PompeMessage)>>>,
+    message_tx: async_mpsc::UnboundedSender<(usize, PompeMessage)>,
+    message_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<(usize, PompeMessage)>>>,
 
     // 🚨 新增：连接池和重试机制
     // connection_pool: Arc<Mutex<HashMap<usize, Option<TcpStream>>>>,
@@ -65,7 +65,7 @@ impl PompeNetwork {
                     .unwrap_or(20000);
                 base //+ node_id as u16
             });
-        let (tx, rx) = mpsc::unbounded_channel();
+        let (tx, rx) = async_mpsc::unbounded_channel();
         // 创建独立的 Tokio 运行时（线程数可由环境变量 POMPE_RT_THREADS 配置，默认 2）
         let rt_threads: usize = std::env::var("POMPE_RT_THREADS")
             .ok()
@@ -538,7 +538,7 @@ impl PompeNetwork {
 
 async fn handle_pompe_connection(
     socket: &mut TcpStream,
-    message_tx: mpsc::UnboundedSender<(usize, PompeMessage)>,
+    message_tx: async_mpsc::UnboundedSender<(usize, PompeMessage)>,
 ) -> Result<(), String> {
     let mut processed_messages = std::collections::HashSet::new();
 

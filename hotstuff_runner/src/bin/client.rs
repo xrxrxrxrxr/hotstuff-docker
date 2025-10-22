@@ -45,6 +45,8 @@ pub struct ClientNode {
     tx_generator: TransactionGenerator,
     stats: ClientStats,
     response_tx: Option<tokio::sync::mpsc::UnboundedSender<ResponseCommand>>,
+    is_pompe: bool,
+    is_smrol: bool,
 }
 
 // 分离状态：延迟跟踪器（独立运行）
@@ -337,7 +339,7 @@ pub enum ClientCommand {
 }
 
 impl ClientNode {
-    pub fn new(client_id: String) -> Self {
+    pub fn new(client_id: String, is_pompe: bool, is_smrol: bool) -> Self {
         info!("🚀 初始化客户端核心: {}", client_id);
 
         let tx_generator = TransactionGenerator::new(client_id.clone());
@@ -348,6 +350,8 @@ impl ClientNode {
             tx_generator,
             stats: ClientStats::default(),
             response_tx: None,
+            is_pompe,
+            is_smrol,
         }
     }
     pub fn set_response_sender(
@@ -367,7 +371,14 @@ impl ClientNode {
         self.response_tx = Some(response_tx.clone());
 
         for node_id in node_least_id..(node_least_id + node_num) {
-            match PersistentConnection::new(node_id, response_tx.clone()).await {
+            match PersistentConnection::new(
+                node_id,
+                response_tx.clone(),
+                self.is_pompe,
+                self.is_smrol,
+            )
+            .await
+            {
                 Ok(conn) => {
                     self.connections.insert(node_id, conn);
                     info!("✅ 连接到节点 {} 成功", node_id);
@@ -401,7 +412,14 @@ impl ClientNode {
                     // 尝试重新连接
                     if let Some(response_tx) = &self.response_tx {
                         info!("🔄 尝试重新连接到节点 {}", node_id);
-                        match PersistentConnection::new(node_id, response_tx.clone()).await {
+                        match PersistentConnection::new(
+                            node_id,
+                            response_tx.clone(),
+                            self.is_pompe,
+                            self.is_smrol,
+                        )
+                        .await
+                        {
                             Ok(new_conn) => {
                                 self.connections.insert(node_id, new_conn);
                                 info!("✅ 重新连接到节点 {} 成功", node_id);
@@ -673,12 +691,16 @@ pub struct PersistentConnection {
     write_stream: tokio::net::tcp::OwnedWriteHalf, // 🔥 只保存写流
     node_id: usize,
     connected_at: Instant,
+    is_pompe: bool,
+    is_smrol: bool,
 }
 
 impl PersistentConnection {
     pub async fn new(
         node_id: usize,
         response_tx: tokio::sync::mpsc::UnboundedSender<ResponseCommand>,
+        is_pompe: bool,
+        is_smrol: bool,
     ) -> Result<Self, Box<dyn std::error::Error>> {
         let hostname = format!("node{}", node_id);
         // let port = 9000 + node_id as u16;
@@ -705,6 +727,8 @@ impl PersistentConnection {
             write_stream: write_half,
             node_id,
             connected_at: Instant::now(),
+            is_pompe,
+            is_smrol,
         })
     }
 
@@ -715,10 +739,7 @@ impl PersistentConnection {
     ) -> Result<usize, Box<dyn std::error::Error>> {
         let mut batch_buffer = Vec::new();
 
-        let is_pompe = false; /////// 调试修改点
-        let is_smrol: bool = true;
-
-        if is_pompe {
+        if self.is_pompe {
             for transaction in transactions {
                 let client_message = ClientMessage {
                     message_type: "pompe_transaction".to_string(),
@@ -734,7 +755,7 @@ impl PersistentConnection {
                 batch_buffer.extend_from_slice(&message_length.to_be_bytes());
                 batch_buffer.extend_from_slice(&serialized);
             }
-        } else if is_smrol {
+        } else if self.is_smrol {
             for transaction in transactions {
                 let client_message = ClientMessage {
                     message_type: "smrol_transaction".to_string(),
@@ -928,6 +949,31 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mode = env::var("CLIENT_MODE").unwrap_or_else(|_| "interactive".to_string());
     setup_tracing_logger(mode.as_str());
 
+    let ordering_mode = env::var("CLIENT_ORDERING_MODE")
+        .unwrap_or_else(|_| "smrol".to_string())
+        .to_lowercase();
+    let (is_pompe, is_smrol) = match ordering_mode.as_str() {
+        "pompe" => (true, false),
+        "smrol" => (false, true),
+        other => {
+            warn!(
+                "⚠️ 未知的 CLIENT_ORDERING_MODE='{}'，默认使用 SMROL 管线",
+                other
+            );
+            (false, true)
+        }
+    };
+    info!(
+        "🔧 客户端交易发送模式: {}",
+        if is_pompe {
+            "Pompe"
+        } else if is_smrol {
+            "Smrol"
+        } else {
+            "Legacy"
+        }
+    );
+
     let node_least_id: usize = env::var("NODE_LEAST_ID")
         .unwrap_or_else(|_| "0".to_string())
         .parse()
@@ -1001,7 +1047,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // 创建并启动客户端核心
-    let mut client_core = ClientNode::new(client_id);
+    let mut client_core = ClientNode::new(client_id, is_pompe, is_smrol);
 
     // 等待共识节点启动
     info!("⏳ 等待共识节点启动...");

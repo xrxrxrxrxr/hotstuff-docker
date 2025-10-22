@@ -59,10 +59,15 @@ pub fn resolve_target(target_id: usize, port: u16) -> String {
 
     format!("{}:{}", host_ip, port)
 }
+use console_subscriber::ConsoleLayer;
+use once_cell::sync::Lazy;
+use std::io::BufWriter;
+use std::sync::Mutex;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::{broadcast, mpsc, Notify};
 use tracing::{debug, error, info, warn};
+use tracing_flame::{FlameLayer, FlushGuard};
 use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -158,6 +163,15 @@ impl RegularTransactionProcessor {
     }
 }
 
+fn env_flag(name: &str) -> bool {
+    std::env::var(name)
+        .map(|value| {
+            let lowered = value.trim().to_ascii_lowercase();
+            matches!(lowered.as_str(), "1" | "true" | "yes" | "on")
+        })
+        .unwrap_or(false)
+}
+
 fn setup_tracing_logger(node_id: usize) {
     create_dir_all("logs").expect("Cannot create logs directory");
     let _ = fs::remove_file(format!("logs/node{}.log", node_id));
@@ -168,8 +182,37 @@ fn setup_tracing_logger(node_id: usize) {
         .open(format!("logs/node{}.log", node_id))
         .expect("Cannot open node log file");
 
+    static FLAME_GUARDS: Lazy<Mutex<Vec<FlushGuard<BufWriter<File>>>>> =
+        Lazy::new(|| Mutex::new(Vec::new()));
+
+    let profiling_enabled = env_flag("ENABLE_RUNTIME_PROFILING");
+
+    let console_layer =
+        profiling_enabled.then(|| ConsoleLayer::builder().with_default_env().spawn());
+
+    let flame_layer = if profiling_enabled {
+        let folded_path = format!("logs/node{}.folded", node_id);
+        let (flame_layer, guard) =
+            FlameLayer::with_file(&folded_path).expect("Failed to create flamegraph output file");
+        FLAME_GUARDS
+            .lock()
+            .expect("flame guard mutex poisoned")
+            .push(guard);
+        Some(flame_layer)
+    } else {
+        None
+    };
+
+    let default_filter = if profiling_enabled {
+        "warn,runtime=trace,tokio=trace"
+    } else {
+        "info"
+    };
+
     let result = tracing_subscriber::registry()
-        .with(EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("warn")))
+        .with(EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(default_filter)))
+        .with(console_layer)
+        .with(flame_layer)
         .with(
             fmt::layer()
                 .with_writer(std::io::stdout)
@@ -335,7 +378,7 @@ async fn handle_lockfree_client_connection(
                     block_height,
                     tx_ids,
                 } => {
-                    warn!(
+                    debug!(
                         "[Event received] Node {} HotStuffCommitted: block_height={}, tx_ids={:?}",
                         node_id, block_height, tx_ids
                     );
@@ -838,6 +881,27 @@ async fn main() -> Result<(), String> {
     let node_stats = Arc::new(PerformanceStats::new());
     let lockfree_stats = Arc::new(LockFreeStats::new());
 
+    // Pre-compute verifying key map and SMROL address mapping for later managers
+    let mut verifying_keys_map = HashMap::new();
+    let mut node_id_to_addr = HashMap::new();
+
+    for (i, key) in all_verifying_keys.iter().enumerate() {
+        let actual_node_id = node_least_id + i; // 实际的node_id
+        verifying_keys_map.insert(actual_node_id, *key);
+
+        if let Some(addr) = peer_addrs.get(key) {
+            let smrol_port = 21000u16 + actual_node_id as u16;
+            let smrol_addr = SocketAddr::new(addr.ip(), smrol_port);
+            node_id_to_addr.insert(actual_node_id, smrol_addr);
+        } else {
+            warn!(
+                "SMROL peer address missing for node {} (verifier {:?})",
+                actual_node_id,
+                key.to_bytes()[0..4].to_vec()
+            );
+        }
+    }
+
     // Start completely lock-free client listener with dual processors
     let client_listener_node_id = node_id;
     let client_listener_port = my_port - 1000;
@@ -889,6 +953,8 @@ async fn main() -> Result<(), String> {
             pompe_config,
             tcp_network.clone(), // unused, but keep for interface consistency
             event_for_response_tx.clone(), /* pompe event sender 🎯 */
+            signing_key.clone(),
+            verifying_keys_map.clone(),
         );
 
         // Use connected mode lock-free adapter
@@ -915,28 +981,6 @@ async fn main() -> Result<(), String> {
         info!("Pompe BFT disabled");
         None
     };
-
-    // convert veryfyingkey Vec to HashMap for smrol manager
-    let mut verifying_keys_map = HashMap::new();
-    let mut node_id_to_addr = HashMap::new();
-
-    for (i, key) in all_verifying_keys.iter().enumerate() {
-        let actual_node_id = node_least_id + i; // 实际的node_id
-        verifying_keys_map.insert(actual_node_id, *key);
-
-        // 从peer_addrs中找到对应的地址
-        if let Some(addr) = peer_addrs.get(key) {
-            let smrol_port = 21000u16 + actual_node_id as u16;
-            let smrol_addr = SocketAddr::new(addr.ip(), smrol_port);
-            node_id_to_addr.insert(actual_node_id, smrol_addr);
-        } else {
-            warn!(
-                "SMROL peer address missing for node {} (verifier {:?})",
-                actual_node_id,
-                key.to_bytes()[0..4].to_vec()
-            );
-        }
-    }
 
     info!(
         "SMROL verifying_keys映射: {:?}",
@@ -1028,7 +1072,6 @@ async fn main() -> Result<(), String> {
             ),
         }
     }
-
     tokio::spawn(async move {
         info!("[Regular tx monitor] Regular transaction monitor started");
         let mut monitor_interval = tokio::time::interval(Duration::from_secs(5));

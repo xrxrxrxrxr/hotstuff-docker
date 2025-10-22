@@ -4,19 +4,20 @@
 use crate::pompe_network::PompeNetwork;
 use crossbeam::queue::SegQueue;
 use dashmap::DashMap;
+use ed25519_dalek::{Signature as Ed25519Signature, Signer, SigningKey, VerifyingKey};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
+use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, RwLock};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
-use tokio::sync::mpsc;
 use tracing::{debug, error, info, warn};
 // Switch Pompe internal queues to tokio::mpsc (async, non-blocking)
 use crate::{
     event::SystemEvent,
-    utils::{generate_dummy_signatures, verify_dummy_signatures, DigitalSignature},
+    utils::{extract_signatures, verify_signatures, DigitalSignature},
 };
-use tokio::sync::mpsc as async_mpsc;
+use tokio::sync::{mpsc as async_mpsc, Mutex as AsyncMutex};
 
 #[derive(Serialize, Deserialize, Clone, Debug, Hash, PartialEq, Eq)]
 pub struct PompeTransaction {
@@ -119,6 +120,7 @@ pub enum PompeMessage {
         timestamp_us: u64,
         node_id: usize,
         initiator_node_id: usize,
+        signature: Vec<u8>,
     },
     Ordering2Request {
         tx_hash: String,
@@ -196,7 +198,7 @@ pub fn load_pompe_config() -> PompeConfig {
 #[derive(Debug)]
 pub struct PompeAppState {
     batch_received: DashMap<String, usize>,
-    ordering1_responses: DashMap<String, Vec<u64>>,
+    ordering1_responses: DashMap<String, Vec<(usize, u64, Vec<u8>)>>,
     ordering1_count: DashMap<String, usize>,
     completed_ordering1: DashMap<String, ()>,
     ordering2_responses: DashMap<String, Vec<(usize, u64)>>,
@@ -290,22 +292,24 @@ pub struct PompeManager {
     current_view: Arc<AtomicU64>,
     is_current_leader: Arc<AtomicBool>,
 
-    ordering1_tx: async_mpsc::Sender<(usize, PompeMessage)>,
-    ordering1_rx: Arc<tokio::sync::Mutex<async_mpsc::Receiver<(usize, PompeMessage)>>>,
+    ordering1_tx: async_mpsc::UnboundedSender<(usize, PompeMessage)>,
+    ordering1_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<(usize, PompeMessage)>>>,
 
-    ordering2_tx: async_mpsc::Sender<(usize, PompeMessage)>,
-    ordering2_rx: Arc<tokio::sync::Mutex<async_mpsc::Receiver<(usize, PompeMessage)>>>,
+    ordering2_tx: async_mpsc::UnboundedSender<(usize, PompeMessage)>,
+    ordering2_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<(usize, PompeMessage)>>>,
 
-    general_tx: async_mpsc::Sender<(usize, PompeMessage)>,
-    general_rx: Arc<tokio::sync::Mutex<async_mpsc::Receiver<(usize, PompeMessage)>>>,
+    general_tx: async_mpsc::UnboundedSender<(usize, PompeMessage)>,
+    general_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<(usize, PompeMessage)>>>,
 
     // 新增：专用广播通道（Tokio mpsc，避免阻塞 runtime 线程）
-    broadcast_tx: async_mpsc::Sender<PompeMessage>,
-    broadcast_rx: Arc<tokio::sync::Mutex<Option<async_mpsc::Receiver<PompeMessage>>>>,
+    broadcast_tx: async_mpsc::UnboundedSender<PompeMessage>,
+    broadcast_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<PompeMessage>>>,
 
     pub network: Option<Arc<crate::pompe_network::PompeNetwork>>,
     lockfree_adapter: Option<Arc<LockFreeHotStuffAdapter>>,
     event_tx: tokio::sync::broadcast::Sender<SystemEvent>,
+    signing_key: Arc<SigningKey>,
+    verifying_keys: Arc<HashMap<usize, VerifyingKey>>,
 }
 
 impl PompeManager {
@@ -357,10 +361,12 @@ impl PompeManager {
         config: PompeConfig,
         _network: impl hotstuff_rs::networking::network::Network + Clone + Send + 'static,
         event_tx: tokio::sync::broadcast::Sender<SystemEvent>,
+        signing_key: SigningKey,
+        verifying_keys: HashMap<usize, VerifyingKey>,
     ) -> Self {
         let node_num = all_node_ids.len();
         let nfaulty = (node_num - 1) / 3;
-        let (general_tx, general_rx) = async_mpsc::channel(config.queue_capacity);
+        let (general_tx, general_rx) = async_mpsc::unbounded_channel();
 
         info!(
             "🚀 创建完整网络支持的Pompe管理器，节点 {}, f={}",
@@ -368,9 +374,9 @@ impl PompeManager {
         );
         info!("🔍 节点列表: {:?}", all_node_ids);
 
-        let (ord1_tx, ord1_rx) = async_mpsc::channel(config.queue_capacity);
-        let (ord2_tx, ord2_rx) = async_mpsc::channel(config.queue_capacity);
-        let (broadcast_tx, broadcast_rx) = async_mpsc::channel(config.queue_capacity);
+        let (ord1_tx, ord1_rx) = async_mpsc::unbounded_channel();
+        let (ord2_tx, ord2_rx) = async_mpsc::unbounded_channel();
+        let (broadcast_tx, broadcast_rx) = async_mpsc::unbounded_channel();
 
         let network = Arc::new(PompeNetwork::new(node_id, all_node_ids.clone()));
 
@@ -383,16 +389,18 @@ impl PompeManager {
             current_view: Arc::new(AtomicU64::new(0)),
             is_current_leader: Arc::new(AtomicBool::new(false)),
             ordering1_tx: ord1_tx,
-            ordering1_rx: Arc::new(tokio::sync::Mutex::new(ord1_rx)),
+            ordering1_rx: Arc::new(AsyncMutex::new(ord1_rx)),
             ordering2_tx: ord2_tx,
-            ordering2_rx: Arc::new(tokio::sync::Mutex::new(ord2_rx)),
+            ordering2_rx: Arc::new(AsyncMutex::new(ord2_rx)),
             general_tx,
-            general_rx: Arc::new(tokio::sync::Mutex::new(general_rx)),
+            general_rx: Arc::new(AsyncMutex::new(general_rx)),
             broadcast_tx,
-            broadcast_rx: Arc::new(tokio::sync::Mutex::new(Some(broadcast_rx))),
+            broadcast_rx: Arc::new(AsyncMutex::new(broadcast_rx)),
             network: Some(network),
             lockfree_adapter: None,
             event_tx,
+            signing_key: Arc::new(signing_key),
+            verifying_keys: Arc::new(verifying_keys),
         }
     }
 
@@ -509,8 +517,8 @@ impl PompeManager {
             };
 
             // 使用专用广播通道（有界，背压）
-            if let Err(e) = self.broadcast_tx.send(request).await {
-                warn!("⚠️ [Ordering1-exec] 广播队列已满/关闭: {}", e);
+            if let Err(e) = self.broadcast_tx.send(request) {
+                warn!("⚠️ [Ordering1-exec] 广播通道已关闭: {}", e);
             }
 
             let broadcast_duration = broadcast_start.elapsed();
@@ -534,22 +542,29 @@ impl PompeManager {
             network.warm_up_connections();
 
             // 启动专用广播处理器
-            let broadcast_rx = {
-                let mut rx_guard = self.broadcast_rx.lock().await;
-                rx_guard.take()
-            };
+            let broadcast_rx = Arc::clone(&self.broadcast_rx);
+            let net = Arc::clone(network);
+            network.spawn(async move {
+                info!("📡 启动专用广播处理器");
+                loop {
+                    let msg_opt = {
+                        let mut rx = broadcast_rx.lock().await;
+                        rx.recv().await
+                    };
 
-            if let Some(mut rx) = broadcast_rx {
-                let net = Arc::clone(network);
-                network.spawn(async move {
-                    info!("📡 启动专用广播处理器");
-                    while let Some(msg) = rx.recv().await {
-                        if let Err(e) = net.broadcast(msg).await {
-                            error!("❌ 专用广播失败: {}", e);
+                    match msg_opt {
+                        Some(msg) => {
+                            if let Err(e) = net.broadcast(msg).await {
+                                error!("❌ 专用广播失败: {}", e);
+                            }
+                        }
+                        None => {
+                            warn!("📡 广播通道已关闭，处理器退出");
+                            break;
                         }
                     }
-                });
-            }
+                }
+            });
 
             // 监听 HotStuff 视图开始事件，计算当前视图 leader（保留非固定 leader 模式）
             {
@@ -588,38 +603,50 @@ impl PompeManager {
                 let mut total_messages = 0;
                 let mut ordering1_count = 0;
                 let mut ordering2_count = 0;
-                
+
                 loop {
                     if let Some((sender_id, message)) = network_clone.recv().await {
                         debug!("📬 [消息接收] Node {} 收到来自节点 {} 的消息", node_id, sender_id);
                         total_messages += 1;
 
                         match &message {
-                            PompeMessage::Ordering1Request { .. } | 
-                            PompeMessage::Ordering1Response { .. } => {
+                            PompeMessage::Ordering1Request { .. }
+                            | PompeMessage::Ordering1Response { .. } => {
                                 ordering1_count += 1;
-                                debug!("📨 [分发器] Node {} 分发Ordering1消息: {:?} (总计: O1={}, O2={}, 总={})", 
-                                    node_id, std::mem::discriminant(&message), ordering1_count, ordering2_count, total_messages);
-                                
-                                if let Err(e) = ordering1_tx.send((sender_id, message)).await {
-                                    error!("❌ Ordering1队列发送失败(背压/关闭): {}", e);
+                                debug!(
+                                    "📨 [分发器] Node {} 分发Ordering1消息: {:?} (总计: O1={}, O2={}, 总={})",
+                                    node_id,
+                                    std::mem::discriminant(&message),
+                                    ordering1_count,
+                                    ordering2_count,
+                                    total_messages
+                                );
+
+                                if let Err(e) = ordering1_tx.send((sender_id, message)) {
+                                    error!("❌ Ordering1通道发送失败(关闭): {}", e);
                                 }
                             }
-                            
-                            PompeMessage::Ordering2Request { .. } | 
-                            PompeMessage::Ordering2Response { .. } => {
+
+                            PompeMessage::Ordering2Request { .. }
+                            | PompeMessage::Ordering2Response { .. } => {
                                 ordering2_count += 1;
-                                debug!("📨 [分发器] Node {} 分发Ordering2消息: {:?} (总计: O1={}, O2={}, 总={})", 
-                                    node_id, std::mem::discriminant(&message), ordering1_count, ordering2_count, total_messages);
-                                
-                                if let Err(e) = ordering2_tx.send((sender_id, message)).await {
-                                    error!("❌ Ordering2队列发送失败(背压/关闭): {}", e);
+                                debug!(
+                                    "📨 [分发器] Node {} 分发Ordering2消息: {:?} (总计: O1={}, O2={}, 总={})",
+                                    node_id,
+                                    std::mem::discriminant(&message),
+                                    ordering1_count,
+                                    ordering2_count,
+                                    total_messages
+                                );
+
+                                if let Err(e) = ordering2_tx.send((sender_id, message)) {
+                                    error!("❌ Ordering2通道发送失败(关闭): {}", e);
                                 }
                             }
-                            
+
                             _ => {
-                                if let Err(e) = general_tx.send((sender_id, message)).await {
-                                    error!("❌ 通用队列发送失败(背压/关闭): {}", e);
+                                if let Err(e) = general_tx.send((sender_id, message)) {
+                                    error!("❌ 通用通道发送失败(关闭): {}", e);
                                 }
                             }
                         }
@@ -684,6 +711,8 @@ impl PompeManager {
         let node_id = self.node_id;
         let nfaulty = self.nfaulty;
         let broadcast_tx = self.broadcast_tx.clone();
+        let signing_key = Arc::clone(&self.signing_key);
+        let verifying_keys = Arc::clone(&self.verifying_keys);
 
         tokio::spawn(async move {
             info!("🔄 Node {} 无锁Ordering1处理器启动", node_id);
@@ -708,6 +737,7 @@ impl PompeManager {
                                     node_id,
                                     &state,
                                     &net,
+                                    Arc::clone(&signing_key),
                                     sender_id,
                                     tx_hash,
                                     transaction,
@@ -722,6 +752,7 @@ impl PompeManager {
                             timestamp_us,
                             node_id: sender_node_id,
                             initiator_node_id,
+                            signature,
                         } => {
                             if let Some(ref net) = network {
                                 Self::handle_ordering1_response_lockfree(
@@ -730,11 +761,13 @@ impl PompeManager {
                                     nfaulty,
                                     &net,
                                     &broadcast_tx,
+                                    Arc::clone(&verifying_keys),
                                     sender_id,
                                     tx_hash,
                                     timestamp_us,
                                     sender_node_id,
                                     initiator_node_id,
+                                    signature,
                                 )
                                 .await;
                             }
@@ -755,6 +788,7 @@ impl PompeManager {
         let config = self.config.clone();
         let event_tx = self.event_tx.clone();
         let is_leader_flag_for_o2 = self.is_current_leader.clone();
+        let verifying_keys = Arc::clone(&self.verifying_keys);
 
         tokio::spawn(async move {
             info!("🔄 Node {} 无锁Ordering2处理器启动", node_id);
@@ -785,6 +819,7 @@ impl PompeManager {
                                     initiator_node_id,
                                     &event_tx,
                                     is_leader_flag_for_o2.clone(),
+                                    Arc::clone(&verifying_keys),
                                     signatures,
                                 )
                                 .await;
@@ -833,6 +868,7 @@ impl PompeManager {
         node_id: usize,
         state: &Arc<PompeAppState>,
         network: &Arc<crate::pompe_network::PompeNetwork>,
+        signing_key: Arc<SigningKey>,
         _sender_id: usize,
         tx_hash: String,
         transaction: PompeTransaction,
@@ -883,11 +919,17 @@ impl PompeManager {
             .as_micros() as u64;
 
         let tx_hash_clone = tx_hash.clone();
+        let message_to_sign = format!("ordering1:{}", tx_hash_clone);
+        let signature = signing_key
+            .sign(message_to_sign.as_bytes())
+            .to_bytes()
+            .to_vec();
         let response = PompeMessage::Ordering1Response {
             tx_hash,
             timestamp_us,
             node_id,
             initiator_node_id,
+            signature,
         };
 
         let network_clone = Arc::clone(network);
@@ -924,20 +966,18 @@ impl PompeManager {
         state: &Arc<PompeAppState>,
         nfaulty: usize,
         network: &Arc<crate::pompe_network::PompeNetwork>,
-        broadcast_tx: &mpsc::Sender<PompeMessage>,
+        broadcast_tx: &async_mpsc::UnboundedSender<PompeMessage>,
+        verifying_keys: Arc<HashMap<usize, VerifyingKey>>,
         _sender_id: usize,
         tx_hash: String,
         timestamp_us: u64,
         sender_node_id: usize,
         initiator_node_id: usize,
+        signature_bytes: Vec<u8>,
     ) {
         let processing_start = std::time::Instant::now();
 
         if node_id != initiator_node_id {
-            return;
-        }
-
-        if state.completed_ordering1.contains_key(&tx_hash) {
             return;
         }
 
@@ -947,45 +987,75 @@ impl PompeManager {
             &tx_hash[0..8]
         );
 
-        let should_proceed = {
-            if state.completed_ordering1.contains_key(&tx_hash) {
+        let Some(verifying_key) = verifying_keys.get(&sender_node_id) else {
+            warn!("⚠️ [Ordering1] 缺少节点 {} 的公钥", sender_node_id);
+            return;
+        };
+
+        if signature_bytes.len() != 64 {
+            warn!(
+                "⚠️ [Ordering1] 节点 {} 签名长度异常: {} bytes",
+                sender_node_id,
+                signature_bytes.len()
+            );
+            return;
+        }
+
+        let mut sig_buf = [0u8; 64];
+        sig_buf.copy_from_slice(&signature_bytes);
+        let signature = match Ed25519Signature::try_from(&sig_buf[..]) {
+            Ok(sig_obj) => sig_obj,
+            Err(_) => {
+                warn!("⚠️ [Ordering1] 节点 {} 签名解析失败", sender_node_id);
                 return;
-            }
-
-            let mut timestamps = state
-                .ordering1_responses
-                .get(&tx_hash)
-                .map(|ref_val| ref_val.clone())
-                .unwrap_or_else(Vec::new);
-
-            if timestamps.contains(&timestamp_us) {
-                return;
-            }
-
-            timestamps.push(timestamp_us);
-            let current_count = timestamps.len();
-
-            state
-                .ordering1_responses
-                .insert(tx_hash.clone(), timestamps.clone());
-            state.ordering1_count.insert(tx_hash.clone(), current_count);
-
-            let required = 2 * nfaulty + 1;
-
-            if current_count >= required {
-                let mut timestamps_sorted = timestamps;
-                timestamps_sorted.sort();
-                let median = timestamps_sorted[nfaulty];
-
-                state.completed_ordering1.insert(tx_hash.clone(), ());
-                state.ordering1_responses.remove(&tx_hash);
-                state.ordering1_count.remove(&tx_hash);
-
-                Some(median)
-            } else {
-                None
             }
         };
+
+        let message = format!("ordering1:{}", tx_hash);
+        if verifying_key
+            .verify_strict(message.as_bytes(), &signature)
+            .is_err()
+        {
+            warn!("⚠️ [Ordering1] 节点 {} 签名验证失败", sender_node_id);
+            return;
+        }
+
+        let required = 2 * nfaulty + 1;
+        let mut median_result: Option<u64> = None;
+        let mut selected_records: Vec<(usize, u64, Vec<u8>)> = Vec::new();
+
+        {
+            let mut response_entry = state.ordering1_responses.get_mut(&tx_hash);
+            if let Some(mut guard) = response_entry {
+                let responses = guard.value_mut();
+                if responses
+                    .iter()
+                    .any(|(node_id, _, _)| *node_id == sender_node_id)
+                {
+                    return;
+                }
+
+                responses.push((sender_node_id, timestamp_us, signature_bytes.clone()));
+                let current_count = responses.len();
+                state.ordering1_count.insert(tx_hash.clone(), current_count);
+
+                if current_count >= required {
+                    let mut sorted = responses.clone();
+                    sorted.sort_by_key(|(_, ts, _)| *ts);
+                    median_result = Some(sorted[nfaulty].1);
+                    selected_records = sorted.into_iter().take(required).collect();
+                }
+            } else {
+                state.ordering1_responses.insert(
+                    tx_hash.clone(),
+                    vec![(sender_node_id, timestamp_us, signature_bytes.clone())],
+                );
+                state.ordering1_count.insert(tx_hash.clone(), 1);
+                return;
+            }
+        }
+
+        let should_proceed = median_result.map(|median| (median, selected_records));
 
         let processing_duration = processing_start.elapsed();
         if processing_duration > tokio::time::Duration::from_millis(2) {
@@ -994,12 +1064,16 @@ impl PompeManager {
             debug!("✅ [处理性能] Node {} handle_ordering1_response 处理完成: {:?}, 来自 Node {}, hash = {}", node_id, processing_duration, sender_node_id, tx_hash);
         }
 
-        if let Some(median) = should_proceed {
+        if let Some((median, signature_records)) = should_proceed {
+            state.completed_ordering1.insert(tx_hash.clone(), ());
+            state.ordering1_responses.remove(&tx_hash);
+            state.ordering1_count.remove(&tx_hash);
+
             let generate_start = std::time::Instant::now();
-            let signatures = generate_dummy_signatures(nfaulty);
+            let signatures = extract_signatures(&signature_records);
             let generate_duration = generate_start.elapsed();
             debug!(
-                "⏱️ [签名生成] Node {} 生成签名耗时: {:?}, hash = {}, signatures={}",
+                "⏱️ [签名提取] Node {} 提取签名耗时: {:?}, hash = {}, signatures={}",
                 node_id,
                 generate_duration,
                 &tx_hash[0..8],
@@ -1014,8 +1088,8 @@ impl PompeManager {
 
             let log_start = std::time::Instant::now();
             // 使用专用广播通道，避免阻塞
-            if let Err(e) = broadcast_tx.send(msg).await {
-                warn!("⚠️ [handle_ordering1_response] 广播队列背压/关闭: {}", e);
+            if let Err(e) = broadcast_tx.send(msg) {
+                warn!("⚠️ [handle_ordering1_response] 广播通道已关闭: {}", e);
             }
             let log_duration = log_start.elapsed();
             debug!(
@@ -1038,6 +1112,7 @@ impl PompeManager {
         initiator_node_id: usize,
         event_tx: &tokio::sync::broadcast::Sender<SystemEvent>,
         is_leader: Arc<AtomicBool>,
+        verifying_keys: Arc<HashMap<usize, VerifyingKey>>,
         signatures: Vec<DigitalSignature>,
     ) {
         let processing_start = std::time::Instant::now();
@@ -1050,7 +1125,7 @@ impl PompeManager {
 
         // verify 2f+1 signatures
         let verify_start = std::time::Instant::now();
-        let verified = verify_dummy_signatures(&signatures, &tx_hash);
+        let verified = verify_signatures(&signatures, &tx_hash, &verifying_keys);
         let verify_duration = verify_start.elapsed();
         debug!(
             "⏱️ [签名验证] Node {} 验证签名耗时: {:?}, hash = {}, signatures={}",
@@ -1460,6 +1535,8 @@ impl PompeManager {
             network: self.network.as_ref().map(|n| Arc::clone(n)),
             lockfree_adapter: self.lockfree_adapter.clone(),
             event_tx: self.event_tx.clone(),
+            signing_key: Arc::clone(&self.signing_key),
+            verifying_keys: Arc::clone(&self.verifying_keys),
         }
     }
 }

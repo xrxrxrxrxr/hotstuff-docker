@@ -14,10 +14,9 @@ use ed25519_dalek::{SigningKey, VerifyingKey};
 use hex;
 use std::collections::HashMap;
 use std::net::SocketAddr;
-use std::sync::{Arc, Mutex as StdMutex, OnceLock};
+use std::sync::{Arc, OnceLock};
 use std::time::Duration;
-use tokio::sync::mpsc::UnboundedSender;
-use tokio::sync::{broadcast, mpsc, Mutex as AsyncMutex, RwLock};
+use tokio::sync::{broadcast, mpsc as async_mpsc, Mutex as AsyncMutex, RwLock};
 use tokio::time::interval;
 use tracing::{debug, error, info, warn};
 
@@ -43,14 +42,6 @@ impl Default for SmrolConfig {
     }
 }
 
-fn receiver_once_lock<T>(rx: T) -> OnceLock<StdMutex<Option<T>>> {
-    let cell = OnceLock::new();
-    if cell.set(StdMutex::new(Some(rx))).is_err() {
-        panic!("receiver already initialized");
-    }
-    cell
-}
-
 pub struct SmrolManager {
     pub node_id: usize,
     pub config: SmrolConfig,
@@ -65,15 +56,16 @@ pub struct SmrolManager {
 
     pub signing_key: SigningKey,
     pub verifying_keys: HashMap<usize, VerifyingKey>,
-    broadcast_tx: mpsc::Sender<SmrolTransaction>,
-    pnfifo_senders:
-        Vec<Option<(UnboundedSender<ProposalMsg>, mpsc::Sender<VoteMsg>, mpsc::Sender<FinalMsg>)>>,
-    sequencing_inbound_tx: mpsc::Sender<ModuleMessage>,
-    sequencing_output_rx: OnceLock<StdMutex<Option<mpsc::Receiver<TransactionEntry>>>>,
-    consensus_proposal_tx: mpsc::Sender<ModuleMessage>,
-    consensus_proposal_rx: OnceLock<StdMutex<Option<mpsc::Receiver<ModuleMessage>>>>,
-    consensus_vote_tx: mpsc::Sender<ModuleMessage>,
-    consensus_vote_rx: OnceLock<StdMutex<Option<mpsc::Receiver<ModuleMessage>>>>,
+    broadcast_tx: async_mpsc::UnboundedSender<SmrolTransaction>,
+    pnfifo_proposal_tx: async_mpsc::UnboundedSender<(usize, ProposalMsg)>,
+    pnfifo_vote_tx: async_mpsc::UnboundedSender<(usize, VoteMsg)>,
+    pnfifo_final_tx: async_mpsc::UnboundedSender<(usize, FinalMsg)>,
+    sequencing_inbound_tx: async_mpsc::UnboundedSender<ModuleMessage>,
+    sequencing_output_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<TransactionEntry>>>,
+    consensus_proposal_tx: async_mpsc::UnboundedSender<ModuleMessage>,
+    consensus_proposal_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<ModuleMessage>>>,
+    consensus_vote_tx: async_mpsc::UnboundedSender<ModuleMessage>,
+    consensus_vote_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<ModuleMessage>>>,
 }
 
 impl SmrolManager {
@@ -116,7 +108,9 @@ impl SmrolManager {
             }
         });
 
-        let pnfifo_senders = pnfifo.get_senders();
+        let pnfifo_proposal_tx = pnfifo.proposal_sender();
+        let pnfifo_vote_tx = pnfifo.vote_sender();
+        let pnfifo_final_tx = pnfifo.final_sender();
 
         let network = pnfifo.network();
         network.warm_up_connections();
@@ -128,8 +122,9 @@ impl SmrolManager {
             signing_key.clone(),
         )));
 
-        let (sequenced_entry_tx, sequenced_entry_rx) =
-            mpsc::channel::<TransactionEntry>(Self::sequencing_output_queue_capacity());
+        let (sequenced_entry_tx, sequenced_entry_rx_raw) =
+            async_mpsc::unbounded_channel::<TransactionEntry>();
+        let sequencing_output_rx = Arc::new(AsyncMutex::new(sequenced_entry_rx_raw));
 
         let sequencing = TransactionSequencing::new(
             node_id,
@@ -140,6 +135,8 @@ impl SmrolManager {
             Arc::clone(&pnfifo),
             threshold_share,
             threshold_public.clone(),
+            signing_key.clone(),
+            verifying_keys.clone(),
             Arc::clone(&finalization),
             sequenced_entry_tx,
         );
@@ -160,19 +157,15 @@ impl SmrolManager {
         let sequencing_inbound_tx = sequencing_arc.inbound_sender();
         let consensus_arc = Arc::new(RwLock::new(consensus));
 
-        let broadcast_capacity = Self::smrol_broadcast_queue_capacity();
         let broadcast_workers = Self::smrol_broadcast_worker_count();
-        let (broadcast_tx, broadcast_rx) = mpsc::channel::<SmrolTransaction>(broadcast_capacity);
-        let broadcast_rx = Arc::new(AsyncMutex::new(broadcast_rx));
+        let (broadcast_tx, broadcast_rx_raw) = async_mpsc::unbounded_channel::<SmrolTransaction>();
+        let broadcast_rx = Arc::new(AsyncMutex::new(broadcast_rx_raw));
 
         for worker_id in 0..broadcast_workers {
             let sequencing_for_worker = Arc::clone(&sequencing_arc);
             let rx = Arc::clone(&broadcast_rx);
             tokio::spawn(async move {
-                info!(
-                    "[SMROL] Broadcast worker {} started with capacity {}",
-                    worker_id, broadcast_capacity
-                );
+                info!("[SMROL] Broadcast worker {} started", worker_id);
 
                 loop {
                     let transaction = {
@@ -205,15 +198,12 @@ impl SmrolManager {
             });
         }
 
-        let consensus_capacity = Self::consensus_queue_capacity();
-        let (consensus_proposal_tx, consensus_proposal_rx) =
-            mpsc::channel::<ModuleMessage>(consensus_capacity);
-        let (consensus_vote_tx, consensus_vote_rx) =
-            mpsc::channel::<ModuleMessage>(consensus_capacity);
-
-        let sequencing_output_rx_cell = receiver_once_lock(sequenced_entry_rx);
-        let consensus_proposal_rx_cell = receiver_once_lock(consensus_proposal_rx);
-        let consensus_vote_rx_cell = receiver_once_lock(consensus_vote_rx);
+        let (consensus_proposal_tx, consensus_proposal_rx_raw) =
+            async_mpsc::unbounded_channel::<ModuleMessage>();
+        let consensus_proposal_rx = Arc::new(AsyncMutex::new(consensus_proposal_rx_raw));
+        let (consensus_vote_tx, consensus_vote_rx_raw) =
+            async_mpsc::unbounded_channel::<ModuleMessage>();
+        let consensus_vote_rx = Arc::new(AsyncMutex::new(consensus_vote_rx_raw));
 
         Ok(Self {
             node_id,
@@ -228,13 +218,15 @@ impl SmrolManager {
             signing_key,
             verifying_keys,
             broadcast_tx,
-            pnfifo_senders,
+            pnfifo_proposal_tx,
+            pnfifo_vote_tx,
+            pnfifo_final_tx,
             sequencing_inbound_tx,
-            sequencing_output_rx: sequencing_output_rx_cell,
+            sequencing_output_rx,
             consensus_proposal_tx,
-            consensus_proposal_rx: consensus_proposal_rx_cell,
+            consensus_proposal_rx,
             consensus_vote_tx,
-            consensus_vote_rx: consensus_vote_rx_cell,
+            consensus_vote_rx,
         })
     }
 
@@ -260,9 +252,11 @@ impl SmrolManager {
             transaction.id, transaction.from, transaction.to, transaction.amount
         );
 
-        if let Err(e) = self.broadcast_tx.send(transaction).await {
+        if let Err(e) = self.broadcast_tx.send(transaction) {
             return Err(format!("SMROL broadcast queue send failed: {}", e));
         }
+
+        tokio::task::yield_now().await;
 
         Ok(())
     }
@@ -274,11 +268,7 @@ impl SmrolManager {
     }
 
     fn spawn_sequencing_output_processor(self: &Arc<Self>) {
-        let Some(mut output_rx) = self.take_sequencing_output_rx() else {
-            warn!("⚠️ [SMROL] Sequencing output receiver already taken");
-            return;
-        };
-
+        let output_rx = Arc::clone(&self.sequencing_output_rx);
         let manager = Arc::clone(self);
         tokio::spawn(async move {
             info!(
@@ -286,7 +276,10 @@ impl SmrolManager {
                 manager.node_id
             );
 
-            while let Some(entry) = output_rx.recv().await {
+            while let Some(entry) = {
+                let mut rx = output_rx.lock().await;
+                rx.recv().await
+            } {
                 if let Err(e) = manager.add_sequenced_transaction(entry).await {
                     warn!("⚠️ [SMROL] Failed to handle sequenced entry: {}", e);
                 }
@@ -297,11 +290,7 @@ impl SmrolManager {
     }
 
     fn spawn_consensus_proposal_processor(self: &Arc<Self>) {
-        let Some(mut proposal_rx) = self.take_consensus_proposal_rx() else {
-            warn!("⚠️ [SMROL] Consensus proposal receiver already taken");
-            return;
-        };
-
+        let proposal_rx = Arc::clone(&self.consensus_proposal_rx);
         let manager = Arc::clone(self);
         tokio::spawn(async move {
             info!(
@@ -309,7 +298,10 @@ impl SmrolManager {
                 manager.node_id
             );
 
-            while let Some((sender_id, message)) = proposal_rx.recv().await {
+            while let Some((sender_id, message)) = {
+                let mut rx = proposal_rx.lock().await;
+                rx.recv().await
+            } {
                 if let SmrolMessage::ConsensusProposal { .. } = &message {
                     if let Err(e) = manager.process_consensus_message(sender_id, message).await {
                         warn!("⚠️ [SMROL] Consensus proposal handling failed: {}", e);
@@ -327,11 +319,7 @@ impl SmrolManager {
     }
 
     fn spawn_consensus_vote_processor(self: &Arc<Self>) {
-        let Some(mut vote_rx) = self.take_consensus_vote_rx() else {
-            warn!("⚠️ [SMROL] Consensus vote receiver already taken");
-            return;
-        };
-
+        let vote_rx = Arc::clone(&self.consensus_vote_rx);
         let manager = Arc::clone(self);
         tokio::spawn(async move {
             info!(
@@ -339,7 +327,10 @@ impl SmrolManager {
                 manager.node_id
             );
 
-            while let Some((sender_id, message)) = vote_rx.recv().await {
+            while let Some((sender_id, message)) = {
+                let mut rx = vote_rx.lock().await;
+                rx.recv().await
+            } {
                 if let SmrolMessage::ConsensusVote { .. } = &message {
                     if let Err(e) = manager.process_consensus_message(sender_id, message).await {
                         warn!("⚠️ [SMROL] Consensus vote handling failed: {}", e);
@@ -354,23 +345,6 @@ impl SmrolManager {
 
             warn!("⚠️ [SMROL] Consensus vote processor exiting (channel closed)");
         });
-    }
-
-    fn take_sequencing_output_rx(&self) -> Option<mpsc::Receiver<TransactionEntry>> {
-        Self::take_from_cell(&self.sequencing_output_rx)
-    }
-
-    fn take_consensus_proposal_rx(&self) -> Option<mpsc::Receiver<ModuleMessage>> {
-        Self::take_from_cell(&self.consensus_proposal_rx)
-    }
-
-    fn take_consensus_vote_rx(&self) -> Option<mpsc::Receiver<ModuleMessage>> {
-        Self::take_from_cell(&self.consensus_vote_rx)
-    }
-
-    fn take_from_cell<T>(cell: &OnceLock<StdMutex<Option<T>>>) -> Option<T> {
-        let mutex = cell.get()?;
-        mutex.lock().expect("receiver lock poisoned").take()
     }
 
     async fn process_consensus_message(
@@ -431,18 +405,9 @@ impl SmrolManager {
                     );
                 }
 
-                if let Some(Some((proposal_tx, _, _))) =
-                    self.pnfifo_senders.get(msg_sender)
-                {
-                    proposal_tx
-                        .send(ProposalMsg { slot, value })
-                        .map_err(|e| format!("PNFIFO proposal channel closed: {}", e))?;
-                } else {
-                    warn!(
-                        "⚠️ [SMROL] Missing proposal sender handle for leader {}",
-                        msg_sender
-                    );
-                }
+                self.pnfifo_proposal_tx
+                    .send((msg_sender, ProposalMsg { slot, value }))
+                    .map_err(|e| format!("PNFIFO proposal channel closed: {}", e))?;
                 Ok(())
             }
             SmrolMessage::PnfifoVote {
@@ -458,23 +423,17 @@ impl SmrolManager {
                     );
                 }
 
-                if let Some(Some((_, vote_tx, _))) =
-                    self.pnfifo_senders.get(leader_id)
-                {
-                    vote_tx
-                        .send(VoteMsg {
+                self.pnfifo_vote_tx
+                    .send((
+                        leader_id,
+                        VoteMsg {
                             sender_id: msg_sender,
                             slot,
                             signature_share,
-                        })
-                        .await
-                        .map_err(|e| format!("PNFIFO vote channel send failed: {}", e))?;
-                } else {
-                    warn!(
-                        "⚠️ [SMROL] Missing vote sender handle for leader {}",
-                        leader_id
-                    );
-                }
+                        },
+                    ))
+                    .map_err(|e| format!("PNFIFO vote channel send failed: {}", e))?;
+                tokio::task::yield_now().await;
                 Ok(())
             }
             SmrolMessage::PnfifoFinal {
@@ -491,24 +450,18 @@ impl SmrolManager {
                     );
                 }
 
-                if let Some(Some((_, _, final_tx))) =
-                    self.pnfifo_senders.get(leader_id)
-                {
-                    final_tx
-                        .send(FinalMsg {
+                self.pnfifo_final_tx
+                    .send((
+                        leader_id,
+                        FinalMsg {
                             sender_id: msg_sender,
                             slot,
                             value,
                             combined_signature,
-                        })
-                        .await
-                        .map_err(|e| format!("PNFIFO final channel send failed: {}", e))?;
-                } else {
-                    warn!(
-                        "⚠️ [SMROL] Missing final sender handle for leader {}",
-                        leader_id
-                    );
-                }
+                        },
+                    ))
+                    .map_err(|e| format!("PNFIFO final channel send failed: {}", e))?;
+                tokio::task::yield_now().await;
                 Ok(())
             }
             m @ SmrolMessage::SeqRequest {
@@ -539,8 +492,9 @@ impl SmrolManager {
                 }
                 self.sequencing_inbound_tx
                     .send((sender_id, m))
-                    .await
-                    .map_err(|e| format!("Sequencing inbound queue send failed: {}", e))
+                    .map_err(|e| format!("Sequencing inbound queue send failed: {}", e))?;
+                tokio::task::yield_now().await;
+                Ok(())
             }
             msg @ SmrolMessage::ConsensusProposal {
                 sender_id: msg_sender,
@@ -554,8 +508,9 @@ impl SmrolManager {
                 }
                 self.consensus_proposal_tx
                     .send((sender_id, msg))
-                    .await
-                    .map_err(|e| format!("Consensus proposal queue send failed: {}", e))
+                    .map_err(|e| format!("Consensus proposal queue send failed: {}", e))?;
+                tokio::task::yield_now().await;
+                Ok(())
             }
             msg @ SmrolMessage::ConsensusVote {
                 sender_id: msg_sender,
@@ -569,8 +524,9 @@ impl SmrolManager {
                 }
                 self.consensus_vote_tx
                     .send((sender_id, msg))
-                    .await
-                    .map_err(|e| format!("Consensus vote queue send failed: {}", e))
+                    .map_err(|e| format!("Consensus vote queue send failed: {}", e))?;
+                tokio::task::yield_now().await;
+                Ok(())
             }
             SmrolMessage::Warmup => Ok(()),
         }
@@ -657,34 +613,12 @@ impl SmrolManager {
             .unwrap_or(30)
     }
 
-    fn smrol_broadcast_queue_capacity() -> usize {
-        std::env::var("SMROL_BROADCAST_QUEUE_CAP")
-            .ok()
-            .and_then(|v| v.parse().ok())
-            .unwrap_or(1024)
-    }
-
     fn smrol_broadcast_worker_count() -> usize {
         std::env::var("SMROL_BROADCAST_WORKERS")
             .ok()
             .and_then(|v| v.parse().ok())
             .map(|n: usize| n.max(1))
             .unwrap_or(2)
-    }
-
-    fn consensus_queue_capacity() -> usize {
-        Self::env_usize("SMROL_CONSENSUS_QUEUE_CAP", 1024)
-    }
-
-    fn sequencing_output_queue_capacity() -> usize {
-        Self::env_usize("SMROL_SEQ_OUTPUT_QUEUE_CAP", 2048)
-    }
-
-    fn env_usize(key: &str, default: usize) -> usize {
-        std::env::var(key)
-            .ok()
-            .and_then(|v| v.parse().ok())
-            .unwrap_or(default)
     }
 
     fn extract_tx_id(entry: &TransactionEntry) -> Option<u64> {

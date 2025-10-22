@@ -12,8 +12,7 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::tcp::OwnedWriteHalf;
 use tokio::net::{TcpListener, TcpStream};
 use tokio::runtime::{Builder, Runtime};
-use tokio::sync::mpsc as async_mpsc;
-use tokio::sync::{Mutex as AsyncMutex, RwLock};
+use tokio::sync::{mpsc as async_mpsc, Mutex as AsyncMutex, RwLock};
 use tracing::{debug, error, info, warn};
 
 /// On-wire SMROL frame. Mirrors PompeNetworkMessage but carries SmrolMessage.
@@ -27,10 +26,15 @@ pub struct SmrolNetworkMessage {
 }
 
 #[derive(Debug)]
-struct ConnectionState {
-    writer: OwnedWriteHalf,
+struct ConnectionStats {
     last_used: Instant,
     send_count: usize,
+}
+
+#[derive(Clone, Debug)]
+struct ConnectionHandle {
+    sender: async_mpsc::UnboundedSender<Arc<SmrolNetworkMessage>>,
+    stats: Arc<Mutex<ConnectionStats>>,
 }
 
 #[derive(Debug)]
@@ -39,10 +43,10 @@ pub struct SmrolTcpNetwork {
     listen_port: u16,
     peer_nodes: HashMap<usize, SocketAddr>,
 
-    message_tx: async_mpsc::Sender<(usize, SmrolMessage)>,
-    message_rx: Arc<AsyncMutex<async_mpsc::Receiver<(usize, SmrolMessage)>>>,
+    message_tx: async_mpsc::UnboundedSender<(usize, SmrolMessage)>,
+    message_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<(usize, SmrolMessage)>>>,
 
-    connections: Arc<RwLock<HashMap<usize, Arc<AsyncMutex<ConnectionState>>>>>,
+    connections: Arc<RwLock<HashMap<usize, ConnectionHandle>>>,
     sent_messages: Arc<Mutex<HashMap<String, u64>>>,
 
     rt: Arc<Runtime>,
@@ -52,7 +56,7 @@ impl SmrolTcpNetwork {
     pub fn new(node_id: usize, peer_nodes: HashMap<usize, SocketAddr>) -> Self {
         let listen_port = 21000 + node_id as u16;
 
-        let (message_tx, message_rx) = async_mpsc::channel(Self::message_queue_capacity());
+        let (message_tx, message_rx) = async_mpsc::unbounded_channel();
 
         let rt_threads: usize = std::env::var("SMROL_RT_THREADS")
             .ok()
@@ -201,32 +205,25 @@ impl SmrolTcpNetwork {
             );
         }
 
-        let network_msg = SmrolNetworkMessage {
+        let network_msg = Arc::new(SmrolNetworkMessage {
             from_node_id: self.node_id,
             to_node_id: Some(target_node_id),
             message,
             timestamp: current_micros(),
             message_id,
-        };
+        });
 
-        if let Some(conn) = {
+        if let Some(handle) = {
             let connections = self.connections.read().await;
             connections.get(&target_node_id).cloned()
         } {
-            let mut guard = conn.lock().await;
-            if let Err(e) = self
-                .send_message_on_writer(&mut guard.writer, &network_msg)
-                .await
+            if self
+                .enqueue_to_handle(handle.clone(), network_msg.clone())
+                .await?
             {
-                warn!(
-                    "⚠️ [SMROL] Node {} write to {} failed: {} (retrying)",
-                    self.node_id, target_node_id, e
-                );
-                self.connections.write().await.remove(&target_node_id);
-            } else {
-                guard.last_used = Instant::now();
-                guard.send_count += 1;
                 return Ok(());
+            } else {
+                self.connections.write().await.remove(&target_node_id);
             }
         }
 
@@ -236,57 +233,131 @@ impl SmrolTcpNetwork {
         if let Err(e) = stream.set_nodelay(true) {
             warn!("⚠️ [SMROL] set_nodelay({}) failed: {}", addr, e);
         }
+
         let (_reader, writer) = stream.into_split();
-        let mut state = ConnectionState {
-            writer,
+        let (tx, rx) = async_mpsc::unbounded_channel::<Arc<SmrolNetworkMessage>>();
+        let stats = Arc::new(Mutex::new(ConnectionStats {
             last_used: Instant::now(),
             send_count: 0,
+        }));
+        let handle = ConnectionHandle {
+            sender: tx.clone(),
+            stats: Arc::clone(&stats),
         };
-        self.send_message_on_writer(&mut state.writer, &network_msg)
-            .await?;
+
         self.connections
             .write()
             .await
-            .insert(target_node_id, Arc::new(AsyncMutex::new(state)));
+            .insert(target_node_id, handle.clone());
 
-        Ok(())
+        self.spawn_writer_task(
+            target_node_id,
+            writer,
+            rx,
+            Arc::clone(&self.connections),
+            stats,
+        );
+
+        if self.enqueue_to_handle(handle, network_msg).await? {
+            Ok(())
+        } else {
+            Err(format!("failed to enqueue message to {}", target_node_id))
+        }
     }
+
+    // pub async fn broadcast(&self, message: SmrolMessage) -> Result<(), String> {
+    //     let _ = self.send_to_node(self.node_id, message.clone()).await;
+
+    //     let mut last_err: Option<String> = None;
+    //     for (&nid, _) in &self.peer_nodes {
+    //         if nid == self.node_id {
+    //             continue;
+    //         }
+    //         if let Err(e) = self.send_to_node(nid, message.clone()).await {
+    //             warn!("⚠️ [SMROL] broadcast to {} failed: {}", nid, e);
+    //             last_err = Some(e);
+    //         }
+    //     }
+
+    //     if let Some(err) = last_err {
+    //         Err(err)
+    //     } else {
+    //         Ok(())
+    //     }
+    // }
 
     pub async fn broadcast(&self, message: SmrolMessage) -> Result<(), String> {
         let _ = self.send_to_node(self.node_id, message.clone()).await;
 
-        let mut handles = Vec::new();
         for (&nid, _) in &self.peer_nodes {
             if nid == self.node_id {
                 continue;
             }
+
             let net = self.clone();
             let msg = message.clone();
-            handles.push(tokio::spawn(async move {
-                (nid, net.send_to_node(nid, msg).await)
-            }));
+            tokio::spawn(async move {
+                let _ = net.send_to_node(nid, msg).await;
+            });
         }
+        Ok(())
+    }
 
-        let mut last_err: Option<String> = None;
-        for handle in handles {
-            match handle.await {
-                Ok((nid, Ok(()))) => debug!("📤 [SMROL] broadcast delivered to {}", nid),
-                Ok((nid, Err(e))) => {
-                    warn!("⚠️ [SMROL] broadcast to {} failed: {}", nid, e);
-                    last_err = Some(e);
+    async fn enqueue_to_handle(
+        &self,
+        handle: ConnectionHandle,
+        msg: Arc<SmrolNetworkMessage>,
+    ) -> Result<bool, String> {
+        match handle.sender.send(msg) {
+            Ok(()) => Ok(true),
+            Err(_e) => Ok(false),
+        }
+    }
+
+    fn spawn_writer_task(
+        &self,
+        target_node_id: usize,
+        mut writer: OwnedWriteHalf,
+        mut rx: async_mpsc::UnboundedReceiver<Arc<SmrolNetworkMessage>>,
+        connections: Arc<RwLock<HashMap<usize, ConnectionHandle>>>,
+        stats: Arc<Mutex<ConnectionStats>>,
+    ) {
+        let node_id = self.node_id;
+        self.spawn(async move {
+            while let Some(msg) = rx.recv().await {
+                let start = Instant::now();
+                if let Err(e) = SmrolTcpNetwork::send_message_on_writer(&mut writer, &msg).await {
+                    warn!(
+                        "⚠️ [SMROL] writer task {} -> {} failed: {}",
+                        node_id, target_node_id, e
+                    );
+                    break;
                 }
-                Err(e) => {
-                    warn!("⚠️ [SMROL] broadcast join error: {}", e);
-                    last_err = Some(format!("join error: {}", e));
+                let elapsed = start.elapsed();
+
+                // ✅ 监控写入时间
+                if elapsed > Duration::from_millis(5) {
+                    warn!(
+                        "⚠️ [Check] Writer {} -> {} slow write: {:?}",
+                        node_id, target_node_id, elapsed
+                    );
                 }
+                // if let Ok(mut guard) = stats.lock() {
+                //     guard.last_used = Instant::now();
+                //     guard.send_count += 1;
+                // }
             }
-        }
 
-        if let Some(err) = last_err {
-            Err(err)
-        } else {
-            Ok(())
-        }
+            {
+                let mut map = connections.write().await;
+                map.remove(&target_node_id);
+            }
+
+            debug!(
+                "🔌 [SMROL] writer task closed for {} -> {}",
+                node_id, target_node_id
+            );
+        });
     }
 
     fn start_connection_maintenance(&self) {
@@ -301,17 +372,20 @@ impl SmrolTcpNetwork {
                 {
                     let mut guard = connections.write().await;
                     let mut to_remove = Vec::new();
-                    for (&target, conn) in guard.iter() {
-                        if conn.lock().await.last_used.elapsed() > Duration::from_secs(600) {
-                            to_remove.push(target);
+                    for (&target, handle) in guard.iter() {
+                        if let Ok(stats) = handle.stats.lock() {
+                            if stats.last_used.elapsed() > Duration::from_secs(600) {
+                                to_remove.push(target);
+                            }
                         }
                     }
                     for target in to_remove {
-                        guard.remove(&target);
-                        info!(
-                            "🧹 [SMROL] Node {} cleaned idle connection to {}",
-                            node_id, target
-                        );
+                        if guard.remove(&target).is_some() {
+                            info!(
+                                "🧹 [SMROL] Node {} cleaned idle connection to {}",
+                                node_id, target
+                            );
+                        }
                     }
                 }
 
@@ -343,33 +417,57 @@ impl SmrolTcpNetwork {
     async fn enqueue_local(&self, sender: usize, message: SmrolMessage) -> Result<(), String> {
         self.message_tx
             .send((sender, message))
-            .await
             .map_err(|e| format!("消息入队失败: {}", e))
     }
 
-    fn message_queue_capacity() -> usize {
-        std::env::var("SMROL_NETWORK_QUEUE_CAP")
-            .ok()
-            .and_then(|v| v.parse().ok())
-            .unwrap_or(4096)
-    }
-
     async fn send_message_on_writer(
-        &self,
         writer: &mut OwnedWriteHalf,
         network_msg: &SmrolNetworkMessage,
     ) -> Result<(), String> {
+        let start = Instant::now();
         let serialized =
             bincode::serialize(network_msg).map_err(|e| format!("序列化失败: {}", e))?;
         let len = serialized.len() as u32;
+        // let t0=Instant::now();
+        if len > 100_000 {
+            // 100KB
+            warn!(
+                "⚠️ Large message: {} bytes to node {:?}",
+                len, network_msg.to_node_id
+            );
+        }
         writer
             .write_all(&len.to_be_bytes())
             .await
             .map_err(|e| format!("写入长度失败: {}", e))?;
+        // let elapsed_len = t0.elapsed();
+        // if elapsed_len > Duration::from_millis(50) {
+        //     warn!(
+        //         "⚠️ [Check] TCP write length took {:?} ({} bytes)",
+        //         elapsed_len, len
+        //     );
+        // }
+        // let t1=Instant::now();
         writer
             .write_all(&serialized)
             .await
-            .map_err(|e| format!("写入消息失败: {}", e))
+            .map_err(|e| format!("写入消息失败: {}", e))?;
+        // let elapsed_msg = t1.elapsed();
+        // if elapsed_msg > Duration::from_millis(50) {
+        //     warn!(
+        //         "⚠️ [Check] TCP write message took {:?} ({} bytes)",
+        //         elapsed_msg, len
+        //     );
+        // }
+        // let elapsed = start.elapsed();
+        // if elapsed > Duration::from_millis(50) {
+        //     warn!(
+        //         "⚠️ [Check] TCP write took {:?} ({} bytes)",
+        //         elapsed, len
+        //     );
+        // }
+
+        Ok(())
     }
 }
 
