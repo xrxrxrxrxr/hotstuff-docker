@@ -18,7 +18,10 @@ use crate::{
     event::SystemEvent,
     utils::{extract_signatures, verify_signatures, DigitalSignature},
 };
-use tokio::sync::{mpsc as async_mpsc, Mutex as AsyncMutex};
+use tokio::{
+    sync::{mpsc as async_mpsc, Mutex as AsyncMutex},
+    task,
+};
 
 #[derive(Serialize, Deserialize, Clone, Debug, Hash, PartialEq, Eq)]
 pub struct PompeTransaction {
@@ -1108,7 +1111,14 @@ impl PompeManager {
 
         // verify 2f+1 signatures
         let verify_start = std::time::Instant::now();
-        let verified = verify_signatures(&signatures, &tx_hash, &verifying_keys);
+        let tx_hash_for_verify = tx_hash.clone();
+        let verifying_keys_clone = Arc::clone(&verifying_keys);
+        let signatures_clone = signatures.clone();
+        let verify_result = task::spawn_blocking(move || {
+            verify_signatures(&signatures_clone, &tx_hash_for_verify, &verifying_keys_clone)
+        })
+        .await
+        .unwrap_or(false);
         let verify_duration = verify_start.elapsed();
         if verify_duration > Duration::from_millis(2){
             warn!(
@@ -1118,6 +1128,15 @@ impl PompeManager {
                 &tx_hash[0..8],
                 signatures.len()
             );
+        }
+
+        if !verify_result {
+            warn!(
+                "⚠️ [Ordering2-2-LockFree] Node {} signature verification failed for {}",
+                node_id,
+                &tx_hash[0..8]
+            );
+            return;
         }
 
         let current_stable_point = state

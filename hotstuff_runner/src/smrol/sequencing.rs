@@ -121,6 +121,7 @@ pub struct TransactionSequencing {
     completed_responses: DashSet<VC>,
     median_shares: DashMap<VC, HashMap<usize, SignatureShare>>,
     final_broadcasted: DashSet<VC>,
+    finalized_vcs: DashSet<VC>,
     tx_sequence_map: DashMap<VC, u64>,
     seq_payloads: DashMap<u64, Vec<u8>>,
     broadcast_tx: async_mpsc::UnboundedSender<SmrolMessage>,
@@ -212,6 +213,7 @@ impl TransactionSequencing {
             completed_responses: DashSet::new(),
             median_shares: DashMap::new(),
             final_broadcasted: DashSet::new(),
+            finalized_vcs: DashSet::new(),
             tx_sequence_map: DashMap::new(),
             seq_payloads: DashMap::new(),
             broadcast_tx,
@@ -584,6 +586,7 @@ impl TransactionSequencing {
                         false
                     }
                 };
+                // let verify_result=verify_seq_order_records(order_for_check, verifying_keys, required);
 
                 if verify_result {
                     if let Err(e) = finalize_tx.send((sender_id, order)) {
@@ -1039,6 +1042,12 @@ impl TransactionSequencing {
         self.pending_txs
             .entry(vc_key)
             .or_insert_with(|| req.tx.clone());
+        debug!(
+            "[Sequencing] Node {} stored pending_tx for vc={}, now has {} pending_txs",
+            self.process_id,
+            hex::encode(&vc_tx[..std::cmp::min(8, vc_tx.len())]),
+            self.pending_txs.len()
+        );
         // store payload
         self.seq_payloads.insert(s, req.tx.payload.clone());
         self.erasure_store
@@ -1583,6 +1592,15 @@ impl TransactionSequencing {
         let result = self.verify_combined_signature_async(&final_msg).await?;
         let verify_duration = verify_start.elapsed();
         if result {
+            if self.finalized_vcs.contains(&vc_key) {
+                debug!(
+                    "[Sequencing] Node {} ignoring duplicate SEQ-FINAL for vc {}",
+                    self.process_id,
+                    hex::encode(&final_msg.vc[..std::cmp::min(8, final_msg.vc.len())])
+                );
+                return Ok(None);
+            }
+
             let check_start = Instant::now();
             let (in_vc_ledger, in_mi) = {
                 let finalization = self.finalization.read().await;
@@ -1918,27 +1936,104 @@ impl TransactionSequencing {
             .ok()
             .and_then(|v| v.parse::<usize>().ok())
             .filter(|&v| v > 0)
-            .unwrap_or(500)
+            .unwrap_or(1000000)
     }
 
     fn cleanup_log_prefix() -> &'static str {
         "🧹 [Sequencing] cleanup"
     }
 
+    fn retain_latest_payloads(map: &DashMap<u64, Vec<u8>>, limit: usize) {
+        if map.len() <= limit {
+            return;
+        }
+
+        let mut entries: Vec<u64> = map.iter().map(|entry| *entry.key()).collect();
+        entries.sort_unstable();
+
+        let keep = limit.min(entries.len());
+        for key in entries.into_iter().rev().skip(keep) {
+            map.remove(&key);
+        }
+
+        debug!(
+            "{} trimmed seq_payloads to last {} entries",
+            Self::cleanup_log_prefix(),
+            keep
+        );
+    }
+
+    fn retain_latest_map<T>(map: &DashMap<VC, T>, limit: usize) {
+        if map.len() <= limit {
+            return;
+        }
+
+        let mut entries: Vec<(u64, VC)> = map
+            .iter()
+            .filter_map(|entry| {
+                let key = entry.key();
+                // Attempt to map back to sequence via tx_sequence_map if present
+                Some((0, *key))
+            })
+            .collect();
+
+        if entries.is_empty() {
+            return;
+        }
+
+        entries.sort_by_key(|(seq, _)| *seq);
+
+        let keep = limit.min(entries.len());
+        for (_, vc) in entries.into_iter().rev().skip(keep) {
+            map.remove(&vc);
+        }
+
+        debug!(
+            "{} trimmed pending_txs to last {} entries",
+            Self::cleanup_log_prefix(),
+            keep
+        );
+    }
+
+    fn retain_latest_finals(map: &DashMap<VC, Vec<SeqFinal>>, limit: usize) {
+        if map.len() <= limit {
+            return;
+        }
+
+        let mut entries: Vec<(u64, VC)> = map
+            .iter()
+            .filter_map(|entry| {
+                let vc = *entry.key();
+                entry
+                    .value()
+                    .iter()
+                    .map(|final_msg| (final_msg.s_tx, vc))
+                    .max_by_key(|(s_tx, _)| *s_tx)
+            })
+            .collect();
+
+        if entries.is_empty() {
+            return;
+        }
+
+        entries.sort_by_key(|(seq, _)| *seq);
+
+        let keep = limit.min(entries.len());
+        for (_, vc) in entries.into_iter().rev().skip(keep) {
+            map.remove(&vc);
+        }
+
+        debug!(
+            "{} trimmed pending_seq_finals to last {} entries",
+            Self::cleanup_log_prefix(),
+            keep
+        );
+    }
+
     pub async fn cleanup_expired_state(&self) {
         let limit = Self::state_limit();
 
-        if self.pending_txs.len() > limit {
-            let removed = self.pending_txs.len();
-            self.pending_txs.clear();
-            self.erasure_store.clear();
-            self.pending_seq_finals.clear();
-            debug!(
-                "{} cleared {} pending_txs entries (and related caches)",
-                Self::cleanup_log_prefix(),
-                removed
-            );
-        }
+        Self::retain_latest_map(&self.pending_txs, limit);
 
         if self.erasure_store.len() > limit {
             let removed = self.erasure_store.len();
@@ -1950,15 +2045,7 @@ impl TransactionSequencing {
             );
         }
 
-        if self.pending_seq_finals.len() > limit {
-            let removed = self.pending_seq_finals.len();
-            self.pending_seq_finals.clear();
-            debug!(
-                "{} cleared {} pending_seq_finals entries",
-                Self::cleanup_log_prefix(),
-                removed
-            );
-        }
+        Self::retain_latest_finals(&self.pending_seq_finals, limit);
 
         if self.originated_vcs.len() > limit {
             let removed = self.originated_vcs.len();
@@ -2010,15 +2097,7 @@ impl TransactionSequencing {
             );
         }
 
-        if self.seq_payloads.len() > limit {
-            let removed = self.seq_payloads.len();
-            self.seq_payloads.clear();
-            debug!(
-                "{} cleared {} sequence payload entries",
-                Self::cleanup_log_prefix(),
-                removed
-            );
-        }
+        Self::retain_latest_payloads(&self.seq_payloads, limit);
 
         if self.buf.len() > limit {
             let removed = self.buf.len();
@@ -2055,7 +2134,7 @@ impl TransactionSequencing {
         } else if let Some((_, tx)) = self.pending_txs.remove(&vc_key) {
             tx.payload
         } else {
-            debug!("Try Reconstructing...");
+            warn!("Try Reconstructing... s_tx={}, vc={:?}", final_msg.s_tx, vc_key);
             let reconstructed = if let Some(pkg_entry) = self.erasure_store.get(&vc_key) {
                 let package_copy = pkg_entry.clone();
                 drop(pkg_entry);
@@ -2094,6 +2173,7 @@ impl TransactionSequencing {
         self.originated_vcs.remove(&vc_key);
         self.completed_responses.remove(&vc_key);
         self.final_broadcasted.remove(&vc_key);
+        self.finalized_vcs.insert(vc_key);
 
         let entry = TransactionEntry {
             vc_tx: final_msg.vc.clone(),
