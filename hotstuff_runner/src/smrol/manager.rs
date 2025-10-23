@@ -582,6 +582,8 @@ impl SmrolManager {
                 vc,
                 final_sequence,
                 combined_signature,
+                payload,
+                tx_id,
                 sender_id: msg_sender,
             } => {
                 if msg_sender != sender_id {
@@ -598,6 +600,8 @@ impl SmrolManager {
                             final_sequence,
                             combined_signature,
                             sender_id: msg_sender,
+                            payload,
+                            tx_id,
                         },
                     ))
                     .map_err(|e| format!("Sequencing final queue send failed: {}", e))?;

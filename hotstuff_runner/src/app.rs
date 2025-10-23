@@ -97,7 +97,7 @@ impl<K: KVStore> App<K> for TestApp {
         // 先检查队列大小，避免无效循环
         let queue_size = self.tx_queue.len();
         let actual_max = std::cmp::min(max_tx_count, queue_size);
-        warn!(
+        debug!(
             "Node {} [produce_block] 当前队列大小: {}, 本区块将尝试获取最多 {} 个交易",
             self.node_id, queue_size, actual_max
         );

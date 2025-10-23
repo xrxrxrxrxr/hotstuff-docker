@@ -65,6 +65,8 @@ pub struct SeqFinal {
     pub vc: Vec<u8>,
     pub s_tx: u64, // median sequence number
     pub sigma: Vec<u8>,
+    pub payload: Vec<u8>,
+    pub tx_id: u64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -797,13 +799,19 @@ impl TransactionSequencing {
                     vc,
                     final_sequence,
                     combined_signature,
+                    payload,
+                    tx_id,
                     sender_id: _msg_sender,
                 } = message
                 {
-                    if let Err(e) = sequencing
-                        .process_seq_final_message(vc, final_sequence, combined_signature)
-                        .await
-                    {
+                    let final_msg = SeqFinal {
+                        vc,
+                        s_tx: final_sequence,
+                        sigma: combined_signature,
+                        payload,
+                        tx_id,
+                    };
+                    if let Err(e) = sequencing.process_seq_final_message(final_msg).await {
                         warn!(
                             "⚠️ [Sequencing] Node {} final handling failed: {}",
                             sequencing.process_id, e
@@ -952,17 +960,7 @@ impl TransactionSequencing {
     }
 
     #[tracing::instrument(skip(self))]
-    async fn process_seq_final_message(
-        &self,
-        vc: Vec<u8>,
-        final_sequence: u64,
-        combined_signature: Vec<u8>,
-    ) -> Result<(), String> {
-        let final_msg = SeqFinal {
-            vc,
-            s_tx: final_sequence,
-            sigma: combined_signature,
-        };
+    async fn process_seq_final_message(&self, final_msg: SeqFinal) -> Result<(), String> {
         let maybe_entry = self.handle_seq_final(final_msg).await?;
         if let Some(entry) = maybe_entry {
             self.emit_sequenced_entry(entry).await?;
@@ -1038,7 +1036,7 @@ impl TransactionSequencing {
         // );
         let process_id = self.process_id;
 
-        // Persist local mappings for later reconstruction and consensus input
+        // Persist mapping for later finalize broadcast
         self.pending_txs
             .entry(vc_key)
             .or_insert_with(|| req.tx.clone());
@@ -1048,11 +1046,7 @@ impl TransactionSequencing {
             hex::encode(&vc_tx[..std::cmp::min(8, vc_tx.len())]),
             self.pending_txs.len()
         );
-        // store payload
-        self.seq_payloads.insert(s, req.tx.payload.clone());
-        self.erasure_store
-            .entry(vc_key)
-            .or_insert(encoded_package.clone());
+        // payload will travel with SeqFinal; skip extra caches for now
 
         if sender == self.process_id {
             self.originated_vcs.insert(vc_key);
@@ -1398,16 +1392,21 @@ impl TransactionSequencing {
         if DISABLE_THRESHOLD_SIG_VERIFICATION {
             let vc_key = VC::from_slice(&median.vc);
             if self.final_broadcasted.insert(vc_key) {
+                let (payload, tx_id) = self.resolve_payload_and_id(&vc_key);
                 let seq_final = SeqFinal {
                     vc: median.vc.clone(),
                     s_tx: median.s_tx,
                     sigma: Vec::new(),
+                    payload: payload.clone(),
+                    tx_id,
                 };
                 let final_msg = SmrolMessage::SeqFinal {
                     vc: seq_final.vc.clone(),
                     final_sequence: seq_final.s_tx,
                     combined_signature: seq_final.sigma.clone(),
                     sender_id: self.process_id,
+                    payload,
+                    tx_id,
                 };
                 if let Err(e) = self.broadcast_tx.send(final_msg) {
                     return Err(format!("广播SEQ-FINAL失败: {}", e));
@@ -1498,16 +1497,21 @@ impl TransactionSequencing {
                 // );
 
                 let sigma_bytes = combined_sig.to_bytes().to_vec();
+                let (payload, tx_id) = self.resolve_payload_and_id(&vc_key);
                 let seq_final = SeqFinal {
                     vc: median.vc.clone(),
                     s_tx: median.s_tx,
                     sigma: sigma_bytes.clone(),
+                    payload: payload.clone(),
+                    tx_id,
                 };
                 let final_msg = SmrolMessage::SeqFinal {
                     vc: seq_final.vc.clone(),
                     final_sequence: seq_final.s_tx,
                     combined_signature: sigma_bytes,
                     sender_id: self.process_id,
+                    payload,
+                    tx_id,
                 };
                 let broadcast_start = Instant::now();
                 if let Err(e) = self.broadcast_tx.send(final_msg) {
@@ -1571,8 +1575,9 @@ impl TransactionSequencing {
     ) -> Result<Option<TransactionEntry>, String> {
         let total_start = Instant::now();
         let vc_key = VC::from_slice(&final_msg.vc);
-        let has_payload =
-            self.pending_txs.contains_key(&vc_key) || self.erasure_store.contains_key(&vc_key);
+        let has_payload = !final_msg.payload.is_empty()
+            || self.pending_txs.contains_key(&vc_key)
+            || self.erasure_store.contains_key(&vc_key);
 
         // info!(
         //     "📥 [Sequencing] Node {} received SEQ-FINAL, vc={}, pending_txs contains: {}",
@@ -1936,34 +1941,46 @@ impl TransactionSequencing {
             .ok()
             .and_then(|v| v.parse::<usize>().ok())
             .filter(|&v| v > 0)
-            .unwrap_or(1000000)
+            .unwrap_or(1000)
     }
 
     fn cleanup_log_prefix() -> &'static str {
         "🧹 [Sequencing] cleanup"
     }
 
-    fn retain_latest_payloads(map: &DashMap<u64, Vec<u8>>, limit: usize) {
-        if map.len() <= limit {
+    fn resolve_payload_and_id(&self, vc_key: &VC) -> (Vec<u8>, u64) {
+        if let Some(entry) = self.pending_txs.get(vc_key) {
+            let payload = entry.payload.clone();
+            let tx_id = bincode::deserialize::<SmrolTransaction>(&payload)
+                .map(|tx| tx.id)
+                .unwrap_or(0);
+            (payload, tx_id)
+        } else {
+            (Vec::new(), 0)
+        }
+    }
+
+    fn retain_latest_seq_payloads(&self, limit: usize) {
+        if self.seq_payloads.len() <= limit {
             return;
         }
 
-        let mut entries: Vec<u64> = map.iter().map(|entry| *entry.key()).collect();
-        entries.sort_unstable();
+        let mut keys: Vec<u64> = self.seq_payloads.iter().map(|entry| *entry.key()).collect();
+        keys.sort_unstable();
 
-        let keep = limit.min(entries.len());
-        for key in entries.into_iter().rev().skip(keep) {
-            map.remove(&key);
+        let remove_count = keys.len().saturating_sub(limit);
+        for key in keys.into_iter().take(remove_count) {
+            self.seq_payloads.remove(&key);
         }
 
         debug!(
-            "{} trimmed seq_payloads to last {} entries",
+            "{} trimmed seq_payloads down to {} entries",
             Self::cleanup_log_prefix(),
-            keep
+            limit
         );
     }
 
-    fn retain_latest_map<T>(map: &DashMap<VC, T>, limit: usize) {
+    fn retain_latest_pending_txs<T>(&self, map: &DashMap<VC, T>, limit: usize) {
         if map.len() <= limit {
             return;
         }
@@ -1971,9 +1988,10 @@ impl TransactionSequencing {
         let mut entries: Vec<(u64, VC)> = map
             .iter()
             .filter_map(|entry| {
-                let key = entry.key();
-                // Attempt to map back to sequence via tx_sequence_map if present
-                Some((0, *key))
+                let vc = *entry.key();
+                self.tx_sequence_map
+                    .get(&vc)
+                    .map(|seq_entry| (*seq_entry.value(), vc))
             })
             .collect();
 
@@ -1982,16 +2000,15 @@ impl TransactionSequencing {
         }
 
         entries.sort_by_key(|(seq, _)| *seq);
-
-        let keep = limit.min(entries.len());
-        for (_, vc) in entries.into_iter().rev().skip(keep) {
+        let remove_count = entries.len().saturating_sub(limit);
+        for (_, vc) in entries.into_iter().take(remove_count) {
             map.remove(&vc);
         }
 
         debug!(
-            "{} trimmed pending_txs to last {} entries",
+            "{} trimmed pending_txs down to {} entries",
             Self::cleanup_log_prefix(),
-            keep
+            limit
         );
     }
 
@@ -2033,7 +2050,9 @@ impl TransactionSequencing {
     pub async fn cleanup_expired_state(&self) {
         let limit = Self::state_limit();
 
-        Self::retain_latest_map(&self.pending_txs, limit);
+        self.retain_latest_pending_txs(&self.pending_txs, limit);
+
+        self.retain_latest_seq_payloads(limit);
 
         if self.erasure_store.len() > limit {
             let removed = self.erasure_store.len();
@@ -2097,8 +2116,6 @@ impl TransactionSequencing {
             );
         }
 
-        Self::retain_latest_payloads(&self.seq_payloads, limit);
-
         if self.buf.len() > limit {
             let removed = self.buf.len();
             self.buf.clear();
@@ -2128,46 +2145,43 @@ impl TransactionSequencing {
         let finalize_total_start = Instant::now();
         let vc_key = VC::from_slice(&final_msg.vc);
 
-        let payload = if let Some((_, bytes)) = self.seq_payloads.remove(&final_msg.s_tx) {
-            self.pending_txs.remove(&vc_key);
-            bytes
-        } else if let Some((_, tx)) = self.pending_txs.remove(&vc_key) {
-            tx.payload
-        } else {
-            warn!("Try Reconstructing... s_tx={}, vc={:?}", final_msg.s_tx, vc_key);
-            let reconstructed = if let Some(pkg_entry) = self.erasure_store.get(&vc_key) {
+        let mut payload = final_msg.payload.clone();
+        if payload.is_empty() {
+            if let Some((_, tx)) = self.pending_txs.remove(&vc_key) {
+                payload = tx.payload;
+            } else if let Some((_, bytes)) = self.seq_payloads.remove(&final_msg.s_tx) {
+                payload = bytes;
+            } else if let Some(pkg_entry) = self.erasure_store.get(&vc_key) {
+                warn!(
+                    "Try Reconstructing... s_tx={}, vc={:?}",
+                    final_msg.s_tx,
+                    hex::encode(&vc_key.0[..std::cmp::min(8, vc_key.0.len())])
+                );
                 let package_copy = pkg_entry.clone();
                 drop(pkg_entry);
                 match Self::reconstruct_full_async(package_copy).await {
-                    Ok(bytes) => Some(bytes),
+                    Ok(bytes) => {
+                        self.erasure_store.remove(&vc_key);
+                        payload = bytes;
+                    }
                     Err(e) => {
                         warn!(
                             "❌ [Sequencing] Erasure reconstruction failed for vc {:?}: {}",
                             vc_key, e
                         );
-                        None
+                        return None;
                     }
                 }
             } else {
-                None
-            };
-
-            if let Some(bytes) = reconstructed {
-                self.erasure_store.remove(&vc_key);
-                bytes
-            } else {
+                // Still waiting for request context; cache for later retry
                 self.store_pending_final(final_msg).await;
-                let total = finalize_total_start.elapsed();
-                // if total > Duration::from_micros(1000) {
-                //     warn!(
-                //         "[finalization] finalize_ready_final exited early after {:?} (vc={})",
-                //         total,
-                //         hex::encode(&vc_key.0[..std::cmp::min(8, vc_key.0.len())])
-                //     );
-                // }
                 return None;
             }
-        };
+        } else {
+            self.pending_txs.remove(&vc_key);
+            self.seq_payloads.remove(&final_msg.s_tx);
+            self.erasure_store.remove(&vc_key);
+        }
 
         self.pending_seq_finals.remove(&vc_key);
         self.originated_vcs.remove(&vc_key);
