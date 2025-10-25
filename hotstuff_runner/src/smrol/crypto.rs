@@ -1,13 +1,12 @@
+use blsttc::{PublicKeySet, SecretKeySet, SecretKeyShare};
 use ed25519_dalek::{Signature, VerifyingKey};
-use rand::SeedableRng;
-use rand_chacha::ChaChaRng;
+use rand08::{rngs::StdRng, SeedableRng};
 use reed_solomon_erasure::galois_8::ReedSolomon;
 use rs_merkle::{algorithms::Sha256, Hasher, MerkleTree};
 use serde::{Deserialize, Serialize};
 use sha2::Digest;
 use sha2::Sha256 as Sha256Digest;
 use std::collections::{HashMap, HashSet};
-use threshold_crypto::{PublicKeySet, SecretKeySet, SecretKeyShare};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SmrolShare {
@@ -154,7 +153,7 @@ pub fn derive_threshold_keys(
     }
 
     let seed: [u8; 32] = hasher.finalize().into();
-    let mut rng = ChaChaRng::from_seed(seed);
+    let mut rng = StdRng::from_seed(seed);
     let secret_set = SecretKeySet::random(f, &mut rng);
     let share = secret_set.secret_key_share(node_id);
     let public = secret_set.public_keys();

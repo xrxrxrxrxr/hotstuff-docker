@@ -16,6 +16,7 @@ services:
       - TARGET_TPS=${TARGET_TPS}
       - TEST_DURATION=${TEST_DURATION}
       - RUST_LOG=${RUST_LOG}
+      - CLIENT_ORDERING_MODE=${CLIENT_ORDERING_MODE}
     volumes:
       - ./logs:/logs
       - ./logs:/log

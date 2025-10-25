@@ -117,7 +117,7 @@ impl PnfifoBc {
                     Ok(_) => {
                         let elapsed = dispatch_start.elapsed();
                         if elapsed > Duration::from_millis(10) {
-                            warn!(
+                            debug!(
                                 "🐌 [PNFIFO] Node {} 广播 {:?} 延时较高: {:?}",
                                 node_id_for_broadcast, msg_kind, elapsed
                             );
@@ -986,7 +986,7 @@ impl PnfifoBc {
                 }
                 let elapsed = start.elapsed();
                 if elapsed > Duration::from_millis(10) {
-                    warn!(
+                    debug!(
                         "🐌 [SLOW] Proposal handler slow for leader {} slot {}: {:?}",
                         leader_id, message.slot, elapsed
                     );
@@ -1050,7 +1050,7 @@ impl PnfifoBc {
                 }
                 let elapsed = start.elapsed();
                 if elapsed > Duration::from_millis(10) {
-                    warn!(
+                    debug!(
                         "🐌 [SLOW] Vote handler slow for leader {} slot {}: {:?}",
                         leader_id, message.slot, elapsed
                     );
@@ -1112,7 +1112,7 @@ impl PnfifoBc {
                 }
                 let elapsed = start.elapsed();
                 if elapsed > Duration::from_millis(10) {
-                    warn!(
+                    debug!(
                         "🐌 [SLOW] Final handler slow for leader {} slot {}: {:?}",
                         leader_id, message.slot, elapsed
                     );

@@ -4,7 +4,20 @@
 SSH_KEY=~/.ssh/xrui.pem
 SSH_OPTS="-i $SSH_KEY -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
-NODES := $(shell grep -E 'node[0-9]+$$' hosts.txt | awk '{print "ubuntu@"$$1}')
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+HOSTS_FILE="$SCRIPT_DIR/hosts.txt"
+
+if [[ ! -f "$HOSTS_FILE" ]]; then
+  echo "hosts.txt not found at $HOSTS_FILE" >&2
+  exit 1
+fi
+
+mapfile -t NODES < <(awk '/node[0-9]+$/ {print "ubuntu@"$1}' "$HOSTS_FILE")
+
+if [[ ${#NODES[@]} -eq 0 ]]; then
+  echo "No node entries found in hosts.txt" >&2
+  exit 1
+fi
 
 echo "🔧 初始化 EC2 实例（安装 Docker）..."
 

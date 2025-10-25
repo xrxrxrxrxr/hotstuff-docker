@@ -9,25 +9,173 @@ use crate::smrol::{
 };
 use dashmap::{mapref::entry::Entry, DashMap, DashSet};
 use ed25519_dalek::{Signature as Ed25519Signature, Signer, SigningKey, Verifier, VerifyingKey};
+use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use std::sync::{
     atomic::{AtomicU64, Ordering},
-    Arc,
+    Arc, Mutex,
 };
+use std::pin::Pin;
+use std::task::{Context, Poll};
 use std::time::Instant;
-use std::{collections::HashMap, convert::TryFrom, result};
-use threshold_crypto::{
+use std::thread;
+use std::{collections::{HashMap, HashSet}, convert::TryFrom, result};
+use blsttc::{
     PublicKeySet, SecretKeyShare, Signature as ThresholdSignature, SignatureShare, SIG_SIZE,
 };
+use futures::task::AtomicWaker;
+use crossbeam::channel::{unbounded, Sender};
 use tokio::{
     sync::{mpsc as async_mpsc, Mutex as AsyncMutex, RwLock},
-    task,
     time::{timeout, Duration},
 };
 use tracing::{debug, error, info, warn};
 use tracing_subscriber::field::debug;
 
-const DISABLE_THRESHOLD_SIG_VERIFICATION: bool = true;
+static DISABLE_THRESHOLD_SIG_VERIFICATION: Lazy<bool> = Lazy::new(|| {
+    match std::env::var("SMROL_DISABLE_THRESHOLD_SIG") {
+        Ok(val) => match val.trim().to_ascii_lowercase().as_str() {
+            "0" | "false" | "no" | "off" => false,
+            "1" | "true" | "yes" | "on" => true,
+            _ => true,
+        },
+        Err(_) => true,
+    }
+});
+
+trait ThresholdJob: Send {
+    fn run(self: Box<Self>);
+}
+
+struct ThresholdThreadPool {
+    sender: Sender<Box<dyn ThresholdJob>>,
+}
+
+impl ThresholdThreadPool {
+    fn new(worker_count: usize) -> Self {
+        let (sender, receiver) = unbounded::<Box<dyn ThresholdJob>>();
+        for idx in 0..worker_count {
+            let thread_receiver = receiver.clone();
+            thread::Builder::new()
+                .name(format!("threshold-worker-{}", idx))
+                .spawn(move || {
+                    for job in thread_receiver.iter() {
+                        job.run();
+                    }
+                })
+                .expect("failed to spawn threshold worker thread");
+        }
+        drop(receiver);
+        Self { sender }
+    }
+
+    fn submit<R, F>(&self, task: F) -> Result<ThresholdTaskFuture<R>, String>
+    where
+        R: Send + 'static,
+        F: FnOnce() -> Result<R, String> + Send + 'static,
+    {
+        let state = Arc::new(TaskState::new());
+        let job = Box::new(ConcreteThresholdJob {
+            task: Some(task),
+            state: state.clone(),
+        });
+        self.sender
+            .send(job)
+            .map_err(|_| "threshold worker pool shut down".to_string())?;
+        Ok(ThresholdTaskFuture { state })
+    }
+}
+
+static THRESHOLD_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
+    let workers = thread::available_parallelism()
+        .map(|n| (n.get() * 2).max(8))
+        .unwrap_or(8);
+    ThresholdThreadPool::new(workers)
+});
+
+async fn run_threshold_task<R, F>(task: F) -> Result<R, String>
+where
+    R: Send + 'static,
+    F: FnOnce() -> Result<R, String> + Send + 'static,
+{
+    THRESHOLD_POOL.submit(task)?.await
+}
+
+struct TaskState<R> {
+    result: Mutex<Option<Result<R, String>>>,
+    waker: AtomicWaker,
+}
+
+impl<R> TaskState<R> {
+    fn new() -> Self {
+        Self {
+            result: Mutex::new(None),
+            waker: AtomicWaker::new(),
+        }
+    }
+
+    fn complete(&self, value: Result<R, String>) {
+        let mut guard = self.result.lock().expect("task state poisoned");
+        *guard = Some(value);
+        drop(guard);
+        self.waker.wake();
+    }
+
+    fn take_result(&self) -> Option<Result<R, String>> {
+        self.result.lock().expect("task state poisoned").take()
+    }
+
+    fn register(&self, waker: &std::task::Waker) {
+        self.waker.register(waker);
+    }
+}
+
+struct ThresholdTaskFuture<R> {
+    state: Arc<TaskState<R>>,
+}
+
+impl<R> std::future::Future for ThresholdTaskFuture<R>
+where
+    R: Send + 'static,
+{
+    type Output = Result<R, String>;
+
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        if let Some(result) = self.state.take_result() {
+            return Poll::Ready(result);
+        }
+
+        self.state.register(cx.waker());
+
+        if let Some(result) = self.state.take_result() {
+            Poll::Ready(result)
+        } else {
+            Poll::Pending
+        }
+    }
+}
+
+struct ConcreteThresholdJob<R, F>
+where
+    R: Send + 'static,
+    F: FnOnce() -> Result<R, String> + Send + 'static,
+{
+    task: Option<F>,
+    state: Arc<TaskState<R>>,
+}
+
+impl<R, F> ThresholdJob for ConcreteThresholdJob<R, F>
+where
+    R: Send + 'static,
+    F: FnOnce() -> Result<R, String> + Send + 'static,
+{
+    fn run(mut self: Box<Self>) {
+        if let Some(task) = self.task.take() {
+            let result = task();
+            self.state.complete(result);
+        }
+    }
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Transaction {
@@ -65,7 +213,6 @@ pub struct SeqFinal {
     pub vc: Vec<u8>,
     pub s_tx: u64, // median sequence number
     pub sigma: Vec<u8>,
-    pub payload: Vec<u8>,
     pub tx_id: u64,
 }
 
@@ -122,6 +269,7 @@ pub struct TransactionSequencing {
     response_shares: DashMap<VC, Vec<SeqResponseRecord>>,
     completed_responses: DashSet<VC>,
     median_shares: DashMap<VC, HashMap<usize, SignatureShare>>,
+    median_waiters: DashMap<VC, HashSet<usize>>,
     final_broadcasted: DashSet<VC>,
     finalized_vcs: DashSet<VC>,
     tx_sequence_map: DashMap<VC, u64>,
@@ -214,6 +362,7 @@ impl TransactionSequencing {
             response_shares: DashMap::new(),
             completed_responses: DashSet::new(),
             median_shares: DashMap::new(),
+            median_waiters: DashMap::new(),
             final_broadcasted: DashSet::new(),
             finalized_vcs: DashSet::new(),
             tx_sequence_map: DashMap::new(),
@@ -285,6 +434,10 @@ impl TransactionSequencing {
     }
 
     pub fn start_processing(self: &Arc<Self>) {
+        warn!(
+            "[Sequencing] Node {} Threshold signature verification disabled: {}",
+            self.process_id, *DISABLE_THRESHOLD_SIG_VERIFICATION
+        );
         self.spawn_request_processor();
         self.spawn_response_processor();
         self.spawn_order_receiver();
@@ -574,21 +727,16 @@ impl TransactionSequencing {
                 let order_for_check = order.clone();
                 let verifying_keys = Arc::clone(&sequencing.verifying_keys);
                 let required = 2 * sequencing.f + 1;
-                let verify_result = match task::spawn_blocking(move || {
-                    verify_seq_order_records(order_for_check, verifying_keys, required)
-                })
-                .await
-                {
+                let verify_result = match verify_seq_order_records(order_for_check, verifying_keys, required).await {
                     Ok(res) => res,
                     Err(e) => {
                         warn!(
-                            "⚠️ [Sequencing] Node {} order verify task panicked: {}",
+                            "⚠️ [Sequencing] Node {} order verify task failed: {}",
                             sequencing.process_id, e
                         );
                         false
                     }
                 };
-                // let verify_result=verify_seq_order_records(order_for_check, verifying_keys, required);
 
                 if verify_result {
                     if let Err(e) = finalize_tx.send((sender_id, order)) {
@@ -799,7 +947,6 @@ impl TransactionSequencing {
                     vc,
                     final_sequence,
                     combined_signature,
-                    payload,
                     tx_id,
                     sender_id: _msg_sender,
                 } = message
@@ -808,7 +955,6 @@ impl TransactionSequencing {
                         vc,
                         s_tx: final_sequence,
                         sigma: combined_signature,
-                        payload,
                         tx_id,
                     };
                     if let Err(e) = sequencing.process_seq_final_message(final_msg).await {
@@ -870,11 +1016,11 @@ impl TransactionSequencing {
         let total_shards = std::cmp::max(data_shards, self.n);
         let serialized_for_encode = serialized.clone();
         let encode_start = Instant::now();
-        let encoded_package = task::spawn_blocking(move || {
+        let encoded_package = run_threshold_task(move || {
             ErasurePackage::encode(&serialized_for_encode, data_shards, total_shards)
+                .map_err(|e| format!("纠删码编码任务失败: {}", e))
         })
-        .await
-        .map_err(|e| format!("纠删码编码任务失败: {}", e))??;
+        .await?;
         let encode_duration = encode_start.elapsed();
 
         let seq_request = SeqRequest {
@@ -1320,26 +1466,25 @@ impl TransactionSequencing {
         let median_time = median_start.elapsed();
 
         let message = format!("median:{}:{}", median, hex::encode(&order.vc));
-        let (sigma_seq, sign_exec_time, sign_time) = if DISABLE_THRESHOLD_SIG_VERIFICATION {
+        let (sigma_seq, sign_exec_time, sign_time) = if *DISABLE_THRESHOLD_SIG_VERIFICATION {
             (Vec::new(), Duration::ZERO, Duration::ZERO)
         } else {
             let sign_send_start = Instant::now();
             let threshold_share = self.threshold_share.clone();
             let message_for_sign = message.clone();
-            let (sigma_seq, sign_exec_time) = task::spawn_blocking(move || {
+            let (sigma_seq, sign_exec_time) = run_threshold_task(move || {
                 let sign_start = Instant::now();
                 let sigma = threshold_share
                     .sign(message_for_sign.as_bytes())
                     .to_bytes()
                     .to_vec();
-                (sigma, sign_start.elapsed())
+                Ok((sigma, sign_start.elapsed()))
             })
-            .await
-            .map_err(|e| format!("threshold sign task失败: {}", e))?;
+            .await?;
 
             if sign_exec_time > Duration::from_millis(5) {
                 warn!(
-                    "[threshold_share.sign] Threshold sign took {:?} (spawn_blocking)",
+                    "[threshold_worker] Threshold sign took {:?}",
                     sign_exec_time
                 );
             }
@@ -1348,7 +1493,7 @@ impl TransactionSequencing {
             let scheduling_overhead = sign_time.saturating_sub(sign_exec_time);
             if scheduling_overhead > Duration::from_millis(1) {
                 warn!(
-                    "[spawn_blocking] threshold_sign scheduling overhead {:?}",
+                    "[threshold_worker] threshold_sign scheduling overhead {:?}",
                     scheduling_overhead
                 );
             }
@@ -1386,38 +1531,76 @@ impl TransactionSequencing {
     #[tracing::instrument(skip(self))]
     pub async fn handle_seq_median(&self, sender: usize, median: SeqMedian) -> Result<(), String> {
         info!("📥 [Sequencing] received SEQ-MEDIAN from {}", sender);
+        let total_start = Instant::now();
         // point to point so skip the check
         // if self.originated_vcs.contains(&median.vc) {
         // Original SEQ-REQUEST sender gathers median shares (Algorithm 2, line 30)
-        if DISABLE_THRESHOLD_SIG_VERIFICATION {
+        if *DISABLE_THRESHOLD_SIG_VERIFICATION {
             let vc_key = VC::from_slice(&median.vc);
-            if self.final_broadcasted.insert(vc_key) {
-                let (payload, tx_id) = self.resolve_payload_and_id(&vc_key);
-                let seq_final = SeqFinal {
-                    vc: median.vc.clone(),
-                    s_tx: median.s_tx,
-                    sigma: Vec::new(),
-                    payload: payload.clone(),
-                    tx_id,
-                };
+            let threshold = self.f + 1;
+            let map_update_start = Instant::now();
+            let mut ready_to_broadcast = false;
+            let entry_len = match self.median_waiters.entry(vc_key) {
+                Entry::Occupied(mut occ) => {
+                    let set: &mut HashSet<usize> = occ.get_mut();
+                    if set.insert(sender) && set.len() >= threshold {
+                        ready_to_broadcast = true;
+                        occ.remove();
+                        threshold
+                    } else {
+                        set.len()
+                    }
+                }
+                Entry::Vacant(vac) => {
+                    if threshold == 1 {
+                        ready_to_broadcast = true;
+                        1
+                    } else {
+                        let mut set: HashSet<usize> = HashSet::with_capacity(threshold);
+                        set.insert(sender);
+                        vac.insert(set);
+                        1
+                    }
+                }
+            };
+            let map_update_time = map_update_start.elapsed();
+
+            if ready_to_broadcast && self.final_broadcasted.insert(vc_key) {
+                let combine_start = Instant::now();
+                let tx_id = self.resolve_tx_id(&vc_key);
+                let combine_time = combine_start.elapsed();
+
                 let final_msg = SmrolMessage::SeqFinal {
-                    vc: seq_final.vc.clone(),
-                    final_sequence: seq_final.s_tx,
-                    combined_signature: seq_final.sigma.clone(),
+                    vc: median.vc.clone(),
+                    final_sequence: median.s_tx,
+                    combined_signature: Vec::new(),
                     sender_id: self.process_id,
-                    payload,
                     tx_id,
                 };
                 if let Err(e) = self.broadcast_tx.send(final_msg) {
                     return Err(format!("广播SEQ-FINAL失败: {}", e));
                 }
-                // allow cooperative scheduling for fairness in tests
-                // tokio::task::yield_now().await;
+
+                let total_time = total_start.elapsed();
+                if total_time > Duration::from_millis(10) {
+                    warn!(
+                        "🐌 handle_seq_median (no-threshold) SLOW: total={:?}, map_update={:?}, combine={:?}",
+                        total_time,
+                        map_update_time,
+                        combine_time
+                    );
+                }
+            } else if total_start.elapsed() > Duration::from_millis(10) {
+                warn!(
+                    "🐌 handle_seq_median (no-threshold) pending: total={:?}, map_update={:?}, collected={}/{}",
+                    total_start.elapsed(),
+                    map_update_time,
+                    entry_len,
+                    threshold
+                );
             }
             return Ok(());
         }
-
-        let total_start = Instant::now();
         let verify_start = Instant::now();
         // slow
         let maybe_share = self.verify_median_share_async(&median, sender).await?;
@@ -1497,20 +1680,12 @@ impl TransactionSequencing {
                 // );
 
                 let sigma_bytes = combined_sig.to_bytes().to_vec();
-                let (payload, tx_id) = self.resolve_payload_and_id(&vc_key);
-                let seq_final = SeqFinal {
-                    vc: median.vc.clone(),
-                    s_tx: median.s_tx,
-                    sigma: sigma_bytes.clone(),
-                    payload: payload.clone(),
-                    tx_id,
-                };
+                let tx_id = self.resolve_tx_id(&vc_key);
                 let final_msg = SmrolMessage::SeqFinal {
-                    vc: seq_final.vc.clone(),
-                    final_sequence: seq_final.s_tx,
+                    vc: median.vc.clone(),
+                    final_sequence: median.s_tx,
                     combined_signature: sigma_bytes,
                     sender_id: self.process_id,
-                    payload,
                     tx_id,
                 };
                 let broadcast_start = Instant::now();
@@ -1575,21 +1750,6 @@ impl TransactionSequencing {
     ) -> Result<Option<TransactionEntry>, String> {
         let total_start = Instant::now();
         let vc_key = VC::from_slice(&final_msg.vc);
-        let has_payload = !final_msg.payload.is_empty()
-            || self.pending_txs.contains_key(&vc_key)
-            || self.erasure_store.contains_key(&vc_key);
-
-        // info!(
-        //     "📥 [Sequencing] Node {} received SEQ-FINAL, vc={}, pending_txs contains: {}",
-        //     self.process_id,
-        //     hex::encode(&final_msg.vc[..8]),
-        //     has_payload
-        // );
-        // debug!(
-        //     "[Sequencing] SEQ-FINAL vc={}, pending_txs contains: {}",
-        //     hex::encode(&final_msg.vc[..8]),
-        //     has_payload
-        // );
 
         // NOTE: 改成原子操作？
         let verify_start = Instant::now();
@@ -1681,85 +1841,54 @@ impl TransactionSequencing {
         median: &SeqMedian,
         sender: usize,
     ) -> Result<Option<SignatureShare>, String> {
-        if DISABLE_THRESHOLD_SIG_VERIFICATION {
-            if median.sigma_seq.len() != SIG_SIZE {
-                return Err(format!(
-                    "threshold signature share length invalid: {}",
-                    median.sigma_seq.len()
-                ));
-            }
-
-            let mut share_bytes = [0u8; SIG_SIZE];
-            share_bytes.copy_from_slice(&median.sigma_seq);
-            let share = SignatureShare::from_bytes(&share_bytes)
-                .map_err(|e| format!("无法解析threshold share: {}", e))?;
-            return Ok(Some(share));
+        if *DISABLE_THRESHOLD_SIG_VERIFICATION {
+        if median.sigma_seq.len() != SIG_SIZE {
+            return Err(format!(
+                "threshold signature share length invalid: {}",
+                median.sigma_seq.len()
+            ));
         }
 
-        let threshold_public = self.threshold_public.clone();
-        let median_clone = median.clone();
-        let spawn_start = Instant::now();
-
-        let join_result = task::spawn_blocking(
-            move || -> Result<(Option<SignatureShare>, Duration), String> {
-                let work_start = Instant::now();
-                let outcome = (|| -> Result<Option<SignatureShare>, String> {
-                    if median_clone.sigma_seq.len() != SIG_SIZE {
-                        return Err(format!(
-                            "threshold signature share length invalid: {}",
-                            median_clone.sigma_seq.len()
-                        ));
-                    }
-
-                    let mut share_bytes = [0u8; SIG_SIZE];
-                    share_bytes.copy_from_slice(&median_clone.sigma_seq);
-                    let share = SignatureShare::from_bytes(&share_bytes)
-                        .map_err(|e| format!("无法解析threshold share: {}", e))?;
-
-                    let pk_share = threshold_public.public_key_share(sender);
-                    let message = format!(
-                        "median:{}:{}",
-                        median_clone.s_tx,
-                        hex::encode(&median_clone.vc)
-                    );
-                    let verify_start = Instant::now();
-                    let is_valid = pk_share.verify(&share, message.as_bytes());
-                    let verify_time = verify_start.elapsed();
-                    warn!(
-                        "[pk_share.verify] verify_median_share took {:?}",
-                        verify_time
-                    );
-                    if is_valid {
-                        Ok(Some(share))
-                    } else {
-                        Ok(None)
-                    }
-                })();
-                let elapsed = work_start.elapsed();
-                outcome.map(|res| (res, elapsed))
-            },
-        )
-        .await
-        .map_err(|e| format!("verify seq-median share task失败: {}", e))?;
-        let (maybe_share, worker_time) = join_result?;
-
-        let total_time = spawn_start.elapsed();
-        let scheduling_overhead = total_time.saturating_sub(worker_time);
-        if scheduling_overhead > Duration::from_millis(1) {
-            warn!(
-                "[spawn_blocking] verify_median_share_async scheduling overhead {:?}",
-                scheduling_overhead
-            );
-        }
-
-        Ok(maybe_share)
+        let mut share_bytes = [0u8; SIG_SIZE];
+        share_bytes.copy_from_slice(&median.sigma_seq);
+        let share = SignatureShare::from_bytes(share_bytes)
+            .map_err(|e| format!("无法解析threshold share: {}", e))?;
+        return Ok(Some(share));
     }
+
+    if median.sigma_seq.len() != SIG_SIZE {
+        return Err(format!(
+            "threshold signature share length invalid: {}",
+            median.sigma_seq.len()
+        ));
+    }
+
+    let mut share_bytes = [0u8; SIG_SIZE];
+    share_bytes.copy_from_slice(&median.sigma_seq);
+    let share = SignatureShare::from_bytes(share_bytes)
+        .map_err(|e| format!("无法解析threshold share: {}", e))?;
+
+    let threshold_public = self.threshold_public.clone();
+    let message = format!("median:{}:{}", median.s_tx, hex::encode(&median.vc));
+    let message_bytes = message.into_bytes();
+
+    let verify_start = Instant::now();
+    let pk_share = threshold_public.public_key_share(sender);
+    let is_valid = pk_share.verify(&share, &message_bytes);
+    let verify_time = verify_start.elapsed();
+    warn!(
+        "[pk_share.verify] verify_median_share took {:?}",
+        verify_time
+    );
+
+    Ok(if is_valid { Some(share) } else { None })
+}
 
     async fn combine_median_shares_async(
         &self,
         shares: Vec<(usize, SignatureShare)>,
     ) -> Result<ThresholdSignature, String> {
-        if DISABLE_THRESHOLD_SIG_VERIFICATION {
+        if *DISABLE_THRESHOLD_SIG_VERIFICATION {
             return Err(
                 "combine_median_shares_async called while threshold verification disabled".into(),
             );
@@ -1768,24 +1897,21 @@ impl TransactionSequencing {
         let threshold_public = self.threshold_public.clone();
         let spawn_start = Instant::now();
 
-        let join_result =
-            task::spawn_blocking(move || -> Result<(ThresholdSignature, Duration), String> {
-                let work_start = Instant::now();
-                let outcome = threshold_public
-                    .combine_signatures(shares.iter().map(|(id, share)| (*id, share)))
-                    .map_err(|e| format!("阈值签名组合失败: {}", e));
-                let elapsed = work_start.elapsed();
-                outcome.map(|sig| (sig, elapsed))
-            })
-            .await
-            .map_err(|e| format!("combine signature task失败: {}", e))?;
-        let (signature, worker_time) = join_result?;
+        let (signature, worker_time) = run_threshold_task(move || {
+            let work_start = Instant::now();
+            let outcome = threshold_public
+                .combine_signatures(shares.iter().map(|(id, share)| (*id, share)))
+                .map_err(|e| format!("阈值签名组合失败: {}", e));
+            let elapsed = work_start.elapsed();
+            outcome.map(|sig| (sig, elapsed))
+        })
+        .await?;
 
         let total_time = spawn_start.elapsed();
         let scheduling_overhead = total_time.saturating_sub(worker_time);
         if scheduling_overhead > Duration::from_millis(1) {
             warn!(
-                "[spawn_blocking] combine_median_shares_async scheduling overhead {:?}",
+                "[threshold_worker] combine_median_shares_async scheduling overhead {:?}",
                 scheduling_overhead
             );
         }
@@ -1794,68 +1920,45 @@ impl TransactionSequencing {
     }
 
     async fn verify_combined_signature_async(&self, final_msg: &SeqFinal) -> Result<bool, String> {
-        if DISABLE_THRESHOLD_SIG_VERIFICATION {
+        if *DISABLE_THRESHOLD_SIG_VERIFICATION {
             return Ok(true);
         }
 
-        let threshold_public = self.threshold_public.clone();
-        let final_clone = final_msg.clone();
-        let spawn_start = Instant::now();
-
-        let join_result = task::spawn_blocking(move || -> Result<(bool, Duration), String> {
-            let work_start = Instant::now();
-            let outcome = (|| -> Result<bool, String> {
-                if final_clone.sigma.len() != SIG_SIZE {
-                    return Err(format!(
-                        "combined signature length invalid: {}",
-                        final_clone.sigma.len()
-                    ));
-                }
-
-                let mut sig_bytes = [0u8; SIG_SIZE];
-                sig_bytes.copy_from_slice(&final_clone.sigma);
-                let signature = ThresholdSignature::from_bytes(&sig_bytes)
-                    .map_err(|e| format!("无法解析组合签名: {}", e))?;
-
-                let message = format!(
-                    "median:{}:{}",
-                    final_clone.s_tx,
-                    hex::encode(&final_clone.vc)
-                );
-                let verify_start = Instant::now();
-                let r = threshold_public
-                    .public_key()
-                    .verify(&signature, message.as_bytes());
-                let verify_time = verify_start.elapsed();
-                warn!(
-                    "[public_key.verify] verify_combined_signature took {:?}",
-                    verify_time
-                );
-                Ok(r)
-            })();
-            let elapsed = work_start.elapsed();
-            outcome.map(|res| (res, elapsed))
-        })
-        .await
-        .map_err(|e| format!("verify combined signature task失败: {}", e))?;
-        let (result, worker_time) = join_result?;
-
-        let total_time = spawn_start.elapsed();
-        let scheduling_overhead = total_time.saturating_sub(worker_time);
-        if scheduling_overhead > Duration::from_millis(1) {
-            warn!(
-                "[spawn_blocking] verify_combined_signature_async scheduling overhead {:?}",
-                scheduling_overhead
-            );
+        if final_msg.sigma.len() != SIG_SIZE {
+            return Err(format!(
+                "combined signature length invalid: {}",
+                final_msg.sigma.len()
+            ));
         }
+
+        let mut sig_bytes = [0u8; SIG_SIZE];
+        sig_bytes.copy_from_slice(&final_msg.sigma);
+        let signature = ThresholdSignature::from_bytes(sig_bytes)
+            .map_err(|e| format!("无法解析组合签名: {}", e))?;
+
+        let threshold_public = self.threshold_public.clone();
+        let message = format!(
+            "median:{}:{}",
+            final_msg.s_tx,
+            hex::encode(&final_msg.vc)
+        );
+        let message_bytes = message.into_bytes();
+
+        let verify_start = Instant::now();
+        let result = threshold_public
+            .public_key()
+            .verify(&signature, &message_bytes);
+        let verify_time = verify_start.elapsed();
+        warn!(
+            "[public_key.verify] verify_combined_signature took {:?}",
+            verify_time
+        );
 
         Ok(result)
     }
 
     async fn reconstruct_full_async(package: ErasurePackage) -> Result<Vec<u8>, String> {
-        task::spawn_blocking(move || package.reconstruct_full())
-            .await
-            .map_err(|e| format!("erasure reconstruction task失败: {}", e))?
+        run_threshold_task(move || package.reconstruct_full()).await
     }
 
     // Helper functions
@@ -1948,16 +2051,15 @@ impl TransactionSequencing {
         "🧹 [Sequencing] cleanup"
     }
 
-    fn resolve_payload_and_id(&self, vc_key: &VC) -> (Vec<u8>, u64) {
-        if let Some(entry) = self.pending_txs.get(vc_key) {
-            let payload = entry.payload.clone();
-            let tx_id = bincode::deserialize::<SmrolTransaction>(&payload)
-                .map(|tx| tx.id)
-                .unwrap_or(0);
-            (payload, tx_id)
-        } else {
-            (Vec::new(), 0)
-        }
+    fn resolve_tx_id(&self, vc_key: &VC) -> u64 {
+        self.pending_txs
+            .get(vc_key)
+            .and_then(|entry| {
+                bincode::deserialize::<SmrolTransaction>(&entry.payload)
+                    .map(|tx| tx.id)
+                    .ok()
+            })
+            .unwrap_or(0)
     }
 
     fn retain_latest_seq_payloads(&self, limit: usize) {
@@ -2106,6 +2208,16 @@ impl TransactionSequencing {
             );
         }
 
+        if self.median_waiters.len() > limit {
+            let removed = self.median_waiters.len();
+            self.median_waiters.clear();
+            debug!(
+                "{} cleared {} median waiter entries",
+                Self::cleanup_log_prefix(),
+                removed
+            );
+        }
+
         if self.tx_sequence_map.len() > limit {
             let removed = self.tx_sequence_map.len();
             self.tx_sequence_map.clear();
@@ -2145,43 +2257,39 @@ impl TransactionSequencing {
         let finalize_total_start = Instant::now();
         let vc_key = VC::from_slice(&final_msg.vc);
 
-        let mut payload = final_msg.payload.clone();
-        if payload.is_empty() {
-            if let Some((_, tx)) = self.pending_txs.remove(&vc_key) {
-                payload = tx.payload;
-            } else if let Some((_, bytes)) = self.seq_payloads.remove(&final_msg.s_tx) {
-                payload = bytes;
-            } else if let Some(pkg_entry) = self.erasure_store.get(&vc_key) {
-                warn!(
-                    "Try Reconstructing... s_tx={}, vc={:?}",
-                    final_msg.s_tx,
-                    hex::encode(&vc_key.0[..std::cmp::min(8, vc_key.0.len())])
-                );
-                let package_copy = pkg_entry.clone();
-                drop(pkg_entry);
-                match Self::reconstruct_full_async(package_copy).await {
-                    Ok(bytes) => {
-                        self.erasure_store.remove(&vc_key);
-                        payload = bytes;
-                    }
-                    Err(e) => {
-                        warn!(
-                            "❌ [Sequencing] Erasure reconstruction failed for vc {:?}: {}",
-                            vc_key, e
-                        );
-                        return None;
-                    }
+        let mut payload = if let Some((_, tx)) = self.pending_txs.remove(&vc_key) {
+            tx.payload
+        } else if let Some((_, bytes)) = self.seq_payloads.remove(&final_msg.s_tx) {
+            bytes
+        } else if let Some(pkg_entry) = self.erasure_store.get(&vc_key) {
+            warn!(
+                "Try Reconstructing... s_tx={}, vc={:?}",
+                final_msg.s_tx,
+                hex::encode(&vc_key.0[..std::cmp::min(8, vc_key.0.len())])
+            );
+            let package_copy = pkg_entry.clone();
+            drop(pkg_entry);
+            match Self::reconstruct_full_async(package_copy).await {
+                Ok(bytes) => {
+                    self.erasure_store.remove(&vc_key);
+                    bytes
                 }
-            } else {
-                // Still waiting for request context; cache for later retry
-                self.store_pending_final(final_msg).await;
-                return None;
+                Err(e) => {
+                    warn!(
+                        "❌ [Sequencing] Erasure reconstruction failed for vc {:?}: {}",
+                        vc_key, e
+                    );
+                    return None;
+                }
             }
         } else {
-            self.pending_txs.remove(&vc_key);
-            self.seq_payloads.remove(&final_msg.s_tx);
-            self.erasure_store.remove(&vc_key);
-        }
+            // Still waiting for request context; cache for later retry
+            self.store_pending_final(final_msg).await;
+            return None;
+        };
+
+        self.seq_payloads.remove(&final_msg.s_tx);
+        self.erasure_store.remove(&vc_key);
 
         self.pending_seq_finals.remove(&vc_key);
         self.originated_vcs.remove(&vc_key);
@@ -2190,9 +2298,9 @@ impl TransactionSequencing {
         self.finalized_vcs.insert(vc_key);
 
         let entry = TransactionEntry {
-            vc_tx: final_msg.vc.clone(),
+            vc_tx: final_msg.vc,
             s_tx: final_msg.s_tx,
-            sigma: final_msg.sigma.clone(),
+            sigma: final_msg.sigma,
             payload,
         };
 
@@ -2221,54 +2329,42 @@ impl TransactionSequencing {
     }
 }
 
-fn verify_seq_order_records(
+async fn verify_seq_order_records(
     order: SeqOrder,
     verifying_keys: Arc<HashMap<usize, VerifyingKey>>,
     required: usize,
-) -> bool {
+) -> Result<bool, String> {
     if order.records.len() != required {
-        return false;
+        return Ok(false);
     }
 
     for record in &order.records {
-        let Some(verifying_key) = verifying_keys.get(&record.sender) else {
-            warn!(
-                "❌ [Sequencing] Missing verifying key for node {} in SeqOrder",
-                record.sender
-            );
-            return false;
-        };
+        let verifying_key = verifying_keys
+            .get(&record.sender)
+            .ok_or_else(|| format!("missing verifying key for node {}", record.sender))?;
 
         if record.signature.len() != 64 {
-            warn!(
-                "❌ [Sequencing] Invalid signature length in SeqOrder from node {}",
-                record.sender
-            );
-            return false;
+            return Ok(false);
         }
 
-        let signature = match Ed25519Signature::try_from(record.signature.as_slice()) {
-            Ok(sig) => sig,
-            Err(e) => {
-                warn!(
-                    "❌ [Sequencing] Invalid signature bytes in SeqOrder from {}: {}",
-                    record.sender, e
-                );
-                return false;
-            }
-        };
+        let signature = Ed25519Signature::try_from(record.signature.as_slice())
+            .map_err(|_| format!("invalid signature bytes in SeqOrder from {}", record.sender))?;
 
         let message =
             TransactionSequencing::build_sequence_signature_message(&order.vc, record.sequence);
+        let verifying_key = verifying_key.clone();
 
-        if verifying_key.verify_strict(&message, &signature).is_err() {
-            warn!(
-                "❌ [Sequencing] Invalid signature from node {} in SeqOrder",
-                record.sender
-            );
-            return false;
+        let verify_ok = run_threshold_task(move || {
+            Ok(verifying_key
+                .verify_strict(&message, &signature)
+                .is_ok())
+        })
+        .await?;
+
+        if !verify_ok {
+            return Ok(false);
         }
     }
 
-    true
+    Ok(true)
 }

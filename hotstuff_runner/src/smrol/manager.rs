@@ -582,7 +582,6 @@ impl SmrolManager {
                 vc,
                 final_sequence,
                 combined_signature,
-                payload,
                 tx_id,
                 sender_id: msg_sender,
             } => {
@@ -600,7 +599,6 @@ impl SmrolManager {
                             final_sequence,
                             combined_signature,
                             sender_id: msg_sender,
-                            payload,
                             tx_id,
                         },
                     ))
