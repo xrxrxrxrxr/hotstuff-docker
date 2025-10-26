@@ -13,7 +13,7 @@ use std::time::{Duration, Instant};
 use tokio::sync::{mpsc as async_mpsc, Mutex as AsyncMutex, Notify};
 use tracing::{debug, error, info, warn};
 
-// 专用通道的 PROPOSAL 消息
+// PROPOSAL messages sent over the dedicated channel
 #[derive(Clone, Debug)]
 pub struct ProposalMsg {
     pub slot: u64,
@@ -41,7 +41,7 @@ pub struct PnfifoBc {
     total_nodes: usize,
     threshold: usize,
 
-    // 算法状态
+    // Algorithm state
     current_slot: Arc<AtomicU64>,
     slot_values: DashMap<(usize, u64), Vec<u8>>,
     slot_outputs: DashMap<(usize, u64), (Vec<u8>, Vec<u8>)>,
@@ -59,11 +59,11 @@ pub struct PnfifoBc {
     final_tx: async_mpsc::UnboundedSender<(usize, FinalMsg)>,
     final_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<(usize, FinalMsg)>>>,
 
-    // 密码学
+    // Cryptography
     signing_key: SigningKey,
     verifying_keys: HashMap<usize, VerifyingKey>,
 
-    // 网络
+    // Networking
     network: Arc<SmrolTcpNetwork>,
     broadcast_tx: async_mpsc::UnboundedSender<SmrolMessage>,
 }
@@ -95,7 +95,7 @@ impl PnfifoBc {
         let node_id_for_broadcast = node_id;
         network.spawn(async move {
             info!(
-                "📡 [PNFIFO] Node {} 启动专用广播处理器",
+                "[PNFIFO] node {} started dedicated broadcast worker",
                 node_id_for_broadcast
             );
             while let Some(msg) = broadcast_rx.recv().await {
@@ -118,17 +118,17 @@ impl PnfifoBc {
                         let elapsed = dispatch_start.elapsed();
                         if elapsed > Duration::from_millis(10) {
                             debug!(
-                                "🐌 [PNFIFO] Node {} 广播 {:?} 延时较高: {:?}",
+                                "[PNFIFO] node {} broadcast {:?} exhibited high latency: {:?}",
                                 node_id_for_broadcast, msg_kind, elapsed
                             );
                         }
                     }
                     Err(e) => {
-                        error!("❌ [PNFIFO] 广播处理器失败: {}", e);
+                        error!("[PNFIFO] broadcast worker failed: {}", e);
                     }
                 }
             }
-            warn!("[PNFIFO] 广播处理器退出 (channel closed)");
+            warn!("[PNFIFO] broadcast worker exited (channel closed)");
         });
 
         let slot_values = DashMap::new();
@@ -174,7 +174,7 @@ impl PnfifoBc {
         })
     }
 
-    // PNFIFO 内部：处理 leader 的 proposal（在专用通道任务中运行）
+    // PNFIFO internal: process leader proposals inside the dedicated channel task
     async fn process_leader_proposal_for_state(
         pnfifo: &Arc<Self>,
         leader_id: usize,
@@ -312,7 +312,7 @@ impl PnfifoBc {
             .map_err(|_| String::from("broadcast channel closed"))?;
         let enqueue_elapsed = enqueue_start.elapsed();
         debug!(
-            "⏱️ [PNFIFO] Node {} enqueue broadcast slot {} 用时 {:?}",
+            "[PNFIFO] node {} enqueue broadcast slot {} took {:?}",
             self.node_id, slot, enqueue_elapsed
         );
 
@@ -728,7 +728,7 @@ impl PnfifoBc {
         value: Vec<u8>,
         combined_signature: Vec<u8>,
     ) -> Result<(), String> {
-        // ✅ 在锁外验证签名（~100μs，不持锁）
+        // Validate signatures outside the lock (~100µs, avoids holding the lock)
         let message_to_verify = PnfifoBc::create_vote_message_static(slot, &value);
 
         match verify_combined_signature_bytes(
@@ -780,7 +780,7 @@ impl PnfifoBc {
             .map(|entry| entry.value().clone())
     }
 
-    // Sequencing 层使用：等待 output 可用（Algorithm 2 Line 5）
+    // Used by the sequencing layer: wait for output availability (Algorithm 2 Line 5)
     pub async fn wait_for_output(&self, leader_id: usize, slot: u64) {
         let key = (leader_id, slot);
 
@@ -947,7 +947,7 @@ impl PnfifoBc {
         self.spawn_vote_processor();
         self.spawn_final_processor();
 
-        info!("[PNFIFO] Node {} 初始化完成", self.node_id);
+        info!("[PNFIFO] node {} initialization complete", self.node_id);
         Ok(())
     }
 

@@ -1,5 +1,5 @@
 // hotstuff_runner/src/pompe.rs
-//! 完全无锁化的Pompe BFT实现 - 支持crossbeam无锁队列
+//! Fully lock-free Pompe BFT implementation with crossbeam lock-free queues
 
 use crate::pompe_network::PompeNetwork;
 use crossbeam::queue::SegQueue;
@@ -40,7 +40,7 @@ pub struct PompeAppStateAdversary {
     exec_last_batch_clock: Arc<RwLock<u64>>,
     consensus_ready: Arc<RwLock<bool>>,
     stable_point: std::sync::Arc<std::sync::atomic::AtomicU64>,
-    // 定时刷新任务是否已安排
+    // Whether the periodic flush task has been scheduled
     flusher_scheduled: std::sync::atomic::AtomicBool,
 }
 
@@ -101,9 +101,9 @@ pub struct PompeManager {
     config: PompeConfig,
     state: Arc<PompeAppStateAdversary>,
     nfaulty: usize,
-    // 所有节点列表（顺序需一致，用于按视图轮换 leader）
+    // List of all nodes (order matters for view-based leader rotation)
     all_node_ids: Vec<usize>,
-    // 当前视图号与是否为当前视图 leader
+    // Current view number and whether this node is the leader for that view
     current_view: Arc<AtomicU64>,
     is_current_leader: Arc<AtomicBool>,
 
@@ -116,7 +116,7 @@ pub struct PompeManager {
     general_tx: async_mpsc::Sender<(usize, PompeMessage)>,
     general_rx: Arc<tokio::sync::Mutex<async_mpsc::Receiver<(usize, PompeMessage)>>>,
 
-    // 新增：专用广播通道（Tokio mpsc，避免阻塞 runtime 线程）
+    // Dedicated broadcast channel (Tokio mpsc) to avoid blocking the runtime
     broadcast_tx: async_mpsc::Sender<PompeMessage>,
     broadcast_rx: Arc<tokio::sync::Mutex<Option<async_mpsc::Receiver<PompeMessage>>>>,
 
@@ -142,7 +142,7 @@ impl PompeManager {
         if self.state.completed_ordering1.len() > 500 {
             self.state.completed_ordering1.clear();
             debug!(
-                "🧹 [清理] Node {} 清理 {} 个已完成交易记录",
+                "[cleanup] node {} purged {} completed transaction records",
                 self.node_id, 500
             );
         }
@@ -152,19 +152,22 @@ impl PompeManager {
             self.state.ordering1_responses.clear();
             self.state.ordering1_count.clear();
             warn!(
-                "🧹 [清理] Node {} 清理 {} 个孤儿ordering1状态",
+                "[cleanup] node {} removed {} orphaned ordering1 states",
                 self.node_id, orphan_ordering1
             );
         }
 
         if self.state.transaction_initiators.len() > 1000 {
             self.state.transaction_initiators.clear();
-            debug!("🧹 [清理] Node {} 清理发起者记录", self.node_id);
+            debug!("[cleanup] node {} cleared initiator records", self.node_id);
         }
 
         if self.state.completed_ordering2.len() > 1000 {
             self.state.completed_ordering2.clear();
-            debug!("🧹 [清理] Node {} 清理ordering2完成标记", self.node_id);
+            debug!(
+                "[cleanup] node {} reset ordering2 completion markers",
+                self.node_id
+            );
         }
     }
 
@@ -180,10 +183,10 @@ impl PompeManager {
         let (general_tx, general_rx) = async_mpsc::channel(config.queue_capacity);
 
         info!(
-            "🚀 创建完整网络支持的Pompe管理器，节点 {}, f={}",
+            "Creating Pompe manager with full network support, node {}, f={}",
             node_id, nfaulty
         );
-        info!("🔍 节点列表: {:?}", all_node_ids);
+        info!("Peer node list: {:?}", all_node_ids);
 
         let (ord1_tx, ord1_rx) = async_mpsc::channel(config.queue_capacity);
         let (ord2_tx, ord2_rx) = async_mpsc::channel(config.queue_capacity);
@@ -216,36 +219,36 @@ impl PompeManager {
     pub fn set_lockfree_adapter(&mut self, adapter: Arc<LockFreeHotStuffAdapter>) {
         self.lockfree_adapter = Some(adapter);
         info!(
-            "✅ [完全无锁设置] Node {} 设置无锁HotStuff适配器",
+            "[lock-free setup] node {} installed lock-free HotStuff adapter",
             self.node_id
         );
     }
 
     pub fn debug_config(&self) {
-        info!("🔧 [配置检查] Node {} Pompe配置:", self.node_id);
-        info!("  - 启用状态: {}", self.config.enable);
-        info!("  - 批次大小: {}", self.config.batch_size);
-        info!("  - 稳定周期: {}ms", self.config.stable_period_ms);
-        info!("  - 领导者节点: {}", self.config.leader_node_id);
-        info!("  - 容错节点数 f: {}", self.nfaulty);
-        info!("  - 总节点数: {}", self.nfaulty * 3 + 1);
-        info!("  - 需要响应数 (2f+1): {}", 2 * self.nfaulty + 1);
+        info!("[config] node {} Pompe settings:", self.node_id);
+        info!("  - enabled: {}", self.config.enable);
+        info!("  - batch size: {}", self.config.batch_size);
+        info!("  - stable period: {} ms", self.config.stable_period_ms);
+        info!("  - leader node: {}", self.config.leader_node_id);
+        info!("  - fault tolerance f: {}", self.nfaulty);
+        info!("  - total nodes: {}", self.nfaulty * 3 + 1);
+        info!("  - required responses (2f+1): {}", 2 * self.nfaulty + 1);
 
         if let Some(ref network) = self.network {
-            info!("  - 网络节点列表: {:?}", network.peer_node_ids);
+            info!("  - network peers: {:?}", network.peer_node_ids);
             info!(
-                "  - 当前节点在网络中: {}",
+                "  - current node participates in network: {}",
                 network.peer_node_ids.contains(&self.node_id)
             );
         } else {
-            warn!("  - ⚠️ 网络未配置！");
+            warn!("  - network not configured!");
         }
     }
 
     // Function to process a raw transaction string and call Ordering1
     pub async fn process_raw_transaction(&self, raw_tx: &str) -> Result<(), String> {
         if !self.config.enable {
-            debug!("Pompe未启用，跳过: {}", raw_tx);
+            debug!("Pompe disabled; skipping transaction: {}", raw_tx);
             return Ok(());
         }
 
@@ -255,7 +258,7 @@ impl PompeManager {
             let tx_hash = transaction.hash();
 
             debug!(
-                "📥 [Ordering1] Node {} 处理交易: {} -> Hash: {}, tx_id={}",
+                "[ordering1] node {} processing tx: {} -> hash {}, tx_id={}",
                 self.node_id,
                 raw_tx,
                 &tx_hash[0..8],
@@ -275,7 +278,7 @@ impl PompeManager {
                 .clone();
 
             debug!(
-                "📊 [Ordering1] Node {} 批次计数: {} -> {}/{}",
+                "[ordering1] node {} batch count: {} -> {}/{}",
                 self.node_id,
                 &tx_hash[0..8],
                 current_count,
@@ -287,16 +290,16 @@ impl PompeManager {
                     .transaction_initiators
                     .insert(tx_hash.clone(), self.node_id);
                 debug!(
-                    "📋 [发起者记录] Node {} 记录为交易 {} 的发起者",
+                    "[initiator] node {} marked as initiator for tx {}",
                     self.node_id,
                     &tx_hash[0..8]
                 );
 
-                // 修复：调用正确的方法
+                // Fix: invoke the correct method
                 self.exec_ordering1(tx_hash, transaction).await?;
             } else {
                 debug!(
-                    "🔄 [Ordering1] Node {} 已有其他节点发起此交易的ordering",
+                    "[ordering1] node {} detected another initiator for this transaction",
                     self.node_id
                 );
             }
@@ -311,7 +314,7 @@ impl PompeManager {
         transaction: PompeTransaction,
     ) -> Result<(), String> {
         debug!(
-            "🚀 [Ordering1-exec] Node {} 发起ordering1阶段: {}",
+            "[ordering1-exec] node {} starting ordering1 for {}",
             self.node_id,
             &tx_hash[0..8]
         );
@@ -326,14 +329,14 @@ impl PompeManager {
                 initiator_node_id: self.node_id,
             };
 
-            // 使用专用广播通道（有界，背压）
+            // Use the dedicated broadcast channel (bounded, backpressure-aware)
             if let Err(e) = self.broadcast_tx.send(request).await {
-                warn!("⚠️ [Ordering1-exec] 广播队列已满/关闭: {}", e);
+                warn!("[ordering1-exec] broadcast queue full or closed: {}", e);
             }
 
             let broadcast_duration = broadcast_start.elapsed();
             debug!(
-                "⏱️ [Ordering1-exec] Node {} 广播耗时: {:?}",
+                "[ordering1-exec] node {} broadcast duration: {:?}",
                 self.node_id, broadcast_duration
             );
         }
@@ -343,15 +346,15 @@ impl PompeManager {
 
     pub async fn start_network_message_loop(&self) -> Result<(), String> {
         if let Some(ref network) = self.network {
-            info!("🚀 Node {} 启动Pompe网络", self.node_id);
+            info!("Node {} starting Pompe network", self.node_id);
 
             if let Err(e) = network.start_server() {
-                return Err(format!("启动Pompe服务器失败: {}", e));
+                return Err(format!("Failed to start Pompe server: {}", e));
             }
-            // 预热连接，降低首次发送延迟
+            // Warm up connections to reduce first-send latency
             network.warm_up_connections();
 
-            // 启动专用广播处理器
+            // Start the dedicated broadcast worker
             let broadcast_rx = {
                 let mut rx_guard = self.broadcast_rx.lock().await;
                 rx_guard.take()
@@ -360,16 +363,16 @@ impl PompeManager {
             if let Some(mut rx) = broadcast_rx {
                 let net = Arc::clone(network);
                 network.spawn(async move {
-                    info!("📡 启动专用广播处理器");
+                    info!("Starting dedicated broadcast worker");
                     while let Some(msg) = rx.recv().await {
                         if let Err(e) = net.broadcast(msg).await {
-                            error!("❌ 专用广播失败: {}", e);
+                            error!("Dedicated broadcast failed: {}", e);
                         }
                     }
                 });
             }
 
-            // 监听 HotStuff 视图开始事件，计算当前视图 leader（保留非固定 leader 模式）
+            // Listen for HotStuff view start events to compute the current leader (supports rotating leader mode)
             {
                 let mut ev_rx = self.event_tx.subscribe();
                 let ids = self.all_node_ids.clone();
@@ -402,42 +405,54 @@ impl PompeManager {
             let general_tx = self.general_tx.clone();
 
             network.spawn(async move {
-                info!("🌐 Node {} Pompe消息接收循环启动", node_id);
+                info!("Node {} started Pompe message receive loop", node_id);
                 let mut total_messages = 0;
                 let mut ordering1_count = 0;
                 let mut ordering2_count = 0;
                 
                 loop {
                     if let Some((sender_id, message)) = network_clone.recv().await {
-                        debug!("📬 [消息接收] Node {} 收到来自节点 {} 的消息", node_id, sender_id);
+                        debug!("[receiver] node {} received message from node {}", node_id, sender_id);
                         total_messages += 1;
 
                         match &message {
                             PompeMessage::Ordering1Request { .. } | 
                             PompeMessage::Ordering1Response { .. } => {
                                 ordering1_count += 1;
-                                debug!("📨 [分发器] Node {} 分发Ordering1消息: {:?} (总计: O1={}, O2={}, 总={})", 
-                                    node_id, std::mem::discriminant(&message), ordering1_count, ordering2_count, total_messages);
-                                
+                                debug!(
+                                    "[dispatcher] node {} forwarded ordering1 message {:?} (totals: O1={}, O2={}, total={})",
+                                    node_id,
+                                    std::mem::discriminant(&message),
+                                    ordering1_count,
+                                    ordering2_count,
+                                    total_messages
+                                );
+
                                 if let Err(e) = ordering1_tx.send((sender_id, message)).await {
-                                    error!("❌ Ordering1队列发送失败(背压/关闭): {}", e);
+                                    error!("Failed to enqueue into ordering1 queue (backpressure/closed): {}", e);
                                 }
                             }
-                            
+
                             PompeMessage::Ordering2Request { .. } | 
                             PompeMessage::Ordering2Response { .. } => {
                                 ordering2_count += 1;
-                                debug!("📨 [分发器] Node {} 分发Ordering2消息: {:?} (总计: O1={}, O2={}, 总={})", 
-                                    node_id, std::mem::discriminant(&message), ordering1_count, ordering2_count, total_messages);
-                                
+                                debug!(
+                                    "[dispatcher] node {} forwarded ordering2 message {:?} (totals: O1={}, O2={}, total={})",
+                                    node_id,
+                                    std::mem::discriminant(&message),
+                                    ordering1_count,
+                                    ordering2_count,
+                                    total_messages
+                                );
+
                                 if let Err(e) = ordering2_tx.send((sender_id, message)).await {
-                                    error!("❌ Ordering2队列发送失败(背压/关闭): {}", e);
+                                    error!("Failed to enqueue into ordering2 queue (backpressure/closed): {}", e);
                                 }
                             }
-                            
+
                             _ => {
                                 if let Err(e) = general_tx.send((sender_id, message)).await {
-                                    error!("❌ 通用队列发送失败(背压/关闭): {}", e);
+                                    error!("Failed to enqueue into general queue (backpressure/closed): {}", e);
                                 }
                             }
                         }
@@ -472,7 +487,7 @@ impl PompeManager {
                 ));
                 loop {
                     interval.tick().await;
-                    // 使用与检查路径相同的逻辑
+                    // Reuse the same logic as the validation path
                     if let Some(net) = &network_for_flush {
                         if is_leader_flag.load(Ordering::SeqCst) {
                             // Self::check_and_output_to_hotstuff_lockfree(
@@ -496,7 +511,7 @@ impl PompeManager {
         let broadcast_tx = self.broadcast_tx.clone();
 
         tokio::spawn(async move {
-            info!("🔄 Node {} 无锁Ordering1处理器启动", node_id);
+            info!("Node {} started lock-free ordering1 handler", node_id);
 
             loop {
                 let message_opt = {
@@ -512,7 +527,7 @@ impl PompeManager {
                             initiator_node_id,
                         } => {
                             let tx_id = transaction.id;
-                            debug!("收到Ordering1请求: {}, hash = {}", tx_id, tx_hash);
+                            debug!("Received ordering1 request: {}, hash {}", tx_id, tx_hash);
                             if let Some(ref net) = network {
                                 Self::handle_ordering1_request_lockfree(
                                     node_id,
@@ -569,7 +584,7 @@ impl PompeManager {
         let is_leader_flag_for_o2 = self.is_current_leader.clone();
 
         tokio::spawn(async move {
-            info!("🔄 Node {} 无锁Ordering2处理器启动", node_id);
+            info!("Node {} started lock-free ordering2 handler", node_id);
 
             loop {
                 let message_opt = {
@@ -613,7 +628,7 @@ impl PompeManager {
         let lockfree_adapter = self.lockfree_adapter.clone();
         let node_id = self.node_id;
         tokio::spawn(async move {
-            info!("🔄 Node {} 通用消息处理器启动", node_id);
+            info!("Node {} started general message handler", node_id);
             loop {
                 let msg_opt = {
                     let mut rx = general_rx.lock().await;
@@ -625,10 +640,15 @@ impl PompeManager {
                             if let Some(ref adapter) = lockfree_adapter {
                                 let count = items.len();
                                 adapter.push_batch(items);
-                                info!("📥 [Ordered投递] Node {} 接收来自 {} 的已排序交易: {} 条，已写入HotStuff队列", node_id, initiator, count);
+                                info!(
+                                    "[ordered-delivery] node {} received {} ordered transactions from {} and pushed to HotStuff queue",
+                                    node_id,
+                                    count,
+                                    initiator
+                                );
                             } else {
                                 warn!(
-                                    "⚠️ [Ordered投递] Node {} 未设置HotStuff适配器，丢弃投递",
+                                    "[ordered-delivery] node {} has no HotStuff adapter; dropping delivery",
                                     node_id
                                 );
                             }
@@ -653,7 +673,7 @@ impl PompeManager {
         let processing_start = std::time::Instant::now();
 
         debug!(
-            "🎯 [handle_ordering1_request] Node {} 处理请求: tx_id={}, hash={}",
+            "[handle_ordering1_request] node {} handling request: tx_id={}, hash={}",
             node_id,
             transaction.id,
             &tx_hash[0..8]
@@ -663,7 +683,7 @@ impl PompeManager {
             false
         } else {
             state.transaction_store.insert(tx_hash.clone(), transaction);
-            // warn!("⚠️ [首次Ordering1] Node {} 记录新交易: hash = {}", node_id, &tx_hash[0..8]);
+            // warn!("[ordering1-first] node {} recorded new transaction: hash {}", node_id, &tx_hash[0..8]);
             state
                 .ordering1_responses
                 .insert(tx_hash.clone(), Vec::new());
@@ -674,14 +694,14 @@ impl PompeManager {
         let check_duration = processing_start.elapsed();
         if check_duration > tokio::time::Duration::from_millis(1) {
             debug!(
-                "⚠️ [检查耗时] Node {} Ordering1检查耗时: {:?}",
+                "[timing] node {} ordering1 check duration: {:?}",
                 node_id, check_duration
             );
         }
 
         if !should_respond {
             debug!(
-                "🔄 [handle_ordering1_request] Node {} 已响应过: {}",
+                "[handle_ordering1_request] node {} already responded: {}",
                 node_id,
                 &tx_hash[0..8]
             );
@@ -709,10 +729,10 @@ impl PompeManager {
             .send_to_node(initiator_node_id, response)
             .await
         {
-            error!("❌ [handle_ordering1_request] 异步发送失败: {}", e);
+            error!("[handle_ordering1_request] async send failed: {}", e);
         }
         info!(
-            "📤 [handle_ordering1_request] Node {} 发送Ordering1响应给 Node {}: hash = {}",
+            "[handle_ordering1_request] node {} sent ordering1 response to node {}: hash {}",
             node_id, initiator_node_id, tx_hash_for_async
         );
         // });
@@ -720,12 +740,12 @@ impl PompeManager {
         let total_duration = processing_start.elapsed();
         if total_duration > tokio::time::Duration::from_millis(5) {
             debug!(
-                "⚠️ [性能] Node {} handle_ordering1_request总耗时: {:?}, hash = {}",
+                "[performance] node {} handle_ordering1_request duration: {:?}, hash {}",
                 node_id, total_duration, tx_hash_clone
             );
         } else {
             debug!(
-                "✅ [性能] Node {} handle_ordering1_request处理完成: {:?}, hash = {}",
+                "[performance] node {} handle_ordering1_request completed in {:?}, hash {}",
                 node_id, total_duration, tx_hash_clone
             );
         }
@@ -755,7 +775,7 @@ impl PompeManager {
         }
 
         debug!(
-            "🌟 [handle_ordering1_response] Node {} 收到时间戳: {}",
+            "[handle_ordering1_response] node {} received timestamp for {}",
             node_id,
             &tx_hash[0..8]
         );
@@ -802,9 +822,21 @@ impl PompeManager {
 
         let processing_duration = processing_start.elapsed();
         if processing_duration > tokio::time::Duration::from_millis(2) {
-            debug!("⚠️ [处理性能] Node {} handle_ordering1_response 处理耗时: {:?}, 来自 Node {}, hash = {}", node_id, processing_duration, sender_node_id, tx_hash);
+            debug!(
+                "[performance] node {} handle_ordering1_response duration: {:?}, from node {}, hash {}",
+                node_id,
+                processing_duration,
+                sender_node_id,
+                tx_hash
+            );
         } else {
-            debug!("✅ [处理性能] Node {} handle_ordering1_response 处理完成: {:?}, 来自 Node {}, hash = {}", node_id, processing_duration, sender_node_id, tx_hash);
+            debug!(
+                "[performance] node {} handle_ordering1_response completed in {:?}, from node {}, hash {}",
+                node_id,
+                processing_duration,
+                sender_node_id,
+                tx_hash
+            );
         }
 
         // warn!("😈 [Adversary] Node {} holds Ordering2 Request: hash = {}", node_id, &tx_hash[0..8]);
@@ -817,16 +849,16 @@ impl PompeManager {
         //     };
 
         //     let log_start = std::time::Instant::now();
-        //     // 使用专用广播通道，避免阻塞
+        //     // Use the broadcast channel to avoid blocking
         //     if let Err(e) = broadcast_tx.send(msg).await {
-        //         warn!("⚠️ [handle_ordering1_response] 广播队列背压/关闭: {}", e);
+        //         warn!("[handle_ordering1_response] broadcast queue backpressure/closed: {}", e);
         //     }
         //     let log_duration = log_start.elapsed();
-        //     debug!("⏱️ [性能] PompeManager 广播通道发送耗时: {:?}, hash = {}", log_duration, tx_hash);
+        //     debug!("[performance] PompeManager broadcast send duration: {:?}, hash {}", log_duration, tx_hash);
         // }
     }
 
-    // 是 handle 完 ordering 1 response 之后call的
+    // Called after handling ordering1 responses
     async fn handle_ordering2_request_lockfree(
         node_id: usize,
         state: &Arc<PompeAppStateAdversary>,
@@ -843,7 +875,7 @@ impl PompeManager {
         let processing_start = std::time::Instant::now();
 
         debug!(
-            "🚀 [Ordering2-2-LockFree] Node {} 处理请求: {}",
+            "[ordering2-lockfree] node {} processing request: {}",
             node_id,
             &tx_hash[0..8]
         );
@@ -856,8 +888,12 @@ impl PompeManager {
         // dummy check
         if median_timestamp < 0 {
             // if median_timestamp < current_stable_point {
-            error!("❌ [Ordering2-Stable检查] Node {} 网络异常检测: median_timestamp({}) < stable_point({})", 
-                node_id, median_timestamp, current_stable_point);
+            error!(
+                "[ordering2-stable-check] node {} detected anomaly: median_timestamp({}) < stable_point({})",
+                node_id,
+                median_timestamp,
+                current_stable_point
+            );
 
             let error_response = PompeMessage::Ordering2Response {
                 tx_hash,
@@ -871,21 +907,21 @@ impl PompeManager {
                 .send_to_node(initiator_node_id, error_response)
                 .await
             {
-                error!("❌ [Ordering2-错误响应] 发送失败: {}", e);
+                error!("[ordering2-error-response] send failed: {}", e);
             }
             // });
 
             return;
         }
         info!(
-            "✅ [Ordering2-2-LockFree] Node {} 检查点处理完成: stable_point = {}",
+            "[ordering2-lockfree] node {} checkpoint processed: stable_point = {}",
             node_id, current_stable_point
         );
 
         let transaction = match state.transaction_store.get(&tx_hash) {
             Some(tx_ref) => tx_ref.clone(),
             None => {
-                // warn!("⚠️ [Ordering2-2-LockFree] Node {} 找不到交易: {}", node_id, &tx_hash[0..8]);
+                // warn!("[ordering2-lockfree] node {} could not find transaction: {}", node_id, &tx_hash[0..8]);
                 return;
             }
         };
@@ -905,12 +941,12 @@ impl PompeManager {
         let processing_duration = processing_start.elapsed();
         if processing_duration > tokio::time::Duration::from_millis(1) {
             debug!(
-                "⚠️ [处理耗时] Node {} Ordering2处理耗时: {:?}, tx_id={}, hash={}",
+                "[timing] node {} ordering2 processing duration: {:?}, tx_id={}, hash={}",
                 node_id, processing_duration, tx_id, tx_hash
             );
         } else {
             debug!(
-                "✅ [处理耗时] Node {} Ordering2处理耗时: {:?}, tx_id={}, hash={}",
+                "[timing] node {} ordering2 processing completed in {:?}, tx_id={}, hash={}",
                 node_id, processing_duration, tx_id, tx_hash
             );
         }
@@ -918,7 +954,7 @@ impl PompeManager {
         // if tx_id % 10 == 0 {
         let _ = event_tx.send(SystemEvent::PompeOrdering1Completed { tx_id });
         debug!(
-            "📡 [Pompe] Node {} 发送 Ordering1 完成事件: tx_id={}",
+            "[pompe] node {} emitted ordering1 completion event: tx_id={}",
             node_id, tx_id
         );
         // }
@@ -935,7 +971,7 @@ impl PompeManager {
                 .send_to_node(initiator_node_id, response)
                 .await
             {
-                error!("❌ [Ordering2-2-LockFree] 异步发送失败: {}", e);
+                error!("[ordering2-lockfree] async send failed: {}", e);
             }
         });
 
@@ -958,7 +994,7 @@ impl PompeManager {
         network: &Arc<crate::pompe_network::PompeNetwork>,
         is_leader: Arc<AtomicBool>,
     ) {
-        // 非 leader 直接返回
+        // Non-leader nodes return early
         warn!("check_and_output_to_hotstuff_lockfree is triggered!");
         if !is_leader.load(Ordering::SeqCst) {
             return;
@@ -1004,7 +1040,7 @@ impl PompeManager {
 
                 commit_set.sort_by_key(|&(_, timestamp)| timestamp);
 
-                // 批次剪尾: 截止点 = 最新时间戳 - liveness_delta
+                // Trim batch tail: cutoff = latest_timestamp - liveness_delta
                 let delta_us = (config.liveness_delta_ms.saturating_mul(1000)) as u64;
                 let batch_end_ts = commit_set
                     .last()
@@ -1020,18 +1056,18 @@ impl PompeManager {
                 }
 
                 if cut_idx == 0 {
-                    // 没有足够稳定的交易，等待下次周期 flush
+                    // Not enough stable transactions; wait for the next flush cycle
                     *state.consensus_ready.write().unwrap() = true;
                     return;
                 }
 
-                // 更新 stable_point
+                // Update the stable point
                 let latest_ts = commit_set[cut_idx - 1].1;
                 let old_stable_point = state
                     .stable_point
                     .fetch_max(latest_ts, std::sync::atomic::Ordering::Relaxed);
                 info!(
-                    "📊 [稳定点] Node {} 更新stable_point: {} -> {}",
+                    "[stable-point] node {} updated stable_point: {} -> {}",
                     node_id, old_stable_point, latest_ts
                 );
 
@@ -1041,14 +1077,14 @@ impl PompeManager {
                     .map(|(tx, timestamp)| tx.to_hotstuff_format(*timestamp))
                     .collect();
 
-                // 移除已输出部分
+                // Remove already emitted entries
                 commit_set.drain(0..cut_idx);
                 drop(commit_set);
                 *state.consensus_ready.write().unwrap() = false;
 
                 txs
             } else {
-                // 未到稳定期：安排一次定时刷新
+                // Not yet stable: schedule another timed flush
                 let remaining_us = required_wait - time_elapsed;
                 if !state
                     .flusher_scheduled
@@ -1060,12 +1096,12 @@ impl PompeManager {
                     let network_clone = Arc::clone(network);
                     let leader_flag = is_leader.clone();
                     info!(
-                        "⏳ [Flusher] Node {} 安排定时刷新，剩余 {:?}us",
+                        "[flusher] node {} scheduled timed flush in {:?}µs",
                         node_id, remaining_us
                     );
                     tokio::spawn(async move {
                         tokio::time::sleep(tokio::time::Duration::from_micros(remaining_us)).await;
-                        // 到点执行一次刷新
+                        // Run flush when the timer fires
                         Self::flush_commit_set_to_hotstuff(
                             node_id,
                             &state_clone,
@@ -1087,23 +1123,23 @@ impl PompeManager {
         let processing_duration = check_start.elapsed();
         if processing_duration > tokio::time::Duration::from_millis(2) {
             debug!(
-                "⚠️ [输出耗时] Node {} 输出检查耗时: {:?}",
+                "[timing] node {} output check duration: {:?}",
                 node_id, processing_duration
             );
         }
 
         if !ordered_txs.is_empty() {
-            // 修改：所有节点均可注入到本地 HotStuff 队列，避免非 leader 产生空块
+            // Update: allow all nodes to inject into the local HotStuff queue to avoid empty blocks on non-leaders
             if let Some(ref adapter) = lockfree_adapter {
                 let cnt = ordered_txs.len();
                 adapter.push_batch(ordered_txs.clone());
                 info!(
-                    "⚡ [输出] Node {} 注入 {} 个已排序交易到 HotStuff 队列",
+                    "[output] node {} injected {} ordered transactions into the HotStuff queue",
                     node_id, cnt
                 );
             } else {
                 warn!(
-                    "⚠️ [输出] Node {} 无锁适配器未设置，丢失 {} 个交易",
+                    "[output] node {} missing lock-free adapter; dropping {} transactions",
                     node_id,
                     ordered_txs.len()
                 );
@@ -1140,7 +1176,7 @@ impl PompeManager {
                 .stable_point
                 .fetch_max(latest_ts, std::sync::atomic::Ordering::Relaxed);
             info!(
-                "📊 [Flusher] Node {} 刷新 stable_point: {} -> {} ({} 条)",
+                "[flusher] node {} refreshed stable_point: {} -> {} ({} entries)",
                 node_id,
                 old,
                 latest_ts,
@@ -1155,14 +1191,17 @@ impl PompeManager {
         drop(commit_set);
         *state.consensus_ready.write().unwrap() = false;
 
-        // 修改：所有节点均注入本地 HotStuff 队列，减少空块概率
+        // Change: all nodes inject into the local HotStuff queue to reduce empty blocks
         if let Some(ref adapter) = lockfree_adapter {
             let count = txs.len();
             adapter.push_batch(txs.clone());
-            info!("⚡ [定时输出] Node {} 刷新输出 {} 个交易", node_id, count);
+            info!(
+                "[scheduled-output] node {} flushed {} transactions",
+                node_id, count
+            );
         } else {
             warn!(
-                "⚠️ [定时输出] Node {} 无锁适配器未设置，丢失 {} 个交易",
+                "[scheduled-output] node {} missing lock-free adapter; dropping {} transactions",
                 node_id,
                 txs.len()
             );

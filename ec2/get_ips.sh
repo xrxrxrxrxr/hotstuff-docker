@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# 获取所有运行中实例的公有/私有IP，并格式化成hosts.txt
-# 公网 IP 段
-# 公网 IP 段
+# Retrieve public and private IPs for all running instances and store them in hosts.txt
+# Public IP section
+# Public IP section
 aws ec2 describe-instances \
   --filters "Name=instance-state-name,Values=running" \
   --query 'Reservations[*].Instances[*].[PublicIpAddress,PrivateIpAddress,Tags[?Key==`Name`].Value | [0]]' \
@@ -21,7 +21,7 @@ END {
 }' > hosts.txt
 
 
-# 私网 IP 段
+# Private IP section
 aws ec2 describe-instances \
   --filters "Name=instance-state-name,Values=running" \
   --query 'Reservations[*].Instances[*].[PublicIpAddress,PrivateIpAddress,Tags[?Key==`Name`].Value | [0]]' \
@@ -40,7 +40,7 @@ END {
   if (c_pri != "") printf("%s client-private\n", c_pri)
 }' >> hosts.txt
 
-echo "✅ 已生成 hosts.txt："
+echo "Generated hosts.txt:"
 ./generate-node-envs.sh
-echo "已更新 envs/"
+echo "Updated envs/"
 cat hosts.txt

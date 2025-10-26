@@ -2,10 +2,10 @@ use crate::event::TestTransaction;
 use crate::smrol::consensus::{SequenceEntry, TransactionEntry};
 use serde::{Deserialize, Serialize};
 
-// 统一的SMROL消息枚举
+// Unified SMROL message enum
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum SmrolMessage {
-    // === 算法1: PNFIFO-BC 消息 ===
+    // Algorithm 1: PNFIFO-BC messages
     PnfifoProposal {
         sender_id: usize,
         slot: u64,
@@ -25,7 +25,7 @@ pub enum SmrolMessage {
         combined_signature: Vec<u8>,
     },
 
-    // === 算法2: Transaction Sequencing 消息 ===
+    // Algorithm 2: Transaction Sequencing messages
     SeqRequest {
         tx_hash: String,
         transaction: SmrolTransaction,
@@ -57,7 +57,7 @@ pub enum SmrolMessage {
         tx_id: u64,
     },
 
-    // === 算法3: Consensus 消息 ===
+    // Algorithm 3: Consensus messages
     ConsensusProposal {
         epoch: u64,
         m_e: Vec<TransactionEntry>,
@@ -72,8 +72,8 @@ pub enum SmrolMessage {
         sender_id: usize,
     },
 
-    // === 通用消息 ===
-    Warmup, // 连接预热消息
+    // General-purpose messages
+    Warmup, // Connection warm-up message
 }
 
 impl Default for SmrolMessage {
@@ -112,7 +112,7 @@ impl SmrolTransaction {
             final_sequence, self.id, self.from, self.to, self.amount
         )
     }
-    // 不带final sequence
+    // Without final sequence
     // pub fn to_hotstuff_format(&self, final_sequence: u64) -> String {
     //     format!(
     //         "smrol:{}:{}->{}:{}",

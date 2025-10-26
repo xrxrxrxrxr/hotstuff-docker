@@ -294,7 +294,7 @@ async fn start_lockfree_client_listener(
 //     info!("[Lock-free] Node {} new client connection established", node_id);
 //     let (mut read_half, mut write_half) = socket.into_split();
 
-//     // 响应发送任务
+//     // Response sending task
 //     let write_task = tokio::spawn(async move {
 //         let mut response_count = 0;
 
@@ -338,13 +338,13 @@ async fn start_lockfree_client_listener(
 //             if write_half.write_all(&message_length.to_be_bytes()).await.is_err() ||
 //                write_half.write_all(&serialized).await.is_err() ||
 //                write_half.flush().await.is_err() {
-//                 error!("Node {} 响应发送失败", node_id);
+//                 error!("Node {} failed to send response", node_id);
 //                 break;
 //             }
-//             debug!("***** Node {} 向客户端发送响应: {:?} tx_id:{:?}", node_id, response_json.get("message_type"), response_json.get("tx_ids"));
-//             // 🔥 减少日志频率
+//             debug!("***** Node {} sending response to client: {:?} tx_id:{:?}", node_id, response_json.get("message_type"), response_json.get("tx_ids"));
+//             // Reduce log frequency
 //             if response_count % 50 == 0 {
-//                 info!("Node {} 已发送 {} 个响应", node_id, response_count);
+//                 info!("Node {} has sent {} responses", node_id, response_count);
 //             }
 //         }
 //     });
@@ -392,11 +392,11 @@ async fn start_lockfree_client_listener(
 //                                         info!("[Lock-free] Node {} Pompe transaction processed directly: {}", node_id, tx_string);
 //                                     }
 //                                     Err(e) => {
-//                                         error!("Pompe 交易处理失败: {}, 错误: {}", tx_string, e);
+//                                         error!("Pompe transaction processing failed: {}, error: {}", tx_string, e);
 //                                     }
 //                                 }
 //                             } else {
-//                                 warn!("Pompe 管理器未启用，跳过交易: {}", tx_string);
+//                                 warn!("Pompe manager disabled; skipping transaction: {}", tx_string);
 //                             }
 //                             // Pompe transactions go through Pompe processor
 //                             // info!("[Lock-free] Node {} Pompe transaction queued: {}", node_id, tx_string);
@@ -663,7 +663,10 @@ async fn adversary(pompe_manager: Option<Arc<PompeManager>>) {
                     warn!("😈 [Adversary] flooding transactions: {}", tx_string);
                 }
                 Err(e) => {
-                    error!("Pompe 交易处理失败: {}, 错误: {}", tx_string, e);
+                    error!(
+                        "Pompe transaction processing failed: {}, error: {}",
+                        tx_string, e
+                    );
                 }
             }
         }
@@ -892,22 +895,22 @@ async fn main() -> Result<(), String> {
     ));
 
     tokio::time::sleep(Duration::from_secs(5)).await;
-    info!("网络连通性测试:");
+    info!("Network connectivity test:");
     let connectivity_timeout = Duration::from_secs(2);
     for target_id in node_least_id..(node_least_id + node_num) {
         let addr = format!("node{}:{}", target_id, 20000 + target_id);
         match tokio::time::timeout(connectivity_timeout, tokio::net::TcpStream::connect(&addr))
             .await
         {
-            Ok(Ok(_)) => info!("节点 {} 端口 {} 可达", target_id, 20000 + target_id),
+            Ok(Ok(_)) => info!("Node {} port {} reachable", target_id, 20000 + target_id),
             Ok(Err(e)) => warn!(
-                "节点 {} 端口 {} 暂不可达: {}",
+                "Node {} port {} temporarily unreachable: {}",
                 target_id,
                 20000 + target_id,
                 e
             ),
             Err(_) => warn!(
-                "节点 {} 端口 {} 连接超时 (>{:?})",
+                "Node {} port {} connection timeout (>{:?})",
                 target_id,
                 20000 + target_id,
                 connectivity_timeout
@@ -996,11 +999,11 @@ async fn main() -> Result<(), String> {
         node_id
     );
 
-    info!("Node {} 所有组件启动完成", node_id);
+    info!("Node {} all components started", node_id);
     tokio::signal::ctrl_c()
         .await
-        .map_err(|e| format!("信号处理失败: {}", e))?;
-    info!("Node {} 收到退出信号，正常关闭", node_id);
+        .map_err(|e| format!("Signal handling failed: {}", e))?;
+    info!("Node {} received shutdown signal; exiting cleanly", node_id);
 
     Ok(())
 }

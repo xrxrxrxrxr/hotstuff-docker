@@ -35,6 +35,10 @@ hex = "0.4"
 console-subscriber = { version = "0.2", features = ["parking_lot"] }
 tracing-flame = "0.2"
 inferno = "0.11"
+# observability
+metrics = "0.22"
+metrics-exporter-prometheus = "0.14"
+metrics-util = { version = "0.16", default-features = false, features = ["recency", "registry", "summary"] }
 # smrol
 # ds: ed25519_dalek
 # threshold signature

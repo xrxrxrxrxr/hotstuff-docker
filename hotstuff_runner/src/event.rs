@@ -1,9 +1,9 @@
-//! 简化的系统事件定义 - 支持模块间通信
+//! Simplified system event definitions for inter-module communication
 
 use serde::{Deserialize, Serialize};
 use std::time::Instant;
 
-// 客户端交易结构
+// Client transaction structure
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TestTransaction {
     pub id: u64,
@@ -13,34 +13,34 @@ pub struct TestTransaction {
     pub timestamp: u64,
     pub nonce: u64,
 }
-/// 🔥 系统事件 - 用于 docker_node, tcp_node, pompe 之间的通信
+/// System events used for communication among docker_node, tcp_node, and pompe
 #[derive(Debug, Clone)]
 pub enum SystemEvent {
     TransactionReceived {
         transaction: TestTransaction,
         is_pompe: bool,
     },
-    // HotStuff 开始新视图（用于让 Pompe 计算当前视图的 leader）
+    // HotStuff starts a new view (allows Pompe to compute the current leader)
     StartView {
         view: u64,
     },
-    /// Pompe Ordering1 阶段完成
+    /// Pompe ordering1 phase completed
     PompeOrdering1Completed {
         tx_id: u64,
         // timestamp_us: u64,
     },
 
-    /// SMROL 共识层调用 HotStuff 前的 ordering 完成
+    /// SMROL ordering completed before invoking HotStuff consensus
     SmrolOrderingCompleted {
         tx_ids: Vec<u64>,
     },
 
-    /// Pompe 已将交易推入 HotStuff 队列
+    /// Pompe pushed transactions into the HotStuff queue
     PushedToHotStuff {
         tx_ids: Vec<u64>,
     },
 
-    /// HotStuff 区块提交完成
+    /// HotStuff block commit completed
     HotStuffCommitted {
         block_height: u64,
         tx_ids: Vec<u64>,

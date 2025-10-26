@@ -1,13 +1,13 @@
-# EC2 分布式部署 Makefile
+# EC2 distributed deployment Makefile
 SSH_KEY = ~/.ssh/xrui.pem
 
 
-# 从 hosts.txt 自动解析出 node0~3 的公网 IP 列表
+# Parse node0~3 public IPs from hosts.txt automatically
 NODES := $(shell grep -E 'node[0-9]+$$' hosts.txt | awk '{print "ubuntu@"$$1}')
 NODE0 := $(shell awk '$$2=="node0" {print "ubuntu@"$$1}' hosts.txt)
-# 从 hosts.txt 自动解析出 client 的公网 IP
+# Parse the client public IP from hosts.txt
 CLIENT := $(shell grep -E 'client$$' hosts.txt | awk '{print "ubuntu@"$$1}')
-# 从 hosts.txt 自动解析出所有公网 IP
+# Parse all public IPs from hosts.txt
 HOST_IPS := $(shell grep -v private hosts.txt | awk '{print $$1}')
 
 SSH_OPTS = -i $(SSH_KEY) -o StrictHostKeyChecking=accept-new -o BatchMode=yes -o ConnectTimeout=8
@@ -16,14 +16,14 @@ SSH_OPTS = -i $(SSH_KEY) -o StrictHostKeyChecking=accept-new -o BatchMode=yes -o
 .PHONY: init deploy start stop logs known_hosts ping hosts-clean clean-ec2 clean
 
 known_hosts:
-	@echo "🔐 初始化 known_hosts..."
+	@echo "Initializing known_hosts..."
 	@ssh-keyscan -H $(HOST_IPS) >> $$HOME/.ssh/known_hosts 2>/dev/null || true
-	@echo "✅ known_hosts 已更新"
+	@echo "known_hosts updated"
 
 ping:
 	@for host in $(NODES) $(CLIENT); do \
-	  echo "↪︎ 测试 $$host"; \
-	  ssh $(SSH_OPTS) $$host 'echo OK' || echo "❌ $$host 连接失败"; \
+	  echo "↪︎ Testing $$host"; \
+	  ssh $(SSH_OPTS) $$host 'echo OK' || echo "$$host connection failed"; \
 	done
 
 init:
@@ -34,18 +34,18 @@ deploy:
 
 
 pull:
-	@echo "🚀 拉取节点与客户端镜像..."
+	@echo "Pulling node and client images..."
 	@for node in $(NODES); do \
-		echo "🔸 拉取 $${node} 上的 hotstuff-node 镜像..."; \
+		echo "Pulling hotstuff-node image on $${node}..."; \
 		ssh $(SSH_OPTS) $${node} "cd ~/hotstuff && docker compose pull hotstuff-node" || true; \
 	done; \
 	wait
-	@echo "🔸 拉取客户端镜像 ($(CLIENT)) ..."
+	@echo "Pulling client image ($(CLIENT)) ..."
 	@ssh $(SSH_OPTS) $(CLIENT) "cd ~/hotstuff && docker compose pull hotstuff-client" || true
-	@echo "✅ 镜像拉取完成 ✅"
+	@echo "Image pull complete"
 
 start: 
-	@echo "🚀 启动实验..."
+	@echo "Starting the experiment..."
 	@status=0; pids=""; \
 	for node in $(NODES); do \
 		( \
@@ -56,20 +56,20 @@ start:
 	for pid in $$pids; do \
 		if ! wait $$pid; then status=1; fi; \
 	done; \
-	if [ $$status -ne 0 ]; then \
-		echo "❌ 启动共识节点失败"; \
+		if [ $$status -ne 0 ]; then \
+			echo "Failed to start consensus nodes"; \
 		exit 1; \
 	fi
 	@sleep 15
-	@ssh $(SSH_OPTS) $(CLIENT) "cd ~/hotstuff && docker compose --profile client up -d || docker-compose --profile client up -d" || { echo "❌ 启动客户端失败"; exit 1; }
-	@echo "✅ 实验启动完成"
-	@echo "⏱️ 等待 2 分钟后自动停止实验..."
+	@ssh $(SSH_OPTS) $(CLIENT) "cd ~/hotstuff && docker compose --profile client up -d || docker-compose --profile client up -d" || { echo "Failed to start client"; exit 1; }
+	@echo "Experiment startup complete"
+	@echo "Waiting 2 minutes before automatically stopping..."
 	@sleep 150
 	@$(MAKE) stop
 
 
 stop:
-	@echo "🛑 停止实验..."
+	@echo "Stopping the experiment..."
 	@status=0; pids=""; \
 	for node in $(NODES); do \
 		echo "→ $$node"; \
@@ -81,16 +81,16 @@ stop:
 	for pid in $$pids; do \
 		if ! wait $$pid; then status=1; fi; \
 	done; \
-	if [ $$status -ne 0 ]; then \
-		echo "❌ 停止共识节点失败"; \
+		if [ $$status -ne 0 ]; then \
+			echo "Failed to stop consensus nodes"; \
 		exit 1; \
 	fi
-	@ssh $(SSH_OPTS) $(CLIENT) "cd ~/hotstuff && (docker compose --profile client down || docker-compose --profile client down)" || { echo "❌ 停止客户端失败"; exit 1; }
-	@echo "✅ 实验停止完成, 准备收集日志"
+	@ssh $(SSH_OPTS) $(CLIENT) "cd ~/hotstuff && (docker compose --profile client down || docker-compose --profile client down)" || { echo "Failed to stop client"; exit 1; }
+	@echo "Experiment stopped; preparing to collect logs"
 	@$(MAKE) logs
 
 logs:
-	@echo "📦 收集日志..."
+	@echo "Collecting logs..."
 	@mkdir -p ec2-logs
 	@status=0; pids=""; \
 	for node in $(NODES); do \
@@ -104,14 +104,14 @@ logs:
 		if ! wait $$pid; then status=1; fi; \
 	done; \
 	if [ $$status -ne 0 ]; then \
-		echo "❌ 日志收集失败"; \
+		echo "Failed to collect logs"; \
 		exit 1; \
 	fi
-	@echo "✅ 日志收集完成"
+	@echo "Log collection complete"
 	@$(MAKE) clean
 
 logs-core:
-	@echo "📦 收集 node0 与 client 日志..."
+	@echo "Collecting node0 and client logs..."
 	@mkdir -p ec2-logs
 	@status=0; pids=""; \
 	node="$(NODE0)"; \
@@ -120,7 +120,7 @@ logs-core:
 		( scp $(SSH_OPTS) -r $$node:~/hotstuff/logs/* ./ec2-logs/logs-$$host ) & \
 		pids="$$pids $$!"; \
 	else \
-		echo "⚠️ 未找到 node0 公网地址，跳过节点日志收集"; \
+		echo "Warning: node0 public IP not found, skipping node log collection"; \
 	fi; \
 	( scp $(SSH_OPTS) -r $(CLIENT):~/hotstuff/logs ./ec2-logs/logs-client ) & \
 	pids="$$pids $$!"; \
@@ -128,52 +128,52 @@ logs-core:
 		if ! wait $$pid; then status=1; fi; \
 	done; \
 	if [ $$status -ne 0 ]; then \
-		echo "❌ 核心日志收集失败"; \
+		echo "Failed to collect core logs"; \
 		exit 1; \
 	fi
-	@echo "✅ 核心日志收集完成"
+	@echo "Core log collection complete"
 
 hosts-clean:
-	@echo "🔐 清理旧 known_hosts 记录（仅限 EC2 IP）..."
+	@echo "Cleaning old known_hosts entries (EC2 IPs only)..."
 	@for ip in $$(awk '{print $$1}' hosts.txt | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$$'); do \
 		ssh-keygen -R $$ip >/dev/null 2>&1; \
 	done
-	@echo "✅ EC2 IP 已清理完毕"
+	@echo "EC2 IP cleanup done"
 
 clean:
-	@echo "🧹 开始清理 log..."
+	@echo "Cleaning log directories..."
 	@for ip in $$(awk '{if ($$1 !~ /^172\./ && ($$2 ~ /^node/ || $$2 ~ /^client/)) print $$1}' hosts.txt); do \
 		( \
-			echo "→ 清理 $$ip ..."; \
+			echo "→ Cleaning $$ip ..."; \
 			if ssh $(SSH_OPTS) ubuntu@$$ip "sudo rm -rf ~/hotstuff/logs/*"; then \
-				echo "✅ $$ip 清理完成"; \
+				echo "$$ip cleanup complete"; \
 			else \
-				echo "⚠️ $$ip 清理失败"; \
+				echo "Warning: $$ip cleanup failed"; \
 			fi \
 		) & \
 	done; \
 	wait
-	@echo "✅ 清理完成"
+	@echo "Cleanup finished"
 
 clean-ec2:
-	@echo "🧹 开始清理 EC2 节点数据（仅公网IP）..."
+	@echo "Cleaning EC2 node data (public IPs only)..."
 	@for ip in $$(awk '{if ($$1 !~ /^172\./ && ($$2 ~ /^node/ || $$2 ~ /^client/)) print $$1}' hosts.txt); do \
-		echo "→ 清理 $$ip ..."; \
-		ssh $(SSH_OPTS) ubuntu@$$ip "sudo rm -rf ~/hotstuff" || echo "⚠️ $$ip 清理失败"; \
+		echo "→ Cleaning $$ip ..."; \
+		ssh $(SSH_OPTS) ubuntu@$$ip "sudo rm -rf ~/hotstuff" || echo "Warning: $$ip cleanup failed"; \
 	done
-	@echo "✅ 清理完成"
+	@echo "Cleanup finished"
 
 clean-images:
-	@echo "🧼 清理 EC2 节点上的旧镜像..."
+	@echo "Cleaning old images on EC2 nodes..."
 	@for node in $(NODES) $(CLIENT); do \
 		( \
 			echo "→ $$node"; \
 			if ssh $(SSH_OPTS) $$node "docker system prune -a -f --volumes"; then \
-				echo "✅ $$node 镜像清理完成"; \
+				echo "$$node image cleanup complete"; \
 			else \
-				echo "⚠️ $$node 镜像清理失败"; \
+				echo "Warning: $$node image cleanup failed"; \
 			fi \
 		) & \
 	done; \
 	wait
-	@echo "✅ 镜像清理完成"
+	@echo "Image cleanup complete"

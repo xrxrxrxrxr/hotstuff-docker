@@ -7,24 +7,28 @@ use crate::smrol::{
     pnfifo::PnfifoBc,
     ModuleMessage,
 };
-use dashmap::{mapref::entry::Entry, DashMap, DashSet};
-use ed25519_dalek::{Signature as Ed25519Signature, Signer, SigningKey, Verifier, VerifyingKey};
-use once_cell::sync::Lazy;
-use serde::{Deserialize, Serialize};
-use std::sync::{
-    atomic::{AtomicU64, Ordering},
-    Arc, Mutex,
-};
-use std::pin::Pin;
-use std::task::{Context, Poll};
-use std::time::Instant;
-use std::thread;
-use std::{collections::{HashMap, HashSet}, convert::TryFrom, result};
 use blsttc::{
     PublicKeySet, SecretKeyShare, Signature as ThresholdSignature, SignatureShare, SIG_SIZE,
 };
-use futures::task::AtomicWaker;
 use crossbeam::channel::{unbounded, Sender};
+use dashmap::{mapref::entry::Entry, DashMap, DashSet};
+use ed25519_dalek::{Signature as Ed25519Signature, Signer, SigningKey, Verifier, VerifyingKey};
+use futures::task::AtomicWaker;
+use once_cell::sync::Lazy;
+use serde::{Deserialize, Serialize};
+use std::pin::Pin;
+use std::sync::{
+    atomic::{AtomicU64, AtomicUsize, Ordering},
+    Arc, Mutex,
+};
+use std::task::{Context, Poll};
+use std::thread;
+use std::time::Instant;
+use std::{
+    collections::{HashMap, HashSet},
+    convert::TryFrom,
+    result,
+};
 use tokio::{
     sync::{mpsc as async_mpsc, Mutex as AsyncMutex, RwLock},
     time::{timeout, Duration},
@@ -32,16 +36,15 @@ use tokio::{
 use tracing::{debug, error, info, warn};
 use tracing_subscriber::field::debug;
 
-static DISABLE_THRESHOLD_SIG_VERIFICATION: Lazy<bool> = Lazy::new(|| {
-    match std::env::var("SMROL_DISABLE_THRESHOLD_SIG") {
+static DISABLE_THRESHOLD_SIG_VERIFICATION: Lazy<bool> =
+    Lazy::new(|| match std::env::var("SMROL_DISABLE_THRESHOLD_SIG") {
         Ok(val) => match val.trim().to_ascii_lowercase().as_str() {
             "0" | "false" | "no" | "off" => false,
             "1" | "true" | "yes" | "on" => true,
             _ => true,
         },
         Err(_) => true,
-    }
-});
+    });
 
 trait ThresholdJob: Send {
     fn run(self: Box<Self>);
@@ -49,11 +52,18 @@ trait ThresholdJob: Send {
 
 struct ThresholdThreadPool {
     sender: Sender<Box<dyn ThresholdJob>>,
+    pending_jobs: Arc<AtomicUsize>,
 }
 
 impl ThresholdThreadPool {
     fn new(worker_count: usize) -> Self {
         let (sender, receiver) = unbounded::<Box<dyn ThresholdJob>>();
+        let pending_jobs = Arc::new(AtomicUsize::new(0));
+        metrics::gauge!(
+            "smrol.threshold_pending_jobs",
+            "pool" => "threshold"
+        )
+        .set(0.0);
         for idx in 0..worker_count {
             let thread_receiver = receiver.clone();
             thread::Builder::new()
@@ -66,22 +76,41 @@ impl ThresholdThreadPool {
                 .expect("failed to spawn threshold worker thread");
         }
         drop(receiver);
-        Self { sender }
+        Self {
+            sender,
+            pending_jobs,
+        }
     }
 
-    fn submit<R, F>(&self, task: F) -> Result<ThresholdTaskFuture<R>, String>
+    fn submit<R, F>(&self, label: &'static str, task: F) -> Result<ThresholdTaskFuture<R>, String>
     where
         R: Send + 'static,
         F: FnOnce() -> Result<R, String> + Send + 'static,
     {
         let state = Arc::new(TaskState::new());
+        let pending_after = self.pending_jobs.fetch_add(1, Ordering::Relaxed) + 1;
+        metrics::gauge!(
+            "smrol.threshold_pending_jobs",
+            "pool" => "threshold"
+        )
+        .set(pending_after as f64);
         let job = Box::new(ConcreteThresholdJob {
             task: Some(task),
             state: state.clone(),
+            label,
+            submitted_at: Instant::now(),
+            pending: Arc::clone(&self.pending_jobs),
         });
-        self.sender
-            .send(job)
-            .map_err(|_| "threshold worker pool shut down".to_string())?;
+        if let Err(_e) = self.sender.send(job) {
+            let prev = self.pending_jobs.fetch_sub(1, Ordering::Relaxed);
+            let remaining = prev.saturating_sub(1);
+            metrics::gauge!(
+                "smrol.threshold_pending_jobs",
+                "pool" => "threshold"
+            )
+            .set(remaining as f64);
+            return Err("threshold worker pool shut down".to_string());
+        }
         Ok(ThresholdTaskFuture { state })
     }
 }
@@ -93,12 +122,12 @@ static THRESHOLD_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
     ThresholdThreadPool::new(workers)
 });
 
-async fn run_threshold_task<R, F>(task: F) -> Result<R, String>
+async fn run_threshold_task<R, F>(label: &'static str, task: F) -> Result<R, String>
 where
     R: Send + 'static,
     F: FnOnce() -> Result<R, String> + Send + 'static,
 {
-    THRESHOLD_POOL.submit(task)?.await
+    THRESHOLD_POOL.submit(label, task)?.await
 }
 
 struct TaskState<R> {
@@ -162,6 +191,9 @@ where
 {
     task: Option<F>,
     state: Arc<TaskState<R>>,
+    label: &'static str,
+    submitted_at: Instant,
+    pending: Arc<AtomicUsize>,
 }
 
 impl<R, F> ThresholdJob for ConcreteThresholdJob<R, F>
@@ -171,8 +203,38 @@ where
 {
     fn run(mut self: Box<Self>) {
         if let Some(task) = self.task.take() {
+            let start = Instant::now();
+            let wait = start.duration_since(self.submitted_at);
+            metrics::histogram!(
+                "smrol.threshold_task_wait_ms",
+                "task" => self.label
+            )
+            .record(wait.as_secs_f64() * 1000.0);
+
             let result = task();
+            let exec = start.elapsed();
+            metrics::histogram!(
+                "smrol.threshold_task_exec_ms",
+                "task" => self.label
+            )
+            .record(exec.as_secs_f64() * 1000.0);
+
+            let prev_pending = self.pending.fetch_sub(1, Ordering::Relaxed);
+            let remaining = prev_pending.saturating_sub(1);
+            metrics::gauge!(
+                "smrol.threshold_pending_jobs",
+                "pool" => "threshold"
+            )
+            .set(remaining as f64);
             self.state.complete(result);
+        } else {
+            let prev_pending = self.pending.fetch_sub(1, Ordering::Relaxed);
+            let remaining = prev_pending.saturating_sub(1);
+            metrics::gauge!(
+                "smrol.threshold_pending_jobs",
+                "pool" => "threshold"
+            )
+            .set(remaining as f64);
         }
     }
 }
@@ -283,12 +345,19 @@ pub struct TransactionSequencing {
     order_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<ModuleMessage>>>,
     order_verify_tx: async_mpsc::UnboundedSender<(usize, SeqOrder)>,
     order_verify_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<(usize, SeqOrder)>>>,
+    order_verify_backlog: Arc<AtomicUsize>,
+    order_backlog: Arc<AtomicUsize>,
+    order_finalize_backlog: Arc<AtomicUsize>,
     order_finalize_tx: async_mpsc::UnboundedSender<(usize, SeqOrder)>,
     order_finalize_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<(usize, SeqOrder)>>>,
     median_tx: async_mpsc::UnboundedSender<ModuleMessage>,
     median_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<ModuleMessage>>>,
     final_tx: async_mpsc::UnboundedSender<ModuleMessage>,
     final_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<ModuleMessage>>>,
+    request_backlog: Arc<AtomicUsize>,
+    response_backlog: Arc<AtomicUsize>,
+    median_backlog: Arc<AtomicUsize>,
+    final_backlog: Arc<AtomicUsize>,
     sequenced_entry_tx: async_mpsc::UnboundedSender<TransactionEntry>,
 }
 
@@ -311,34 +380,52 @@ impl TransactionSequencing {
         let network_clone = Arc::clone(&network);
         let node_id = process_id;
         network.spawn(async move {
-            info!("📡 [Sequencing] Node {} 启动广播处理器", node_id);
+            info!("[sequencing] node {} started broadcast worker", node_id);
             while let Some(msg) = broadcast_rx.recv().await {
                 if let Err(e) = network_clone.broadcast(msg).await {
-                    error!("❌ [Sequencing] 广播处理器失败: {}", e);
+                    error!("[sequencing] broadcast worker failed: {}", e);
                 }
             }
             warn!(
-                "[Sequencing] Node {} 广播处理器退出 (channel closed)",
+                "[sequencing] node {} broadcast worker exited (channel closed)",
                 node_id
             );
         });
 
         let (request_tx, request_rx_raw) = async_mpsc::unbounded_channel::<ModuleMessage>();
         let request_rx = Arc::new(AsyncMutex::new(request_rx_raw));
+        let request_backlog = Arc::new(AtomicUsize::new(0));
+        metrics::gauge!("smrol.channel_backlog", "channel" => "request").set(0.0);
         let (response_tx, response_rx_raw) = async_mpsc::unbounded_channel::<ModuleMessage>();
         let response_rx = Arc::new(AsyncMutex::new(response_rx_raw));
+        let response_backlog = Arc::new(AtomicUsize::new(0));
+        metrics::gauge!("smrol.channel_backlog", "channel" => "response").set(0.0);
         let (order_tx, order_rx_raw) = async_mpsc::unbounded_channel::<ModuleMessage>();
         let order_rx = Arc::new(AsyncMutex::new(order_rx_raw));
+        let order_backlog = Arc::new(AtomicUsize::new(0));
+        metrics::gauge!("smrol.channel_backlog", "channel" => "order").set(0.0);
         let (order_verify_tx, order_verify_rx_raw) =
             async_mpsc::unbounded_channel::<(usize, SeqOrder)>();
         let order_verify_rx = Arc::new(AsyncMutex::new(order_verify_rx_raw));
+        let order_verify_backlog = Arc::new(AtomicUsize::new(0));
+        metrics::gauge!(
+            "smrol.channel_backlog",
+            "channel" => "order_verify"
+        )
+        .set(0.0);
         let (order_finalize_tx, order_finalize_rx_raw) =
             async_mpsc::unbounded_channel::<(usize, SeqOrder)>();
         let order_finalize_rx = Arc::new(AsyncMutex::new(order_finalize_rx_raw));
+        let order_finalize_backlog = Arc::new(AtomicUsize::new(0));
+        metrics::gauge!("smrol.channel_backlog", "channel" => "order_finalize").set(0.0);
         let (median_tx, median_rx_raw) = async_mpsc::unbounded_channel::<ModuleMessage>();
         let median_rx = Arc::new(AsyncMutex::new(median_rx_raw));
+        let median_backlog = Arc::new(AtomicUsize::new(0));
+        metrics::gauge!("smrol.channel_backlog", "channel" => "median").set(0.0);
         let (final_tx, final_rx_raw) = async_mpsc::unbounded_channel::<ModuleMessage>();
         let final_rx = Arc::new(AsyncMutex::new(final_rx_raw));
+        let final_backlog = Arc::new(AtomicUsize::new(0));
+        metrics::gauge!("smrol.channel_backlog", "channel" => "final").set(0.0);
 
         Self {
             f,
@@ -376,12 +463,19 @@ impl TransactionSequencing {
             order_rx,
             order_verify_tx,
             order_verify_rx,
+            order_verify_backlog,
+            order_backlog,
+            order_finalize_backlog,
             order_finalize_tx,
             order_finalize_rx,
             median_tx,
             median_rx,
             final_tx,
             final_rx,
+            request_backlog,
+            response_backlog,
+            median_backlog,
+            final_backlog,
             sequenced_entry_tx,
         }
     }
@@ -395,8 +489,8 @@ impl TransactionSequencing {
         //     self.process_id, s, tx.id
         // );
 
-        let payload =
-            bincode::serialize(&tx).map_err(|e| format!("序列化SmrolTransaction失败: {}", e))?;
+        let payload = bincode::serialize(&tx)
+            .map_err(|e| format!("Failed to serialize SmrolTransaction: {}", e))?;
         let seq_request = SeqRequest {
             seq_num: s,
             tx: Transaction { payload },
@@ -411,7 +505,7 @@ impl TransactionSequencing {
             sequence_number: s,
         };
         if let Err(e) = self.broadcast_tx.send(message) {
-            return Err(format!("广播SEQ-REQUEST失败: {}", e));
+            return Err(format!("Failed to broadcast SEQ-REQUEST: {}", e));
         }
         // tokio::task::yield_now().await;
 
@@ -419,7 +513,7 @@ impl TransactionSequencing {
         // let data_shards = std::cmp::max(1, self.f + 1);
         // let total_shards = std::cmp::max(data_shards, self.n);
         // let encoded = ErasurePackage::encode(&payload_clone, data_shards, total_shards)
-        //     .map_err(|e| format!("纠删码编码失败: {}", e))?;
+        //     .map_err(|e| format!("Erasure coding failed: {}", e))?;
         // let vc_root = encoded.merkle_root();
         // let vc_tx = vc_root.to_vec();
         // self.originated_vcs.insert(vc_tx.clone());
@@ -467,6 +561,30 @@ impl TransactionSequencing {
         self.final_tx.clone()
     }
 
+    pub fn request_backlog_counter(&self) -> Arc<AtomicUsize> {
+        Arc::clone(&self.request_backlog)
+    }
+
+    pub fn response_backlog_counter(&self) -> Arc<AtomicUsize> {
+        Arc::clone(&self.response_backlog)
+    }
+
+    pub fn order_backlog_counter(&self) -> Arc<AtomicUsize> {
+        Arc::clone(&self.order_backlog)
+    }
+
+    pub fn order_finalize_backlog_counter(&self) -> Arc<AtomicUsize> {
+        Arc::clone(&self.order_finalize_backlog)
+    }
+
+    pub fn median_backlog_counter(&self) -> Arc<AtomicUsize> {
+        Arc::clone(&self.median_backlog)
+    }
+
+    pub fn final_backlog_counter(&self) -> Arc<AtomicUsize> {
+        Arc::clone(&self.final_backlog)
+    }
+
     fn build_sequence_signature_message(vc: &[u8], sequence: u64) -> [u8; 40] {
         debug_assert!(vc.len() >= 32, "vc must contain at least 32 bytes");
         let mut buf = [0u8; 40];
@@ -476,6 +594,7 @@ impl TransactionSequencing {
     }
     fn spawn_request_processor(self: &Arc<Self>) {
         let request_rx = Arc::clone(&self.request_rx);
+        let backlog_counter = Arc::clone(&self.request_backlog);
         let sequencing = Arc::clone(self);
         tokio::spawn(async move {
             info!(
@@ -491,6 +610,10 @@ impl TransactionSequencing {
                 let mut rx = request_rx.lock().await;
                 rx.recv().await
             } {
+                let previous = backlog_counter.fetch_sub(1, Ordering::Relaxed);
+                let backlog = previous.saturating_sub(1);
+                metrics::gauge!("smrol.channel_backlog", "channel" => "request")
+                    .set(backlog as f64);
                 count += 1;
                 let start = Instant::now();
                 if let SmrolMessage::SeqRequest {
@@ -555,6 +678,7 @@ impl TransactionSequencing {
 
     fn spawn_response_processor(self: &Arc<Self>) {
         let response_rx = Arc::clone(&self.response_rx);
+        let backlog_counter = Arc::clone(&self.response_backlog);
         let sequencing = Arc::clone(self);
         tokio::spawn(async move {
             info!(
@@ -570,6 +694,10 @@ impl TransactionSequencing {
                 let mut rx = response_rx.lock().await;
                 rx.recv().await
             } {
+                let previous = backlog_counter.fetch_sub(1, Ordering::Relaxed);
+                let backlog = previous.saturating_sub(1);
+                metrics::gauge!("smrol.channel_backlog", "channel" => "response")
+                    .set(backlog as f64);
                 count += 1;
                 let start = Instant::now();
                 if let SmrolMessage::SeqResponse {
@@ -634,6 +762,7 @@ impl TransactionSequencing {
 
     fn spawn_order_receiver(self: &Arc<Self>) {
         let order_rx = Arc::clone(&self.order_rx);
+        let backlog_counter = Arc::clone(&self.order_backlog);
         let sequencing = Arc::clone(self);
         tokio::spawn(async move {
             info!(
@@ -649,6 +778,10 @@ impl TransactionSequencing {
                 let mut rx = order_rx.lock().await;
                 rx.recv().await
             } {
+                let previous = backlog_counter.fetch_sub(1, Ordering::Relaxed);
+                let backlog = previous.saturating_sub(1);
+                metrics::gauge!("smrol.channel_backlog", "channel" => "order")
+                    .set(backlog as f64);
                 count += 1;
                 let start = Instant::now();
                 if let SmrolMessage::SeqOrder {
@@ -657,9 +790,7 @@ impl TransactionSequencing {
                     sender_id: _msg_sender,
                 } = message
                 {
-                    if let Err(e) = sequencing
-                        .process_seq_order_message(sender_id, vc, responses)
-                    {
+                    if let Err(e) = sequencing.process_seq_order_message(sender_id, vc, responses) {
                         warn!(
                             "⚠️ [Sequencing] Node {} order handling failed: {}",
                             sequencing.process_id, e
@@ -708,6 +839,8 @@ impl TransactionSequencing {
         let verify_rx = Arc::clone(&self.order_verify_rx);
         let finalize_tx = self.order_finalize_tx.clone();
         let sequencing = Arc::clone(self);
+        let backlog_counter = Arc::clone(&self.order_verify_backlog);
+        let finalize_backlog = Arc::clone(&self.order_finalize_backlog);
         tokio::spawn(async move {
             info!(
                 "[Sequencing] Node {} order verify processor started",
@@ -723,22 +856,38 @@ impl TransactionSequencing {
                 let mut rx = verify_rx.lock().await;
                 rx.recv().await
             } {
+                let previous = backlog_counter.fetch_sub(1, Ordering::Relaxed);
+                let backlog = previous.saturating_sub(1);
+                metrics::gauge!(
+                    "smrol.channel_backlog",
+                    "channel" => "order_verify"
+                )
+                .set(backlog as f64);
+
                 let start = Instant::now();
                 let order_for_check = order.clone();
                 let verifying_keys = Arc::clone(&sequencing.verifying_keys);
                 let required = 2 * sequencing.f + 1;
-                let verify_result = match verify_seq_order_records(order_for_check, verifying_keys, required).await {
-                    Ok(res) => res,
-                    Err(e) => {
-                        warn!(
-                            "⚠️ [Sequencing] Node {} order verify task failed: {}",
-                            sequencing.process_id, e
-                        );
-                        false
-                    }
-                };
+                let verify_result =
+                    match verify_seq_order_records(order_for_check, verifying_keys, required).await
+                    {
+                        Ok(res) => res,
+                        Err(e) => {
+                            warn!(
+                                "⚠️ [Sequencing] Node {} order verify task failed: {}",
+                                sequencing.process_id, e
+                            );
+                            false
+                        }
+                    };
 
                 if verify_result {
+                    let pending = finalize_backlog.fetch_add(1, Ordering::Relaxed) + 1;
+                    metrics::gauge!(
+                        "smrol.channel_backlog",
+                        "channel" => "order_finalize"
+                    )
+                    .set(pending as f64);
                     if let Err(e) = finalize_tx.send((sender_id, order)) {
                         warn!(
                             "⚠️ [Sequencing] Node {} enqueue verified order failed: {}",
@@ -793,6 +942,7 @@ impl TransactionSequencing {
 
     fn spawn_order_finalizer(self: &Arc<Self>) {
         let finalize_rx = Arc::clone(&self.order_finalize_rx);
+        let backlog_counter = Arc::clone(&self.order_finalize_backlog);
         let sequencing = Arc::clone(self);
         tokio::spawn(async move {
             info!(
@@ -809,6 +959,13 @@ impl TransactionSequencing {
                 let mut rx = finalize_rx.lock().await;
                 rx.recv().await
             } {
+                let previous = backlog_counter.fetch_sub(1, Ordering::Relaxed);
+                let backlog = previous.saturating_sub(1);
+                metrics::gauge!(
+                    "smrol.channel_backlog",
+                    "channel" => "order_finalize"
+                )
+                .set(backlog as f64);
                 let start = Instant::now();
                 if let Err(e) = sequencing.finalize_seq_order(sender_id, order).await {
                     warn!(
@@ -852,6 +1009,7 @@ impl TransactionSequencing {
 
     fn spawn_median_processor(self: &Arc<Self>) {
         let median_rx = Arc::clone(&self.median_rx);
+        let backlog_counter = Arc::clone(&self.median_backlog);
         let sequencing = Arc::clone(self);
         tokio::spawn(async move {
             info!(
@@ -867,6 +1025,10 @@ impl TransactionSequencing {
                 let mut rx = median_rx.lock().await;
                 rx.recv().await
             } {
+                let previous = backlog_counter.fetch_sub(1, Ordering::Relaxed);
+                let backlog = previous.saturating_sub(1);
+                metrics::gauge!("smrol.channel_backlog", "channel" => "median")
+                    .set(backlog as f64);
                 count += 1;
                 let start = Instant::now();
                 if let SmrolMessage::SeqMedian {
@@ -926,6 +1088,7 @@ impl TransactionSequencing {
 
     fn spawn_final_processor(self: &Arc<Self>) {
         let final_rx = Arc::clone(&self.final_rx);
+        let backlog_counter = Arc::clone(&self.final_backlog);
         let sequencing = Arc::clone(self);
         tokio::spawn(async move {
             info!(
@@ -941,6 +1104,10 @@ impl TransactionSequencing {
                 let mut rx = final_rx.lock().await;
                 rx.recv().await
             } {
+                let previous = backlog_counter.fetch_sub(1, Ordering::Relaxed);
+                let backlog = previous.saturating_sub(1);
+                metrics::gauge!("smrol.channel_backlog", "channel" => "final")
+                    .set(backlog as f64);
                 count += 1;
                 let start = Instant::now();
                 if let SmrolMessage::SeqFinal {
@@ -1011,14 +1178,14 @@ impl TransactionSequencing {
         sequence_number: u64,
     ) -> Result<(), String> {
         let serialized =
-            bincode::serialize(&transaction).map_err(|e| format!("序列化失败: {}", e))?;
+            bincode::serialize(&transaction).map_err(|e| format!("Serialization failed: {}", e))?;
         let data_shards = std::cmp::max(1, self.pnfifo_threshold);
         let total_shards = std::cmp::max(data_shards, self.n);
         let serialized_for_encode = serialized.clone();
         let encode_start = Instant::now();
-        let encoded_package = run_threshold_task(move || {
+        let encoded_package = run_threshold_task("erasure_encode", move || {
             ErasurePackage::encode(&serialized_for_encode, data_shards, total_shards)
-                .map_err(|e| format!("纠删码编码任务失败: {}", e))
+                .map_err(|e| format!("Erasure coding task failed: {}", e))
         })
         .await?;
         let encode_duration = encode_start.elapsed();
@@ -1086,7 +1253,16 @@ impl TransactionSequencing {
         let order = SeqOrder { vc, records };
         self.order_verify_tx
             .send((sender_id, order))
-            .map_err(|e| format!("enqueue seq-order failed: {}", e))
+            .map_err(|e| format!("enqueue seq-order failed: {}", e))?;
+
+        let backlog = self.order_verify_backlog.fetch_add(1, Ordering::Relaxed) + 1;
+        metrics::gauge!(
+            "smrol.channel_backlog",
+            "channel" => "order_verify"
+        )
+        .set(backlog as f64);
+
+        Ok(())
     }
 
     #[tracing::instrument(skip(self))]
@@ -1254,7 +1430,7 @@ impl TransactionSequencing {
         self.network
             .send_to_node(sender, response_msg)
             .await
-            .map_err(|e| format!("发送SEQ-RESPONSE失败: {}", e))?;
+            .map_err(|e| format!("Failed to send SEQ-RESPONSE: {}", e))?;
         // info!(
         //     "[Sequencing] Sent *SEQ-RESPONSE* to {}, s={}, tx={}",
         //     sender,
@@ -1400,7 +1576,7 @@ impl TransactionSequencing {
                 };
                 let broadcast_start = Instant::now();
                 if let Err(e) = self.broadcast_tx.send(order_msg) {
-                    return Err(format!("广播SEQ-ORDER失败: {}", e));
+                    return Err(format!("Failed to broadcast SEQ-ORDER: {}", e));
                 }
                 // tokio::task::yield_now().await;
                 let broadcast_time = broadcast_start.elapsed();
@@ -1472,7 +1648,7 @@ impl TransactionSequencing {
             let sign_send_start = Instant::now();
             let threshold_share = self.threshold_share.clone();
             let message_for_sign = message.clone();
-            let (sigma_seq, sign_exec_time) = run_threshold_task(move || {
+            let (sigma_seq, sign_exec_time) = run_threshold_task("threshold_sign", move || {
                 let sign_start = Instant::now();
                 let sigma = threshold_share
                     .sign(message_for_sign.as_bytes())
@@ -1509,7 +1685,7 @@ impl TransactionSequencing {
         };
         let send_to_start = Instant::now();
         if let Err(e) = self.network.send_to_node(sender, median_msg).await {
-            return Err(format!("发送SEQ-MEDIAN失败: {}", e));
+            return Err(format!("Failed to send SEQ-MEDIAN: {}", e));
         }
         let send_time = send_to_start.elapsed();
 
@@ -1578,7 +1754,7 @@ impl TransactionSequencing {
                     tx_id,
                 };
                 if let Err(e) = self.broadcast_tx.send(final_msg) {
-                    return Err(format!("广播SEQ-FINAL失败: {}", e));
+                    return Err(format!("Failed to broadcast SEQ-FINAL: {}", e));
                 }
 
                 let total_time = total_start.elapsed();
@@ -1690,7 +1866,7 @@ impl TransactionSequencing {
                 };
                 let broadcast_start = Instant::now();
                 if let Err(e) = self.broadcast_tx.send(final_msg) {
-                    return Err(format!("广播SEQ-FINAL失败: {}", e));
+                    return Err(format!("Failed to broadcast SEQ-FINAL: {}", e));
                 }
                 // tokio::task::yield_now().await;
                 let broadcast_time = broadcast_start.elapsed();
@@ -1751,7 +1927,7 @@ impl TransactionSequencing {
         let total_start = Instant::now();
         let vc_key = VC::from_slice(&final_msg.vc);
 
-        // NOTE: 改成原子操作？
+        // NOTE: should this use atomics?
         let verify_start = Instant::now();
         // slow
         let result = self.verify_combined_signature_async(&final_msg).await?;
@@ -1842,6 +2018,20 @@ impl TransactionSequencing {
         sender: usize,
     ) -> Result<Option<SignatureShare>, String> {
         if *DISABLE_THRESHOLD_SIG_VERIFICATION {
+            if median.sigma_seq.len() != SIG_SIZE {
+                return Err(format!(
+                    "threshold signature share length invalid: {}",
+                    median.sigma_seq.len()
+                ));
+            }
+
+            let mut share_bytes = [0u8; SIG_SIZE];
+            share_bytes.copy_from_slice(&median.sigma_seq);
+            let share = SignatureShare::from_bytes(share_bytes)
+                .map_err(|e| format!("Failed to parse threshold share: {}", e))?;
+            return Ok(Some(share));
+        }
+
         if median.sigma_seq.len() != SIG_SIZE {
             return Err(format!(
                 "threshold signature share length invalid: {}",
@@ -1852,37 +2042,21 @@ impl TransactionSequencing {
         let mut share_bytes = [0u8; SIG_SIZE];
         share_bytes.copy_from_slice(&median.sigma_seq);
         let share = SignatureShare::from_bytes(share_bytes)
-            .map_err(|e| format!("无法解析threshold share: {}", e))?;
-        return Ok(Some(share));
+            .map_err(|e| format!("Failed to parse threshold share: {}", e))?;
+
+        let threshold_public = self.threshold_public.clone();
+        let message = format!("median:{}:{}", median.s_tx, hex::encode(&median.vc));
+        let message_bytes = message.into_bytes();
+        let share_for_task = share.clone();
+
+        let is_valid = run_threshold_task("verify_median_share", move || {
+            let pk_share = threshold_public.public_key_share(sender);
+            Ok(pk_share.verify(&share_for_task, &message_bytes))
+        })
+        .await?;
+
+        Ok(if is_valid { Some(share) } else { None })
     }
-
-    if median.sigma_seq.len() != SIG_SIZE {
-        return Err(format!(
-            "threshold signature share length invalid: {}",
-            median.sigma_seq.len()
-        ));
-    }
-
-    let mut share_bytes = [0u8; SIG_SIZE];
-    share_bytes.copy_from_slice(&median.sigma_seq);
-    let share = SignatureShare::from_bytes(share_bytes)
-        .map_err(|e| format!("无法解析threshold share: {}", e))?;
-
-    let threshold_public = self.threshold_public.clone();
-    let message = format!("median:{}:{}", median.s_tx, hex::encode(&median.vc));
-    let message_bytes = message.into_bytes();
-
-    let verify_start = Instant::now();
-    let pk_share = threshold_public.public_key_share(sender);
-    let is_valid = pk_share.verify(&share, &message_bytes);
-    let verify_time = verify_start.elapsed();
-    warn!(
-        "[pk_share.verify] verify_median_share took {:?}",
-        verify_time
-    );
-
-    Ok(if is_valid { Some(share) } else { None })
-}
 
     async fn combine_median_shares_async(
         &self,
@@ -1897,11 +2071,11 @@ impl TransactionSequencing {
         let threshold_public = self.threshold_public.clone();
         let spawn_start = Instant::now();
 
-        let (signature, worker_time) = run_threshold_task(move || {
+        let (signature, worker_time) = run_threshold_task("combine_median_shares", move || {
             let work_start = Instant::now();
             let outcome = threshold_public
                 .combine_signatures(shares.iter().map(|(id, share)| (*id, share)))
-                .map_err(|e| format!("阈值签名组合失败: {}", e));
+                .map_err(|e| format!("Threshold signature combine failed: {}", e));
             let elapsed = work_start.elapsed();
             outcome.map(|sig| (sig, elapsed))
         })
@@ -1934,31 +2108,22 @@ impl TransactionSequencing {
         let mut sig_bytes = [0u8; SIG_SIZE];
         sig_bytes.copy_from_slice(&final_msg.sigma);
         let signature = ThresholdSignature::from_bytes(sig_bytes)
-            .map_err(|e| format!("无法解析组合签名: {}", e))?;
+            .map_err(|e| format!("Failed to parse combined signature: {}", e))?;
 
         let threshold_public = self.threshold_public.clone();
-        let message = format!(
-            "median:{}:{}",
-            final_msg.s_tx,
-            hex::encode(&final_msg.vc)
-        );
+        let message = format!("median:{}:{}", final_msg.s_tx, hex::encode(&final_msg.vc));
         let message_bytes = message.into_bytes();
 
-        let verify_start = Instant::now();
-        let result = threshold_public
-            .public_key()
-            .verify(&signature, &message_bytes);
-        let verify_time = verify_start.elapsed();
-        warn!(
-            "[public_key.verify] verify_combined_signature took {:?}",
-            verify_time
-        );
-
-        Ok(result)
+        run_threshold_task("verify_combined_signature", move || {
+            Ok(threshold_public
+                .public_key()
+                .verify(&signature, &message_bytes))
+        })
+        .await
     }
 
     async fn reconstruct_full_async(package: ErasurePackage) -> Result<Vec<u8>, String> {
-        run_threshold_task(move || package.reconstruct_full()).await
+        run_threshold_task("erasure_reconstruct", move || package.reconstruct_full()).await
     }
 
     // Helper functions
@@ -2241,7 +2406,7 @@ impl TransactionSequencing {
 
     async fn store_pending_final(&self, final_msg: SeqFinal) {
         // info!(
-        //     "⏳ [Sequencing] node={} 缓存SEQ-FINAL等待载荷: vc={} s_tx={}",
+        //     "[sequencing] node={} cached SEQ-FINAL awaiting payload: vc={} s_tx={}",
         //     self.process_id,
         //     hex::encode(&final_msg.vc[..std::cmp::min(8, final_msg.vc.len())]),
         //     final_msg.s_tx
@@ -2354,10 +2519,8 @@ async fn verify_seq_order_records(
             TransactionSequencing::build_sequence_signature_message(&order.vc, record.sequence);
         let verifying_key = verifying_key.clone();
 
-        let verify_ok = run_threshold_task(move || {
-            Ok(verifying_key
-                .verify_strict(&message, &signature)
-                .is_ok())
+        let verify_ok = run_threshold_task("verify_seq_order_share", move || {
+            Ok(verifying_key.verify_strict(&message, &signature).is_ok())
         })
         .await?;
 

@@ -1,4 +1,4 @@
-// 修改后的高效客户端节点 - 分离状态架构
+// Optimized client node with separated state architecture
 // hotstuff_runner/src/bin/client.rs
 
 use ed25519_dalek::SigningKey;
@@ -38,7 +38,7 @@ pub struct ClientMessage {
     pub client_id: String,
 }
 
-// 分离状态：核心业务逻辑（无需共享）
+// Separated state: core business logic (no sharing required)
 pub struct ClientNode {
     client_id: String,
     connections: HashMap<usize, PersistentConnection>,
@@ -49,7 +49,7 @@ pub struct ClientNode {
     is_smrol: bool,
 }
 
-// 分离状态：延迟跟踪器（独立运行）
+// Separated state: latency tracker (standalone)
 pub struct LatencyTracker {
     send_timestamps: HashMap<u64, Instant>,
     pushed_timestamps: HashMap<u64, Instant>,
@@ -60,12 +60,12 @@ pub struct LatencyTracker {
     consensus_recorded: HashSet<u64>,
 }
 
-// 分离状态：统计报告器（独立运行）
+// Separated state: statistics reporter (standalone)
 pub struct StatsReporter {
     total_responses: usize,
 }
 
-// 响应命令枚举：延迟跟踪器处理响应
+// Response command enum: latency tracker handles responses
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum ResponseCommand {
     Ordering1Response { tx_ids: Vec<u64> },
@@ -82,7 +82,7 @@ static HOST_MAP: OnceLock<HashMap<String, String>> = OnceLock::new();
 pub fn resolve_target(target_id: usize, port: u16) -> String {
     let target_name = format!("node{}", target_id);
 
-    // 初始化 HOST_MAP（只执行一次）
+    // Initialize HOST_MAP (run once)
     let map = HOST_MAP.get_or_init(|| {
         let hosts_str = std::env::var("NODE_HOSTS")
             .unwrap_or_else(|_| panic!("NODE_HOSTS environment variable not set"));
@@ -121,10 +121,10 @@ impl LatencyTracker {
         self.send_timestamps.insert(tx_id, Instant::now());
     }
 
-    //  修改：支持批量处理 ordering 响应
+    // Support batch processing of ordering responses
     pub fn handle_ordering_response(&mut self, tx_ids: Vec<u64>) {
         for tx_id in tx_ids {
-            // 只记录第一次
+            // Record only the first occurrence
             if self.ordering_recorded.contains(&tx_id) {
                 continue;
             }
@@ -134,7 +134,7 @@ impl LatencyTracker {
                 self.ordering_latencies.push(latency);
                 self.ordering_recorded.insert(tx_id);
                 // if tx_id % 1000 == 0 {
-                info!("📊 交易 {} ordering延迟: {}ms", tx_id, latency_ms);
+                info!("[latency] tx {} ordering delay: {} ms", tx_id, latency_ms);
                 // }
             }
         }
@@ -147,7 +147,7 @@ impl LatencyTracker {
         }
     }
 
-    //  修改：支持批量处理 consensus 响应
+    // Support batch processing of consensus responses
     pub fn handle_consensus_response(&mut self, tx_ids: Vec<u64>) {
         for tx_id in tx_ids {
             if self.consensus_recorded.contains(&tx_id) {
@@ -159,7 +159,7 @@ impl LatencyTracker {
                 self.consensus_latencies.push(latency);
                 self.consensus_recorded.insert(tx_id);
                 // if tx_id % 1000 == 0 {
-                info!("📊 交易 {} consensus延迟: {}ms", tx_id, latency_ms);
+                info!("[latency] tx {} consensus delay: {} ms", tx_id, latency_ms);
                 // }
             }
             if let Some(pushed_time) = self.pushed_timestamps.remove(&tx_id) {
@@ -168,7 +168,7 @@ impl LatencyTracker {
                 let latency_ms = latency as f64 / 1000.0;
                 if tx_id % 1000 == 0 {
                     info!(
-                        "📊 交易 {} pushed2hotstuff->consensus 延迟: {}ms",
+                        "[latency] tx {} pushed2hotstuff->consensus delay: {} ms",
                         tx_id, latency_ms
                     );
                 }
@@ -196,8 +196,8 @@ impl LatencyTracker {
         let p95 = sorted[sorted.len() * 95 / 100];
         let p99 = sorted[sorted.len() * 99 / 100];
 
-        info!("📈 Ordering延迟统计 (样本: {}):", sorted.len());
-        info!("  平均值: {:.2} ms", avg as f64 / 1000.0);
+        info!("[ordering] latency statistics (samples: {}):", sorted.len());
+        info!("  Average: {:.2} ms", avg as f64 / 1000.0);
         info!("  P50: {} ms", p50 as f64 / 1000.0);
         info!("  P95: {} ms", p95 as f64 / 1000.0);
         info!("  P99: {} ms", p99 as f64 / 1000.0);
@@ -216,8 +216,11 @@ impl LatencyTracker {
         let p95 = sorted[sorted.len() * 95 / 100];
         let p99 = sorted[sorted.len() * 99 / 100];
 
-        info!("📈 Consensus延迟统计 (样本: {}):", sorted.len());
-        info!("  平均值: {:.2} ms", avg as f64 / 1000.0);
+        info!(
+            "[consensus] latency statistics (samples: {}):",
+            sorted.len()
+        );
+        info!("  Average: {:.2} ms", avg as f64 / 1000.0);
         info!("  P50: {} ms", p50 as f64 / 1000.0);
         info!("  P95: {} ms", p95 as f64 / 1000.0);
         info!("  P99: {} ms", p99 as f64 / 1000.0);
@@ -237,17 +240,17 @@ impl LatencyTracker {
         let p99 = sorted[sorted.len() * 99 / 100];
 
         info!(
-            "📈 Pushed2HotStuff->Consensus延迟统计 (样本: {}):",
+            "[pushed2hotstuff->consensus] latency statistics (samples: {}):",
             sorted.len()
         );
-        info!("  平均值: {:.2} ms", avg as f64 / 1000.0);
+        info!("  Average: {:.2} ms", avg as f64 / 1000.0);
         info!("  P50: {} ms", p50 as f64 / 1000.0);
         info!("  P95: {} ms", p95 as f64 / 1000.0);
         info!("  P99: {} ms", p99 as f64 / 1000.0);
     }
 
     pub fn print_comprehensive_stats(&self) {
-        info!("📊 ============= 综合延迟统计报告 =============");
+        info!("[latency] ============= aggregate latency report =============");
         self.print_ordering_stats();
         self.print_consensus_stats();
         self.print_pushed_to_consensus_stats();
@@ -260,11 +263,11 @@ impl LatencyTracker {
                 / self.consensus_latencies.len() as f64
                 / 1000.0;
 
-            info!("📊 延迟对比分析:");
-            info!("  Ordering平均延迟: {:.2} ms", avg_ordering_ms);
-            info!("  Consensus平均延迟: {:.2} ms", avg_consensus_ms);
+            info!("[latency] comparison analysis:");
+            info!("  Ordering average: {:.2} ms", avg_ordering_ms);
+            info!("  Consensus average: {:.2} ms", avg_consensus_ms);
             info!(
-                "  Consensus/Ordering比值: {:.2}x",
+                "  Consensus/Ordering ratio: {:.2}x",
                 avg_consensus_ms / avg_ordering_ms
             );
             if !self.pushed_to_consensus_latencies.is_empty() {
@@ -273,7 +276,7 @@ impl LatencyTracker {
                         / self.pushed_to_consensus_latencies.len() as f64
                         / 1000.0;
                 info!(
-                    "  Pushed2HotStuff->Consensus平均延迟: {:.2} ms",
+                    "  Pushed2HotStuff->Consensus average: {:.2} ms",
                     avg_pushed_consensus_ms
                 );
             }
@@ -294,7 +297,10 @@ impl LatencyTracker {
             for latency in &self.ordering_latencies {
                 writeln!(file, "{}", latency)?;
             }
-            info!("💾 Ordering延迟数据已保存到: {}", ordering_file);
+            info!(
+                "[latency] ordering latency data saved to: {}",
+                ordering_file
+            );
         }
 
         if !self.consensus_latencies.is_empty() {
@@ -303,7 +309,10 @@ impl LatencyTracker {
             for latency in &self.consensus_latencies {
                 writeln!(file, "{}", latency)?;
             }
-            info!("💾 Consensus延迟数据已保存到: {}", consensus_file);
+            info!(
+                "[latency] consensus latency data saved to: {}",
+                consensus_file
+            );
         }
 
         Ok(())
@@ -324,7 +333,7 @@ impl StatsReporter {
     }
 }
 
-// 命令枚举：业务逻辑与延迟跟踪通信
+// Command enum: bridges business logic and latency tracker
 #[derive(Debug)]
 pub enum ClientCommand {
     SendBatch {
@@ -340,7 +349,7 @@ pub enum ClientCommand {
 
 impl ClientNode {
     pub fn new(client_id: String, is_pompe: bool, is_smrol: bool) -> Self {
-        info!("🚀 初始化客户端核心: {}", client_id);
+        info!("[client] initializing core: {}", client_id);
 
         let tx_generator = TransactionGenerator::new(client_id.clone());
 
@@ -367,7 +376,7 @@ impl ClientNode {
         node_num: usize,
         response_tx: tokio::sync::mpsc::UnboundedSender<ResponseCommand>,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        info!("🌐 建立到所有节点的持久连接...");
+        info!("[client] establishing persistent connections to all nodes...");
         self.response_tx = Some(response_tx.clone());
 
         for node_id in node_least_id..(node_least_id + node_num) {
@@ -381,15 +390,18 @@ impl ClientNode {
             {
                 Ok(conn) => {
                     self.connections.insert(node_id, conn);
-                    info!("✅ 连接到节点 {} 成功", node_id);
+                    info!("[client] connected to node {}", node_id);
                 }
                 Err(e) => {
-                    error!("❌ 连接到节点 {} 失败: {}", node_id, e);
+                    error!("[client] failed to connect to node {}: {}", node_id, e);
                 }
             }
         }
 
-        info!("🎯 成功建立 {} 个持久连接", self.connections.len());
+        info!(
+            "[client] established {} persistent connections",
+            self.connections.len()
+        );
         Ok(())
     }
 
@@ -406,12 +418,12 @@ impl ClientNode {
                     Ok(sent_count)
                 }
                 Err(e) => {
-                    error!("❌ 批量发送到节点 {} 失败: {}", node_id, e);
+                    error!("[client] failed to send batch to node {}: {}", node_id, e);
                     self.stats.record_failed(transactions.len() as u64);
 
-                    // 尝试重新连接
+                    // Attempt to reconnect
                     if let Some(response_tx) = &self.response_tx {
-                        info!("🔄 尝试重新连接到节点 {}", node_id);
+                        info!("[client] attempting reconnection to node {}", node_id);
                         match PersistentConnection::new(
                             node_id,
                             response_tx.clone(),
@@ -422,10 +434,13 @@ impl ClientNode {
                         {
                             Ok(new_conn) => {
                                 self.connections.insert(node_id, new_conn);
-                                info!("✅ 重新连接到节点 {} 成功", node_id);
+                                info!("[client] reconnected to node {}", node_id);
                             }
                             Err(reconnect_err) => {
-                                error!("❌ 重新连接到节点 {} 失败: {}", node_id, reconnect_err);
+                                error!(
+                                    "[client] failed to reconnect to node {}: {}",
+                                    node_id, reconnect_err
+                                );
                             }
                         }
                     }
@@ -433,8 +448,8 @@ impl ClientNode {
                 }
             }
         } else {
-            error!("❌ 没有到节点 {} 的连接", node_id);
-            Err("没有连接".into())
+            error!("[client] no connection to node {}", node_id);
+            Err("connection not available".into())
         }
     }
 
@@ -450,11 +465,11 @@ impl ClientNode {
         latency_tracker: Arc<Mutex<LatencyTracker>>,
     ) {
         info!(
-            "🚀 开始负载测试 - TPS目标: {}, 持续时间: {}秒",
+            "[load-test] starting load test - target TPS: {}, duration: {} s",
             config.target_tps, config.duration_secs
         );
 
-        // 参数调整点：降低发送频率测latency
+        // Tuning hook: reduce send rate to probe latency
         let is_latency = false;
 
         // let mut batch_size = std::cmp::max(100, config.target_tps / 5);
@@ -462,7 +477,7 @@ impl ClientNode {
         if batch_size == 0 {
             batch_size = 1;
         }
-        //  if batch_size>100 { batch_size=100; } // 限制最大批次大小为100
+        //  if batch_size>100 { batch_size=100; } // cap batch size at 100
         let mut batch_interval = Duration::from_millis(200);
 
         if is_latency {
@@ -478,13 +493,13 @@ impl ClientNode {
 
         while Instant::now() < end_time {
             for node_offset in 0..node_num {
-                // 🔥🔥 调试修改点
+                // Debug hook
                 // for node_offset in 0..2 {
                 let node_id = node_least_id + node_offset;
-                // let node_id = node_least_id; // 🔥🔥 调试修改点：只发给第一个节点
+                // let node_id = node_least_id; // Debug: send only to the first node
                 let transactions = self.tx_generator.generate_batch(batch_size as usize);
 
-                // 先通知延迟跟踪器记录发送时间
+                // Notify latency tracker before sending
                 let tx_ids: Vec<u64> = transactions.iter().map(|tx| tx.id).collect();
                 {
                     let mut tracker = latency_tracker.lock().await;
@@ -497,7 +512,7 @@ impl ClientNode {
                     Ok(sent_count) => {
                         total_sent += sent_count;
                         info!(
-                            "📦 批次 {} 发送 {} 个交易到节点 {}",
+                            "[load-test] batch {} sent {} transactions to node {}",
                             batch_counter + 1,
                             sent_count,
                             node_id
@@ -505,7 +520,7 @@ impl ClientNode {
                     }
                     Err(e) => {
                         warn!(
-                            "批次 {} 发送到节点 {} 失败: {}",
+                            "[load-test] batch {} failed to send to node {}: {}",
                             batch_counter + 1,
                             node_id,
                             e
@@ -521,11 +536,14 @@ impl ClientNode {
             }
 
             tokio::time::sleep(batch_interval).await;
-            // 🔥🔥 调试修改点：120秒一个交易
+            // Debug hook: send one transaction every 120 seconds
             // tokio::time::sleep(Duration::from_millis(100)).await;
         }
 
-        info!("🏁 负载测试完成，总计发送 {} 个交易", total_sent);
+        info!(
+            "[load-test] completed; total transactions sent: {}",
+            total_sent
+        );
         self.stats.log_summary();
     }
 
@@ -535,7 +553,7 @@ impl ClientNode {
         node_num: usize,
         latency_tracker: Arc<Mutex<LatencyTracker>>,
     ) {
-        info!("🎮 进入交互模式");
+        info!("[client] entering interactive mode");
 
         let mut tx_counter = 0;
 
@@ -544,7 +562,7 @@ impl ClientNode {
             let transactions = self.tx_generator.generate_batch(batch_size);
             let target_node = (tx_counter / batch_size) % node_num + node_least_id;
 
-            // 先通知延迟跟踪器记录发送时间
+            // Notify latency tracker before sending
             let tx_ids: Vec<u64> = transactions.iter().map(|tx| tx.id).collect();
             {
                 let mut tracker = latency_tracker.lock().await;
@@ -557,12 +575,15 @@ impl ClientNode {
                 Ok(sent_count) => {
                     tx_counter += sent_count;
                     info!(
-                        "✅ 成功发送 {} 个交易到节点 {}, 总计: {}",
+                        "[client] sent {} transactions to node {}, cumulative total: {}",
                         sent_count, target_node, tx_counter
                     );
                 }
                 Err(e) => {
-                    error!("❌ 发送批次失败到节点 {}: {}", target_node, e);
+                    error!(
+                        "[client] failed to send batch to node {}: {}",
+                        target_node, e
+                    );
                     tokio::time::sleep(Duration::from_secs(5)).await;
                     continue;
                 }
@@ -577,7 +598,7 @@ impl ClientNode {
     }
 }
 
-// 其他结构体保持不变...
+// Other structs remain unchanged...
 pub struct TransactionGenerator {
     current_tx_id: u64,
     current_nonce: u64,
@@ -680,7 +701,7 @@ impl ClientStats {
         };
 
         info!(
-            "📊 客户端统计 - 发送: {}, 确认: {}, 失败: {}, TPS: {:.2}, 成功率: {:.1}%",
+            "[client-stats] sent: {}, confirmed: {}, failed: {}, TPS: {:.2}, success rate: {:.1}%",
             self.total_sent, self.total_confirmed, self.total_failed, tps, success_rate
         );
     }
@@ -688,7 +709,7 @@ impl ClientStats {
 
 pub struct PersistentConnection {
     // stream: TcpStream,
-    write_stream: tokio::net::tcp::OwnedWriteHalf, // 🔥 只保存写流
+    write_stream: tokio::net::tcp::OwnedWriteHalf, // Store only the write half
     node_id: usize,
     connected_at: Instant,
     is_pompe: bool,
@@ -705,23 +726,29 @@ impl PersistentConnection {
         let hostname = format!("node{}", node_id);
         // let port = 9000 + node_id as u16;
         let port = 9000;
-        let addr_str = resolve_target(node_id, port); // 🔥 使用解析函数
+        let addr_str = resolve_target(node_id, port); // Use resolver helper
         info!("Resolved address for node {}: {}", node_id, addr_str);
         // let addr_str = format!("{}:{}", hostname, port);
 
-        info!("🔗 建立持久连接到节点 {}: {}", node_id, addr_str);
+        info!(
+            "[client] establishing persistent connection to node {}: {}",
+            node_id, addr_str
+        );
 
         let stream = TcpStream::connect(&addr_str).await?;
 
-        // 🔥 关键：分离读写流
+        // Split read/write halves to avoid locking
         let (read_half, write_half) = stream.into_split();
 
         tokio::spawn(async move {
             if let Err(e) = handle_node_responses(node_id, read_half, response_tx).await {
-                error!("❌ 节点 {} 响应接收失败: {}", node_id, e);
+                error!("[client] node {} response receiver error: {}", node_id, e);
             }
         });
-        info!("✅ 成功建立持久连接到节点 {}", node_id);
+        info!(
+            "[client] established persistent connection to node {}",
+            node_id
+        );
 
         Ok(Self {
             write_stream: write_half,
@@ -749,8 +776,8 @@ impl PersistentConnection {
 
                 let serialized = serde_json::to_vec(&client_message)?;
                 let message_length = serialized.len() as u32;
-                // 平均消息长度 170 bytes
-                // info!("📦 ******* 客户端发送pompe消息，长度: {} bytes", message_length);
+                // Average message length ~170 bytes
+                // info!("[client] sending Pompe message, length: {} bytes", message_length);
 
                 batch_buffer.extend_from_slice(&message_length.to_be_bytes());
                 batch_buffer.extend_from_slice(&serialized);
@@ -765,7 +792,7 @@ impl PersistentConnection {
 
                 let serialized = serde_json::to_vec(&client_message)?;
                 let message_length = serialized.len() as u32;
-                // info!("📦 ******* 客户端发送消息，长度: {} bytes", message_length);
+                // info!("[client] sending message, length: {} bytes", message_length);
 
                 batch_buffer.extend_from_slice(&message_length.to_be_bytes());
                 batch_buffer.extend_from_slice(&serialized);
@@ -780,7 +807,7 @@ impl PersistentConnection {
 
                 let serialized = serde_json::to_vec(&client_message)?;
                 let message_length = serialized.len() as u32;
-                // info!("📦 ******* 客户端发送消息，长度: {} bytes", message_length);
+                // info!("[client] sending message, length: {} bytes", message_length);
 
                 batch_buffer.extend_from_slice(&message_length.to_be_bytes());
                 batch_buffer.extend_from_slice(&serialized);
@@ -804,13 +831,13 @@ pub struct LoadTestConfig {
 }
 
 fn setup_tracing_logger(mode: &str) {
-    create_dir_all("logs").expect("无法创建日志目录");
+    create_dir_all("logs").expect("Unable to create logs directory");
 
     let path = match mode {
         "interactive" => "client".to_string(),
         "load_test" => "load_test".to_string(),
         _ => {
-            warn!("⚠️ 未知模式，使用默认日志配置");
+            warn!("[logger] unknown mode; falling back to default configuration");
             "default".to_string()
         }
     };
@@ -821,7 +848,7 @@ fn setup_tracing_logger(mode: &str) {
         .create(true)
         .append(true)
         .open(format!("logs/{}.log", path))
-        .expect("无法打开日志文件");
+        .expect("Unable to open log file");
 
     let result = tracing_subscriber::registry()
         // .with(EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("warn")))
@@ -842,12 +869,12 @@ fn setup_tracing_logger(mode: &str) {
         .try_init();
 
     match result {
-        Ok(_) => info!("📝 客户端日志系统初始化成功"),
-        Err(_) => warn!("⚠️ 日志系统已经初始化过了，跳过"),
+        Ok(_) => info!("[logger] client logging initialized"),
+        Err(_) => warn!("[logger] logging already initialized; skipping"),
     }
 }
 
-// 🔥 修改网络响应解析，支持批量消息
+// Adjust response parsing to support batched messages
 async fn handle_node_responses(
     node_id: usize,
     mut read_half: tokio::net::tcp::OwnedReadHalf,
@@ -855,7 +882,7 @@ async fn handle_node_responses(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut length_buf = [0u8; 4];
 
-    info!("🎧 启动节点 {} 的响应接收器", node_id);
+    info!("[client] starting response receiver for node {}", node_id);
 
     loop {
         match read_half.read_exact(&mut length_buf).await {
@@ -863,36 +890,39 @@ async fn handle_node_responses(
                 let message_length = u32::from_be_bytes(length_buf) as usize;
 
                 if message_length > 1024 * 1024 {
-                    warn!("⚠️ 从节点 {} 收到过大响应: {}", node_id, message_length);
+                    warn!(
+                        "[client] oversized response from node {}: {} bytes",
+                        node_id, message_length
+                    );
                     continue;
                 }
 
                 let mut message_buf = vec![0u8; message_length];
                 read_half.read_exact(&mut message_buf).await?;
 
-                //  解析响应消息，支持批量 tx_ids
+                // Parse response messages; support batched tx_ids
                 if let Ok(response_json) = serde_json::from_slice::<serde_json::Value>(&message_buf)
                 {
                     if let Some(message_type) =
                         response_json.get("message_type").and_then(|v| v.as_str())
                     {
-                        //  支持单个 tx_id 或 tx_ids 数组
+                        // Support either single tx_id or an array of tx_ids
                         let tx_ids = if let Some(tx_ids_array) = response_json.get("tx_ids") {
-                            // 批量交易 ID
+                            // Batched transaction IDs
                             serde_json::from_value::<Vec<u64>>(tx_ids_array.clone())
                                 .unwrap_or_else(|_| Vec::new())
                         } else if let Some(tx_id) =
                             response_json.get("tx_id").and_then(|v| v.as_u64())
                         {
-                            // 单个交易 ID（向后兼容）
+                            // Single transaction ID (backward compatibility)
                             vec![tx_id]
                         } else {
-                            warn!("⚠️ 响应消息中没有 tx_id 或 tx_ids");
+                            warn!("[client] response missing tx_id or tx_ids");
                             continue;
                         };
 
                         if tx_ids.is_empty() {
-                            warn!("⚠️ 响应消息中 tx_ids 为空");
+                            warn!("[client] response contained empty tx_ids array");
                             continue;
                         }
 
@@ -914,27 +944,27 @@ async fn handle_node_responses(
                                 let error_msg = response_json
                                     .get("error_msg")
                                     .and_then(|v| v.as_str())
-                                    .unwrap_or("未知错误")
+                                    .unwrap_or("unknown error")
                                     .to_string();
                                 ResponseCommand::Error { tx_ids, error_msg }
                             }
                             _ => {
-                                warn!("⚠️ 未知响应类型: {}", message_type);
+                                warn!("[client] unknown response type: {}", message_type);
                                 continue;
                             }
                         };
 
-                        // 发送批量响应命令
+                        // Dispatch batched response command
                         let _ = response_tx.send(response_cmd);
-                        // info!("✅ 从节点 {} 处理批量响应: {} {} 个交易",
+                        // info!("[client] processed batched response from node {}: {} transactions",
                         //       node_id, message_type, tx_ids_len);
                     }
                 } else {
-                    warn!("⚠️ 无法解析从节点 {} 收到的响应", node_id);
+                    warn!("[client] failed to parse response from node {}", node_id);
                 }
             }
             Err(e) => {
-                info!("🔌 节点 {} 连接断开: {}", node_id, e);
+                info!("[client] node {} connection closed: {}", node_id, e);
                 break;
             }
         }
@@ -957,14 +987,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "smrol" => (false, true),
         other => {
             warn!(
-                "⚠️ 未知的 CLIENT_ORDERING_MODE='{}'，默认使用 SMROL 管线",
+                "[client] unknown CLIENT_ORDERING_MODE='{}'; defaulting to SMROL pipeline",
                 other
             );
             (false, true)
         }
     };
     info!(
-        "🔧 客户端交易发送模式: {}",
+        "[client] transaction send mode: {}",
         if is_pompe {
             "Pompe"
         } else if is_smrol {
@@ -977,21 +1007,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let node_least_id: usize = env::var("NODE_LEAST_ID")
         .unwrap_or_else(|_| "0".to_string())
         .parse()
-        .expect("NODE_LEAST_ID 必须是数字");
+        .expect("NODE_LEAST_ID must be numeric");
     let node_num: usize = env::var("NODE_NUM")
         .unwrap_or_else(|_| "4".to_string())
         .parse()
-        .expect("NODE_NUM 必须是数字");
+        .expect("NODE_NUM must be numeric");
 
-    info!("🏃 启动分离状态客户端: {}", client_id);
+    info!("[client] starting separated-state client: {}", client_id);
 
-    // 创建通道
+    // Create channels
     let (cmd_tx, mut cmd_rx) = tokio::sync::mpsc::unbounded_channel::<ClientCommand>();
     let (response_tx, mut response_rx) = tokio::sync::mpsc::unbounded_channel::<ResponseCommand>();
 
     let latency_tracker = Arc::new(Mutex::new(LatencyTracker::new()));
 
-    // 启动延迟跟踪器任务
+    // Launch latency tracker task
     {
         let tracker = Arc::clone(&latency_tracker);
         tokio::spawn(async move {
@@ -1007,7 +1037,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 let tracker_guard = tracker.lock().await;
                                 tracker_guard.print_comprehensive_stats();
                             }
-                            _ => {} // 其他命令由主任务处理
+                            _ => {} // Other commands handled by the main task
                         }
                     }
                     Some(response_cmd) = response_rx.recv() => {
@@ -1027,9 +1057,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                     tracker_guard.handle_consensus_response(tx_ids);
                                 }
                                 ResponseCommand::Error { tx_ids, error_msg } => {
-                                    error!("❌ {} 个交易处理失败: {}", tx_ids.len(), error_msg);
+                                    error!("[client] {} transactions failed: {}", tx_ids.len(), error_msg);
                                     for tx_id in tx_ids {
-                                        error!("❌ 交易 {} 失败", tx_id);
+                                        error!("[client] transaction {} failed", tx_id);
                                     }
                                 }
                             }
@@ -1046,30 +1076,30 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         });
     }
 
-    // 创建并启动客户端核心
+    // Create and start the client core
     let mut client_core = ClientNode::new(client_id, is_pompe, is_smrol);
 
-    // 等待共识节点启动
-    info!("⏳ 等待共识节点启动...");
+    // Wait for consensus nodes to start
+    info!("[client] waiting for consensus nodes to start...");
     tokio::time::sleep(Duration::from_secs(20)).await;
 
-    // 建立连接
+    // Establish persistent connections
     if let Err(e) = client_core
         .establish_connections(node_least_id, node_num, response_tx.clone())
         .await
     {
-        error!("❌ 建立连接失败: {}", e);
+        error!("[client] failed to establish connections: {}", e);
         return Err(e);
     }
 
-    // 运行主要逻辑
+    // Run primary logic
     match mode.as_str() {
         "load_test" => {
             let target_tps: u32 = env::var("TARGET_TPS")
                 .unwrap_or_else(|_| "100".to_string())
                 .parse()
                 .unwrap_or(100);
-            info!("目标TPS: {}", target_tps);
+            info!("[client] target TPS: {}", target_tps);
 
             let duration: u64 = env::var("TEST_DURATION")
                 .unwrap_or_else(|_| "60".to_string())
@@ -1090,10 +1120,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 )
                 .await;
 
-            info!("✅ 负载测试完成，等待响应处理...");
+            info!("[client] load test complete; awaiting response processing...");
             tokio::time::sleep(Duration::from_secs(30)).await;
 
-            // 请求打印最终报告
+            // Request the final report
             let _ = cmd_tx.send(ClientCommand::PrintStats);
             tokio::time::sleep(Duration::from_secs(2)).await;
         }

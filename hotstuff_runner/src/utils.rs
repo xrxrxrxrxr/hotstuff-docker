@@ -17,7 +17,7 @@ pub fn format_system_time(time: SystemTime) -> String {
     }
 }
 
-// 或者使用 chrono 格式化为可读时间
+// Alternatively, format with chrono for readability
 pub fn format_system_time_readable(time: SystemTime) -> String {
     use chrono::{DateTime, Local};
     let datetime: DateTime<Local> = time.into();
@@ -45,9 +45,9 @@ pub fn verify_signatures(
     tx_hash: &str,
     verifying_keys: &HashMap<usize, VerifyingKey>,
 ) -> bool {
-    // 基本检查：签名数量和格式
+    // Basic validation: signature count and format
     if signatures.is_empty() {
-        warn!("⚠️ [签名验证] 签名列表为空");
+        warn!("[signature verification] signature list is empty");
         return false;
     }
 
@@ -56,13 +56,16 @@ pub fn verify_signatures(
 
     for sig in signatures {
         let Some(verifying_key) = verifying_keys.get(&sig.node_id) else {
-            warn!("⚠️ [签名验证] 缺少节点 {} 的公钥", sig.node_id);
+            warn!(
+                "[signature verification] missing public key for node {}",
+                sig.node_id
+            );
             return false;
         };
 
         if sig.signature.len() != 64 {
             warn!(
-                "⚠️ [签名验证] Node {} 签名长度异常: {} bytes",
+                "[signature verification] node {} signature length is invalid: {} bytes",
                 sig.node_id,
                 sig.signature.len()
             );
@@ -72,7 +75,10 @@ pub fn verify_signatures(
         let signature = match Ed25519Signature::try_from(sig.signature.as_slice()) {
             Ok(sig_obj) => sig_obj,
             Err(_) => {
-                warn!("⚠️ [签名验证] Node {} 签名解析失败", sig.node_id);
+                warn!(
+                    "[signature verification] node {} signature parsing failed",
+                    sig.node_id
+                );
                 return false;
             }
         };
@@ -81,7 +87,10 @@ pub fn verify_signatures(
             .verify_strict(message.as_bytes(), &signature)
             .is_err()
         {
-            warn!("⚠️ [签名验证] Node {} 签名验证失败", sig.node_id);
+            warn!(
+                "[signature verification] node {} signature validation failed",
+                sig.node_id
+            );
             return false;
         }
 
@@ -89,7 +98,7 @@ pub fn verify_signatures(
     }
 
     debug!(
-        "✅ [签名验证] 验证通过: {} 个签名, tx_hash = {}",
+        "[signature verification] passed: {} signatures, tx_hash = {}",
         valid_count,
         &tx_hash[0..std::cmp::min(8, tx_hash.len())]
     );

@@ -72,7 +72,7 @@ fn message_to_bytes(
         },
     };
     let bytes = message.try_to_vec().map_err(|e| {
-        error!("序列化消息失败: {}", e);
+        error!("Failed to serialize message: {}", e);
         format!("Message serialization failed: {}", e)
     })?;
     Ok((message_type, bytes))
@@ -83,7 +83,7 @@ fn bytes_to_message(
     bytes: &[u8],
 ) -> Result<Message, Box<dyn std::error::Error>> {
     let message = Message::try_from_slice(bytes).map_err(|e| {
-        error!("反序列化消息失败: {}", e);
+        error!("Failed to deserialize message: {}", e);
         format!("Message deserialization failed: {}", e)
     })?;
     Ok(message)
@@ -127,7 +127,7 @@ impl TokioNetwork {
         let server_tx = this.message_tx.clone();
         rt.spawn(async move {
             if let Err(e) = run_server(server_cfg, server_tx).await {
-                error!("Tokio TCP服务器错误: {}", e);
+                error!("Tokio TCP server error: {}", e);
             }
         });
 
@@ -140,7 +140,7 @@ impl TokioNetwork {
 
     fn dispatch_local(&self, sender: VerifyingKey, message: Message) {
         if let Err(e) = self.message_tx.send((sender, message)) {
-            error!("本地消息分发失败: {}", e);
+            error!("Local message dispatch failed: {}", e);
         }
     }
 
@@ -182,15 +182,15 @@ impl TokioNetwork {
     }
 
     fn frame_for_message(&self, message: &Message) -> Result<Vec<u8>, String> {
-        let (msg_type, msg_bytes) =
-            message_to_bytes(message).map_err(|e| format!("消息序列化失败: {}", e))?;
+        let (msg_type, msg_bytes) = message_to_bytes(message)
+            .map_err(|e| format!("Message serialization failed: {}", e))?;
         let net_msg = NetworkMessage {
             from: self.config.my_key.to_bytes().to_vec(),
             message_type: msg_type,
             message_bytes: msg_bytes,
         };
-        let serialized =
-            bincode::serialize(&net_msg).map_err(|e| format!("bincode 序列化失败: {}", e))?;
+        let serialized = bincode::serialize(&net_msg)
+            .map_err(|e| format!("bincode serialization failed: {}", e))?;
         let len = serialized.len() as u32;
         let mut frame = Vec::with_capacity(8 + serialized.len());
         frame.extend_from_slice(&NET_MAGIC.to_be_bytes());
@@ -203,7 +203,7 @@ impl TokioNetwork {
         writer
             .write_all(frame)
             .await
-            .map_err(|e| format!("写入TCP帧失败: {}", e))
+            .map_err(|e| format!("Failed to write TCP frame: {}", e))
     }
 
     async fn connect_and_send(&self, peer: VerifyingKey, frame: Vec<u8>) -> Result<(), String> {
@@ -211,14 +211,14 @@ impl TokioNetwork {
             .config
             .peer_addrs
             .get(&peer)
-            .ok_or_else(|| format!("未知节点: {:?}", &peer.to_bytes()[0..4]))?;
+            .ok_or_else(|| format!("Unknown node: {:?}", &peer.to_bytes()[0..4]))?;
 
         let stream = TcpStream::connect(addr)
             .await
-            .map_err(|e| format!("连接 {} 失败: {}", addr, e))?;
+            .map_err(|e| format!("Failed to connect to {}: {}", addr, e))?;
         stream
             .set_nodelay(true)
-            .map_err(|e| format!("设置 TCP_NODELAY 失败: {}", e))?;
+            .map_err(|e| format!("Failed to set TCP_NODELAY: {}", e))?;
         let (_reader, writer) = stream.into_split();
 
         let state = Arc::new(AsyncMutex::new(ConnectionState {
@@ -269,14 +269,14 @@ async fn run_server(
 ) -> Result<(), Box<dyn std::error::Error>> {
     // Bind with reuse options for Docker deployments
     let listener = bind_listener(config.my_addr)?;
-    info!("Tokio TCP服务器监听: {}", config.my_addr);
+    info!("Tokio TCP server listening on {}", config.my_addr);
 
     loop {
         let (stream, peer) = listener.accept().await?;
         let tx = message_tx.clone();
         tokio::spawn(async move {
             if let Err(e) = handle_connection(stream, tx).await {
-                error!("处理客户端连接错误 from {}: {}", peer, e);
+                error!("Error handling client connection from {}: {}", peer, e);
             }
         });
     }
@@ -303,16 +303,16 @@ async fn handle_connection(
 ) -> Result<(), Box<dyn std::error::Error>> {
     stream.set_nodelay(true)?;
     let peer_addr = stream.peer_addr()?;
-    debug!("新连接来自: {}", peer_addr);
+    debug!("New connection from: {}", peer_addr);
 
     loop {
         let mut magic_or_len = [0u8; 4];
         if let Err(e) = stream.read_exact(&mut magic_or_len).await {
             if e.kind() == std::io::ErrorKind::UnexpectedEof {
-                debug!("连接正常关闭: {}", peer_addr);
+                debug!("Connection closed cleanly: {}", peer_addr);
                 break;
             }
-            error!("读取帧头失败 from {}: {}", peer_addr, e);
+            error!("Failed to read frame header from {}: {}", peer_addr, e);
             break;
         }
 
@@ -321,10 +321,10 @@ async fn handle_connection(
             let mut length_buf = [0u8; 4];
             if let Err(e) = stream.read_exact(&mut length_buf).await {
                 if e.kind() == std::io::ErrorKind::UnexpectedEof {
-                    debug!("连接在读取长度时关闭: {}", peer_addr);
+                    debug!("Connection closed while reading length: {}", peer_addr);
                     break;
                 }
-                error!("读取长度失败 from {}: {}", peer_addr, e);
+                error!("Failed to read length from {}: {}", peer_addr, e);
                 break;
             }
             u32::from_be_bytes(length_buf) as usize
@@ -336,17 +336,20 @@ async fn handle_connection(
             continue; // ping frame
         }
         if length > MAX_MSG_SIZE {
-            warn!("收到异常长度 {} from {}，丢弃连接", length, peer_addr);
+            warn!(
+                "Received abnormal length {} from {}; dropping connection",
+                length, peer_addr
+            );
             break;
         }
 
         let mut buf = vec![0u8; length];
         if let Err(e) = stream.read_exact(&mut buf).await {
             if e.kind() == std::io::ErrorKind::UnexpectedEof {
-                debug!("连接在读取消息时关闭: {}", peer_addr);
+                debug!("Connection closed while reading message: {}", peer_addr);
                 break;
             }
-            error!("读取消息内容失败 from {}: {}", peer_addr, e);
+            error!("Failed to read message body from {}: {}", peer_addr, e);
             break;
         }
 
@@ -356,26 +359,29 @@ async fn handle_connection(
                     Ok(bytes_array) => match VerifyingKey::from_bytes(&bytes_array) {
                         Ok(key) => key,
                         Err(_) => {
-                            error!("无法从字节构造 VerifyingKey");
+                            error!("Failed to construct VerifyingKey from bytes");
                             continue;
                         }
                     },
                     Err(_) => {
-                        error!("字节数组长度不正确");
+                        error!("Byte array length incorrect");
                         continue;
                     }
                 };
                 match bytes_to_message(net_msg.message_type, &net_msg.message_bytes) {
                     Ok(hs_msg) => {
                         if let Err(e) = message_tx.send((sender_key, hs_msg)) {
-                            error!("发送消息到队列失败: {}", e);
+                            error!("Failed to send message to queue: {}", e);
                             break;
                         }
                     }
-                    Err(e) => error!("反序列化 HotStuff 消息失败: {}", e),
+                    Err(e) => error!("Failed to deserialize HotStuff message: {}", e),
                 }
             }
-            Err(e) => error!("反序列化网络消息失败 from {}: {}", peer_addr, e),
+            Err(e) => error!(
+                "Failed to deserialize network message from {}: {}",
+                peer_addr, e
+            ),
         }
     }
 
@@ -397,7 +403,7 @@ impl Clone for TokioNetwork {
 impl Network for TokioNetwork {
     fn init_validator_set(&mut self, validator_set: ValidatorSet) {
         info!(
-            "Tokio TCP节点 {:?} 初始化验证者集合: {} 个验证者",
+            "Tokio TCP node {:?} initialized validator set with {} validators",
             self.config.my_key.to_bytes()[0..4].to_vec(),
             validator_set.len()
         );
@@ -405,7 +411,7 @@ impl Network for TokioNetwork {
 
     fn update_validator_set(&mut self, _updates: ValidatorSetUpdates) {
         info!(
-            "Tokio TCP节点 {:?} 更新验证者集合",
+            "Tokio TCP node {:?} updated validator set",
             self.config.my_key.to_bytes()[0..4].to_vec()
         );
         // Could dynamically add/remove writer tasks if needed.
@@ -418,7 +424,7 @@ impl Network for TokioNetwork {
         let frame = match self.frame_for_message(&message) {
             Ok(f) => f,
             Err(e) => {
-                error!("广播序列化失败: {}", e);
+                error!("Broadcast serialization failed: {}", e);
                 return;
             }
         };
@@ -446,7 +452,11 @@ impl Network for TokioNetwork {
             let results = self.rt.block_on(async { join_all(futures).await });
             for res in results {
                 if let Err((peer, e)) = res {
-                    error!("广播发送失败给 {:?}: {}", peer.to_bytes()[0..4].to_vec(), e);
+                    error!(
+                        "Broadcast send failed to {:?}: {}",
+                        peer.to_bytes()[0..4].to_vec(),
+                        e
+                    );
                 }
             }
         }
@@ -461,7 +471,7 @@ impl Network for TokioNetwork {
         let frame = match self.frame_for_message(&message) {
             Ok(f) => f,
             Err(e) => {
-                error!("发送序列化失败: {}", e);
+                error!("Send serialization failed: {}", e);
                 return;
             }
         };
@@ -471,7 +481,7 @@ impl Network for TokioNetwork {
             .rt
             .block_on(async { net.send_frame_to_peer_async(peer, frame).await });
         if let Err(e) = result {
-            error!("发送失败给 {:?}: {}", peer.to_bytes()[0..4].to_vec(), e);
+            error!("Send failed to {:?}: {}", peer.to_bytes()[0..4].to_vec(), e);
         }
     }
 
@@ -480,7 +490,7 @@ impl Network for TokioNetwork {
             Ok(msg) => Some(msg),
             Err(crossbeam::channel::TryRecvError::Empty) => None,
             Err(crossbeam::channel::TryRecvError::Disconnected) => {
-                error!("接收通道已断开");
+                error!("Receive channel has been closed");
                 None
             }
         }

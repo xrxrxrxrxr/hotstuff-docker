@@ -1115,12 +1115,16 @@ impl PompeManager {
         let verifying_keys_clone = Arc::clone(&verifying_keys);
         let signatures_clone = signatures.clone();
         let verify_result = task::spawn_blocking(move || {
-            verify_signatures(&signatures_clone, &tx_hash_for_verify, &verifying_keys_clone)
+            verify_signatures(
+                &signatures_clone,
+                &tx_hash_for_verify,
+                &verifying_keys_clone,
+            )
         })
         .await
         .unwrap_or(false);
         let verify_duration = verify_start.elapsed();
-        if verify_duration > Duration::from_millis(2){
+        if verify_duration > Duration::from_millis(2) {
             warn!(
                 "⏱️ [Verify signature] Node {} signature verfication duration: {:?}, hash = {}, signatures={}",
                 node_id,

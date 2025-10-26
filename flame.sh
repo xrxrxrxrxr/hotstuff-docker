@@ -22,10 +22,10 @@ for t in $THREADS; do
   base="$OUTDIR/t${tid}"
   tmp="$base.folded"
 
-  # 宽松匹配 (防止空格或缩进)
+  # Loose match (tolerate spaces or indentation)
   awk -v tid="ThreadId(${tid})-" '
     index($0, tid)==1 && $0 ~ /;/ {
-      sub(/^[^;]*;/, "", $0)  # 去掉ThreadId部分
+      sub(/^[^;]*;/, "", $0)  # Remove the ThreadId prefix
       gsub(/[[:space:]]+$/, "")
       print
     }' "$FOLDED" > "$tmp"

@@ -183,7 +183,7 @@
 //         let addr = *self
 //             .peer_nodes
 //             .get(&target_node_id)
-//             .ok_or_else(|| format!("未知目标节点 {}", target_node_id))?;
+//             .ok_or_else(|| format!("Unknown target node {}", target_node_id))?;
 
 //         let message_id = format!(
 //             "smrol:{}:{}:{}",
@@ -241,7 +241,7 @@
 
 //         let mut stream = TcpStream::connect(addr)
 //             .await
-//             .map_err(|e| format!("连接失败 {}: {}", addr, e))?;
+//             .map_err(|e| format!("Connection failed {}: {}", addr, e))?;
 //         if let Err(e) = stream.set_nodelay(true) {
 //             warn!("⚠️ [SMROL] set_nodelay({}) failed: {}", addr, e);
 //         }
@@ -362,7 +362,7 @@
 //             | msg @ SmrolMessage::PnfifoFinal { .. } => self
 //                 .pnfifo_tx
 //                 .send((sender, msg))
-//                 .map_err(|e| format!("PNFIFO投递失败: {}", e)),
+//                 .map_err(|e| format!("PNFIFO enqueue failed: {}", e)),
 //             msg @ SmrolMessage::SeqRequest { .. }
 //             | msg @ SmrolMessage::SeqResponse { .. }
 //             | msg @ SmrolMessage::SeqOrder { .. }
@@ -370,12 +370,12 @@
 //             | msg @ SmrolMessage::SeqFinal { .. } => self
 //                 .sequencing_tx
 //                 .send((sender, msg))
-//                 .map_err(|e| format!("Sequencing投递失败: {}", e)),
+//                 .map_err(|e| format!("Sequencing enqueue failed: {}", e)),
 //             msg @ SmrolMessage::ConsensusProposal { .. }
 //             | msg @ SmrolMessage::ConsensusVote { .. } => self
 //                 .consensus_tx
 //                 .send((sender, msg))
-//                 .map_err(|e| format!("Consensus投递失败: {}", e)),
+//                 .map_err(|e| format!("Consensus enqueue failed: {}", e)),
 //             SmrolMessage::Warmup => Ok(()),
 //         }
 //     }
@@ -386,16 +386,16 @@
 //         network_msg: &SmrolNetworkMessage,
 //     ) -> Result<(), String> {
 //         let serialized =
-//             bincode::serialize(network_msg).map_err(|e| format!("序列化失败: {}", e))?;
+//             bincode::serialize(network_msg).map_err(|e| format!("Serialization failed: {}", e))?;
 //         let len = serialized.len() as u32;
 //         writer
 //             .write_all(&len.to_be_bytes())
 //             .await
-//             .map_err(|e| format!("写入长度失败: {}", e))?;
+//             .map_err(|e| format!("Failed to write length: {}", e))?;
 //         writer
 //             .write_all(&serialized)
 //             .await
-//             .map_err(|e| format!("写入消息失败: {}", e))
+//             .map_err(|e| format!("Failed to write message: {}", e))
 //     }
 // }
 
@@ -432,7 +432,7 @@
 //                 debug!("🔌 [SMROL] inbound connection closed");
 //                 return Ok(());
 //             }
-//             return Err(format!("读取长度失败: {}", e));
+//             return Err(format!("Failed to read length: {}", e));
 //         }
 //         let len = u32::from_be_bytes(length_buf) as usize;
 //         if len == 0 {
@@ -440,17 +440,17 @@
 //             continue;
 //         }
 //         if len > 10 * 1024 * 1024 {
-//             return Err(format!("消息过大: {} bytes", len));
+//             return Err(format!("Message too large: {} bytes", len));
 //         }
 
 //         let mut buf = vec![0u8; len];
 //         stream
 //             .read_exact(&mut buf)
 //             .await
-//             .map_err(|e| format!("读取消息失败: {}", e))?;
+//             .map_err(|e| format!("Failed to read message: {}", e))?;
 
 //         let frame: SmrolNetworkMessage =
-//             bincode::deserialize(&buf).map_err(|e| format!("反序列化失败: {}", e))?;
+//             bincode::deserialize(&buf).map_err(|e| format!("Deserialization failed: {}", e))?;
 
 //         if processed.contains(&frame.message_id) {
 //             debug!("🔄 [SMROL] duplicate frame {} ignored", frame.message_id);

@@ -1,5 +1,5 @@
 #!/bin/bash
-# run_test.sh - 快速启动HotStuff Docker集群
+# run_test.sh - Quickly launch the HotStuff Docker cluster
 
 set -e
 
@@ -40,17 +40,17 @@ elif [ "$1" = "perf_test" ] || [ "$1" = "perf" ]; then
 elif [ "$1" = "interactive" ] || [ "$1" = "client" ]; then
     CLIENT_MODE="interactive"
 elif [ -n "$1" ]; then
-    echo "❌ 无效的客户端模式: $1"
-    echo "使用方法: $0 [interactive|load_test|perf_test|profile_node0] [--rebuild|--reuse]"
+    echo "Invalid client mode: $1"
+    echo "Usage: $0 [interactive|load_test|perf_test|profile_node0] [--rebuild|--reuse]"
     exit 1
 fi
 
 if [ ! -f "docker-compose.yml" ]; then
-    echo "❌ 请在包含docker-compose.yml的目录中运行此脚本"
+    echo "Please run this script from the directory containing docker-compose.yml"
     exit 1
 fi
 if [ ! -d "hotstuff_runner" ]; then
-    echo "❌ 找不到hotstuff_runner目录"
+    echo "hotstuff_runner directory not found"
     exit 1
 fi
 
@@ -69,9 +69,9 @@ if $REBUILD_MODE; then
     COMPOSE_UP_FLAGS=(--build -d)
 fi
 if $REBUILD_MODE; then
-    echo "🏗️ 构建并启动集群..."
+    echo "Building and starting the cluster..."
 else
-    echo "🔁 重用现有镜像启动集群..."
+    echo "Starting the cluster by reusing existing images..."
 fi
 if $PROFILE_MODE; then
     # start other nodes (node1..)
@@ -102,13 +102,13 @@ fi
 if $PROFILE_MODE; then
     NETWORK_NAME=$(docker network ls --format '{{.Name}}' | grep '_hotstuff_network$' | head -n1)
     if [ -z "$NETWORK_NAME" ]; then
-        echo "❌ 未找到 Docker 网络 (hotstuff_network)"
+        echo "Docker network (hotstuff_network) not found"
         exit 1
     fi
 
     docker rm -f "$PROFILE_CONTAINER" >/dev/null 2>&1 || true
 
-    echo "🚀 启动 node0 profiling 容器 (cargo profiler)..."
+    echo "Starting node0 profiling container (cargo profiler)..."
     docker run -d \
         --name "$PROFILE_CONTAINER" \
         --network "$NETWORK_NAME" \
@@ -139,18 +139,18 @@ if $PROFILE_MODE; then
     CLIENT_SERVICE="load_tester"
 fi
 
-echo "⏳ 等待节点初始化..."
+echo "Waiting for nodes to initialize..."
 sleep 15
 
 end_id=$((NODE_LEAST_ID + NODE_NUM - 1))
-echo "🏥 检查节点健康状态..."
+echo "Checking node health..."
 for node_id in $(seq $NODE_LEAST_ID $end_id); do
     echo -n "  node $node_id is: "
     if $PROFILE_MODE && [ "$node_id" -eq 0 ]; then
         if docker ps --filter "name=$PROFILE_CONTAINER" --filter "status=running" | grep -q "$PROFILE_CONTAINER"; then
             echo "✅ profiling (container: $PROFILE_CONTAINER)"
         else
-            echo "❌ profiler未运行"
+            echo "Profiler is not running"
         fi
         continue
     fi
@@ -161,65 +161,65 @@ for node_id in $(seq $NODE_LEAST_ID $end_id); do
     fi
 done
 
-echo "🏥 检查客户端健康状态..."
+echo "Checking client health..."
 if [ -n "$CLIENT_SERVICE" ]; then
-    echo -n "  客户端($CLIENT_SERVICE): "
+    echo -n "  Client ($CLIENT_SERVICE): "
     if docker-compose ps $CLIENT_SERVICE | grep -q "Up"; then
-        echo "✅ 运行中"
+        echo "running"
     else
-        echo "❌ 异常"
+        echo "error"
     fi
 else
-    echo "  客户端: (未启动)"
+    echo "  Client: (not started)"
 fi
 
 echo ""
-echo "🎉 集群启动完成！"
+echo "Cluster startup complete!"
 if $PROFILE_MODE; then
-    echo "🔬 Profiling 模式: node0 由 cargo profiler time 运行"
-    echo "   查看 profiler 输出: docker logs -f $PROFILE_CONTAINER"
+    echo "Profiling mode: node0 runs via cargo profiler time"
+    echo "   View profiler output: docker logs -f $PROFILE_CONTAINER"
 fi
 
-echo "🛰️ Tokio Console: 对应节点端口 = node0:6660, node1:6661, node2:6662, node3:6663"
-echo "   示例: tokio-console --connect 127.0.0.1:6660"
+echo "Tokio Console: node port mapping = node0:6660, node1:6661, node2:6662, node3:6663"
+echo "   Example: tokio-console --connect 127.0.0.1:6660"
 
 echo ""
 case $CLIENT_MODE in
     "interactive")
-        echo "💡 交互式客户端已启动，你可以手动发送交易"
+        echo "Interactive client started; you can submit transactions manually"
         ;;
     "load_test")
-        echo "📊 负载测试已开始 ($TARGET_TPS, 持续 5 分钟)"
-        echo "   查看测试进度: docker-compose logs -f load_tester"
+        echo "Load test started ($TARGET_TPS, runs for 5 minutes)"
+        echo "   View test progress: docker-compose logs -f load_tester"
         ;;
     "perf_test")
-        echo "🚀 性能测试已开始 (400 TPS, 持续 5 分钟)"
-        echo "   查看测试进度: docker-compose logs -f perf_tester"
+        echo "Performance test started (400 TPS, runs for 5 minutes)"
+        echo "   View test progress: docker-compose logs -f perf_tester"
         ;;
 esac
 
 if $PROFILE_MODE; then
-    echo "📈 Profiling 报告会生成在 hotstuff_runner/target/perf/ 目录"
-    echo "   运行结束后可用浏览器打开 time-*.html（例如 target/perf/time-report.html）"
+    echo "Profiling reports will be stored in hotstuff_runner/target/perf/"
+    echo "   After completion open time-*.html in a browser (for example target/perf/time-report.html)"
 fi
 
-echo "⏱️ 运行 30 秒后检查结果..."
+echo "Checking results after running for 30 seconds..."
 sleep 30
 
-echo "📊 检查 Pompe 处理结果..."
-docker-compose logs | grep "到HotStuff队列" | head -10 || true
+echo "Checking Pompe processing output..."
+docker-compose logs | grep "to HotStuff queue" | head -10 || true
 
-echo "🎯 检查交易排序结果..."
+echo "Checking transaction ordering output..."
 docker-compose logs | grep "pompe:.*:" | head -5 || true
 
 echo ""
-echo "🎉 Pompe 功能测试完成!"
+echo "Pompe functional test completed!"
 if $PROFILE_MODE; then
-    echo "📝 Profiling container ($PROFILE_CONTAINER) 可在分析后手动移除: docker rm -f $PROFILE_CONTAINER"
-    echo "🔍 Profiling 报告路径: hotstuff_runner/target/perf/"
+    echo "Profiling container ($PROFILE_CONTAINER) can be removed manually after analysis: docker rm -f $PROFILE_CONTAINER"
+    echo "Profiling report path: hotstuff_runner/target/perf/"
 fi
-echo "🛑 停止测试: docker-compose --profile \"*\" down"
-echo "- 2 分钟后自动停止 -"
+echo "Stopping the test: docker-compose --profile \"*\" down"
+echo "- Stops automatically after 2 minutes -"
 
 sleep 180
 # docker-compose --profile "*" down

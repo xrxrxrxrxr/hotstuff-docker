@@ -7,13 +7,14 @@ pub mod pompe_adversary;
 pub mod pompe_network;
 pub mod stats;
 pub mod tcp_node;
+pub mod telemetry;
 pub mod tokio_network;
 pub mod utils;
 
 pub mod smrol;
 pub use smrol::{PnfifoBc, SmrolMessage, SmrolThresholdSig};
 
-// 重新导出常用类型
+// Re-export commonly used types
 pub use app::TestApp;
 pub use kv_store::MemoryKVStore;
 pub use stats::PerformanceStats;
@@ -40,7 +41,7 @@ static HOST_MAP: OnceLock<HashMap<String, String>> = OnceLock::new();
 pub fn resolve_target(target_id: usize, port: u16) -> String {
     let target_name = format!("node{}", target_id);
 
-    // 初始化 HOST_MAP（只执行一次）
+    // Initialize HOST_MAP (run once)
     let map = HOST_MAP.get_or_init(|| {
         let hosts_str = std::env::var("NODE_HOSTS")
             .unwrap_or_else(|_| panic!("NODE_HOSTS environment variable not set"));

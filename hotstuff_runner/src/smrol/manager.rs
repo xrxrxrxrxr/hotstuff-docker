@@ -14,7 +14,7 @@ use ed25519_dalek::{SigningKey, VerifyingKey};
 use hex;
 use std::collections::HashMap;
 use std::net::SocketAddr;
-use std::sync::{Arc, OnceLock};
+use std::sync::{atomic::{AtomicUsize, Ordering}, Arc, OnceLock};
 use std::time::Duration;
 use tokio::sync::{broadcast, mpsc as async_mpsc, Mutex as AsyncMutex, RwLock};
 use tokio::time::interval;
@@ -34,8 +34,8 @@ impl Default for SmrolConfig {
         Self {
             enable: true,
             f: 1,
-            // k: 3, // 🔥🔥 文中 k=O(n)
-            capital_k: 1, // 🔥🔥 修改点
+            // k: 3, // In the paper k = O(n)
+            capital_k: 1, // Adjusted value
             epoch_timeout_ms: 100,
             pnfifo_threshold: 3,
         }
@@ -65,6 +65,12 @@ pub struct SmrolManager {
     sequencing_order_tx: async_mpsc::UnboundedSender<ModuleMessage>,
     sequencing_median_tx: async_mpsc::UnboundedSender<ModuleMessage>,
     sequencing_final_tx: async_mpsc::UnboundedSender<ModuleMessage>,
+    sequencing_request_backlog: Arc<AtomicUsize>,
+    sequencing_response_backlog: Arc<AtomicUsize>,
+    sequencing_order_backlog: Arc<AtomicUsize>,
+    sequencing_order_finalize_backlog: Arc<AtomicUsize>,
+    sequencing_median_backlog: Arc<AtomicUsize>,
+    sequencing_final_backlog: Arc<AtomicUsize>,
     sequencing_output_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<TransactionEntry>>>,
     consensus_proposal_tx: async_mpsc::UnboundedSender<ModuleMessage>,
     consensus_proposal_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<ModuleMessage>>>,
@@ -100,15 +106,15 @@ impl SmrolManager {
 
         // start PNFIFO network listener
         pnfifo.start().await?;
-        info!("✅ [SMROL] PNFIFO自动启动完成");
+        info!("[SMROL] PNFIFO auto-start complete");
 
-        // 启动PNFIFO定期清理任务，防止内存泄漏和延迟累积
+        // Start periodic PNFIFO cleanup to avoid memory leaks and latency buildup
         let pnfifo_for_cleanup = Arc::clone(&pnfifo);
         tokio::spawn(async move {
             let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(30));
             loop {
                 interval.tick().await;
-                pnfifo_for_cleanup.cleanup_old_slots(100).await; // 保留最近100个slot
+                pnfifo_for_cleanup.cleanup_old_slots(100).await; // Keep the latest 100 slots
             }
         });
 
@@ -163,6 +169,12 @@ impl SmrolManager {
         let sequencing_order_tx = sequencing_arc.order_sender();
         let sequencing_median_tx = sequencing_arc.median_sender();
         let sequencing_final_tx = sequencing_arc.final_sender();
+        let sequencing_request_backlog = sequencing_arc.request_backlog_counter();
+        let sequencing_response_backlog = sequencing_arc.response_backlog_counter();
+        let sequencing_order_backlog = sequencing_arc.order_backlog_counter();
+        let sequencing_order_finalize_backlog = sequencing_arc.order_finalize_backlog_counter();
+        let sequencing_median_backlog = sequencing_arc.median_backlog_counter();
+        let sequencing_final_backlog = sequencing_arc.final_backlog_counter();
         let consensus_arc = Arc::new(RwLock::new(consensus));
 
         let broadcast_workers = Self::smrol_broadcast_worker_count();
@@ -234,6 +246,12 @@ impl SmrolManager {
             sequencing_order_tx,
             sequencing_median_tx,
             sequencing_final_tx,
+            sequencing_request_backlog,
+            sequencing_response_backlog,
+            sequencing_order_backlog,
+            sequencing_order_finalize_backlog,
+            sequencing_median_backlog,
+            sequencing_final_backlog,
             sequencing_output_rx,
             consensus_proposal_tx,
             consensus_proposal_rx,
@@ -386,16 +404,16 @@ impl SmrolManager {
         }
 
         tokio::spawn(async move {
-            info!("🔄 [SMROL] Unified网络循环启动");
+            info!("[SMROL] unified network loop started");
             while let Some((sender_id, message)) = self.network.recv().await {
                 if let Err(e) = self.process_network_message(sender_id, message).await {
-                    warn!("⚠️ [SMROL] 处理网络消息失败: {}", e);
+                    warn!("[SMROL] failed to process network message: {}", e);
                 }
             }
-            debug!("ℹ️ [SMROL] Unified网络循环退出");
+            debug!("[SMROL] unified network loop exited");
         });
 
-        info!("✅ [SMROL] 消息处理循环已启动");
+        info!("[SMROL] message processing loop started");
         Ok(())
     }
 
@@ -499,6 +517,7 @@ impl SmrolManager {
                         },
                     ))
                     .map_err(|e| format!("Sequencing request queue send failed: {}", e))?;
+                Self::record_channel_enqueue(&self.sequencing_request_backlog, "request");
                 // // tokio::task::yield_now().await;
                 Ok(())
             }
@@ -525,6 +544,7 @@ impl SmrolManager {
                         },
                     ))
                     .map_err(|e| format!("Sequencing response queue send failed: {}", e))?;
+                Self::record_channel_enqueue(&self.sequencing_response_backlog, "response");
                 // // tokio::task::yield_now().await;
                 Ok(())
             }
@@ -549,6 +569,7 @@ impl SmrolManager {
                         },
                     ))
                     .map_err(|e| format!("Sequencing order queue send failed: {}", e))?;
+                Self::record_channel_enqueue(&self.sequencing_order_backlog, "order");
                 // // tokio::task::yield_now().await;
                 Ok(())
             }
@@ -575,6 +596,7 @@ impl SmrolManager {
                         },
                     ))
                     .map_err(|e| format!("Sequencing median queue send failed: {}", e))?;
+                Self::record_channel_enqueue(&self.sequencing_median_backlog, "median");
                 // // tokio::task::yield_now().await;
                 Ok(())
             }
@@ -603,6 +625,7 @@ impl SmrolManager {
                         },
                     ))
                     .map_err(|e| format!("Sequencing final queue send failed: {}", e))?;
+                Self::record_channel_enqueue(&self.sequencing_final_backlog, "final");
                 // // tokio::task::yield_now().await;
                 Ok(())
             }
@@ -713,14 +736,14 @@ impl SmrolManager {
             );
         }
 
-        // 临时关闭 finalization，专注测试 HotStuff push 性能
+        // Temporarily disable finalization to focus on HotStuff push performance
         // {
         //     let mut finalization = self.finalization.lock().await;
         //     finalization.add_to_mi(epoch, entry_for_finalization);
         // }
 
         // info!(
-        //     "🧮 [Manager] 记录Sequencing输出并推给HotStuff: epoch={} vc_bytes={} s_tx={}",
+        //     "[manager] recorded sequencing output and pushed to HotStuff: epoch={} vc_bytes={} s_tx={}",
         //     epoch, entry_meta.0, entry_meta.1
         // );
 
@@ -773,6 +796,11 @@ impl SmrolManager {
             "  - Network strong refs: {}",
             Arc::strong_count(&self.network)
         );
+    }
+
+    fn record_channel_enqueue(counter: &Arc<AtomicUsize>, label: &'static str) {
+        let pending = counter.fetch_add(1, Ordering::Relaxed) + 1;
+        metrics::gauge!("smrol.channel_backlog", "channel" => label).set(pending as f64);
     }
 }
 

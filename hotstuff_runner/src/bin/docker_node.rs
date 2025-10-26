@@ -19,6 +19,7 @@ use hotstuff_runner::{
     },
     stats::PerformanceStats,
     tcp_node::Node,
+    telemetry,
     tokio_network::{TokioNetwork, TokioNetworkConfig},
 };
 use serde::{Deserialize, Serialize};
@@ -38,7 +39,7 @@ static HOST_MAP: OnceLock<HashMap<String, String>> = OnceLock::new();
 pub fn resolve_target(target_id: usize, port: u16) -> String {
     let target_name = format!("node{}", target_id);
 
-    // 初始化 HOST_MAP（只执行一次）
+    // Initialize HOST_MAP (run once)
     let map = HOST_MAP.get_or_init(|| {
         let hosts_str = std::env::var("NODE_HOSTS")
             .unwrap_or_else(|_| panic!("NODE_HOSTS environment variable not set"));
@@ -343,7 +344,7 @@ async fn handle_lockfree_client_connection(
     );
     let (mut read_half, mut write_half) = socket.into_split();
 
-    // 响应发送任务
+    // Response sending task
     let write_task = tokio::spawn(async move {
         let mut response_count = 0;
 
@@ -413,18 +414,18 @@ async fn handle_lockfree_client_connection(
                 || write_half.write_all(&serialized).await.is_err()
                 || write_half.flush().await.is_err()
             {
-                error!("Node {} 响应发送失败", node_id);
+                error!("Node {} failed to send response", node_id);
                 break;
             }
             debug!(
-                "***** Node {} 向客户端发送响应: {:?} tx_id:{:?}",
+                "***** Node {} sending response to client: {:?} tx_id:{:?}",
                 node_id,
                 response_json.get("message_type"),
                 response_json.get("tx_ids")
             );
-            // 🔥 减少日志频率
+            // Reduce log frequency
             if response_count % 50 == 0 {
-                info!("Node {} 已发送 {} 个响应", node_id, response_count);
+                info!("Node {} has sent {} responses", node_id, response_count);
             }
         }
     });
@@ -492,11 +493,17 @@ async fn handle_lockfree_client_connection(
                                         info!("[Lock-free] Node {} Pompe transaction processed directly: {}", node_id, tx_string);
                                     }
                                     Err(e) => {
-                                        error!("Pompe 交易处理失败: {}, 错误: {}", tx_string, e);
+                                        error!(
+                                            "Pompe transaction processing failed: {}, error: {}",
+                                            tx_string, e
+                                        );
                                     }
                                 }
                             } else {
-                                warn!("Pompe 管理器未启用，跳过交易: {}", tx_string);
+                                warn!(
+                                    "Pompe manager disabled; skipping transaction: {}",
+                                    tx_string
+                                );
                             }
                             // Pompe transactions go through Pompe processor
                             // info!("[Lock-free] Node {} Pompe transaction queued: {}", node_id, tx_string);
@@ -511,7 +518,10 @@ async fn handle_lockfree_client_connection(
                                     client_id.clone(),
                                 );
                                 if let Err(e) = smrol.process_smrol_transaction(smrol_tx).await {
-                                    error!("SMROL 交易处理失败: {}, 错误: {}", tx_string, e);
+                                    error!(
+                                        "SMROL transaction processing failed: {}, error: {}",
+                                        tx_string, e
+                                    );
                                 } else {
                                     debug!(
                                         "[Lock-free] Node {} SMROL transaction dispatched: {}",
@@ -519,7 +529,10 @@ async fn handle_lockfree_client_connection(
                                     );
                                 }
                             } else {
-                                warn!("SMROL 管理器未启用，跳过交易: {}", tx_string);
+                                warn!(
+                                    "SMROL manager disabled; skipping transaction: {}",
+                                    tx_string
+                                );
                             }
                         } else {
                             // Regular transactions go directly to HotStuff queue (following second code logic)
@@ -799,6 +812,16 @@ async fn main() -> Result<(), String> {
         .expect("NODE_NUM must be a number");
 
     setup_tracing_logger(node_id);
+
+    let metrics_disabled = std::env::var("SMROL_DISABLE_METRICS")
+        .map(|v| matches!(v.trim(), "1" | "true" | "yes" | "on"))
+        .unwrap_or(true);
+
+    if metrics_disabled {
+        warn!("metrics exporter disabled by SMROL_DISABLE_METRICS");
+    } else if let Err(e) = telemetry::init_metrics(node_id) {
+        warn!("failed to initialize metrics exporter: {}", e);
+    }
     info!(
         "[Completely lock-free] Starting Docker node {} (port: {})",
         node_id, my_port
@@ -886,7 +909,7 @@ async fn main() -> Result<(), String> {
     let mut node_id_to_addr = HashMap::new();
 
     for (i, key) in all_verifying_keys.iter().enumerate() {
-        let actual_node_id = node_least_id + i; // 实际的node_id
+        let actual_node_id = node_least_id + i; // Actual node_id
         verifying_keys_map.insert(actual_node_id, *key);
 
         if let Some(addr) = peer_addrs.get(key) {
@@ -983,13 +1006,13 @@ async fn main() -> Result<(), String> {
     };
 
     info!(
-        "SMROL verifying_keys映射: {:?}",
+        "SMROL verifying_keys map: {:?}",
         verifying_keys_map
             .iter()
             .map(|(id, key)| (*id, key.to_bytes()[0..4].to_vec()))
             .collect::<Vec<_>>()
     );
-    info!("SMROL peer_addrs映射: {:?}", node_id_to_addr);
+    info!("SMROL peer_addrs map: {:?}", node_id_to_addr);
 
     let smrol_config = load_smrol_config();
     let smrol_manager = Arc::new(
@@ -1012,11 +1035,11 @@ async fn main() -> Result<(), String> {
         .await;
 
     if let Err(e) = Arc::clone(&smrol_manager).start_message_loop().await {
-        error!("启动SMROL消息循环失败: {}", e);
+        error!("Failed to start SMROL message loop: {}", e);
         return Err(e);
     }
 
-    info!("✅ [SMROL] 所有组件已自动启动");
+    info!("[SMROL] all components auto-started");
 
     // TODO: pass smrol manager to client listener
     // Pass Pompe manager to client listener
@@ -1050,22 +1073,22 @@ async fn main() -> Result<(), String> {
     ));
 
     tokio::time::sleep(Duration::from_secs(5)).await;
-    info!("网络连通性测试:");
+    info!("Network connectivity test:");
     let connectivity_timeout = Duration::from_secs(2);
     for target_id in node_least_id..(node_least_id + node_num) {
         let addr = format!("node{}:{}", target_id, 20000 + target_id);
         match tokio::time::timeout(connectivity_timeout, tokio::net::TcpStream::connect(&addr))
             .await
         {
-            Ok(Ok(_)) => info!("节点 {} 端口 {} 可达", target_id, 20000 + target_id),
+            Ok(Ok(_)) => info!("Node {} port {} reachable", target_id, 20000 + target_id),
             Ok(Err(e)) => warn!(
-                "节点 {} 端口 {} 暂不可达: {}",
+                "Node {} port {} temporarily unreachable: {}",
                 target_id,
                 20000 + target_id,
                 e
             ),
             Err(_) => warn!(
-                "节点 {} 端口 {} 连接超时 (>{:?})",
+                "Node {} port {} connection timeout (>{:?})",
                 target_id,
                 20000 + target_id,
                 connectivity_timeout
@@ -1153,11 +1176,11 @@ async fn main() -> Result<(), String> {
         node_id
     );
 
-    info!("Node {} 所有组件启动完成", node_id);
+    info!("Node {} all components started", node_id);
     tokio::signal::ctrl_c()
         .await
-        .map_err(|e| format!("信号处理失败: {}", e))?;
-    info!("Node {} 收到退出信号，正常关闭", node_id);
+        .map_err(|e| format!("Signal handling failed: {}", e))?;
+    info!("Node {} received shutdown signal; exiting cleanly", node_id);
 
     Ok(())
 }

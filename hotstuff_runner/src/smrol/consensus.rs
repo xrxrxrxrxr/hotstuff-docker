@@ -113,7 +113,7 @@ impl Consensus {
         event_tx: broadcast::Sender<SystemEvent>,
     ) -> Self {
         // let k = std::cmp::max(1, 2 * f + 1);
-        let capital_k = 1; // 🔥🔥 文中 k=O(n)
+        let capital_k = 1; // In the paper k = O(n)
         Self {
             process_id,
             n,
@@ -274,7 +274,7 @@ impl Consensus {
         }
         for tx in transactions.clone() {
             debug!(
-                // smrol 传递 tx 给 hotstuff adapter
+                // smrol forwards the transaction to the hotstuff adapter
                 "[Consensus] 🚀 node={} epoch={} pushed transaction {} to HotStuff",
                 self.process_id, epoch, tx
             );

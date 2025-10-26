@@ -1,4 +1,4 @@
-// hotstuff_runner/src/app.rs - 无锁版本
+// hotstuff_runner/src/app.rs - lock-free version
 use borsh::BorshSerialize;
 use crossbeam::channel::{Receiver, TryRecvError};
 use crossbeam::queue::{self, SegQueue};
@@ -22,7 +22,7 @@ use std::{convert::Infallible, sync::Arc};
 pub struct TestApp {
     node_id: usize,
     block_count: u64,
-    // 使用无锁队列替代 Mutex<Vec<String>>
+    // Use a lock-free queue instead of Mutex<Vec<String>>
     tx_queue: Arc<SegQueue<String>>,
 }
 
@@ -31,7 +31,7 @@ const NUMBER_KEY: [u8; 1] = [0];
 impl TestApp {
     pub fn new(node_id: usize, tx_queue: Arc<SegQueue<String>>) -> Self {
         info!(
-            "创建 TestApp 实例 for Node {} (队列地址: {:p})",
+            "Creating TestApp for Node {} (queue address: {:p})",
             node_id, &*tx_queue
         );
         Self {
@@ -47,13 +47,16 @@ impl TestApp {
             .unwrap()
             .as_millis();
 
-        info!("Node {} [{}] 共识状态追踪:", self.node_id, operation);
-        info!("Node {}   时间戳: {}", self.node_id, timestamp);
-        info!("Node {}   当前View: {}", self.node_id, view);
-        info!("Node {}   区块高度: {}", self.node_id, height);
-        info!("Node {}   节点区块计数: {}", self.node_id, self.block_count);
+        info!("Node {} [{}] consensus state:", self.node_id, operation);
+        info!("Node {}   timestamp: {}", self.node_id, timestamp);
+        info!("Node {}   current view: {}", self.node_id, view);
+        info!("Node {}   block height: {}", self.node_id, height);
         info!(
-            "Node {}   待处理交易: {}",
+            "Node {}   node block count: {}",
+            self.node_id, self.block_count
+        );
+        info!(
+            "Node {}   pending transactions: {}",
             self.node_id,
             self.tx_queue.len()
         );
@@ -86,36 +89,36 @@ impl<K: KVStore> App<K> for TestApp {
         let produce_start = std::time::Instant::now();
         // warn!("[produce_block] Node {} Producing block for view {} (only current view)", self.node_id, view_number);
 
-        // 从无锁队列获取交易 - 无需锁定
+        // Pull transactions from the lock-free queue without locking
         let mut transactions = Vec::new();
-        // 每个区块最多交易数，可通过 APP_BLOCK_MAX_TX 配置，默认 500
+        // Maximum transactions per block; configurable via APP_BLOCK_MAX_TX (default 800)
         let max_tx_count: usize = std::env::var("APP_BLOCK_MAX_TX")
             .ok()
             .and_then(|s| s.parse().ok())
             .unwrap_or(800);
 
-        // 先检查队列大小，避免无效循环
+        // Check queue size first to avoid unnecessary loops
         let queue_size = self.tx_queue.len();
         let actual_max = std::cmp::min(max_tx_count, queue_size);
         debug!(
-            "Node {} [produce_block] 当前队列大小: {}, 本区块将尝试获取最多 {} 个交易",
+            "Node {} [produce_block] queue size: {}, attempting up to {} transactions this block",
             self.node_id, queue_size, actual_max
         );
         // if queue_size != 0 {
         //     info!(
-        //         "Node {} [produce_block] 当前队列大小: {}, 本区块将尝试获取最多 {} 个交易",
+        //         "Node {} [produce_block] queue size: {}, attempting up to {} transactions this block",
         //         self.node_id, queue_size, actual_max
         //     );
         // }
 
         if actual_max > 0 {
-            transactions.reserve(actual_max); // 预分配容量
+            transactions.reserve(actual_max); // Pre-allocate capacity
 
-            // 使用更紧凑的循环
+            // Use a tighter loop
             while transactions.len() < max_tx_count {
                 if let Some(tx) = self.tx_queue.pop() {
                     debug!(
-                        "Node {} [produce_block] 🔨 从队列获取交易: {}",
+                        "Node {} [produce_block] fetched transaction from queue: {}",
                         self.node_id, &tx
                     );
                     transactions.push(tx);
@@ -127,27 +130,27 @@ impl<K: KVStore> App<K> for TestApp {
 
         let tx_count = transactions.len();
         info!(
-            "Node {} [produce_block] 从无锁队列获取 {} 个交易 (上限 {})",
+            "Node {} [produce_block] pulled {} transactions from the lock-free queue (limit {})",
             self.node_id, tx_count, max_tx_count
         );
 
-        // 创建区块数据
+        // Build block data
         let mut data_vec = Vec::new();
 
-        // 添加视图号作为第一个Datum
+        // Add the view number as the first datum
         let view_number = request.cur_view().int();
         let view_bytes = view_number.to_le_bytes().to_vec();
         data_vec.push(Datum::new(view_bytes));
 
-        // debug 视图号与区块计数的关系
+        // Log the relationship between view number and block count
         if self.block_count > 0 && view_number > self.block_count + 100 {
             warn!(
-                "Node {} view({})远超区块计数({}), 可能存在同步问题",
+                "Node {} view({}) far exceeds block count ({}); potential sync issue",
                 self.node_id, view_number, self.block_count
             );
         }
 
-        // 添加交易计数
+        // Add the transaction count
         let tx_count_bytes = (tx_count as u32).to_le_bytes().to_vec();
         data_vec.push(Datum::new(tx_count_bytes));
 
@@ -155,36 +158,39 @@ impl<K: KVStore> App<K> for TestApp {
             data_vec.push(Datum::new(tx.as_bytes().to_vec()));
         }
 
-        // 创建Data
+        // Create Data
         let data = Data::new(data_vec);
 
-        // 计算数据哈希
+        // Compute data hash
         let data_hash = Self::compute_data_hash(&data);
 
-        // 创建应用状态更新
+        // Create app state updates
         let mut app_state_updates = AppStateUpdates::new();
 
-        // 更新区块计数
+        // Update block count
         let block_count_key = format!("block_count_{}", self.node_id);
         let block_count_value = (self.block_count + 1).to_string();
         app_state_updates.insert(block_count_key.into_bytes(), block_count_value.into_bytes());
 
-        // 存储区块哈希
+        // Store block hash
         let block_hash_key = format!("block_{}", request.cur_view());
         app_state_updates.insert(block_hash_key.into_bytes(), data_hash.bytes().to_vec());
 
-        info!("Node {} [produce_block] 交易池状态:", self.node_id);
         info!(
-            "Node {} [produce_block]  - 本地待处理交易: {}",
+            "Node {} [produce_block] transaction pool state:",
+            self.node_id
+        );
+        info!(
+            "Node {} [produce_block]  - local pending transactions: {}",
             self.node_id,
             self.tx_queue.len()
         );
         info!(
-            "Node {} [produce_block]  - 本区块将包含交易: {}",
+            "Node {} [produce_block]  - transactions included in this block: {}",
             self.node_id, tx_count
         );
         info!(
-            "Node {} [produce_block]  - 本区块数据哈希: {:?}",
+            "Node {} [produce_block]  - block data hash: {:?}",
             self.node_id,
             &data_hash.bytes()[0..8]
         );
@@ -201,7 +207,7 @@ impl<K: KVStore> App<K> for TestApp {
         ProduceBlockResponse {
             data_hash,
             data,
-            // 方案A：不写入非必要状态，保持确定性（仅由区块数据决定）
+            // Option A: avoid non-essential state writes; determinism derives solely from block data
             app_state_updates: None,
             validator_set_updates: None,
         }
@@ -231,7 +237,7 @@ impl<K: KVStore> App<K> for TestApp {
             0
         };
 
-        // 基本验证逻辑
+        // Basic validation logic
         if block.data.len().int() == 0 {
             info!(
                 "[Node {}] Block validation failed: empty data",
@@ -240,7 +246,7 @@ impl<K: KVStore> App<K> for TestApp {
             return ValidateBlockResponse::Invalid;
         }
 
-        // 验证数据哈希
+        // Validate data hash
         let computed_hash = Self::compute_data_hash(&block.data);
         if computed_hash != block.data_hash {
             info!(
@@ -250,7 +256,7 @@ impl<K: KVStore> App<K> for TestApp {
             return ValidateBlockResponse::Invalid;
         }
 
-        // 验证数据格式
+        // Validate data format
         if block.data.len().int() < 2 {
             info!(
                 "[Node {}] Block validation failed: invalid data format",
@@ -281,7 +287,7 @@ impl<K: KVStore> App<K> for TestApp {
             return ValidateBlockResponse::Invalid;
         }
 
-        // 验证交易计数数据
+        // Validate transaction count datum
         if let Some(tx_count_datum) = data_vec.get(1) {
             let datum_bytes = tx_count_datum.bytes();
             if datum_bytes.len() < 4 {
@@ -313,7 +319,7 @@ impl<K: KVStore> App<K> for TestApp {
         let validate_elapsed = validate_start.elapsed();
         // warn!("[validate_block] Node {} cost {:?}", self.node_id, validate_elapsed);
 
-        // 统一键空间：仅写入由区块元数据唯一决定的键值（各副本一致）
+        // Normalize key space: only store keys uniquely determined by block metadata (consistent across replicas)
         let mut app_state_updates = AppStateUpdates::new();
         let block_hash_key = format!("block_hash_at_height_{}", block.height.int());
         app_state_updates.insert(

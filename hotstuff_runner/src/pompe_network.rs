@@ -1,5 +1,5 @@
 // hotstuff_runner/src/pompe_network.rs
-//! 修复的Pompe网络实现 - 解决时间戳收集不全问题
+//! Pompe network implementation with fixes for incomplete timestamp collection
 
 use crate::pompe::PompeMessage;
 use crate::resolve_target;
@@ -21,7 +21,7 @@ pub struct PompeNetworkMessage {
     pub to_node_id: Option<usize>,
     pub message: PompeMessage,
     pub timestamp: u64,
-    pub message_id: String, // 添加消息ID用于去重
+    pub message_id: String, // Message ID used for deduplication
 }
 
 #[derive(Debug)]
@@ -44,21 +44,20 @@ pub struct PompeNetwork {
     message_tx: async_mpsc::UnboundedSender<(usize, PompeMessage)>,
     message_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<(usize, PompeMessage)>>>,
 
-    // 🚨 新增：连接池和重试机制
+    // Connection pool with retry handling
     // connection_pool: Arc<Mutex<HashMap<usize, Option<TcpStream>>>>,
-    // 🚨 优化：连接池管理
-    // 避免在 await 期间持有写锁：每个连接状态单独放入 AsyncMutex 中
+    // Per-connection state guarded by its own AsyncMutex to avoid holding write locks across await
     connections: Arc<tokio::sync::RwLock<HashMap<usize, ConnectionHandle>>>,
-    sent_messages: Arc<Mutex<HashMap<String, u64>>>, // 消息去重
-    // 独立运行时，用于隔离 Pompe 网络与其他任务
+    sent_messages: Arc<Mutex<HashMap<String, u64>>>, // Deduplicate messages
+    // Dedicated runtime so Pompe networking does not block other tasks
     rt: Arc<Runtime>,
 }
 
 impl PompeNetwork {
     pub fn new(node_id: usize, peer_node_ids: Vec<usize>) -> Self {
-        // 支持通过环境变量配置 Pompe 端口：
-        // 1) POMPE_PORT=端口号（优先）
-        // 2) 或 POMPE_PORT_BASE=基准端口（默认20000），按 base + node_id 计算
+        // Configure the Pompe port via environment variables:
+        // 1) POMPE_PORT=<port> (takes priority)
+        // 2) Or POMPE_PORT_BASE=<base port, default 20000>, computed as base + node_id
         let pompe_port: u16 = std::env::var("POMPE_PORT")
             .ok()
             .and_then(|s| s.parse().ok())
@@ -70,7 +69,7 @@ impl PompeNetwork {
                 base //+ node_id as u16
             });
         let (tx, rx) = async_mpsc::unbounded_channel();
-        // 创建独立的 Tokio 运行时（线程数可由环境变量 POMPE_RT_THREADS 配置，默认 2）
+        // Build a dedicated Tokio runtime (thread count via POMPE_RT_THREADS, default 2)
         let rt_threads: usize = std::env::var("POMPE_RT_THREADS")
             .ok()
             .and_then(|s| s.parse().ok())
@@ -84,13 +83,16 @@ impl PompeNetwork {
                 .expect("Failed to build Pompe runtime"),
         );
 
-        info!("🌐 创建Pompe网络，节点 {}, 端口: {}", node_id, pompe_port);
-        info!("🔍 对等节点列表: {:?}", peer_node_ids);
+        info!(
+            "Creating Pompe network for node {}, port {}",
+            node_id, pompe_port
+        );
+        info!("Peer node list: {:?}", peer_node_ids);
 
-        // 🚨 验证当前节点在对等列表中
+        // Ensure the current node is present in the peer list
         if !peer_node_ids.contains(&node_id) {
             warn!(
-                "⚠️ 当前节点 {} 不在对等节点列表中: {:?}",
+                "Current node {} not found in peer list: {:?}",
                 node_id, peer_node_ids
             );
         }
@@ -106,12 +108,12 @@ impl PompeNetwork {
             sent_messages: Arc::new(Mutex::new(HashMap::new())),
             rt,
         };
-        // 🚨 启动连接维护任务
+        // Start connection maintenance in the background
         network.start_connection_maintenance();
         network
     }
 
-    // 🚨 新增：连接维护任务
+    // Background task that maintains connections and trims dedup state
     fn start_connection_maintenance(&self) {
         let connections = Arc::clone(&self.connections);
         let node_id = self.node_id;
@@ -120,7 +122,7 @@ impl PompeNetwork {
 
         let rt = self.rt.clone();
         rt.spawn(async move {
-            let mut interval = tokio::time::interval(Duration::from_secs(60)); // 每60秒清理一次
+            let mut interval = tokio::time::interval(Duration::from_secs(60)); // Clean once every 60 seconds
 
             loop {
                 interval.tick().await;
@@ -139,7 +141,7 @@ impl PompeNetwork {
                     for node_id_to_remove in to_remove {
                         if guard.remove(&node_id_to_remove).is_some() {
                             info!(
-                                "🧹 [连接维护] Node {} 清理到节点 {} 的空闲连接",
+                                "[connection maintenance] node {} removed idle connection to node {}",
                                 node_id, node_id_to_remove
                             );
                         }
@@ -176,13 +178,13 @@ impl PompeNetwork {
         rt.spawn(async move {
             match TcpListener::bind(&addr).await {
                 Ok(listener) => {
-                    info!("🎧 Node {} Pompe服务器监听: {}", node_id, addr);
+                    info!("Node {} Pompe server listening on {}", node_id, addr);
                     loop {
                         match listener.accept().await {
                             Ok((mut socket, peer)) => {
-                                debug!("📞 Node {} Pompe连接来自: {}", node_id, peer);
+                                debug!("Node {} Pompe connection from {}", node_id, peer);
                                 if let Err(e) = socket.set_nodelay(true) {
-                                    warn!("⚠️ 设置TCP_NODELAY失败: {}", e);
+                                    warn!("Failed to set TCP_NODELAY: {}", e);
                                 }
                                 let tx = message_tx.clone();
                                 tokio::spawn(async move {
@@ -190,19 +192,22 @@ impl PompeNetwork {
                                 });
                             }
                             Err(e) => {
-                                warn!("Node {} Pompe accept 错误: {}", node_id, e);
+                                warn!("Node {} Pompe accept error: {}", node_id, e);
                                 tokio::time::sleep(Duration::from_millis(100)).await;
                             }
                         }
                     }
                 }
-                Err(e) => error!("Node {} 绑定Pompe地址失败 {}: {}", node_id, addr, e),
+                Err(e) => error!(
+                    "Node {} failed to bind Pompe address {}: {}",
+                    node_id, addr, e
+                ),
             }
         });
         Ok(())
     }
 
-    // 主动预热到所有对等节点的连接，减少首次发送延迟
+    // Proactively warm connections to all peers to reduce first-send latency
     pub fn warm_up_connections(&self) {
         let peers: Vec<usize> = self
             .peer_node_ids
@@ -224,9 +229,9 @@ impl PompeNetwork {
                         },
                     )
                     .await;
-                // 即使失败也忽略，连接池会在后续尝试建立
+                // Ignore failures; the pool will attempt to reconnect later
             }
-            info!("🔌 Node {} 连接预热任务完成", net.node_id);
+            info!("Node {} connection warm-up task complete", net.node_id);
         });
     }
 
@@ -237,26 +242,29 @@ impl PompeNetwork {
         let _ = self.rt.spawn(fut);
     }
 
-    // 🚨 改进的单节点发送，支持重试和连接池
+    // Improved single-node send with retries and connection pooling
     pub async fn send_to_node(
         &self,
         target_node_id: usize,
         message: PompeMessage,
     ) -> Result<(), String> {
-        // 🚨 特殊处理：发送给自己
+        // Special handling: send to self
         if target_node_id == self.node_id {
             debug!(
-                "📨 发送Pompe消息给自己: {:?}",
+                "Sending Pompe message to self: {:?}",
                 std::mem::discriminant(&message)
             );
             if let Err(e) = self.message_tx.send((self.node_id, message)) {
-                error!("❌ Node {} Pompe发送给自己失败: {}", self.node_id, e);
-                return Err(format!("发送给自己失败: {}", e));
+                error!(
+                    "Node {} failed to send Pompe message to self: {}",
+                    self.node_id, e
+                );
+                return Err(format!("Send-to-self failed: {}", e));
             }
             return Ok(());
         }
 
-        // 生成消息ID用于去重
+        // Generate a message ID for deduplication
         let message_id = format!(
             "{}:{}:{}",
             self.node_id,
@@ -267,11 +275,11 @@ impl PompeNetwork {
                 .as_nanos()
         );
 
-        // 检查是否已发送过
+        // Check whether we have already sent this message
         {
             let mut sent = self.sent_messages.lock().unwrap();
             if sent.contains_key(&message_id) {
-                debug!("🔄 跳过重复消息: {}", message_id);
+                debug!("Skipping duplicate message: {}", message_id);
                 return Ok(());
             }
             sent.insert(
@@ -310,7 +318,7 @@ impl PompeNetwork {
             } else {
                 self.connections.write().await.remove(&target_node_id);
                 warn!(
-                    "⚠️ Node {} -> Node {} 现有连接不可用，准备重建",
+                    "Node {} -> Node {} connection unavailable; rebuilding",
                     self.node_id, target_node_id
                 );
             }
@@ -318,20 +326,20 @@ impl PompeNetwork {
 
         let target_addr = resolve_target(target_node_id, 20000);
         info!(
-            "🔗 Node {} Pompe resolve node addr {}: {}",
+            "Node {} resolved Pompe address for node {}: {}",
             self.node_id, target_node_id, target_addr
         );
 
         let stream = TcpStream::connect(&target_addr).await.map_err(|e| {
             error!(
-                "❌ Node {} 连接到节点 {} 失败: {}",
+                "Node {} failed to connect to node {}: {}",
                 self.node_id, target_node_id, e
             );
-            format!("连接失败: {}", e)
+            format!("Connection failed: {}", e)
         })?;
 
         if let Err(e) = stream.set_nodelay(true) {
-            warn!("⚠️ 设置TCP_NODELAY失败: {}", e);
+            warn!("Failed to set TCP_NODELAY: {}", e);
         }
 
         let (_reader_half, writer_half) = stream.into_split();
@@ -366,7 +374,7 @@ impl PompeNetwork {
             Ok(())
         } else {
             self.connections.write().await.remove(&target_node_id);
-            Err(format!("发送到节点 {} 失败", target_node_id))
+            Err(format!("Failed to send to node {}", target_node_id))
         }
     }
 
@@ -397,7 +405,7 @@ impl PompeNetwork {
                     PompeNetwork::send_message_on_writer(node_id, &mut writer, &msg).await
                 {
                     warn!(
-                        "⚠️ [Pompe] {} -> {} writer task send failed: {}",
+                        "[Pompe] {} -> {} writer task send failed: {}",
                         node_id, target_node_id, e
                     );
                     break;
@@ -411,7 +419,7 @@ impl PompeNetwork {
                 let elapsed = write_start.elapsed();
                 if elapsed > Duration::from_millis(5) {
                     debug!(
-                        "⏱️ [Pompe] {} -> {} send slow: {:?}",
+                        "[Pompe] {} -> {} send slow: {:?}",
                         node_id, target_node_id, elapsed
                     );
                 }
@@ -420,52 +428,52 @@ impl PompeNetwork {
             let mut guard = connections.write().await;
             if guard.remove(&target_node_id).is_some() {
                 info!(
-                    "🧹 [Pompe] Node {} closed writer to {}",
+                    "[Pompe] node {} closed writer to {}",
                     node_id, target_node_id
                 );
             }
         });
     }
 
-    // 🚨 新增：在指定流上发送消息的辅助方法
+    // Helper to send a message on a given TCP writer
     async fn send_message_on_writer(
         node_id: usize,
         writer: &mut OwnedWriteHalf,
         network_msg: &PompeNetworkMessage,
     ) -> Result<(), String> {
-        // 使用bincode更紧凑，减少序列化成本和网络抖动
+        // Use bincode for compact serialization to reduce cost and jitter
         let ser_start = std::time::Instant::now();
         let serialized =
-            bincode::serialize(network_msg).map_err(|e| format!("序列化失败: {}", e))?;
+            bincode::serialize(network_msg).map_err(|e| format!("Serialization failed: {}", e))?;
         let message_length = serialized.len() as u32;
         let ser_cost = ser_start.elapsed();
 
         writer
             .write_all(&message_length.to_be_bytes())
             .await
-            .map_err(|e| format!("写入长度失败: {}", e))?;
+            .map_err(|e| format!("Failed to write length: {}", e))?;
 
         writer
             .write_all(&serialized)
             .await
-            .map_err(|e| format!("写入消息失败: {}", e))?;
+            .map_err(|e| format!("Failed to write message: {}", e))?;
 
-        // 对于TCP流，flush通常是空操作；避免多余系统调用
+        // Flush is usually a no-op for TCP; avoid unnecessary syscalls
         if ser_cost.as_micros() > 50 {
             debug!(
-                "⏱️ [Pompe-序列化] Node {} 序列化耗时: {:?} ({} bytes)",
+                "[Pompe-serialize] node {} serialization: {:?} ({} bytes)",
                 node_id, ser_cost, message_length
             );
         }
         Ok(())
     }
 
-    // 🚨 并行广播：并行发送，并优先短路发送给自己
+    // Parallel broadcast: short-circuit self then fan out concurrently
     pub async fn broadcast(&self, message: PompeMessage) -> Result<(), String> {
         use tokio::task::JoinHandle;
         let start_time = std::time::Instant::now();
         info!(
-            "📡 Node {} Pompe并行广播: {:?} 到 {} 个节点",
+            "Node {} Pompe broadcast {:?} to {} nodes",
             self.node_id,
             std::mem::discriminant(&message),
             self.peer_node_ids.len()
@@ -474,7 +482,7 @@ impl PompeNetwork {
         let mut success_count = 0usize;
         let mut failure_details: Vec<String> = Vec::new();
 
-        // 1) 先发送给自己（短路，不经TCP）
+        // 1) Send to self first (short-circuit, no TCP)
         if self.peer_node_ids.contains(&self.node_id) {
             match self.send_to_node(self.node_id, message.clone()).await {
                 Ok(_) => success_count += 1,
@@ -482,7 +490,7 @@ impl PompeNetwork {
             }
         }
 
-        // 2) 并行发送给其他节点
+        // 2) Send to other nodes in parallel
         let mut handles: Vec<JoinHandle<(usize, Result<(), String>)>> = Vec::new();
         for &target_node_id in &self.peer_node_ids {
             if target_node_id == self.node_id {
@@ -490,7 +498,7 @@ impl PompeNetwork {
             }
             let net = self.clone();
             let msg = message.clone();
-            // 在 Pompe 独立运行时上并行发送，避免与其他任务争抢全局 RT
+            // Use the dedicated Pompe runtime to avoid contending with the global runtime
             let handle = tokio::spawn(async move {
                 let res = net.send_to_node(target_node_id, msg).await;
                 (target_node_id, res)
@@ -508,7 +516,7 @@ impl PompeNetwork {
 
         let total_duration = start_time.elapsed();
         info!(
-            "📊 [并行广播完成] Node {} 完成: {}/{} 成功, 总耗时: {:?}",
+            "[broadcast complete] node {}: {}/{} succeeded, elapsed {:?}",
             self.node_id,
             success_count,
             self.peer_node_ids.len(),
@@ -517,7 +525,7 @@ impl PompeNetwork {
 
         if !failure_details.is_empty() {
             warn!(
-                "⚠️ Node {} Pompe广播部分失败: {:?}",
+                "Node {} Pompe broadcast partially failed: {:?}",
                 self.node_id, failure_details
             );
         }
@@ -525,7 +533,7 @@ impl PompeNetwork {
         if success_count > 0 {
             Ok(())
         } else {
-            Err("所有广播目标都失败了".to_string())
+            Err("All broadcast targets failed".to_string())
         }
     }
 
@@ -534,7 +542,7 @@ impl PompeNetwork {
         rx.recv().await
     }
 
-    // 🚨 新增：清理过期消息的维护函数
+    // Clean up expired message metadata
     pub fn cleanup_old_messages(&self) {
         let mut sent = self.sent_messages.lock().unwrap();
         let now = std::time::SystemTime::now()
@@ -542,11 +550,11 @@ impl PompeNetwork {
             .unwrap()
             .as_secs();
 
-        // 清理超过5分钟的消息记录
+        // Drop message records older than 5 minutes
         sent.retain(|_, &mut timestamp| now - timestamp < 300);
 
         if sent.len() > 1000 {
-            // 如果消息记录过多，清理一半最旧的
+            // Trim the oldest half if the cache grows too large
             let mut entries: Vec<_> = sent.iter().map(|(k, &v)| (k.clone(), v)).collect();
             entries.sort_by_key(|(_, timestamp)| *timestamp);
 
@@ -561,7 +569,7 @@ impl PompeNetwork {
             }
         }
     }
-    // 🚨 新增：获取连接池状态
+    // Inspect the connection pool state
     pub async fn get_connection_stats(&self) -> (usize, usize) {
         let connections = self.connections.read().await;
         let active_connections = connections.len();
@@ -574,7 +582,7 @@ impl PompeNetwork {
 
         if active_connections > 0 {
             info!(
-                "🔗 [连接池状态] Node {} 活跃连接: {}, 总发送数: {}",
+                "[connection pool] node {} active connections: {}, total sends: {}",
                 self.node_id, active_connections, total_messages
             );
         }
@@ -594,23 +602,23 @@ async fn handle_pompe_connection(
         match socket.read_exact(&mut length_buf).await {
             Ok(_) => {}
             Err(ref e) if e.kind() == std::io::ErrorKind::UnexpectedEof => {
-                debug!("Pompe连接正常关闭");
+                debug!("Pompe connection closed cleanly");
                 break;
             }
             Err(e) => {
-                return Err(format!("读取错误: {}", e));
+                return Err(format!("Read error: {}", e));
             }
         }
 
         let message_length = u32::from_be_bytes(length_buf) as usize;
 
         if message_length > 1024 * 1024 {
-            error!("❌ Pompe消息过大: {} bytes", message_length);
+            error!("Pompe message too large: {} bytes", message_length);
             break;
         }
 
         if message_length == 0 {
-            debug!("收到空Pompe消息");
+            debug!("Received empty Pompe message");
             continue;
         }
 
@@ -618,37 +626,37 @@ async fn handle_pompe_connection(
         socket
             .read_exact(&mut message_buf)
             .await
-            .map_err(|e| format!("读取消息失败: {}", e))?;
+            .map_err(|e| format!("Failed to read message: {}", e))?;
 
-        // 使用bincode与发送端保持一致
+        // Use bincode to stay aligned with the sender
         match bincode::deserialize::<PompeNetworkMessage>(&message_buf) {
             Ok(net_msg) => {
-                // 🚨 消息去重
+                // Deduplicate messages
                 if processed_messages.contains(&net_msg.message_id) {
-                    debug!("🔄 跳过重复的Pompe消息: {}", net_msg.message_id);
+                    debug!("Skipped duplicate Pompe message: {}", net_msg.message_id);
                     continue;
                 }
                 processed_messages.insert(net_msg.message_id.clone());
 
-                // 限制去重缓存大小
+                // Limit dedup cache size
                 if processed_messages.len() > 1000 {
                     processed_messages.clear();
                 }
 
                 debug!(
-                    "📨 收到Pompe消息: 来自节点 {}, 类型: {:?}, ID: {}",
+                    "Received Pompe message: from node {}, kind: {:?}, ID: {}",
                     net_msg.from_node_id,
                     std::mem::discriminant(&net_msg.message),
                     &net_msg.message_id[0..8]
                 );
 
                 if let Err(e) = message_tx.send((net_msg.from_node_id, net_msg.message)) {
-                    error!("❌ Pompe消息队列发送失败: {}", e);
+                    error!("Failed to enqueue Pompe message: {}", e);
                     break;
                 }
             }
             Err(e) => {
-                error!("❌ Pompe消息反序列化失败: {}", e);
+                error!("Failed to deserialize Pompe message: {}", e);
             }
         }
     }

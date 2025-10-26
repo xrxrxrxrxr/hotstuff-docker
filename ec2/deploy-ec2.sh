@@ -4,12 +4,12 @@
 SSH_KEY=~/.ssh/xrui.pem
 SSH_OPTS="-i $SSH_KEY -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
-# 读取 hosts.txt
+# Read hosts.txt
 declare -A PUBLIC_IPS PRIVATE_IPS
 
-echo "📖 读取 hosts.txt..."
+echo "Reading hosts.txt..."
 while IFS=' ' read -r ip name; do
-  # 跳过注释和空行
+  # Skip comments and empty lines
   [[ $ip =~ ^#.*$ || -z $ip ]] && continue
   
   if [[ ! $name =~ -private$ ]]; then
@@ -23,17 +23,17 @@ done < hosts.txt
 
 echo ""
 
-# 检查是否读取成功
+# Verify we loaded the IP list
 if [[ ${#PUBLIC_IPS[@]} -eq 0 ]]; then
-  echo "❌ 错误：未能从 hosts.txt 读取任何 IP"
-  echo "请检查 hosts.txt 文件格式"
+  echo "Error: failed to read any IP from hosts.txt"
+  echo "Please check the format of hosts.txt"
   exit 1
 fi
 
-echo "🚀 开始部署到 EC2..."
+echo "Starting deployment to EC2..."
 echo ""
 
-# 部署节点 0-3（并行执行）
+# Deploy nodes 0-3 (in parallel)
 declare -a DEPLOY_PIDS
 STATUS=0
 
@@ -41,18 +41,18 @@ for i in {0..3}; do
   (
     ip="${PUBLIC_IPS[node$i]}"
     if [[ -z "$ip" ]]; then
-      echo "❌ 错误：node$i 的 IP 未找到"
+      echo "Error: IP for node$i not found"
       exit 1
     fi
 
-    echo "📦 部署 node$i ($ip)..."
+    echo "Deploying node$i ($ip)..."
 
     set -e
     ssh $SSH_OPTS ubuntu@$ip "mkdir -p ~/hotstuff/logs"
     scp $SSH_OPTS docker-compose-node.yml ubuntu@$ip:~/hotstuff/docker-compose.yml
     scp $SSH_OPTS envs/node$i.env ubuntu@$ip:~/hotstuff/.env
 
-    echo "✅ node$i 部署完成"
+    echo "node$i deployment completed"
     echo ""
   ) &
   DEPLOY_PIDS[$i]=$!
@@ -60,27 +60,27 @@ done
 
 for i in {0..3}; do
   if ! wait "${DEPLOY_PIDS[$i]}"; then
-    echo "❌ node$i 部署过程中出现错误"
+    echo "Error during node$i deployment"
     STATUS=1
   fi
 done
 
 if [[ $STATUS -ne 0 ]]; then
-  echo "❌ 某些节点部署失败，终止脚本"
+  echo "Some nodes failed to deploy, aborting"
   exit 1
 fi
 
-# 部署客户端
+# Deploy the client
 client_ip="${PUBLIC_IPS[client]}"
 if [[ -z "$client_ip" ]]; then
-  echo "❌ 错误：client 的 IP 未找到"
+  echo "Error: client IP not found"
   exit 1
 fi
 
-echo "📦 部署 client ($client_ip)..."
+echo "Deploying client ($client_ip)..."
 ssh $SSH_OPTS ubuntu@$client_ip "mkdir -p ~/hotstuff/logs"
 scp $SSH_OPTS docker-compose-client.yml ubuntu@$client_ip:~/hotstuff/docker-compose.yml
 scp $SSH_OPTS envs/client.env ubuntu@$client_ip:~/hotstuff/.env
 
 echo ""
-echo "✅ 所有文件部署完成！"
+echo "All files deployed successfully!"

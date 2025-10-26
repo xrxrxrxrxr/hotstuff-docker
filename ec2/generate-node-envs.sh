@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # generate-node-envs.sh
-# 用于批量生成 ec2/envs/node{X}.env 配置文件（NODE_HOSTS 使用私网 IP）
+# Generate ec2/envs/node{X}.env files in bulk (NODE_HOSTS uses private IPs)
 
 set -euo pipefail
 
@@ -9,11 +9,11 @@ HOSTS_FILE="$ROOT_DIR/hosts.txt"
 ENVS_DIR="$ROOT_DIR/envs"
 
 if [[ ! -f "$HOSTS_FILE" ]]; then
-  echo "❌ hosts.txt 不存在: $HOSTS_FILE" >&2
+  echo "hosts.txt not found: $HOSTS_FILE" >&2
   exit 1
 fi
 
-# ── 计算节点数量：优先按照 nodeX-private 行计数；否则按 nodeX 行计数 ──
+# Determine node count: prefer nodeX-private entries, otherwise use nodeX entries
 NODE_COUNT_INPUT="${1:-}"
 if [[ -z "$NODE_COUNT_INPUT" ]]; then
   NODE_COUNT=$(grep -E 'node[0-9]+-private$' "$HOSTS_FILE" | wc -l | tr -d ' ')
@@ -22,20 +22,20 @@ if [[ -z "$NODE_COUNT_INPUT" ]]; then
   fi
 else
   if ! [[ "$NODE_COUNT_INPUT" =~ ^[0-9]+$ ]] || (( NODE_COUNT_INPUT <= 0 )); then
-    echo "❌ 节点数量必须是正整数" >&2
+    echo "Node count must be a positive integer" >&2
     exit 1
   fi
   NODE_COUNT="$NODE_COUNT_INPUT"
 fi
 
 declare -A NODE_IPS_PRIV   # nodeX -> private IP
-declare -A NODE_IPS_PUB    # nodeX -> public IP（仅用于兜底/校验，不写入 NODE_HOSTS）
+declare -A NODE_IPS_PUB    # nodeX -> public IP (only for validation, not written to NODE_HOSTS)
 
-# 读取 hosts.txt（格式示例：
+# Read hosts.txt (example format:
 #  54.193.104.199 node0
 #  ...
 #  172.31.21.161 node0-private
-#  ...）
+#  ...)
 while read -r ip name; do
   [[ -z "$ip" || "$ip" =~ ^# ]] && continue
 
@@ -48,27 +48,27 @@ while read -r ip name; do
   fi
 done < "$HOSTS_FILE"
 
-# 如果没有任何私网行，回退用公网行生成 NODE_HOSTS（不推荐，但保证可用）
+# If there are no private entries, fall back to public entries to build NODE_HOSTS (not recommended but works)
 if (( ${#NODE_IPS_PRIV[@]} == 0 )); then
-  echo "⚠️  未找到 'nodeX-private' 行，回退使用公网 IP 生成 NODE_HOSTS" >&2
+  echo "Warning: no 'nodeX-private' entries found; falling back to public IPs for NODE_HOSTS" >&2
   for (( i = 0; i < NODE_COUNT; ++i )); do
     if [[ -z "${NODE_IPS_PUB[$i]:-}" ]]; then
-      echo "❌ hosts.txt 中缺少 node${i} 的 IP（既无 node${i} 也无 node${i}-private）" >&2
+      echo "hosts.txt is missing an IP for node${i} (neither node${i} nor node${i}-private exists)" >&2
       exit 1
     fi
     NODE_IPS_PRIV[$i]="${NODE_IPS_PUB[$i]}"
   done
 else
-  # 有私网行时，确保 0..NODE_COUNT-1 全都有
+  # When private entries exist, ensure 0..NODE_COUNT-1 are all present
   for (( i = 0; i < NODE_COUNT; ++i )); do
     if [[ -z "${NODE_IPS_PRIV[$i]:-}" ]]; then
-      echo "❌ hosts.txt 中缺少 node${i}-private 的私网 IP" >&2
+      echo "hosts.txt is missing a private IP for node${i}-private" >&2
       exit 1
     fi
   done
 fi
 
-# ── 拼接 NODE_HOSTS（使用私网 IP） ──
+# Build NODE_HOSTS using private IPs
 NODE_HOSTS=""
 for (( i = 0; i < NODE_COUNT; ++i )); do
   entry="node${i}:${NODE_IPS_PRIV[$i]}"
@@ -98,7 +98,7 @@ SMROL_PNFIFO_THRESHOLD=3
 SMROL_DISABLE_THRESHOLD_SIG=1
 RUST_LOG=warn
 EOF
-  echo "✅ 生成 ${env_file}"
+  echo "Generated ${env_file}"
 done
 
-echo "🎉 共生成 ${NODE_COUNT} 个节点配置文件（NODE_HOSTS 使用私网 IP）。"
+echo "Generated ${NODE_COUNT} node configuration files (NODE_HOSTS uses private IPs)."
