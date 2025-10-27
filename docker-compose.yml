@@ -151,13 +151,16 @@ services:
       - POMPE_LEADER_NODE_ID=${POMPE_LEADER_NODE_ID}
       - ENABLE_RUNTIME_PROFILING=${ENABLE_RUNTIME_PROFILING}
       - SMROL_DISABLE_THRESHOLD_SIG=${SMROL_DISABLE_THRESHOLD_SIG}
+      - SMROL_DISABLE_METRICS=${SMROL_DISABLE_METRICS}
       - TOKIO_CONSOLE_BIND=0.0.0.0:6669
+      # - METRICS_LISTEN_ADDR=0.0.0.0:9903
     ports:
       - "20003:20000"
       - "10003:10000"
       - "9003:9000"
       - "21003:21000"
       - "6663:6669"
+      - "9893:9893"
     volumes:
       - ./logs:/logs
       - ./logs/node:/log

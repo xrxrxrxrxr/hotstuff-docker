@@ -865,7 +865,8 @@ impl TransactionSequencing {
                 .set(backlog as f64);
 
                 let start = Instant::now();
-                let order_for_check = order.clone();
+                let order = Arc::new(order);
+                let order_for_check = Arc::clone(&order);
                 let verifying_keys = Arc::clone(&sequencing.verifying_keys);
                 let required = 2 * sequencing.f + 1;
                 let verify_result =
@@ -888,11 +889,23 @@ impl TransactionSequencing {
                         "channel" => "order_finalize"
                     )
                     .set(pending as f64);
-                    if let Err(e) = finalize_tx.send((sender_id, order)) {
-                        warn!(
-                            "⚠️ [Sequencing] Node {} enqueue verified order failed: {}",
-                            sequencing.process_id, e
-                        );
+
+                    match Arc::try_unwrap(order) {
+                        Ok(order) => {
+                            if let Err(e) = finalize_tx.send((sender_id, order)) {
+                                warn!(
+                                    "⚠️ [Sequencing] Node {} enqueue verified order failed: {}",
+                                    sequencing.process_id, e
+                                );
+                            }
+                        }
+                        Err(shared) => {
+                            warn!(
+                                "⚠️ [Sequencing] Node {} unable to unwrap Arc for finalized order",
+                                sequencing.process_id
+                            );
+                            drop(shared);
+                        }
                     }
                 } else {
                     debug!(
@@ -2495,7 +2508,7 @@ impl TransactionSequencing {
 }
 
 async fn verify_seq_order_records(
-    order: SeqOrder,
+    order: Arc<SeqOrder>,
     verifying_keys: Arc<HashMap<usize, VerifyingKey>>,
     required: usize,
 ) -> Result<bool, String> {
@@ -2503,10 +2516,13 @@ async fn verify_seq_order_records(
         return Ok(false);
     }
 
+    let mut verify_inputs = Vec::with_capacity(order.records.len());
+
     for record in &order.records {
         let verifying_key = verifying_keys
             .get(&record.sender)
-            .ok_or_else(|| format!("missing verifying key for node {}", record.sender))?;
+            .ok_or_else(|| format!("missing verifying key for node {}", record.sender))?
+            .clone();
 
         if record.signature.len() != 64 {
             return Ok(false);
@@ -2514,20 +2530,24 @@ async fn verify_seq_order_records(
 
         let signature = Ed25519Signature::try_from(record.signature.as_slice())
             .map_err(|_| format!("invalid signature bytes in SeqOrder from {}", record.sender))?;
+        let message = TransactionSequencing::build_sequence_signature_message(&order.vc, record.sequence);
 
-        let message =
-            TransactionSequencing::build_sequence_signature_message(&order.vc, record.sequence);
-        let verifying_key = verifying_key.clone();
-
-        let verify_ok = run_threshold_task("verify_seq_order_share", move || {
-            Ok(verifying_key.verify_strict(&message, &signature).is_ok())
-        })
-        .await?;
-
-        if !verify_ok {
-            return Ok(false);
-        }
+        verify_inputs.push((record.sender, verifying_key, message, signature));
     }
 
-    Ok(true)
+    let verify_ok = run_threshold_task("verify_seq_order_batch", move || {
+        for (sender, verifying_key, message, signature) in verify_inputs {
+            if verifying_key.verify_strict(&message, &signature).is_err() {
+                warn!(
+                    "⚠️ [Sequencing] verify_seq_order_records signature invalid from node {}",
+                    sender
+                );
+                return Ok(false);
+            }
+        }
+        Ok(true)
+    })
+    .await?;
+
+    Ok(verify_ok)
 }

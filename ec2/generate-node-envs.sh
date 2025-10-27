@@ -101,4 +101,24 @@ EOF
   echo "Generated ${env_file}"
 done
 
+# Generate client env file
+client_env_file="$ENVS_DIR/client.env"
+cat > "$client_env_file" <<EOF
+CLIENT_ID=client
+CLIENT_MODE=load_test
+CLIENT_ORDERING_MODE=smrol
+NODE_LEAST_ID=0
+NODE_NUM=${NODE_COUNT}
+NODE_HOSTS=${NODE_HOSTS}
+TARGET_TPS=400
+TEST_DURATION=180
+POMPE_ENABLE=true
+POMPE_BATCH_SIZE=1
+POMPE_STABLE_PERIOD_MS=500
+POMPE_LIVENESS_DELTA_MS=400
+POMPE_LEADER_NODE_ID=0
+RUST_LOG=warn
+EOF
+echo "Generated ${client_env_file}"
+
 echo "Generated ${NODE_COUNT} node configuration files (NODE_HOSTS uses private IPs)."
