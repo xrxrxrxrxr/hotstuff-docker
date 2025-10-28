@@ -16,7 +16,7 @@ use ed25519_dalek::{Signature as Ed25519Signature, Signer, SigningKey, Verifier,
 use futures::task::AtomicWaker;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
-use std::pin::Pin;
+use std::{pin::Pin, thread::sleep};
 use std::sync::{
     atomic::{AtomicU64, AtomicUsize, Ordering},
     Arc, Mutex,
@@ -53,21 +53,22 @@ trait ThresholdJob: Send {
 struct ThresholdThreadPool {
     sender: Sender<Box<dyn ThresholdJob>>,
     pending_jobs: Arc<AtomicUsize>,
+    metrics_pool: &'static str,
 }
 
 impl ThresholdThreadPool {
-    fn new(worker_count: usize) -> Self {
+    fn new(worker_count: usize, metrics_pool: &'static str) -> Self {
         let (sender, receiver) = unbounded::<Box<dyn ThresholdJob>>();
         let pending_jobs = Arc::new(AtomicUsize::new(0));
         metrics::gauge!(
             "smrol.threshold_pending_jobs",
-            "pool" => "threshold"
+            "pool" => metrics_pool
         )
         .set(0.0);
         for idx in 0..worker_count {
             let thread_receiver = receiver.clone();
             thread::Builder::new()
-                .name(format!("threshold-worker-{}", idx))
+                .name(format!("{}-worker-{}", metrics_pool, idx))
                 .spawn(move || {
                     for job in thread_receiver.iter() {
                         job.run();
@@ -79,6 +80,7 @@ impl ThresholdThreadPool {
         Self {
             sender,
             pending_jobs,
+            metrics_pool,
         }
     }
 
@@ -91,7 +93,7 @@ impl ThresholdThreadPool {
         let pending_after = self.pending_jobs.fetch_add(1, Ordering::Relaxed) + 1;
         metrics::gauge!(
             "smrol.threshold_pending_jobs",
-            "pool" => "threshold"
+            "pool" => self.metrics_pool
         )
         .set(pending_after as f64);
         let job = Box::new(ConcreteThresholdJob {
@@ -100,13 +102,14 @@ impl ThresholdThreadPool {
             label,
             submitted_at: Instant::now(),
             pending: Arc::clone(&self.pending_jobs),
+            pool_label: self.metrics_pool,
         });
         if let Err(_e) = self.sender.send(job) {
             let prev = self.pending_jobs.fetch_sub(1, Ordering::Relaxed);
             let remaining = prev.saturating_sub(1);
             metrics::gauge!(
                 "smrol.threshold_pending_jobs",
-                "pool" => "threshold"
+                "pool" => self.metrics_pool
             )
             .set(remaining as f64);
             return Err("threshold worker pool shut down".to_string());
@@ -115,28 +118,59 @@ impl ThresholdThreadPool {
     }
 }
 
-static THRESHOLD_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
-    let workers = thread::available_parallelism()
-        .map(|n| (n.get() * 2).max(8))
-        .unwrap_or(8);
-    ThresholdThreadPool::new(workers)
+fn parse_worker_count(var: &str, default: usize) -> usize {
+    std::env::var(var)
+        .ok()
+        .and_then(|value| value.trim().parse::<usize>().ok())
+        .filter(|&count| count > 0)
+        .unwrap_or(default)
+}
+
+fn default_worker_count() -> usize {
+    thread::available_parallelism()
+        .map(|n| n.get().max(4))
+        .unwrap_or(4)
+}
+
+static THRESHOLD_CRYPTO_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
+    // let default_workers = default_worker_count();
+    let default_workers = 8;
+    let workers = parse_worker_count("SMROL_THRESHOLD_CRYPTO_WORKERS", default_workers);
+    ThresholdThreadPool::new(workers, "threshold_crypto")
+});
+
+static SEQ_OFFLOAD_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
+    let default_workers = default_worker_count();
+    let workers = parse_worker_count("SMROL_SEQ_OFFLOAD_WORKERS", default_workers);
+    ThresholdThreadPool::new(workers, "seq_offload")
 });
 
 const PNFIFO_BROADCAST_CONCURRENCY: usize = 4;
 const ORDER_VERIFY_CONCURRENCY: usize = 4;
 const REQUEST_WORKER_COUNT: usize = 4;
 const MEDIAN_WORKER_COUNT: usize = 4;
+const MEDIAN_COMBINE_WORKER_COUNT: usize = 4;
+const FINAL_SIGN_WORKER_COUNT: usize = 4;
+const FINAL_VERIFY_WORKER_COUNT: usize = 4;
 const FINAL_WORKER_COUNT: usize = 4;
 const MSG_TAG_SEQUENCE: u8 = 0x01;
 const MSG_TAG_MEDIAN: u8 = 0x02;
 const MSG_TAG_FINAL: u8 = 0x03;
 
-async fn run_threshold_task<R, F>(label: &'static str, task: F) -> Result<R, String>
+async fn run_threshold_crypto_task<R, F>(label: &'static str, task: F) -> Result<R, String>
 where
     R: Send + 'static,
     F: FnOnce() -> Result<R, String> + Send + 'static,
 {
-    THRESHOLD_POOL.submit(label, task)?.await
+    THRESHOLD_CRYPTO_POOL.submit(label, task)?.await
+}
+
+async fn run_seq_offload_task<R, F>(label: &'static str, task: F) -> Result<R, String>
+where
+    R: Send + 'static,
+    F: FnOnce() -> Result<R, String> + Send + 'static,
+{
+    SEQ_OFFLOAD_POOL.submit(label, task)?.await
 }
 
 struct TaskState<R> {
@@ -203,6 +237,7 @@ where
     label: &'static str,
     submitted_at: Instant,
     pending: Arc<AtomicUsize>,
+    pool_label: &'static str,
 }
 
 impl<R, F> ThresholdJob for ConcreteThresholdJob<R, F>
@@ -216,7 +251,8 @@ where
             let wait = start.duration_since(self.submitted_at);
             metrics::histogram!(
                 "smrol.threshold_task_wait_ms",
-                "task" => self.label
+                "task" => self.label,
+                "pool" => self.pool_label
             )
             .record(wait.as_secs_f64() * 1000.0);
 
@@ -224,7 +260,8 @@ where
             let exec = start.elapsed();
             metrics::histogram!(
                 "smrol.threshold_task_exec_ms",
-                "task" => self.label
+                "task" => self.label,
+                "pool" => self.pool_label
             )
             .record(exec.as_secs_f64() * 1000.0);
 
@@ -232,7 +269,7 @@ where
             let remaining = prev_pending.saturating_sub(1);
             metrics::gauge!(
                 "smrol.threshold_pending_jobs",
-                "pool" => "threshold"
+                "pool" => self.pool_label
             )
             .set(remaining as f64);
             self.state.complete(result);
@@ -241,7 +278,7 @@ where
             let remaining = prev_pending.saturating_sub(1);
             metrics::gauge!(
                 "smrol.threshold_pending_jobs",
-                "pool" => "threshold"
+                "pool" => self.pool_label
             )
             .set(remaining as f64);
         }
@@ -292,6 +329,26 @@ pub struct SeqResponseRecord {
     pub sender: usize,
     pub sequence: u64,
     pub signature: Vec<u8>,
+}
+
+#[derive(Debug)]
+struct MedianCombineTask {
+    vc: Vec<u8>,
+    s_tx: u64,
+    shares: Vec<(usize, SignatureShare)>,
+}
+
+#[derive(Debug)]
+struct FinalVerifyTask {
+    final_msg: SeqFinal,
+}
+
+#[derive(Debug)]
+struct FinalSignTask {
+    sender: usize,
+    vc: Vec<u8>,
+    median_sequence: u64,
+    message: Vec<u8>,
 }
 
 #[derive(Clone, Copy, Eq, PartialEq, Hash, Debug)]
@@ -363,13 +420,23 @@ pub struct TransactionSequencing {
     order_finalize_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<(usize, SeqOrder)>>>,
     median_tx: async_mpsc::UnboundedSender<ModuleMessage>,
     median_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<ModuleMessage>>>,
+    median_combine_tx: async_mpsc::UnboundedSender<MedianCombineTask>,
+    median_combine_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<MedianCombineTask>>>,
     final_tx: async_mpsc::UnboundedSender<ModuleMessage>,
     final_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<ModuleMessage>>>,
+    final_sign_tx: async_mpsc::UnboundedSender<FinalSignTask>,
+    final_sign_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<FinalSignTask>>>,
+    final_verify_tx: async_mpsc::UnboundedSender<FinalVerifyTask>,
+    final_verify_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<FinalVerifyTask>>>,
     request_backlog: Arc<AtomicUsize>,
     response_backlog: Arc<AtomicUsize>,
     median_backlog: Arc<AtomicUsize>,
+    median_combine_backlog: Arc<AtomicUsize>,
+    final_sign_backlog: Arc<AtomicUsize>,
     final_backlog: Arc<AtomicUsize>,
+    final_verify_backlog: Arc<AtomicUsize>,
     sequenced_entry_tx: async_mpsc::UnboundedSender<TransactionEntry>,
+    final_verify_inflight: DashSet<VC>,
 }
 
 impl TransactionSequencing {
@@ -433,10 +500,25 @@ impl TransactionSequencing {
         let median_rx = Arc::new(AsyncMutex::new(median_rx_raw));
         let median_backlog = Arc::new(AtomicUsize::new(0));
         metrics::gauge!("smrol.channel_backlog", "channel" => "median").set(0.0);
+        let (median_combine_tx, median_combine_rx_raw) =
+            async_mpsc::unbounded_channel::<MedianCombineTask>();
+        let median_combine_rx = Arc::new(AsyncMutex::new(median_combine_rx_raw));
+        let median_combine_backlog = Arc::new(AtomicUsize::new(0));
+        metrics::gauge!("smrol.channel_backlog", "channel" => "median_combine").set(0.0);
         let (final_tx, final_rx_raw) = async_mpsc::unbounded_channel::<ModuleMessage>();
         let final_rx = Arc::new(AsyncMutex::new(final_rx_raw));
         let final_backlog = Arc::new(AtomicUsize::new(0));
         metrics::gauge!("smrol.channel_backlog", "channel" => "final").set(0.0);
+        let (final_sign_tx, final_sign_rx_raw) =
+            async_mpsc::unbounded_channel::<FinalSignTask>();
+        let final_sign_rx = Arc::new(AsyncMutex::new(final_sign_rx_raw));
+        let final_sign_backlog = Arc::new(AtomicUsize::new(0));
+        metrics::gauge!("smrol.channel_backlog", "channel" => "final_sign").set(0.0);
+        let (final_verify_tx, final_verify_rx_raw) =
+            async_mpsc::unbounded_channel::<FinalVerifyTask>();
+        let final_verify_rx = Arc::new(AsyncMutex::new(final_verify_rx_raw));
+        let final_verify_backlog = Arc::new(AtomicUsize::new(0));
+        metrics::gauge!("smrol.channel_backlog", "channel" => "final_verify").set(0.0);
 
         let pnfifo_broadcast_semaphore = Arc::new(Semaphore::new(PNFIFO_BROADCAST_CONCURRENCY));
         let order_verify_semaphore = Arc::new(Semaphore::new(ORDER_VERIFY_CONCURRENCY));
@@ -486,13 +568,23 @@ impl TransactionSequencing {
             order_finalize_rx,
             median_tx,
             median_rx,
+            median_combine_tx,
+            median_combine_rx,
             final_tx,
             final_rx,
+            final_sign_tx,
+            final_sign_rx,
+            final_verify_tx,
+            final_verify_rx,
             request_backlog,
             response_backlog,
             median_backlog,
+            median_combine_backlog,
+            final_sign_backlog,
             final_backlog,
+            final_verify_backlog,
             sequenced_entry_tx,
+            final_verify_inflight: DashSet::new(),
         }
     }
 
@@ -554,6 +646,9 @@ impl TransactionSequencing {
         self.spawn_order_verifier(); // workers: semaphore
         self.spawn_order_finalizer(); // send median to node
         self.spawn_median_processor(); // workers
+        self.spawn_median_combine_processor(); // combine workers
+        self.spawn_final_sign_processor(); // threshold sign workers
+        self.spawn_final_verify_processor(); // final verification workers
         self.spawn_final_processor(); // workers
     }
 
@@ -571,6 +666,48 @@ impl TransactionSequencing {
 
     pub fn median_sender(&self) -> async_mpsc::UnboundedSender<ModuleMessage> {
         self.median_tx.clone()
+    }
+
+    fn enqueue_median_combine(&self, task: MedianCombineTask) -> Result<(), String> {
+        self.median_combine_tx
+            .send(task)
+            .map_err(|e| format!("enqueue median combine failed: {}", e))?;
+        let pending = self.median_combine_backlog.fetch_add(1, Ordering::Relaxed) + 1;
+        metrics::gauge!(
+            "smrol.channel_backlog",
+            "channel" => "median_combine"
+        )
+        .set(pending as f64);
+        Ok(())
+    }
+
+    fn enqueue_final_verify(&self, task: FinalVerifyTask) -> Result<(), String> {
+        if let Err(err) = self.final_verify_tx.send(task) {
+            let task = err.0;
+            let vc_key = VC::from_slice(&task.final_msg.vc);
+            self.final_verify_inflight.remove(&vc_key);
+            return Err("enqueue final verify failed".to_string());
+        }
+        let pending = self.final_verify_backlog.fetch_add(1, Ordering::Relaxed) + 1;
+        metrics::gauge!(
+            "smrol.channel_backlog",
+            "channel" => "final_verify"
+        )
+        .set(pending as f64);
+        Ok(())
+    }
+
+    fn enqueue_final_sign(&self, task: FinalSignTask) -> Result<(), String> {
+        self.final_sign_tx
+            .send(task)
+            .map_err(|e| format!("enqueue final sign failed: {}", e))?;
+        let pending = self.final_sign_backlog.fetch_add(1, Ordering::Relaxed) + 1;
+        metrics::gauge!(
+            "smrol.channel_backlog",
+            "channel" => "final_sign"
+        )
+        .set(pending as f64);
+        Ok(())
     }
 
     pub fn final_sender(&self) -> async_mpsc::UnboundedSender<ModuleMessage> {
@@ -1370,6 +1507,318 @@ impl TransactionSequencing {
         });
     }
 
+    fn spawn_median_combine_processor(self: &Arc<Self>) {
+        let worker_count = MEDIAN_COMBINE_WORKER_COUNT.max(1);
+
+        let mut worker_senders = Vec::with_capacity(worker_count);
+
+        for worker_id in 0..worker_count {
+            let (worker_tx, mut worker_rx) = async_mpsc::unbounded_channel::<MedianCombineTask>();
+            worker_senders.push(worker_tx);
+
+            let backlog_counter = Arc::clone(&self.median_combine_backlog);
+            let sequencing = Arc::clone(self);
+            tokio::spawn(async move {
+                info!(
+                    "[Sequencing] Node {} median combine worker-{} started",
+                    sequencing.process_id, worker_id
+                );
+
+                while let Some(task) = worker_rx.recv().await {
+                    let previous = backlog_counter.fetch_sub(1, Ordering::Relaxed);
+                    let backlog = previous.saturating_sub(1);
+                    metrics::gauge!(
+                        "smrol.channel_backlog",
+                        "channel" => "median_combine"
+                    )
+                    .set(backlog as f64);
+
+                    let start = Instant::now();
+                    if let Err(e) = sequencing.process_median_combine_task(task).await {
+                        warn!(
+                            "⚠️ [Sequencing] Node {} median combine worker-{} failed: {}",
+                            sequencing.process_id, worker_id, e
+                        );
+                    }
+                    let elapsed = start.elapsed();
+                    if elapsed > Duration::from_millis(10) {
+                        warn!(
+                            "🐌 [Sequencing] Median combine worker-{} slow for node {}: {:?}",
+                            worker_id, sequencing.process_id, elapsed
+                        );
+                    }
+                }
+
+                warn!(
+                    "⚠️ [Sequencing] Node {} median combine worker-{} exiting (channel closed)",
+                    sequencing.process_id, worker_id
+                );
+            });
+        }
+
+        let combine_rx = Arc::clone(&self.median_combine_rx);
+        let sequencing_dispatch = Arc::clone(self);
+        let process_id = self.process_id;
+        tokio::spawn(async move {
+            let mut next_idx = 0usize;
+            let worker_count = worker_senders.len();
+            if worker_count == 0 {
+                return;
+            }
+
+            loop {
+                let maybe_task = {
+                    let mut rx = combine_rx.lock().await;
+                    rx.recv().await
+                };
+
+                let Some(mut task) = maybe_task else {
+                    break;
+                };
+
+                let mut attempts = 0usize;
+                loop {
+                    let idx = next_idx % worker_count;
+                    next_idx = next_idx.wrapping_add(1);
+                    attempts += 1;
+
+                    match worker_senders[idx].send(task) {
+                        Ok(_) => break,
+                        Err(err) => {
+                            task = err.0;
+                            warn!(
+                                "⚠️ [Sequencing] Node {} median combine dispatcher retry worker {}",
+                                process_id, idx
+                            );
+
+                            if attempts >= worker_count {
+                                warn!(
+                                    "⚠️ [Sequencing] Node {} median combine dispatcher dropping task",
+                                    process_id
+                                );
+                                let vc_key = VC::from_slice(&task.vc);
+                                sequencing_dispatch.final_broadcasted.remove(&vc_key);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            info!(
+                "[Sequencing] Node {} median combine dispatcher exiting (channel closed)",
+                process_id
+            );
+        });
+    }
+
+    fn spawn_final_sign_processor(self: &Arc<Self>) {
+        let worker_count = FINAL_SIGN_WORKER_COUNT.max(1);
+
+        let mut worker_senders = Vec::with_capacity(worker_count);
+
+        for worker_id in 0..worker_count {
+            let (worker_tx, mut worker_rx) = async_mpsc::unbounded_channel::<FinalSignTask>();
+            worker_senders.push(worker_tx);
+
+            let backlog_counter = Arc::clone(&self.final_sign_backlog);
+            let sequencing = Arc::clone(self);
+            tokio::spawn(async move {
+                info!(
+                    "[Sequencing] Node {} final sign worker-{} started",
+                    sequencing.process_id, worker_id
+                );
+
+                while let Some(task) = worker_rx.recv().await {
+                    let previous = backlog_counter.fetch_sub(1, Ordering::Relaxed);
+                    let backlog = previous.saturating_sub(1);
+                    metrics::gauge!(
+                        "smrol.channel_backlog",
+                        "channel" => "final_sign"
+                    )
+                    .set(backlog as f64);
+
+                    let start = Instant::now();
+                    if let Err(e) = sequencing.process_final_sign_task(task).await {
+                        warn!(
+                            "⚠️ [Sequencing] Node {} final sign worker-{} failed: {}",
+                            sequencing.process_id, worker_id, e
+                        );
+                    }
+                    let elapsed = start.elapsed();
+                    if elapsed > Duration::from_millis(10) {
+                        warn!(
+                            "🐌 [Sequencing] Final sign worker-{} slow for node {}: {:?}",
+                            worker_id, sequencing.process_id, elapsed
+                        );
+                    }
+                }
+
+                warn!(
+                    "⚠️ [Sequencing] Node {} final sign worker-{} exiting (channel closed)",
+                    sequencing.process_id, worker_id
+                );
+            });
+        }
+
+        let sign_rx = Arc::clone(&self.final_sign_rx);
+        let process_id = self.process_id;
+        tokio::spawn(async move {
+            let mut next_idx = 0usize;
+            let worker_count = worker_senders.len();
+            if worker_count == 0 {
+                return;
+            }
+
+            loop {
+                let maybe_task = {
+                    let mut rx = sign_rx.lock().await;
+                    rx.recv().await
+                };
+
+                let Some(mut task) = maybe_task else {
+                    break;
+                };
+
+                let mut attempts = 0usize;
+                loop {
+                    let idx = next_idx % worker_count;
+                    next_idx = next_idx.wrapping_add(1);
+                    attempts += 1;
+
+                    match worker_senders[idx].send(task) {
+                        Ok(_) => break,
+                        Err(err) => {
+                            task = err.0;
+                            warn!(
+                                "⚠️ [Sequencing] Node {} final sign dispatcher retry worker {}",
+                                process_id, idx
+                            );
+
+                            if attempts >= worker_count {
+                                warn!(
+                                    "⚠️ [Sequencing] Node {} final sign dispatcher dropping task",
+                                    process_id
+                                );
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            info!(
+                "[Sequencing] Node {} final sign dispatcher exiting (channel closed)",
+                process_id
+            );
+        });
+    }
+
+    fn spawn_final_verify_processor(self: &Arc<Self>) {
+        let worker_count = FINAL_VERIFY_WORKER_COUNT.max(1);
+
+        let mut worker_senders = Vec::with_capacity(worker_count);
+
+        for worker_id in 0..worker_count {
+            let (worker_tx, mut worker_rx) = async_mpsc::unbounded_channel::<FinalVerifyTask>();
+            worker_senders.push(worker_tx);
+
+            let backlog_counter = Arc::clone(&self.final_verify_backlog);
+            let sequencing = Arc::clone(self);
+            tokio::spawn(async move {
+                info!(
+                    "[Sequencing] Node {} final verify worker-{} started",
+                    sequencing.process_id, worker_id
+                );
+
+                while let Some(task) = worker_rx.recv().await {
+                    let previous = backlog_counter.fetch_sub(1, Ordering::Relaxed);
+                    let backlog = previous.saturating_sub(1);
+                    metrics::gauge!(
+                        "smrol.channel_backlog",
+                        "channel" => "final_verify"
+                    )
+                    .set(backlog as f64);
+
+                    let start = Instant::now();
+                    if let Err(e) = sequencing.process_final_verify_task(task).await {
+                        warn!(
+                            "⚠️ [Sequencing] Node {} final verify worker-{} failed: {}",
+                            sequencing.process_id, worker_id, e
+                        );
+                    }
+                    let elapsed = start.elapsed();
+                    if elapsed > Duration::from_millis(10) {
+                        warn!(
+                            "🐌 [Sequencing] Final verify worker-{} slow for node {}: {:?}",
+                            worker_id, sequencing.process_id, elapsed
+                        );
+                    }
+                }
+
+                warn!(
+                    "⚠️ [Sequencing] Node {} final verify worker-{} exiting (channel closed)",
+                    sequencing.process_id, worker_id
+                );
+            });
+        }
+
+        let verify_rx = Arc::clone(&self.final_verify_rx);
+        let sequencing_dispatch = Arc::clone(self);
+        let process_id = self.process_id;
+        tokio::spawn(async move {
+            let mut next_idx = 0usize;
+            let worker_count = worker_senders.len();
+            if worker_count == 0 {
+                return;
+            }
+
+            loop {
+                let maybe_task = {
+                    let mut rx = verify_rx.lock().await;
+                    rx.recv().await
+                };
+
+                let Some(mut task) = maybe_task else {
+                    break;
+                };
+
+                let mut attempts = 0usize;
+                loop {
+                    let idx = next_idx % worker_count;
+                    next_idx = next_idx.wrapping_add(1);
+                    attempts += 1;
+
+                    match worker_senders[idx].send(task) {
+                        Ok(_) => break,
+                        Err(err) => {
+                            task = err.0;
+                            warn!(
+                                "⚠️ [Sequencing] Node {} final verify dispatcher retry worker {}",
+                                process_id, idx
+                            );
+
+                            if attempts >= worker_count {
+                                warn!(
+                                    "⚠️ [Sequencing] Node {} final verify dispatcher dropping task",
+                                    process_id
+                                );
+                                let vc_key = VC::from_slice(&task.final_msg.vc);
+                                sequencing_dispatch.final_verify_inflight.remove(&vc_key);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            info!(
+                "[Sequencing] Node {} final verify dispatcher exiting (channel closed)",
+                process_id
+            );
+        });
+    }
+
     fn spawn_final_processor(self: &Arc<Self>) {
         let worker_count = FINAL_WORKER_COUNT.max(1);
 
@@ -1535,7 +1984,7 @@ impl TransactionSequencing {
         let total_shards = std::cmp::max(data_shards, self.n);
         let serialized_for_encode = serialized.clone();
         let encode_start = Instant::now();
-        let encoded_package = run_threshold_task("erasure_encode", move || {
+        let encoded_package = run_seq_offload_task("erasure_encode", move || {
             ErasurePackage::encode(&serialized_for_encode, data_shards, total_shards)
                 .map_err(|e| format!("Erasure coding task failed: {}", e))
         })
@@ -1650,10 +2099,7 @@ impl TransactionSequencing {
         if self.finalized_vcs.contains(&vc_key) {
             return Ok(());
         }
-        let maybe_entry = self.handle_seq_final(final_msg).await?;
-        if let Some(entry) = maybe_entry {
-            self.emit_sequenced_entry(entry).await?;
-        }
+        self.handle_seq_final(final_msg).await?;
         Ok(())
     }
 
@@ -1818,12 +2264,6 @@ impl TransactionSequencing {
             .send_to_node(sender, response_msg)
             .await
             .map_err(|e| format!("Failed to send SEQ-RESPONSE: {}", e))?;
-        // info!(
-        //     "[Sequencing] Sent *SEQ-RESPONSE* to {}, s={}, tx={}",
-        //     sender,
-        //     s,
-        //     hex::encode(&req.tx.payload[..std::cmp::min(8, req.tx.payload.len())])
-        // );
         let sign_send_time = sign_send_start.elapsed();
 
         // Check if we have deferred FINAL messages waiting for this vc
@@ -1878,11 +2318,6 @@ impl TransactionSequencing {
         if verified {
             let vc_key = VC::from_slice(&resp.vc);
             if self.completed_responses.contains(&vc_key) {
-                // debug!(
-                //     "🧾 [Sequencing] node={} already satisfied response threshold for vc={}, ignoring duplicate",
-                //     self.process_id,
-                //     hex::encode(&resp.vc[..std::cmp::min(8, resp.vc.len())])
-                // );
                 return Ok(());
             }
             let threshold = 2 * self.f + 1;
@@ -1961,13 +2396,6 @@ impl TransactionSequencing {
                 }
                 return Ok(());
             }
-            // debug!(
-            //     "🧾 [Sequencing] node={} collected {} / {} responses for vc={}",
-            //     self.process_id,
-            //     collected,
-            //     2 * self.f + 1,
-            //     hex::encode(&resp.vc[..std::cmp::min(8, resp.vc.len())])
-            // );
 
             // Check if collected 2f+1 sequences (Line 22)
             if let Some(records) = maybe_records {
@@ -1986,14 +2414,7 @@ impl TransactionSequencing {
                 if let Err(e) = self.broadcast_tx.send(order_msg) {
                     return Err(format!("Failed to broadcast SEQ-ORDER: {}", e));
                 }
-                // tokio::task::yield_now().await;
                 let broadcast_time = broadcast_start.elapsed();
-                // info!(
-                //     "📤 [Sequencing] node={} broadcasting *SEQ-ORDER* for vc={}, s={}",
-                //     self.process_id,
-                //     hex::encode(&resp.vc[..std::cmp::min(8, resp.vc.len())]),
-                //     resp.s
-                // );
 
                 let total_time = total_start.elapsed();
                 if total_time > Duration::from_millis(10) {
@@ -2050,58 +2471,46 @@ impl TransactionSequencing {
         let median_time = median_start.elapsed();
 
         let message = Self::build_median_signature_message(&order.vc, median);
-        let (sigma_seq, sign_exec_time, sign_time) = if *DISABLE_THRESHOLD_SIG_VERIFICATION {
-            (Vec::new(), Duration::ZERO, Duration::ZERO)
-        } else {
-            let sign_send_start = Instant::now();
-            let threshold_share = self.threshold_share.clone();
-            let message_for_sign = message.clone();
-            let (sigma_seq, sign_exec_time) = run_threshold_task("threshold_sign", move || {
-                let sign_start = Instant::now();
-                let sigma = threshold_share.sign(&message_for_sign).to_bytes().to_vec();
-                Ok((sigma, sign_start.elapsed()))
-            })
-            .await?;
 
-            if sign_exec_time > Duration::from_millis(5) {
-                warn!(
-                    "[threshold_worker] Threshold sign took {:?}",
-                    sign_exec_time
-                );
+        if *DISABLE_THRESHOLD_SIG_VERIFICATION {
+            let median_msg = SmrolMessage::SeqMedian {
+                vc: order.vc.clone(),
+                median_sequence: median,
+                proof: Vec::new(),
+                sender_id: self.process_id,
+            };
+            if let Err(e) = self.network.send_to_node(sender, median_msg).await {
+                return Err(format!("Failed to send SEQ-MEDIAN: {}", e));
             }
 
-            let sign_time = sign_send_start.elapsed();
-            let scheduling_overhead = sign_time.saturating_sub(sign_exec_time);
-            if scheduling_overhead > Duration::from_millis(1) {
+            let total_time = total_start.elapsed();
+            if total_time > Duration::from_millis(10) {
                 warn!(
-                    "[threshold_worker] threshold_sign scheduling overhead {:?}",
-                    scheduling_overhead
+                    "🐌 finalize_seq_order SLOW: total={:?}, median_calc={:?}",
+                    total_time,
+                    median_time
                 );
             }
+            return Ok(());
+        }
 
-            (sigma_seq, sign_exec_time, sign_time)
-        };
-
-        let median_msg = SmrolMessage::SeqMedian {
+        let enqueue_start = Instant::now();
+        let task = FinalSignTask {
+            sender,
             vc: order.vc.clone(),
             median_sequence: median,
-            proof: sigma_seq,
-            sender_id: self.process_id,
+            message,
         };
-        let send_to_start = Instant::now();
-        if let Err(e) = self.network.send_to_node(sender, median_msg).await {
-            return Err(format!("Failed to send SEQ-MEDIAN: {}", e));
-        }
-        let send_time = send_to_start.elapsed();
+        self.enqueue_final_sign(task)?;
+        let enqueue_time = enqueue_start.elapsed();
 
         let total_time = total_start.elapsed();
         if total_time > Duration::from_millis(10) {
             warn!(
-                "🐌 finalize_seq_order SLOW: total={:?}, median_calc={:?}, threshold_share.sign={:?}, send_to_node={:?}",
+                "🐌 finalize_seq_order enqueue slow: total={:?}, median_calc={:?}, enqueue={:?}",
                 total_time,
                 median_time,
-                sign_time,
-                send_time
+                enqueue_time
             );
         }
 
@@ -2236,61 +2645,33 @@ impl TransactionSequencing {
             };
             let map_update_time = map_update_start.elapsed();
 
-            // debug!(
-            //     "🔑 [Sequencing] node={} stored median share {}/{} for vc={} s_tx={} from {}",
-            //     self.process_id,
-            //     entry_len,
-            //     self.f + 1,
-            //     hex::encode(&median.vc[..std::cmp::min(8, median.vc.len())]),
-            //     median.s_tx,
-            //     sender
-            // );
-
             if let Some(shares) = ready_to_broadcast {
-                let combine_start = Instant::now();
                 let collected = shares.len();
-                let combined_sig = self.combine_median_shares_async(shares).await?;
-                let combine_time = combine_start.elapsed();
-
-                // debug!(
-                //     "🔐 [Sequencing] node={} collected {} median shares for vc={} (s_tx={})",
-                //     self.process_id,
-                //     collected,
-                //     hex::encode(&median.vc[..std::cmp::min(8, median.vc.len())]),
-                //     median.s_tx
-                // );
-
-                let sigma_bytes = combined_sig.to_bytes().to_vec();
-                let tx_id = self.resolve_tx_id(&vc_key);
-                let final_msg = SmrolMessage::SeqFinal {
-                    vc: median.vc.clone(),
-                    final_sequence: median.s_tx,
-                    combined_signature: sigma_bytes,
-                    sender_id: self.process_id,
-                    tx_id,
-                };
-                let broadcast_start = Instant::now();
-                if let Err(e) = self.broadcast_tx.send(final_msg) {
-                    return Err(format!("Failed to broadcast SEQ-FINAL: {}", e));
-                }
-                // tokio::task::yield_now().await;
-                let broadcast_time = broadcast_start.elapsed();
-                // info!(
-                //     "[Sequencing] Node {} broadcast *SEQ-FINAL* {} for vc = {:?}",
-                //     self.process_id,
-                //     sender,
-                //     hex::encode(&median.vc[..std::cmp::min(8, median.vc.len())])
-                // );
-
-                let total_time = total_start.elapsed();
-                if total_time > Duration::from_millis(10) {
-                    warn!(
-                        "🐌 handle_seq_median SLOW: total={:?}, verify={:?}, map_update={:?}, combine={:?}, broadcast={:?}",
-                        total_time,
-                        verify_time,
-                        map_update_time,
-                        combine_time,
-                        broadcast_time
+                if self.final_broadcasted.insert(vc_key) {
+                    let task = MedianCombineTask {
+                        vc: median.vc.clone(),
+                        s_tx: median.s_tx,
+                        shares,
+                    };
+                    if let Err(e) = self.enqueue_median_combine(task) {
+                        self.final_broadcasted.remove(&vc_key);
+                        return Err(e);
+                    }
+                    let total_time = total_start.elapsed();
+                    if total_time > Duration::from_millis(10) {
+                        warn!(
+                            "🐌 handle_seq_median enqueue slow: total={:?}, verify={:?}, map_update={:?}, queued_shares={}",
+                            total_time,
+                            verify_time,
+                            map_update_time,
+                            collected
+                        );
+                    }
+                } else {
+                    debug!(
+                        "[Sequencing] Node {} already enqueued combine for vc {:?}",
+                        self.process_id,
+                        hex::encode(&median.vc[..std::cmp::min(8, median.vc.len())])
                     );
                 }
             } else {
@@ -2325,67 +2706,25 @@ impl TransactionSequencing {
 
     // Handle SEQ-FINAL message - Lines 36-38
     #[tracing::instrument(skip(self))]
-    pub async fn handle_seq_final(
-        &self,
-        final_msg: SeqFinal,
-    ) -> Result<Option<TransactionEntry>, String> {
-        let total_start = Instant::now();
+    pub async fn handle_seq_final(&self, final_msg: SeqFinal) -> Result<(), String> {
         let vc_key = VC::from_slice(&final_msg.vc);
-
-        // NOTE: should this use atomics?
-        let verify_start = Instant::now();
-        // slow
-        let result = self.verify_combined_signature_async(&final_msg).await?;
-        let verify_duration = verify_start.elapsed();
-        if result {
-            if self.finalized_vcs.contains(&vc_key) {
-                debug!(
-                    "[Sequencing] Node {} ignoring duplicate SEQ-FINAL for vc {}",
-                    self.process_id,
-                    hex::encode(&final_msg.vc[..std::cmp::min(8, final_msg.vc.len())])
-                );
-                return Ok(None);
-            }
-
-            let check_start = Instant::now();
-            let (in_vc_ledger, in_mi) = {
-                let finalization = self.finalization.read().await;
-                (
-                    finalization.is_in_vc_ledger(&final_msg.vc),
-                    finalization.is_in_mi(&final_msg.vc),
-                )
-            };
-            let check_time = check_start.elapsed();
-            // if check_time > Duration::from_micros(1000) {
-            //     warn!(
-            //         "[finalization] Read check took {:?} (vc={})",
-            //         check_time,
-            //         hex::encode(&final_msg.vc[..std::cmp::min(8, final_msg.vc.len())])
-            //     );
-            // }
-
-            if in_vc_ledger || in_mi {
-                // debug!(
-                //     "ℹ️ [Sequencing] SEQ-FINAL vc={} already finalized, ignoring",
-                //     hex::encode(&final_msg.vc[..std::cmp::min(8, final_msg.vc.len())])
-                // );
-                return Ok(None);
-            }
-
-            let finalize_start = Instant::now();
-            let result = self.finalize_ready_final(final_msg).await;
-            let finalize_time = finalize_start.elapsed();
-            let total_time = total_start.elapsed();
-            if total_time > Duration::from_millis(10) {
-                warn!(
-                    "🐌 handle_seq_final SLOW: total={:?}, finalization check={:?}, verify_combined_signature={:?}, finalize_ready_final={:?}",
-                    total_time, check_time, verify_duration, finalize_time
-                );
-            }
-            Ok(result)
-        } else {
-            Ok(None)
+        if self.finalized_vcs.contains(&vc_key) {
+            return Ok(());
         }
+
+        if !self.final_verify_inflight.insert(vc_key) {
+            debug!(
+                "[Sequencing] Node {} ignoring duplicate SEQ-FINAL for vc {} (in-flight)",
+                self.process_id,
+                hex::encode(&final_msg.vc[..std::cmp::min(8, final_msg.vc.len())])
+            );
+            return Ok(());
+        }
+
+        let task = FinalVerifyTask { final_msg };
+        self.enqueue_final_verify(task)?;
+
+        Ok(())
     }
 
     async fn verify_seq_response_sig(
@@ -2453,7 +2792,7 @@ impl TransactionSequencing {
         let message_bytes = Self::build_median_signature_message(&median.vc, median.s_tx);
         let share_for_task = share.clone();
 
-        let is_valid = run_threshold_task("verify_median_share", move || {
+        let is_valid = run_threshold_crypto_task("verify_median_share", move || {
             let pk_share = threshold_public.public_key_share(sender);
             Ok(pk_share.verify(&share_for_task, &message_bytes))
         })
@@ -2475,15 +2814,16 @@ impl TransactionSequencing {
         let threshold_public = self.threshold_public.clone();
         let spawn_start = Instant::now();
 
-        let (signature, worker_time) = run_threshold_task("combine_median_shares", move || {
-            let work_start = Instant::now();
-            let outcome = threshold_public
-                .combine_signatures(shares.iter().map(|(id, share)| (*id, share)))
-                .map_err(|e| format!("Threshold signature combine failed: {}", e));
-            let elapsed = work_start.elapsed();
-            outcome.map(|sig| (sig, elapsed))
-        })
-        .await?;
+        let (signature, worker_time) =
+            run_threshold_crypto_task("combine_median_shares", move || {
+                let work_start = Instant::now();
+                let outcome = threshold_public
+                    .combine_signatures(shares.iter().map(|(id, share)| (*id, share)))
+                    .map_err(|e| format!("Threshold signature combine failed: {}", e));
+                let elapsed = work_start.elapsed();
+                outcome.map(|sig| (sig, elapsed))
+            })
+            .await?;
 
         let total_time = spawn_start.elapsed();
         let scheduling_overhead = total_time.saturating_sub(worker_time);
@@ -2495,6 +2835,118 @@ impl TransactionSequencing {
         }
 
         Ok(signature)
+    }
+
+    async fn process_median_combine_task(&self, task: MedianCombineTask) -> Result<(), String> {
+        let total_start = Instant::now();
+        let MedianCombineTask { vc, s_tx, shares } = task;
+        let vc_key = VC::from_slice(&vc);
+        let collected = shares.len();
+
+        let combine_start = Instant::now();
+        let combined_sig = match self.combine_median_shares_async(shares).await {
+            Ok(sig) => sig,
+            Err(e) => {
+                self.final_broadcasted.remove(&vc_key);
+                return Err(e);
+            }
+        };
+        let combine_time = combine_start.elapsed();
+
+        let sigma_bytes = combined_sig.to_bytes().to_vec();
+        let tx_id = self.resolve_tx_id(&vc_key);
+        let final_msg = SmrolMessage::SeqFinal {
+            vc: vc.clone(),
+            final_sequence: s_tx,
+            combined_signature: sigma_bytes,
+            sender_id: self.process_id,
+            tx_id,
+        };
+
+        let broadcast_start = Instant::now();
+        if let Err(e) = self.broadcast_tx.send(final_msg) {
+            self.final_broadcasted.remove(&vc_key);
+            return Err(format!("Failed to broadcast SEQ-FINAL: {}", e));
+        }
+        let broadcast_time = broadcast_start.elapsed();
+
+        let total_time = total_start.elapsed();
+        if total_time > Duration::from_millis(10) {
+            warn!(
+                "🐌 median combine task slow: node={} shares={} total={:?}, combine={:?}, broadcast={:?}",
+                self.process_id,
+                collected,
+                total_time,
+                combine_time,
+                broadcast_time
+            );
+        }
+
+        Ok(())
+    }
+
+    async fn process_final_sign_task(&self, task: FinalSignTask) -> Result<(), String> {
+        if *DISABLE_THRESHOLD_SIG_VERIFICATION {
+            return Ok(());
+        }
+
+        let total_start = Instant::now();
+        let FinalSignTask {
+            sender,
+            vc,
+            median_sequence,
+            message,
+        } = task;
+
+        let sign_send_start = Instant::now();
+        let threshold_share = self.threshold_share.clone();
+        let message_for_sign = message.clone();
+        let (sigma_seq, sign_exec_time) = run_threshold_crypto_task("threshold_sign", move || {
+            let sign_start = Instant::now();
+            let sigma = threshold_share.sign(&message_for_sign).to_bytes().to_vec();
+            Ok((sigma, sign_start.elapsed()))
+        })
+        .await?;
+
+        if sign_exec_time > Duration::from_millis(5) {
+            warn!(
+                "[threshold_worker] Threshold sign took {:?}",
+                sign_exec_time
+            );
+        }
+        let sign_time = sign_send_start.elapsed();
+        let scheduling_overhead = sign_time.saturating_sub(sign_exec_time);
+        if scheduling_overhead > Duration::from_millis(1) {
+            warn!(
+                "[threshold_worker] threshold_sign scheduling overhead {:?}",
+                scheduling_overhead
+            );
+        }
+
+        let median_msg = SmrolMessage::SeqMedian {
+            vc: vc.clone(),
+            median_sequence,
+            proof: sigma_seq,
+            sender_id: self.process_id,
+        };
+        let send_to_start = Instant::now();
+        if let Err(e) = self.network.send_to_node(sender, median_msg).await {
+            return Err(format!("Failed to send SEQ-MEDIAN: {}", e));
+        }
+        let send_time = send_to_start.elapsed();
+
+        let total_time = total_start.elapsed();
+        if total_time > Duration::from_millis(10) {
+            warn!(
+                "🐌 final sign task slow: node={} total={:?}, sign={:?}, send={:?}",
+                self.process_id,
+                total_time,
+                sign_time,
+                send_time
+            );
+        }
+
+        Ok(())
     }
 
     async fn verify_combined_signature_async(&self, final_msg: &SeqFinal) -> Result<bool, String> {
@@ -2517,7 +2969,7 @@ impl TransactionSequencing {
         let threshold_public = self.threshold_public.clone();
         let message_bytes = Self::build_final_signature_message(&final_msg.vc, final_msg.s_tx);
 
-        run_threshold_task("verify_combined_signature", move || {
+        run_threshold_crypto_task("verify_combined_signature", move || {
             Ok(threshold_public
                 .public_key()
                 .verify(&signature, &message_bytes))
@@ -2526,7 +2978,71 @@ impl TransactionSequencing {
     }
 
     async fn reconstruct_full_async(package: ErasurePackage) -> Result<Vec<u8>, String> {
-        run_threshold_task("erasure_reconstruct", move || package.reconstruct_full()).await
+        run_seq_offload_task("erasure_reconstruct", move || package.reconstruct_full()).await
+    }
+
+    async fn process_final_verify_task(&self, task: FinalVerifyTask) -> Result<(), String> {
+        let total_start = Instant::now();
+        let final_msg = task.final_msg;
+        let vc_key = VC::from_slice(&final_msg.vc);
+
+        let verify_start = Instant::now();
+        let verified = match self.verify_combined_signature_async(&final_msg).await {
+            Ok(v) => v,
+            Err(e) => {
+                self.final_verify_inflight.remove(&vc_key);
+                return Err(e);
+            }
+        };
+        let verify_time = verify_start.elapsed();
+
+        if !verified {
+            self.final_verify_inflight.remove(&vc_key);
+            return Ok(());
+        }
+
+        if self.finalized_vcs.contains(&vc_key) {
+            self.final_verify_inflight.remove(&vc_key);
+            return Ok(());
+        }
+
+        let check_start = Instant::now();
+        let (in_vc_ledger, in_mi) = {
+            let finalization = self.finalization.read().await;
+            (
+                finalization.is_in_vc_ledger(&final_msg.vc),
+                finalization.is_in_mi(&final_msg.vc),
+            )
+        };
+        let check_time = check_start.elapsed();
+
+        if in_vc_ledger || in_mi {
+            self.final_verify_inflight.remove(&vc_key);
+            return Ok(());
+        }
+
+        let finalize_start = Instant::now();
+        let maybe_entry = self.finalize_ready_final(final_msg).await;
+        let finalize_time = finalize_start.elapsed();
+        self.final_verify_inflight.remove(&vc_key);
+
+        if let Some(entry) = maybe_entry {
+            self.emit_sequenced_entry(entry).await?;
+        }
+
+        let total_time = total_start.elapsed();
+        if total_time > Duration::from_millis(10) {
+            warn!(
+                "🐌 final verify task slow: node={} total={:?}, verify={:?}, check={:?}, finalize={:?}",
+                self.process_id,
+                total_time,
+                verify_time,
+                check_time,
+                finalize_time
+            );
+        }
+
+        Ok(())
     }
 
     pub async fn wait_for_log_condition_static(
@@ -2857,26 +3373,7 @@ impl TransactionSequencing {
             payload,
         };
 
-        // debug!(
-        //     "✅ [Sequencing] Finalized VC forwarded to consensus: vc_len={}, s_tx={}",
-        //     entry.vc_tx.len(),
-        //     entry.s_tx
-        // );
-        // debug!(
-        //     "🎯 [Sequencing] node={} finalizing vc={} s_tx={}",
-        //     self.process_id,
-        //     hex::encode(&entry.vc_tx[..std::cmp::min(8, entry.vc_tx.len())]),
-        //     entry.s_tx
-        // );
-
         let total = finalize_total_start.elapsed();
-        // if total > Duration::from_micros(1000) {
-        //     warn!(
-        //         "[finalization] finalize_ready_final total {:?} (vc={})",
-        //         total,
-        //         hex::encode(&entry.vc_tx[..std::cmp::min(8, entry.vc_tx.len())])
-        //     );
-        // }
 
         Some(entry)
     }
@@ -2941,7 +3438,7 @@ async fn verify_seq_order_records(
         return Ok(true);
     }
 
-    let verify_ok = run_threshold_task("verify_seq_order_batch", move || {
+    let verify_ok = run_seq_offload_task("verify_seq_order_batch", move || {
         for (sender, verifying_key, message, signature) in verify_inputs {
             if verifying_key.verify_strict(&message, &signature).is_err() {
                 warn!(

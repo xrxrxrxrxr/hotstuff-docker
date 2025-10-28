@@ -2,7 +2,7 @@ use metrics_exporter_prometheus::PrometheusBuilder;
 use metrics_util::MetricKindMask;
 use std::net::SocketAddr;
 use tokio::time::{self, Duration};
-use tracing::warn;
+use tracing::{debug, warn};
 
 fn resolve_listener(node_id: usize) -> Result<SocketAddr, String> {
     if let Ok(addr) = std::env::var("METRICS_LISTEN_ADDR") {
@@ -70,7 +70,7 @@ pub fn init_metrics(node_id: usize) -> Result<(), String> {
             loop {
                 ticker.tick().await;
                 metrics::counter!("smrol.heartbeat", "node" => node.clone()).increment(1);
-                warn!(node = %node, "💓 smrol.heartbeat++");
+                debug!(node = %node, "💓 smrol.heartbeat++");
             }
         }
     });

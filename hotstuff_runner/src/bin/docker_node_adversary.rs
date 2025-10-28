@@ -764,8 +764,8 @@ async fn main() -> Result<(), String> {
     info!("Tokio network created successfully");
 
     // Completely lock-free event-driven architecture
-    let (event_tx, event_rx) = broadcast::channel::<SystemEvent>(1000);
-    let (event_for_response_tx, event_for_response_rx) = broadcast::channel::<SystemEvent>(1000);
+    let (event_tx, event_rx) = broadcast::channel::<SystemEvent>(2000);
+    let (event_for_response_tx, event_for_response_rx) = broadcast::channel::<SystemEvent>(2000);
 
     let event_for_response_rx_clone = event_for_response_rx;
 
