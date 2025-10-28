@@ -14,7 +14,10 @@ use ed25519_dalek::{SigningKey, VerifyingKey};
 use hex;
 use std::collections::HashMap;
 use std::net::SocketAddr;
-use std::sync::{atomic::{AtomicUsize, Ordering}, Arc, OnceLock};
+use std::sync::{
+    atomic::{AtomicUsize, Ordering},
+    Arc, OnceLock,
+};
 use std::time::Duration;
 use tokio::sync::{broadcast, mpsc as async_mpsc, Mutex as AsyncMutex, RwLock};
 use tokio::time::interval;
@@ -97,8 +100,8 @@ impl SmrolManager {
             PnfifoBc::new(
                 node_id,
                 n,
-                signing_key.clone(),
-                verifying_keys.clone(),
+                threshold_share.clone(),
+                threshold_public.clone(),
                 peer_addrs,
             )
             .await?,

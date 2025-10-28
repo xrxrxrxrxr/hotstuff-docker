@@ -11,7 +11,7 @@ pub mod sequencing;
 
 pub use adapter::SmrolHotStuffAdapter;
 pub use consensus::{Consensus, ConsensusVote, SequenceEntry, TransactionEntry};
-pub use crypto::{derive_threshold_keys, ErasurePackage, SmrolThresholdSig};
+pub use crypto::{derive_threshold_keys, ErasurePackage};
 pub use message::{SmrolMessage, SmrolTransaction};
 pub use network::{SmrolNetworkMessage, SmrolTcpNetwork};
 pub use pnfifo::PnfifoBc;

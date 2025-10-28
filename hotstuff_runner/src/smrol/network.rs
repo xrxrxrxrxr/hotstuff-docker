@@ -6,7 +6,10 @@ use crate::smrol::message::SmrolMessage;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::net::SocketAddr;
-use std::sync::{atomic::{AtomicUsize, Ordering}, Arc, Mutex};
+use std::sync::{
+    atomic::{AtomicUsize, Ordering},
+    Arc, Mutex,
+};
 use std::time::{Duration, Instant};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::tcp::OwnedWriteHalf;

@@ -12,7 +12,7 @@ pub mod tokio_network;
 pub mod utils;
 
 pub mod smrol;
-pub use smrol::{PnfifoBc, SmrolMessage, SmrolThresholdSig};
+pub use smrol::{PnfifoBc, SmrolMessage};
 
 // Re-export commonly used types
 pub use app::TestApp;

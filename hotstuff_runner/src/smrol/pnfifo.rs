@@ -1,17 +1,25 @@
-use crate::smrol::crypto::{
-    verify_combined_signature_bytes, verify_signature_share, SmrolThresholdSig,
-};
 use crate::smrol::message::SmrolMessage;
 use crate::smrol::network::SmrolTcpNetwork;
+use blsttc::{
+    PublicKeySet, SecretKeyShare, Signature as ThresholdSignature, SignatureShare, SIG_SIZE,
+};
+use crossbeam::channel::{unbounded, Sender};
 use dashmap::DashMap;
-use ed25519_dalek::{Signer, SigningKey, VerifyingKey};
+use futures::task::AtomicWaker;
+use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::net::SocketAddr;
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::sync::{mpsc as async_mpsc, Mutex as AsyncMutex, Notify};
 use tracing::{debug, error, info, warn};
+
+use std::future::Future;
+use std::pin::Pin;
+use std::sync::Mutex;
+use std::task::{Context, Poll};
+use std::thread;
 
 // PROPOSAL messages sent over the dedicated channel
 #[derive(Clone, Debug)]
@@ -35,6 +43,196 @@ pub struct FinalMsg {
     pub combined_signature: Vec<u8>,
 }
 
+trait ThresholdJob: Send {
+    fn run(self: Box<Self>);
+}
+
+struct ThresholdThreadPool {
+    sender: Sender<Box<dyn ThresholdJob>>,
+    pending_jobs: Arc<AtomicUsize>,
+}
+
+impl ThresholdThreadPool {
+    fn new(worker_count: usize) -> Self {
+        let (sender, receiver) = unbounded::<Box<dyn ThresholdJob>>();
+        let pending_jobs = Arc::new(AtomicUsize::new(0));
+        metrics::gauge!(
+            "smrol.threshold_pending_jobs",
+            "pool" => "pnfifo"
+        )
+        .set(0.0);
+        for idx in 0..worker_count {
+            let thread_receiver = receiver.clone();
+            thread::Builder::new()
+                .name(format!("pnfifo-threshold-worker-{}", idx))
+                .spawn(move || {
+                    for job in thread_receiver.iter() {
+                        job.run();
+                    }
+                })
+                .expect("failed to spawn pnfifo threshold worker thread");
+        }
+        drop(receiver);
+        Self {
+            sender,
+            pending_jobs,
+        }
+    }
+
+    fn submit<R, F>(&self, label: &'static str, task: F) -> Result<ThresholdTaskFuture<R>, String>
+    where
+        R: Send + 'static,
+        F: FnOnce() -> Result<R, String> + Send + 'static,
+    {
+        let state = Arc::new(TaskState::new());
+        let pending_after = self.pending_jobs.fetch_add(1, Ordering::Relaxed) + 1;
+        metrics::gauge!(
+            "smrol.threshold_pending_jobs",
+            "pool" => "pnfifo"
+        )
+        .set(pending_after as f64);
+        let job = Box::new(ConcreteThresholdJob {
+            task: Some(task),
+            state: state.clone(),
+            label,
+            submitted_at: Instant::now(),
+            pending: Arc::clone(&self.pending_jobs),
+        });
+        if let Err(_e) = self.sender.send(job) {
+            let prev = self.pending_jobs.fetch_sub(1, Ordering::Relaxed);
+            let remaining = prev.saturating_sub(1);
+            metrics::gauge!(
+                "smrol.threshold_pending_jobs",
+                "pool" => "pnfifo"
+            )
+            .set(remaining as f64);
+            return Err("pnfifo threshold worker pool shut down".to_string());
+        }
+        Ok(ThresholdTaskFuture { state })
+    }
+}
+
+static PNFIFO_THRESHOLD_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
+    let workers = thread::available_parallelism()
+        .map(|n| (n.get() * 2).max(4))
+        .unwrap_or(4);
+    ThresholdThreadPool::new(workers)
+});
+
+async fn run_pnfifo_threshold_task<R, F>(label: &'static str, task: F) -> Result<R, String>
+where
+    R: Send + 'static,
+    F: FnOnce() -> Result<R, String> + Send + 'static,
+{
+    PNFIFO_THRESHOLD_POOL.submit(label, task)?.await
+}
+
+struct TaskState<R> {
+    result: Mutex<Option<Result<R, String>>>,
+    waker: AtomicWaker,
+}
+
+impl<R> TaskState<R> {
+    fn new() -> Self {
+        Self {
+            result: Mutex::new(None),
+            waker: AtomicWaker::new(),
+        }
+    }
+
+    fn complete(&self, value: Result<R, String>) {
+        let mut guard = self.result.lock().expect("pnfifo task state poisoned");
+        *guard = Some(value);
+        drop(guard);
+        self.waker.wake();
+    }
+
+    fn take_result(&self) -> Option<Result<R, String>> {
+        self.result
+            .lock()
+            .expect("pnfifo task state poisoned")
+            .take()
+    }
+
+    fn register(&self, waker: &std::task::Waker) {
+        self.waker.register(waker);
+    }
+}
+
+struct ThresholdTaskFuture<R> {
+    state: Arc<TaskState<R>>,
+}
+
+impl<R> Future for ThresholdTaskFuture<R>
+where
+    R: Send + 'static,
+{
+    type Output = Result<R, String>;
+
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        if let Some(result) = self.state.take_result() {
+            return Poll::Ready(result);
+        }
+
+        self.state.register(cx.waker());
+
+        if let Some(result) = self.state.take_result() {
+            Poll::Ready(result)
+        } else {
+            Poll::Pending
+        }
+    }
+}
+
+struct ConcreteThresholdJob<R, F>
+where
+    R: Send + 'static,
+    F: FnOnce() -> Result<R, String> + Send + 'static,
+{
+    task: Option<F>,
+    state: Arc<TaskState<R>>,
+    label: &'static str,
+    submitted_at: Instant,
+    pending: Arc<AtomicUsize>,
+}
+
+impl<R, F> ThresholdJob for ConcreteThresholdJob<R, F>
+where
+    R: Send + 'static,
+    F: FnOnce() -> Result<R, String> + Send + 'static,
+{
+    fn run(mut self: Box<Self>) {
+        if let Some(task) = self.task.take() {
+            let start = Instant::now();
+            let wait = start.duration_since(self.submitted_at);
+            metrics::histogram!(
+                "smrol.threshold_task_wait_ms",
+                "task" => self.label,
+                "pool" => "pnfifo"
+            )
+            .record(wait.as_secs_f64() * 1000.0);
+
+            let result = task();
+            let exec = start.elapsed();
+            metrics::histogram!(
+                "smrol.threshold_task_exec_ms",
+                "task" => self.label,
+                "pool" => "pnfifo"
+            )
+            .record(exec.as_secs_f64() * 1000.0);
+
+            let prev = self.pending.fetch_sub(1, Ordering::Relaxed);
+            let remaining = prev.saturating_sub(1);
+            metrics::gauge!(
+                "smrol.threshold_pending_jobs",
+                "pool" => "pnfifo"
+            )
+            .set(remaining as f64);
+
+            self.state.complete(result);
+        }
+    }
+}
 #[derive(Debug)]
 pub struct PnfifoBc {
     node_id: usize,
@@ -47,8 +245,7 @@ pub struct PnfifoBc {
     slot_outputs: DashMap<(usize, u64), (Vec<u8>, Vec<u8>)>,
     slot_proposal_flags: DashMap<(usize, u64), bool>,
     slot_final_flags: DashMap<(usize, u64), bool>,
-    slot_votes: DashMap<(usize, u64), HashMap<usize, Vec<u8>>>,
-    slot_threshold_sigs: DashMap<(usize, u64), SmrolThresholdSig>,
+    slot_votes: DashMap<(usize, u64), HashMap<usize, SignatureShare>>,
     slot_pending_finals: DashMap<(usize, u64), (Vec<u8>, Vec<u8>)>,
     notifier_states: DashMap<(usize, u64), Arc<Notify>>,
 
@@ -60,8 +257,8 @@ pub struct PnfifoBc {
     final_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<(usize, FinalMsg)>>>,
 
     // Cryptography
-    signing_key: SigningKey,
-    verifying_keys: HashMap<usize, VerifyingKey>,
+    threshold_share: SecretKeyShare,
+    threshold_public: PublicKeySet,
 
     // Networking
     network: Arc<SmrolTcpNetwork>,
@@ -72,8 +269,8 @@ impl PnfifoBc {
     pub async fn new(
         node_id: usize,
         total_nodes: usize,
-        signing_key: SigningKey,
-        verifying_keys: HashMap<usize, VerifyingKey>,
+        threshold_share: SecretKeyShare,
+        threshold_public: PublicKeySet,
         peer_addrs: HashMap<usize, SocketAddr>,
     ) -> Result<Self, String> {
         let threshold = 2 * ((total_nodes - 1) / 3) + 1;
@@ -136,7 +333,6 @@ impl PnfifoBc {
         let slot_proposal_flags = DashMap::new();
         let slot_final_flags = DashMap::new();
         let slot_votes = DashMap::new();
-        let slot_threshold_sigs = DashMap::new();
         let slot_pending_finals = DashMap::new();
         let notifier_states = DashMap::new();
 
@@ -158,7 +354,6 @@ impl PnfifoBc {
             slot_proposal_flags,
             slot_final_flags,
             slot_votes,
-            slot_threshold_sigs,
             slot_pending_finals,
             notifier_states,
             proposal_tx,
@@ -167,8 +362,8 @@ impl PnfifoBc {
             vote_rx,
             final_tx,
             final_rx,
-            signing_key,
-            verifying_keys,
+            threshold_share,
+            threshold_public,
             network,
             broadcast_tx,
         })
@@ -235,18 +430,27 @@ impl PnfifoBc {
             return Ok(());
         }
 
-        let message_to_sign = Self::create_vote_message_static(slot, &value);
-        let signature_share = pnfifo
-            .signing_key
-            .sign(&message_to_sign)
-            .to_bytes()
-            .to_vec();
+        let message_for_sign = Self::create_vote_message_static(slot, &value);
+        let threshold_share = pnfifo.threshold_share.clone();
+        let sign_start = Instant::now();
+        let signature_share = run_pnfifo_threshold_task("pnfifo_sign", move || {
+            Ok(threshold_share.sign(&message_for_sign))
+        })
+        .await?;
+        let sign_elapsed = sign_start.elapsed();
+        if sign_elapsed > Duration::from_millis(1) {
+            debug!(
+                "⏱️ [PNFIFO] Node {} threshold sign for Leader {} slot {} took {:?}",
+                node_id, leader_id, slot, sign_elapsed
+            );
+        }
+        let signature_share_bytes = signature_share.to_bytes();
 
         let vote_msg = SmrolMessage::PnfifoVote {
             leader_id,
             sender_id: node_id,
             slot,
-            signature_share,
+            signature_share: signature_share_bytes.to_vec(),
         };
 
         pnfifo
@@ -369,93 +573,6 @@ impl PnfifoBc {
         Ok(proposal)
     }
 
-    // async fn handle_vote_for_state(
-    //     pnfifo: &Arc<Self>,
-    //     leader_id: usize,
-    //     slots: Arc<DashMap<u64, PnfifoSlotState>>,
-    //     sender_id: usize,
-    //     slot: u64,
-    //     signature_share: Vec<u8>,
-    // ) -> Result<(), String> {
-    //     let node_id = pnfifo.node_id;
-
-    //     info!(
-    //         "[PNFIFO] Node {} received VOTE from {} for slot {} leader {}",
-    //         node_id, sender_id, slot, leader_id
-    //     );
-
-    //     let mut should_finalize = false;
-    //     let mut finalize_data = None;
-
-    //     {
-    //         let mut entry = slots
-    //             .entry(slot)
-    //             .or_insert_with(|| PnfifoSlotState::new(pnfifo.threshold));
-    //         let slot_state = entry.value_mut();
-
-    //         if let Some(ref value) = slot_state.value {
-    //             let message_to_verify = PnfifoBc::create_vote_message_static(slot, value);
-
-    //             if let Some(verifying_key) = pnfifo.verifying_keys.get(&sender_id) {
-    //                 if verify_signature_share(&signature_share, &message_to_verify, verifying_key) {
-    //                     if !slot_state.votes.contains_key(&sender_id) {
-    //                         slot_state.votes.insert(sender_id, signature_share.clone());
-
-    //                         let reached = slot_state
-    //                             .threshold_sig
-    //                             .add_share(sender_id, signature_share.clone());
-
-    //                         if slot_state.votes.len() <= pnfifo.threshold {
-    //                             debug!(
-    //                                 "[PNFIFO] Node {} accepted VOTE from {} (slot {} leader {}), votes: {}/{}",
-    //                                 node_id,
-    //                                 sender_id,
-    //                                 slot,
-    //                                 leader_id,
-    //                                 slot_state.votes.len(),
-    //                                 pnfifo.threshold
-    //                             );
-    //                         }
-
-    //                         if reached && !slot_state.final_broadcasted {
-    //                             if let Ok(combined_sig) = slot_state.threshold_sig.combine() {
-    //                                 slot_state.final_broadcasted = true;
-    //                                 finalize_data = Some((value.clone(), combined_sig));
-    //                                 should_finalize = true;
-
-    //                                 info!(
-    //                                     "[PNFIFO] Node {} reached threshold for slot {} leader {}",
-    //                                     node_id, slot, leader_id
-    //                                 );
-    //                             }
-    //                         }
-    //                     }
-    //                 } else {
-    //                     warn!(
-    //                         "[PNFIFO] Node {} rejected invalid signature from {}",
-    //                         node_id, sender_id
-    //                     );
-    //                 }
-    //             }
-    //         }
-    //     }
-
-    //     if should_finalize {
-    //         if let Some((value, combined_signature)) = finalize_data {
-    //             PnfifoBc::broadcast_final(
-    //                 pnfifo.broadcast_tx.clone(),
-    //                 node_id,
-    //                 leader_id,
-    //                 slot,
-    //                 value,
-    //                 combined_signature,
-    //             )
-    //             .await?;
-    //         }
-    //     }
-
-    //     Ok(())
-    // }
     async fn handle_vote_for_state(
         pnfifo: &Arc<Self>,
         leader_id: usize,
@@ -484,19 +601,46 @@ impl PnfifoBc {
             return Ok(());
         };
 
-        let message_to_verify = PnfifoBc::create_vote_message_static(slot, &value);
-
-        let Some(verifying_key) = pnfifo.verifying_keys.get(&sender_id) else {
+        if signature_share.len() != SIG_SIZE {
             warn!(
-                "[PNFIFO] Node {} missing verifying key for sender {}",
-                node_id, sender_id
+                "[PNFIFO] Node {} received malformed share length from {} for slot {} leader {}",
+                node_id, sender_id, slot, leader_id
             );
             return Ok(());
+        }
+
+        let mut share_bytes = [0u8; SIG_SIZE];
+        share_bytes.copy_from_slice(&signature_share);
+        let share = match SignatureShare::from_bytes(share_bytes) {
+            Ok(share) => share,
+            Err(_) => {
+                warn!(
+                    "[PNFIFO] Node {} failed to parse signature share from {} for slot {} leader {}",
+                    node_id, sender_id, slot, leader_id
+                );
+                return Ok(());
+            }
         };
 
-        if !verify_signature_share(&signature_share, &message_to_verify, verifying_key) {
+        let message_to_verify = PnfifoBc::create_vote_message_static(slot, &value);
+        let pk_share = pnfifo.threshold_public.public_key_share(sender_id);
+        let share_for_verify = share.clone();
+        let message_for_verify = message_to_verify.clone();
+        let verify_start = Instant::now();
+        let share_valid = run_pnfifo_threshold_task("pnfifo_verify_share", move || {
+            Ok(pk_share.verify(&share_for_verify, &message_for_verify))
+        })
+        .await?;
+        let verify_elapsed = verify_start.elapsed();
+        if verify_elapsed > Duration::from_millis(1) {
+            debug!(
+                "⏱️ [PNFIFO] Node {} threshold share verify from {} slot {} leader {} took {:?}",
+                node_id, sender_id, slot, leader_id, verify_elapsed
+            );
+        }
+        if !share_valid {
             warn!(
-                "[PNFIFO] Node {} rejected invalid signature from {} for slot {} leader {}",
+                "[PNFIFO] Node {} rejected invalid signature share from {} for slot {} leader {}",
                 node_id, sender_id, slot, leader_id
             );
             return Ok(());
@@ -508,7 +652,7 @@ impl PnfifoBc {
             if votes.contains_key(&sender_id) {
                 return Ok(());
             }
-            votes.insert(sender_id, signature_share.clone());
+            votes.insert(sender_id, share.clone());
             votes.len()
         };
 
@@ -519,17 +663,7 @@ impl PnfifoBc {
             );
         }
 
-        let reached_threshold = {
-            let mut sig_entry = pnfifo
-                .slot_threshold_sigs
-                .entry(key)
-                .or_insert_with(|| SmrolThresholdSig::new(pnfifo.threshold));
-            sig_entry
-                .value_mut()
-                .add_share(sender_id, signature_share.clone())
-        };
-
-        if reached_threshold {
+        if vote_count >= pnfifo.threshold {
             debug!(
                 "[PNFIFO] Node {} reached threshold for Leader {} slot {} (votes={})",
                 node_id, leader_id, slot, vote_count
@@ -546,9 +680,38 @@ impl PnfifoBc {
                 return Ok(());
             }
 
-            let combined_signature = if let Some(sig_entry) = pnfifo.slot_threshold_sigs.get(&key) {
-                match sig_entry.combine() {
-                    Ok(bytes) => Some(bytes),
+            let shares: Vec<(usize, SignatureShare)> = pnfifo
+                .slot_votes
+                .get(&key)
+                .map(|entry| {
+                    entry
+                        .iter()
+                        .map(|(id, share)| (*id, share.clone()))
+                        .collect()
+                })
+                .unwrap_or_default();
+
+            let combined_signature = if shares.len() >= pnfifo.threshold {
+                let threshold_public = pnfifo.threshold_public.clone();
+                let shares_for_combine = shares.clone();
+                let combine_start = Instant::now();
+                let outcome = run_pnfifo_threshold_task("pnfifo_combine", move || {
+                    threshold_public
+                        .combine_signatures(
+                            shares_for_combine.iter().map(|(id, share)| (*id, share)),
+                        )
+                        .map_err(|e| format!("Threshold signature combine failed: {}", e))
+                })
+                .await;
+                let combine_elapsed = combine_start.elapsed();
+                if combine_elapsed > Duration::from_millis(1) {
+                    debug!(
+                        "⏱️ [PNFIFO] Node {} threshold combine for Leader {} slot {} took {:?}",
+                        node_id, leader_id, slot, combine_elapsed
+                    );
+                }
+                match outcome {
+                    Ok(sig) => Some(sig.to_bytes().to_vec()),
                     Err(e) => {
                         warn!(
                             "⚠️ [PNFIFO] Node {} failed to combine signature for slot {} leader {}: {}",
@@ -558,10 +721,6 @@ impl PnfifoBc {
                     }
                 }
             } else {
-                warn!(
-                    "⚠️ [PNFIFO] Node {} missing threshold state for slot {} leader {}",
-                    node_id, slot, leader_id
-                );
                 None
             };
 
@@ -653,74 +812,6 @@ impl PnfifoBc {
             .await
     }
 
-    // async fn finalize_with_signature_for_state(
-    //     pnfifo: &Arc<Self>,
-    //     leader_id: usize,
-    //     slots: Arc<DashMap<u64, PnfifoSlotState>>,
-    //     notifiers: Arc<RwLock<HashMap<u64, Arc<Notify>>>>,
-    //     slot: u64,
-    //     value: Vec<u8>,
-    //     combined_signature: Vec<u8>,
-    // ) -> Result<(), String> {
-    //     let message_to_verify = PnfifoBc::create_vote_message_static(slot, &value);
-
-    //     match verify_combined_signature_bytes(
-    //         &combined_signature,
-    //         &message_to_verify,
-    //         &pnfifo.verifying_keys,
-    //         pnfifo.threshold,
-    //     ) {
-    //         Ok(true) => {
-    //             // debug!("[PNFIFO] Node {} slot {} FINAL signature verified", node_id, slot);
-
-    //             let should_store = {
-    //                 let mut entry = slots
-    //                     .entry(slot)
-    //                     .or_insert_with(|| PnfifoSlotState::new(pnfifo.threshold));
-    //                 let slot_state = entry.value_mut();
-
-    //                 if slot_state.final_stored {
-    //                     debug!(
-    //                         "[PNFIFO] Node {} already processed FINAL for Leader {} slot {}",
-    //                         pnfifo.node_id, leader_id, slot
-    //                     );
-    //                     false
-    //                 } else {
-    //                     slot_state.value.get_or_insert_with(|| value.clone());
-    //                     slot_state.pending_final = None;
-    //                     true
-    //                 }
-    //             };
-
-    //             if should_store {
-    //                 Self::store_output_for_state(
-    //                     leader_id,
-    //                     slots,
-    //                     notifiers,
-    //                     pnfifo.threshold,
-    //                     slot,
-    //                     value,
-    //                     combined_signature,
-    //                 )
-    //                 .await;
-    //             }
-    //         }
-    //         Ok(false) => {
-    //             warn!(
-    //                 "[PNFIFO] Node {} slot {} signature verification failed",
-    //                 pnfifo.node_id, slot
-    //             );
-    //         }
-    //         Err(e) => {
-    //             warn!(
-    //                 "[PNFIFO] Node {} slot {} signature verification error: {}",
-    //                 pnfifo.node_id, slot, e
-    //             );
-    //         }
-    //     }
-
-    //     Ok(())
-    // }
     async fn finalize_with_signature_for_state(
         pnfifo: &Arc<Self>,
         leader_id: usize,
@@ -731,13 +822,44 @@ impl PnfifoBc {
         // Validate signatures outside the lock (~100µs, avoids holding the lock)
         let message_to_verify = PnfifoBc::create_vote_message_static(slot, &value);
 
-        match verify_combined_signature_bytes(
-            &combined_signature,
-            &message_to_verify,
-            &pnfifo.verifying_keys,
-            pnfifo.threshold,
-        ) {
-            Ok(true) => {
+        if combined_signature.len() != SIG_SIZE {
+            warn!(
+                "[PNFIFO] Node {} slot {} combined signature length invalid",
+                pnfifo.node_id, slot
+            );
+            return Ok(());
+        }
+
+        let mut sig_bytes = [0u8; SIG_SIZE];
+        sig_bytes.copy_from_slice(&combined_signature);
+
+        match ThresholdSignature::from_bytes(sig_bytes) {
+            Ok(signature) => {
+                let threshold_public = pnfifo.threshold_public.clone();
+                let signature_for_verify = signature.clone();
+                let message_for_verify = message_to_verify.clone();
+                let verify_start = Instant::now();
+                let signature_valid = run_pnfifo_threshold_task("pnfifo_verify_final", move || {
+                    Ok(threshold_public
+                        .public_key()
+                        .verify(&signature_for_verify, &message_for_verify))
+                })
+                .await?;
+                let verify_elapsed = verify_start.elapsed();
+                if verify_elapsed > Duration::from_millis(1) {
+                    debug!(
+                        "⏱️ [PNFIFO] Node {} threshold verify FINAL leader {} slot {} took {:?}",
+                        pnfifo.node_id, leader_id, slot, verify_elapsed
+                    );
+                }
+                if !signature_valid {
+                    warn!(
+                        "[PNFIFO] Node {} slot {} signature verification failed",
+                        pnfifo.node_id, slot
+                    );
+                    return Ok(());
+                }
+
                 let key = (leader_id, slot);
 
                 if pnfifo.slot_outputs.contains_key(&key) {
@@ -757,15 +879,9 @@ impl PnfifoBc {
 
                 PnfifoBc::notify_slot(pnfifo, leader_id, slot);
             }
-            Ok(false) => {
-                warn!(
-                    "[PNFIFO] Node {} slot {} signature verification failed",
-                    pnfifo.node_id, slot
-                );
-            }
             Err(e) => {
                 warn!(
-                    "[PNFIFO] Node {} slot {} signature verification error: {}",
+                    "[PNFIFO] Node {} slot {} signature parsing error: {}",
                     pnfifo.node_id, slot, e
                 );
             }
@@ -859,7 +975,6 @@ impl PnfifoBc {
         let mut cleaned_votes = 0;
         let mut cleaned_notifiers = 0;
         let mut cleaned_outputs = 0;
-        let mut cleaned_thresholds = 0;
         let mut cleaned_pending = 0;
 
         self.slot_values.retain(|(_, slot_number), _| {
@@ -894,15 +1009,6 @@ impl PnfifoBc {
             }
         });
 
-        self.slot_threshold_sigs.retain(|(_, slot_number), _| {
-            if *slot_number <= threshold {
-                cleaned_thresholds += 1;
-                false
-            } else {
-                true
-            }
-        });
-
         self.slot_pending_finals.retain(|(_, slot_number), _| {
             if *slot_number <= threshold {
                 cleaned_pending += 1;
@@ -924,17 +1030,15 @@ impl PnfifoBc {
         if cleaned_values > 0
             || cleaned_outputs > 0
             || cleaned_votes > 0
-            || cleaned_thresholds > 0
             || cleaned_pending > 0
             || cleaned_notifiers > 0
         {
             info!(
-                "[PNFIFO] Node {} cleaned values={} outputs={} votes={} thresholds={} pending={} notifiers={} below {}",
+                "[PNFIFO] Node {} cleaned values={} outputs={} votes={} pending={} notifiers={} below {}",
                 self.node_id,
                 cleaned_values,
                 cleaned_outputs,
                 cleaned_votes,
-                cleaned_thresholds,
                 cleaned_pending,
                 cleaned_notifiers,
                 threshold
