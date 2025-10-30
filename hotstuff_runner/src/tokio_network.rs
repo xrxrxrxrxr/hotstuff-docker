@@ -3,6 +3,7 @@
 //! Compatible with `hotstuff_rs::networking::network::Network` trait.
 
 // use crate::tcp_network::TcpNetworkConfig as TokioNetworkConfig; // reuse existing config struct
+use crate::affinity::{affinity_from_env, bind_current_thread};
 use borsh::{BorshDeserialize, BorshSerialize};
 use crossbeam::channel::{unbounded, Receiver, Sender};
 use ed25519_dalek::VerifyingKey;
@@ -16,7 +17,10 @@ use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::net::SocketAddr;
-use std::sync::Arc;
+use std::sync::{
+    atomic::{AtomicUsize, Ordering},
+    Arc,
+};
 use std::time::Duration;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{tcp::OwnedWriteHalf, TcpListener, TcpSocket, TcpStream};
@@ -106,12 +110,48 @@ struct ConnectionState {
 
 impl TokioNetwork {
     pub fn new(config: TokioNetworkConfig) -> Result<Self, Box<dyn std::error::Error>> {
-        let rt = Arc::new(
-            Builder::new_multi_thread()
-                .enable_all()
-                .thread_name("hs-tokio-net")
-                .build()?,
-        );
+        let affinity_label = "tokio_network_rt".to_string();
+        let affinity = affinity_from_env("TOKIO_NETWORK_RT_CORES", &affinity_label).map(Arc::new);
+        let default_threads = std::thread::available_parallelism()
+            .map(|n| n.get())
+            .unwrap_or(2);
+        let requested_threads: usize = std::env::var("TOKIO_NETWORK_RT_THREADS")
+            .ok()
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(default_threads);
+        let rt_threads = match affinity.as_ref() {
+            Some(cores) => {
+                if cores.len() != requested_threads {
+                    info!(
+                        "[affinity] tokio network: overriding worker count {} -> {} to match core set",
+                        requested_threads,
+                        cores.len()
+                    );
+                }
+                cores.len().max(1)
+            }
+            None => requested_threads.max(1),
+        };
+
+        let mut builder = Builder::new_multi_thread();
+        builder
+            .worker_threads(rt_threads)
+            .enable_all()
+            .thread_name("hs-tokio-net");
+
+        if let Some(core_set) = affinity.clone() {
+            let cores = core_set.clone();
+            let assignment = Arc::new(AtomicUsize::new(0));
+            let label = affinity_label.clone();
+            builder.on_thread_start(move || {
+                let idx = assignment.fetch_add(1, Ordering::Relaxed);
+                if let Some(core) = cores.get(idx % cores.len()).copied() {
+                    bind_current_thread(&label, core);
+                }
+            });
+        }
+
+        let rt = Arc::new(builder.build()?);
         let (tx, rx) = unbounded();
 
         let this = Self {

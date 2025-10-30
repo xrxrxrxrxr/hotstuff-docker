@@ -35,6 +35,7 @@ hex = "0.4"
 console-subscriber = { version = "0.2", features = ["parking_lot"] }
 tracing-flame = "0.2"
 inferno = "0.11"
+core_affinity = "0.6"
 # observability
 metrics = "0.22"
 metrics-exporter-prometheus = "0.14"

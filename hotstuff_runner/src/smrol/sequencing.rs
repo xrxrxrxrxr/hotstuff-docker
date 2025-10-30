@@ -1,3 +1,4 @@
+use crate::affinity::{affinity_from_env, bind_current_thread};
 use crate::smrol::{
     consensus::TransactionEntry,
     crypto::ErasurePackage,
@@ -8,17 +9,21 @@ use crate::smrol::{
     ModuleMessage,
 };
 use blsttc::{
-    PublicKeySet, SecretKeyShare, Signature as ThresholdSignature, SignatureShare, SIG_SIZE,
+    hash_g2, PublicKey, PublicKeySet, PublicKeyShare, SecretKeyShare,
+    Signature as ThresholdSignature, SignatureShare, SIG_SIZE,
 };
+use blsttc::blstrs::{pairing, G1Affine, G1Projective, G2Affine, G2Projective, Scalar as Fr};
+use blsttc::group::{ff::Field, Curve, Group};
+use core_affinity::CoreId;
 use crossbeam::channel::{unbounded, Sender};
 use dashmap::{mapref::entry::Entry, DashMap, DashSet};
 use ed25519_dalek::{Signature as Ed25519Signature, Signer, SigningKey, Verifier, VerifyingKey};
 use futures::task::AtomicWaker;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
-use std::{pin::Pin, thread::sleep};
 use std::sync::{
     atomic::{AtomicU64, AtomicUsize, Ordering},
+    mpsc as std_mpsc,
     Arc, Mutex,
 };
 use std::task::{Context, Poll};
@@ -29,12 +34,17 @@ use std::{
     convert::TryFrom,
     result,
 };
+use std::{pin::Pin, thread::sleep};
 use tokio::{
-    sync::{mpsc as async_mpsc, Mutex as AsyncMutex, RwLock, Semaphore},
+    sync::{mpsc as async_mpsc, Mutex as AsyncMutex, RwLock, Semaphore, SemaphorePermit},
     time::{timeout, Duration},
 };
 use tracing::{debug, error, info, warn};
 use tracing_subscriber::field::debug;
+use rand08::rngs::OsRng;
+
+const BATCH_VERIFIER_WINDOW: Duration = Duration::from_micros(200);
+const BATCH_VERIFIER_SIZE: usize = 16;
 
 static DISABLE_THRESHOLD_SIG_VERIFICATION: Lazy<bool> =
     Lazy::new(|| match std::env::var("SMROL_DISABLE_THRESHOLD_SIG") {
@@ -45,6 +55,305 @@ static DISABLE_THRESHOLD_SIG_VERIFICATION: Lazy<bool> =
         },
         Err(_) => true,
     });
+
+struct ShareVerifyRequest {
+    message: Arc<Vec<u8>>,
+    public_key_share: PublicKeyShare,
+    signature_share: SignatureShare,
+    responder: std_mpsc::Sender<bool>,
+    enqueued_at: Instant,
+}
+
+struct CombinedVerifyRequest {
+    message: Arc<Vec<u8>>,
+    signature: ThresholdSignature,
+    public_key: PublicKey,
+    responder: std_mpsc::Sender<bool>,
+    enqueued_at: Instant,
+}
+
+struct ShareBucket {
+    requests: Vec<ShareVerifyRequest>,
+    first_enqueued: Instant,
+}
+
+struct ShareBatcher {
+    sender: std_mpsc::Sender<ShareVerifyRequest>,
+}
+
+struct CombinedBatcher {
+    sender: std_mpsc::Sender<CombinedVerifyRequest>,
+}
+
+static SHARE_BATCHER: Lazy<ShareBatcher> = Lazy::new(ShareBatcher::new);
+static COMBINED_BATCHER: Lazy<CombinedBatcher> = Lazy::new(CombinedBatcher::new);
+
+impl ShareBatcher {
+    fn new() -> Self {
+        let (sender, receiver) = std_mpsc::channel::<ShareVerifyRequest>();
+        thread::Builder::new()
+            .name("share-batch-worker".to_owned())
+            .spawn(move || share_batch_worker(receiver))
+            .expect("failed to start share batch worker");
+        Self { sender }
+    }
+
+    fn verify(
+        &self,
+        message: Arc<Vec<u8>>,
+        public_key_share: PublicKeyShare,
+        signature_share: SignatureShare,
+    ) -> bool {
+        let (resp_tx, resp_rx) = std_mpsc::channel();
+        let request = ShareVerifyRequest {
+            message,
+            public_key_share,
+            signature_share,
+            responder: resp_tx,
+            enqueued_at: Instant::now(),
+        };
+        if self.sender.send(request).is_err() {
+            return false;
+        }
+        resp_rx.recv().unwrap_or(false)
+    }
+}
+
+impl CombinedBatcher {
+    fn new() -> Self {
+        let (sender, receiver) = std_mpsc::channel::<CombinedVerifyRequest>();
+        thread::Builder::new()
+            .name("combined-batch-worker".to_owned())
+            .spawn(move || combined_batch_worker(receiver))
+            .expect("failed to start combined batch worker");
+        Self { sender }
+    }
+
+    fn verify(
+        &self,
+        message: Arc<Vec<u8>>,
+        signature: ThresholdSignature,
+        public_key: PublicKey,
+    ) -> bool {
+        let (resp_tx, resp_rx) = std_mpsc::channel();
+        let request = CombinedVerifyRequest {
+            message,
+            signature,
+            public_key,
+            responder: resp_tx,
+            enqueued_at: Instant::now(),
+        };
+        if self.sender.send(request).is_err() {
+            return false;
+        }
+        resp_rx.recv().unwrap_or(false)
+    }
+}
+
+fn share_batch_worker(receiver: std_mpsc::Receiver<ShareVerifyRequest>) {
+    let mut buckets: HashMap<Vec<u8>, ShareBucket> = HashMap::new();
+
+    while let Ok(request) = receiver.recv() {
+        let key = (*request.message).clone();
+        let entry = buckets.entry(key.clone()).or_insert_with(|| ShareBucket {
+            requests: Vec::new(),
+            first_enqueued: request.enqueued_at,
+        });
+        entry.requests.push(request);
+        if entry.requests.len() >= BATCH_VERIFIER_SIZE {
+            if let Some(bucket) = buckets.remove(&key) {
+                process_share_batch(bucket.requests);
+            }
+            continue;
+        }
+
+        flush_expired_share_buckets(&mut buckets);
+    }
+
+    for (_, bucket) in buckets {
+        process_share_batch(bucket.requests);
+    }
+}
+
+fn flush_expired_share_buckets(buckets: &mut HashMap<Vec<u8>, ShareBucket>) {
+    let now = Instant::now();
+    let expired: Vec<Vec<u8>> = buckets
+        .iter()
+        .filter(|(_, bucket)| now.duration_since(bucket.first_enqueued) >= BATCH_VERIFIER_WINDOW)
+        .map(|(k, _)| k.clone())
+        .collect();
+
+    for key in expired {
+        if let Some(bucket) = buckets.remove(&key) {
+            process_share_batch(bucket.requests);
+        }
+    }
+}
+
+fn process_share_batch(requests: Vec<ShareVerifyRequest>) {
+    if requests.is_empty() {
+        return;
+    }
+
+    if requests.len() == 1 {
+        let req = requests.into_iter().next().unwrap();
+        let result = req
+            .public_key_share
+            .verify(&req.signature_share, &req.message[..]);
+        let _ = req.responder.send(result);
+        return;
+    }
+
+    let message = Arc::clone(&requests[0].message);
+    let hash = hash_g2(&message[..]);
+    let mut agg_public = <G1Projective as Group>::identity();
+    let mut agg_signature = <G2Projective as Group>::identity();
+    let mut prepared: Vec<(Fr, G1Projective, G2Projective)> = Vec::with_capacity(requests.len());
+
+    for req in &requests {
+        let scalar = random_scalar();
+
+        let pk_bytes = req.public_key_share.clone().to_bytes();
+        let public_key = match PublicKey::from_bytes(pk_bytes) {
+            Ok(pk) => pk,
+            Err(_) => {
+                fallback_share_batch(requests, message);
+                return;
+            }
+        };
+        let sig_bytes = req.signature_share.to_bytes();
+        let sig_ct = G2Affine::from_compressed(&sig_bytes);
+        if bool::from(sig_ct.is_none()) {
+            fallback_share_batch(requests, message);
+            return;
+        }
+        let sig_proj = G2Projective::from(sig_ct.unwrap());
+        let pk_proj: G1Projective = G1Projective::from(public_key);
+        prepared.push((scalar, pk_proj, sig_proj));
+    }
+
+    for (scalar, pk_proj, sig_proj) in &prepared {
+        agg_public += pk_proj.clone() * *scalar;
+        agg_signature += sig_proj.clone() * *scalar;
+    }
+
+    let agg_public_affine = G1Affine::from(agg_public);
+    let agg_signature_affine = G2Affine::from(agg_signature);
+    let lhs = pairing(&agg_public_affine, &hash);
+    let generator = G1Affine::from(<G1Projective as Group>::generator());
+    let rhs = pairing(&generator, &agg_signature_affine);
+
+    if lhs == rhs {
+        for req in requests {
+            let _ = req.responder.send(true);
+        }
+    } else {
+        fallback_share_batch(requests, message);
+    }
+}
+
+fn fallback_share_batch(requests: Vec<ShareVerifyRequest>, message: Arc<Vec<u8>>) {
+    for req in requests {
+        let res = req
+            .public_key_share
+            .verify(&req.signature_share, &message[..]);
+        let _ = req.responder.send(res);
+    }
+}
+
+fn combined_batch_worker(receiver: std_mpsc::Receiver<CombinedVerifyRequest>) {
+    let mut batch: Vec<CombinedVerifyRequest> = Vec::with_capacity(BATCH_VERIFIER_SIZE);
+
+    loop {
+        match receiver.recv_timeout(BATCH_VERIFIER_WINDOW) {
+            Ok(request) => {
+                batch.push(request);
+                if batch.len() >= BATCH_VERIFIER_SIZE {
+                    process_combined_batch(batch.drain(..).collect());
+                }
+            }
+            Err(std_mpsc::RecvTimeoutError::Timeout) => {
+                if !batch.is_empty() {
+                    process_combined_batch(batch.drain(..).collect());
+                }
+            }
+            Err(std_mpsc::RecvTimeoutError::Disconnected) => {
+                if !batch.is_empty() {
+                    process_combined_batch(batch.drain(..).collect());
+                }
+                break;
+            }
+        }
+    }
+}
+
+fn process_combined_batch(requests: Vec<CombinedVerifyRequest>) {
+    if requests.is_empty() {
+        return;
+    }
+
+    if requests.len() == 1 {
+        let req = requests.into_iter().next().unwrap();
+        let res = req
+            .public_key
+            .verify(&req.signature, &req.message[..]);
+        let _ = req.responder.send(res);
+        return;
+    }
+
+    let public_key = requests[0].public_key;
+    let mut agg_hash = <G2Projective as Group>::identity();
+    let mut agg_signature = <G2Projective as Group>::identity();
+    let mut prepared: Vec<(Fr, G2Projective, G2Projective)> = Vec::with_capacity(requests.len());
+
+    for req in &requests {
+        let scalar = random_scalar();
+        let hash_proj = G2Projective::from(hash_g2(&req.message[..]));
+        let sig_bytes = req.signature.to_bytes();
+        let sig_ct = G2Affine::from_compressed(&sig_bytes);
+        if bool::from(sig_ct.is_none()) {
+            fallback_combined_batch(requests);
+            return;
+        }
+        let sig_proj = G2Projective::from(sig_ct.unwrap());
+        prepared.push((scalar, hash_proj, sig_proj));
+    }
+
+    for (scalar, hash_proj, sig_proj) in &prepared {
+        agg_hash += hash_proj.clone() * *scalar;
+        agg_signature += sig_proj.clone() * *scalar;
+    }
+
+    let agg_hash_affine = G2Affine::from(agg_hash);
+    let agg_signature_affine = G2Affine::from(agg_signature);
+    let pk_affine = G1Affine::from(G1Projective::from(public_key));
+
+    let lhs = pairing(&pk_affine, &agg_hash_affine);
+    let generator = G1Affine::from(<G1Projective as Group>::generator());
+    let rhs = pairing(&generator, &agg_signature_affine);
+
+    if lhs == rhs {
+        for req in requests {
+            let _ = req.responder.send(true);
+        }
+    } else {
+        fallback_combined_batch(requests);
+    }
+}
+
+fn fallback_combined_batch(requests: Vec<CombinedVerifyRequest>) {
+    for req in requests {
+        let res = req
+            .public_key
+            .verify(&req.signature, &req.message[..]);
+        let _ = req.responder.send(res);
+    }
+}
+
+fn random_scalar() -> Fr {
+    let mut rng = OsRng;
+    <Fr as Field>::random(&mut rng)
+}
 
 trait ThresholdJob: Send {
     fn run(self: Box<Self>);
@@ -57,7 +366,7 @@ struct ThresholdThreadPool {
 }
 
 impl ThresholdThreadPool {
-    fn new(worker_count: usize, metrics_pool: &'static str) -> Self {
+    fn new(worker_count: usize, metrics_pool: &'static str, affinity: Option<Vec<CoreId>>) -> Self {
         let (sender, receiver) = unbounded::<Box<dyn ThresholdJob>>();
         let pending_jobs = Arc::new(AtomicUsize::new(0));
         metrics::gauge!(
@@ -65,11 +374,20 @@ impl ThresholdThreadPool {
             "pool" => metrics_pool
         )
         .set(0.0);
+        let affinity = affinity.map(Arc::new);
         for idx in 0..worker_count {
             let thread_receiver = receiver.clone();
+            let worker_name = format!("{}-worker-{}", metrics_pool, idx);
+            let core_assignment = affinity
+                .as_ref()
+                .and_then(|cores| cores.get(idx % cores.len()))
+                .copied();
             thread::Builder::new()
-                .name(format!("{}-worker-{}", metrics_pool, idx))
+                .name(worker_name.clone())
                 .spawn(move || {
+                    if let Some(core_id) = core_assignment {
+                        bind_current_thread(&worker_name, core_id);
+                    }
                     for job in thread_receiver.iter() {
                         job.run();
                     }
@@ -132,37 +450,102 @@ fn default_worker_count() -> usize {
         .unwrap_or(4)
 }
 
-static THRESHOLD_CRYPTO_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
+fn read_inflight(var: &str, default: usize) -> usize {
+    std::env::var(var)
+        .ok()
+        .and_then(|value| value.trim().parse::<usize>().ok())
+        .filter(|&count| count > 0)
+        .unwrap_or(default)
+}
+
+static THRESHOLD_SIGN_COMBINE_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
     // let default_workers = default_worker_count();
-    let default_workers = 8;
-    let workers = parse_worker_count("SMROL_THRESHOLD_CRYPTO_WORKERS", default_workers);
-    ThresholdThreadPool::new(workers, "threshold_crypto")
+    let default_workers = (default_worker_count() * 2).min(32);
+    let requested_workers = parse_worker_count("SMROL_THRESHOLD_CRYPTO_WORKERS", default_workers);
+    let affinity = affinity_from_env("SMROL_THRESHOLD_COMBINE_CORES", "threshold_sign_combine");
+    let workers = match affinity.as_ref() {
+        Some(cores) => {
+            if cores.len() != requested_workers {
+                warn!(
+                    "[affinity] threshold_sign_combine: overriding worker count {} -> {} to match core set",
+                    requested_workers,
+                    cores.len()
+                );
+            }
+            cores.len()
+        }
+        None => requested_workers,
+    };
+    ThresholdThreadPool::new(workers, "threshold_sign_combine", affinity)
+});
+
+static THRESHOLD_VERIFY_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
+    // let default_workers = default_worker_count();
+    let default_workers = (default_worker_count()).min(32);
+    let requested_workers = parse_worker_count("SMROL_THRESHOLD_VERIFY_WORKERS", default_workers);
+    let affinity = affinity_from_env("SMROL_THRESHOLD_VERIFY_CORES", "threshold_verify");
+    let workers = match affinity.as_ref() {
+        Some(cores) => {
+            if cores.len() != requested_workers {
+                info!(
+                    "[affinity] threshold_verify: overriding worker count {} -> {} to match core set",
+                    requested_workers,
+                    cores.len()
+                );
+            }
+            cores.len()
+        }
+        None => requested_workers,
+    };
+    ThresholdThreadPool::new(workers, "threshold_verify", affinity)
+});
+
+static THRESHOLD_MEDIAN_VERIFY_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
+    // let default_workers = (default_worker_count() ).min(32);
+    let default_workers=2;
+    let workers = parse_worker_count("SMROL_THRESHOLD_MEDIAN_VERIFY_WORKERS", default_workers);
+    ThresholdThreadPool::new(workers, "threshold_median_verify", None)
 });
 
 static SEQ_OFFLOAD_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
-    let default_workers = default_worker_count();
+    // let default_workers = default_worker_count();
+    let default_workers = 4;
     let workers = parse_worker_count("SMROL_SEQ_OFFLOAD_WORKERS", default_workers);
-    ThresholdThreadPool::new(workers, "seq_offload")
+    ThresholdThreadPool::new(workers, "seq_offload", None)
 });
 
-const PNFIFO_BROADCAST_CONCURRENCY: usize = 4;
-const ORDER_VERIFY_CONCURRENCY: usize = 4;
-const REQUEST_WORKER_COUNT: usize = 4;
-const MEDIAN_WORKER_COUNT: usize = 4;
-const MEDIAN_COMBINE_WORKER_COUNT: usize = 4;
-const FINAL_SIGN_WORKER_COUNT: usize = 4;
-const FINAL_VERIFY_WORKER_COUNT: usize = 4;
-const FINAL_WORKER_COUNT: usize = 4;
+const PNFIFO_BROADCAST_CONCURRENCY: usize = 8;
+const ORDER_VERIFY_CONCURRENCY: usize = 8;
+const REQUEST_WORKER_COUNT: usize = 8;
+const MEDIAN_WORKER_COUNT: usize = 8;
+const MEDIAN_COMBINE_WORKER_COUNT: usize = 8;
+const FINAL_WORKER_COUNT: usize = 8;
 const MSG_TAG_SEQUENCE: u8 = 0x01;
 const MSG_TAG_MEDIAN: u8 = 0x02;
 const MSG_TAG_FINAL: u8 = 0x03;
 
-async fn run_threshold_crypto_task<R, F>(label: &'static str, task: F) -> Result<R, String>
+async fn run_threshold_sign_task<R, F>(label: &'static str, task: F) -> Result<R, String>
 where
     R: Send + 'static,
     F: FnOnce() -> Result<R, String> + Send + 'static,
 {
-    THRESHOLD_CRYPTO_POOL.submit(label, task)?.await
+    THRESHOLD_SIGN_COMBINE_POOL.submit(label, task)?.await
+}
+
+async fn run_threshold_verify_task<R, F>(label: &'static str, task: F) -> Result<R, String>
+where
+    R: Send + 'static,
+    F: FnOnce() -> Result<R, String> + Send + 'static,
+{
+    THRESHOLD_VERIFY_POOL.submit(label, task)?.await
+}
+
+async fn run_threshold_median_verify_task<R, F>(label: &'static str, task: F) -> Result<R, String>
+where
+    R: Send + 'static,
+    F: FnOnce() -> Result<R, String> + Send + 'static,
+{
+    THRESHOLD_MEDIAN_VERIFY_POOL.submit(label, task)?.await
 }
 
 async fn run_seq_offload_task<R, F>(label: &'static str, task: F) -> Result<R, String>
@@ -171,6 +554,33 @@ where
     F: FnOnce() -> Result<R, String> + Send + 'static,
 {
     SEQ_OFFLOAD_POOL.submit(label, task)?.await
+}
+
+fn set_inflight(stage: &'static str, value: usize) {
+    metrics::gauge!("smrol.inflight", "stage" => stage).set(value as f64);
+}
+
+fn spawn_detached<F>(stage: &'static str, semaphore: Arc<Semaphore>, capacity: usize, fut: F)
+where
+    F: std::future::Future<Output = ()> + Send + 'static,
+{
+    tokio::spawn(async move {
+        let semaphore_metrics = Arc::clone(&semaphore);
+        let permit = match semaphore.acquire_owned().await {
+            Ok(p) => p,
+            Err(_) => return,
+        };
+
+        let inflight = capacity.saturating_sub(semaphore_metrics.available_permits());
+        set_inflight(stage, inflight);
+
+        fut.await;
+
+        drop(permit);
+
+        let inflight = capacity.saturating_sub(semaphore_metrics.available_permits());
+        set_inflight(stage, inflight);
+    });
 }
 
 struct TaskState<R> {
@@ -384,8 +794,17 @@ pub struct TransactionSequencing {
     pub pnfifo: Arc<PnfifoBc>,
     pnfifo_broadcast_semaphore: Arc<Semaphore>,
     order_verify_semaphore: Arc<Semaphore>,
+    median_semaphore: Arc<Semaphore>,
+    median_concurrency: usize,
+    order_finalize_semaphore: Arc<Semaphore>,
+    order_finalize_concurrency: usize,
+    final_sign_semaphore: Arc<Semaphore>,
+    final_sign_concurrency: usize,
+    final_verify_semaphore: Arc<Semaphore>,
+    final_verify_concurrency: usize,
     pub threshold_share: SecretKeyShare,
     pub threshold_public: PublicKeySet,
+    pk_share_cache: Arc<Vec<PublicKeyShare>>,
     signing_key: SigningKey,
     verifying_keys: Arc<HashMap<usize, VerifyingKey>>,
     pub finalization: Arc<RwLock<OutputFinalization>>,
@@ -509,8 +928,7 @@ impl TransactionSequencing {
         let final_rx = Arc::new(AsyncMutex::new(final_rx_raw));
         let final_backlog = Arc::new(AtomicUsize::new(0));
         metrics::gauge!("smrol.channel_backlog", "channel" => "final").set(0.0);
-        let (final_sign_tx, final_sign_rx_raw) =
-            async_mpsc::unbounded_channel::<FinalSignTask>();
+        let (final_sign_tx, final_sign_rx_raw) = async_mpsc::unbounded_channel::<FinalSignTask>();
         let final_sign_rx = Arc::new(AsyncMutex::new(final_sign_rx_raw));
         let final_sign_backlog = Arc::new(AtomicUsize::new(0));
         metrics::gauge!("smrol.channel_backlog", "channel" => "final_sign").set(0.0);
@@ -522,7 +940,27 @@ impl TransactionSequencing {
 
         let pnfifo_broadcast_semaphore = Arc::new(Semaphore::new(PNFIFO_BROADCAST_CONCURRENCY));
         let order_verify_semaphore = Arc::new(Semaphore::new(ORDER_VERIFY_CONCURRENCY));
+        let median_concurrency = read_inflight("SMROL_MEDIAN_INFLIGHT", 64).max(1);
+        let median_semaphore = Arc::new(Semaphore::new(median_concurrency));
+        let order_finalize_concurrency = read_inflight("SMROL_ORDER_FINALIZE_INFLIGHT", 64).max(1);
+        let order_finalize_semaphore = Arc::new(Semaphore::new(order_finalize_concurrency));
+        set_inflight("order_finalize", 0);
+        let default_final_sign = (default_worker_count() * 4).max(64);
+        let final_sign_concurrency =
+            read_inflight("SMROL_FINAL_SIGN_INFLIGHT", default_final_sign).max(1);
+        let final_sign_semaphore = Arc::new(Semaphore::new(final_sign_concurrency));
+        set_inflight("final_sign", 0);
+        let final_verify_concurrency = read_inflight("SMROL_FINAL_VERIFY_INFLIGHT", 64).max(1);
+        let final_verify_semaphore = Arc::new(Semaphore::new(final_verify_concurrency));
+        set_inflight("final_verify", 0);
 
+        warn!("SMROL_MEDIAN_INFLIGHT={}, SMROL_ORDER_FINALIZE_INFLIGHT={}, SMROL_FINAL_SIGN_INFLIGHT={}, SMROL_FINAL_VERIFY_INFLIGHT={}", median_concurrency, order_finalize_concurrency, final_sign_concurrency, final_verify_concurrency);
+
+        let pk_share_cache = Arc::new(
+            (0..n)
+                .map(|idx| threshold_public.public_key_share(idx))
+                .collect::<Vec<_>>(),
+        );
         Self {
             f,
             n,
@@ -532,8 +970,17 @@ impl TransactionSequencing {
             pnfifo,
             pnfifo_broadcast_semaphore,
             order_verify_semaphore,
+            median_semaphore,
+            median_concurrency,
+            order_finalize_semaphore,
+            order_finalize_concurrency,
+            final_sign_semaphore,
+            final_sign_concurrency,
+            final_verify_semaphore,
+            final_verify_concurrency,
             threshold_share,
             threshold_public,
+            pk_share_cache,
             signing_key,
             verifying_keys: Arc::new(verifying_keys),
             finalization,
@@ -820,13 +1267,6 @@ impl TransactionSequencing {
                     }
 
                     let elapsed = start.elapsed();
-                    if elapsed > Duration::from_millis(10) {
-                        warn!(
-                            "🐌 [Sequencing] Request worker-{} slow for node {}: {:?}",
-                            worker_id, sequencing.process_id, elapsed
-                        );
-                    }
-
                     count += 1;
                     total_time += elapsed;
                     max_time = max_time.max(elapsed);
@@ -1229,280 +1669,119 @@ impl TransactionSequencing {
     }
 
     fn spawn_order_finalizer(self: &Arc<Self>) {
-        let worker_count = FINAL_WORKER_COUNT.max(1);
-
-        let mut worker_senders = Vec::with_capacity(worker_count);
-
-        for worker_id in 0..worker_count {
-            let (worker_tx, mut worker_rx) = async_mpsc::unbounded_channel::<(usize, SeqOrder)>();
-            worker_senders.push(worker_tx);
-
-            let backlog_counter = Arc::clone(&self.order_finalize_backlog);
-            let sequencing = Arc::clone(self);
-            tokio::spawn(async move {
-                info!(
-                    "[Sequencing] Node {} order finalizer worker-{} started",
-                    sequencing.process_id, worker_id
-                );
-
-                let mut count = 0u32;
-                let mut total_time = Duration::ZERO;
-                let mut max_time = Duration::ZERO;
-                let mut last_log = Instant::now();
-
-                while let Some((sender_id, order)) = worker_rx.recv().await {
-                    let previous = backlog_counter.fetch_sub(1, Ordering::Relaxed);
-                    let backlog = previous.saturating_sub(1);
-                    metrics::gauge!(
-                        "smrol.channel_backlog",
-                        "channel" => "order_finalize"
-                    )
-                    .set(backlog as f64);
-
-                    let start = Instant::now();
-                    if let Err(e) = sequencing.finalize_seq_order(sender_id, order).await {
-                        warn!(
-                            "⚠️ [Sequencing] Node {} order finalizer worker-{} failed: {}",
-                            sequencing.process_id, worker_id, e
-                        );
-                    }
-                    let elapsed = start.elapsed();
-                    if elapsed > Duration::from_millis(10) {
-                        warn!(
-                            "🐌 [Sequencing] Order finalizer worker-{} slow for node {}: {:?}",
-                            worker_id, sequencing.process_id, elapsed
-                        );
-                    }
-
-                    count += 1;
-                    total_time += elapsed;
-                    max_time = max_time.max(elapsed);
-                    if last_log.elapsed() > Duration::from_secs(1) {
-                        let avg = if count > 0 {
-                            total_time / count
-                        } else {
-                            Duration::ZERO
-                        };
-                        debug!(
-                            "📊 [Sequencing] Order finalizer worker-{} stats node {}: {} msgs, avg={:?}, max={:?}, rate={}/s",
-                            worker_id,
-                            sequencing.process_id,
-                            count,
-                            avg,
-                            max_time,
-                            count
-                        );
-                        count = 0;
-                        total_time = Duration::ZERO;
-                        max_time = Duration::ZERO;
-                        last_log = Instant::now();
-                    }
-                }
-
-                warn!(
-                    "⚠️ [Sequencing] Node {} order finalizer worker-{} exiting (channel closed)",
-                    sequencing.process_id, worker_id
-                );
-            });
-        }
-
         let finalize_rx = Arc::clone(&self.order_finalize_rx);
-        let process_id = self.process_id;
+        let backlog_counter = Arc::clone(&self.order_finalize_backlog);
+        let semaphore = Arc::clone(&self.order_finalize_semaphore);
+        let concurrency = self.order_finalize_concurrency;
+        let sequencing = Arc::clone(self);
+
         tokio::spawn(async move {
-            let mut next_idx = 0usize;
-            let worker_count = worker_senders.len();
-            if worker_count == 0 {
-                return;
-            }
-
-            loop {
-                let maybe_message = {
-                    let mut rx = finalize_rx.lock().await;
-                    rx.recv().await
-                };
-
-                let Some(mut item) = maybe_message else {
-                    break;
-                };
-
-                let mut attempts = 0usize;
-                loop {
-                    let idx = next_idx % worker_count;
-                    next_idx = next_idx.wrapping_add(1);
-                    attempts += 1;
-
-                    match worker_senders[idx].send(item) {
-                        Ok(_) => break,
-                        Err(err) => {
-                            item = err.0;
-                            warn!(
-                                "⚠️ [Sequencing] Node {} order finalizer dispatcher failed to deliver to worker {}",
-                                process_id,
-                                idx
-                            );
-
-                            if attempts >= worker_count {
-                                warn!(
-                                    "⚠️ [Sequencing] Node {} order finalizer dispatcher dropping order after exhausting workers",
-                                    process_id
-                                );
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
             info!(
-                "[Sequencing] Node {} order finalizer dispatcher exiting (channel closed)",
-                process_id
+                "[Sequencing] Node {} order finalizer dispatcher started",
+                sequencing.process_id
+            );
+
+            while let Some((sender_id, order)) = {
+                let mut rx = finalize_rx.lock().await;
+                rx.recv().await
+            } {
+                let previous = backlog_counter.fetch_sub(1, Ordering::Relaxed);
+                let backlog = previous.saturating_sub(1);
+                metrics::gauge!(
+                    "smrol.channel_backlog",
+                    "channel" => "order_finalize"
+                )
+                .set(backlog as f64);
+                metrics::counter!("smrol.dispatch_total", "stage" => "order_finalize").increment(1);
+
+                let sequencing_for_task = Arc::clone(&sequencing);
+                spawn_detached(
+                    "order_finalize",
+                    Arc::clone(&semaphore),
+                    concurrency,
+                    async move {
+                        if let Err(e) = sequencing_for_task
+                            .finalize_seq_order(sender_id, order)
+                            .await
+                        {
+                            warn!(
+                                "⚠️ [Sequencing] Node {} order finalizer task failed: {}",
+                                sequencing_for_task.process_id, e
+                            );
+                        }
+                    },
+                );
+            }
+
+            warn!(
+                "⚠️ [Sequencing] Node {} order finalizer dispatcher exiting (channel closed)",
+                sequencing.process_id
             );
         });
     }
 
     fn spawn_median_processor(self: &Arc<Self>) {
-        let worker_count = MEDIAN_WORKER_COUNT.max(1);
+        let median_rx = Arc::clone(&self.median_rx);
+        let backlog_counter = Arc::clone(&self.median_backlog);
+        let semaphore = Arc::clone(&self.median_semaphore);
+        let concurrency = self.median_concurrency;
+        let sequencing = Arc::clone(self);
 
-        let mut worker_senders = Vec::with_capacity(worker_count);
+        tokio::spawn(async move {
+            info!(
+                "[Sequencing] Node {} median dispatcher started",
+                sequencing.process_id
+            );
 
-        for worker_id in 0..worker_count {
-            let (worker_tx, mut worker_rx) = async_mpsc::unbounded_channel::<ModuleMessage>();
-            worker_senders.push(worker_tx);
+            while let Some((sender_id, message)) = {
+                let mut rx = median_rx.lock().await;
+                rx.recv().await
+            } {
+                let previous = backlog_counter.fetch_sub(1, Ordering::Relaxed);
+                let backlog = previous.saturating_sub(1);
+                metrics::gauge!("smrol.channel_backlog", "channel" => "median").set(backlog as f64);
+                metrics::counter!("smrol.dispatch_total", "stage" => "median").increment(1);
 
-            let backlog_counter = Arc::clone(&self.median_backlog);
-            let sequencing = Arc::clone(self);
-            tokio::spawn(async move {
-                info!(
-                    "[Sequencing] Node {} median worker-{} started",
-                    sequencing.process_id, worker_id
-                );
-
-                let mut count = 0u32;
-                let mut total_time = Duration::ZERO;
-                let mut max_time = Duration::ZERO;
-                let mut last_log = Instant::now();
-
-                while let Some((sender_id, message)) = worker_rx.recv().await {
-                    let previous = backlog_counter.fetch_sub(1, Ordering::Relaxed);
-                    let backlog = previous.saturating_sub(1);
-                    metrics::gauge!("smrol.channel_backlog", "channel" => "median")
-                        .set(backlog as f64);
-
+                let sequencing_for_task = Arc::clone(&sequencing);
+                spawn_detached("median", Arc::clone(&semaphore), concurrency, async move {
                     let start = Instant::now();
-                    match message {
+                    if let Err(e) = match message {
                         SmrolMessage::SeqMedian {
                             vc,
                             median_sequence,
                             proof,
                             sender_id: _msg_sender,
                         } => {
-                            if let Err(e) = sequencing
+                            sequencing_for_task
                                 .process_seq_median_message(sender_id, vc, median_sequence, proof)
                                 .await
-                            {
-                                warn!(
-                                    "⚠️ [Sequencing] Node {} median worker-{} failed: {}",
-                                    sequencing.process_id, worker_id, e
-                                );
-                            }
                         }
                         _ => {
                             warn!(
-                                "⚠️ [Sequencing] Node {} median worker-{} received unexpected message",
-                                sequencing.process_id, worker_id
-                            );
+                                    "⚠️ [Sequencing] Node {} median dispatcher received unexpected message",
+                                    sequencing_for_task.process_id
+                                );
+                            Ok(())
                         }
+                    } {
+                        warn!(
+                            "⚠️ [Sequencing] Node {} median task failed: {}",
+                            sequencing_for_task.process_id, e
+                        );
                     }
-
                     let elapsed = start.elapsed();
                     if elapsed > Duration::from_millis(10) {
                         warn!(
-                            "🐌 [Sequencing] Median worker-{} slow for node {}: {:?}",
-                            worker_id, sequencing.process_id, elapsed
+                            "🐌 [Sequencing] Median task slow for node {}: {:?}",
+                            sequencing_for_task.process_id, elapsed
                         );
                     }
-
-                    count += 1;
-                    total_time += elapsed;
-                    max_time = max_time.max(elapsed);
-                    if last_log.elapsed() > Duration::from_secs(1) {
-                        let avg = if count > 0 {
-                            total_time / count
-                        } else {
-                            Duration::ZERO
-                        };
-                        warn!(
-                            "📊 [Critical] Median worker-{} stats node {}: {} msgs, avg={:?}, max={:?}, rate={}/s",
-                            worker_id,
-                            sequencing.process_id,
-                            count,
-                            avg,
-                            max_time,
-                            count
-                        );
-                        count = 0;
-                        total_time = Duration::ZERO;
-                        max_time = Duration::ZERO;
-                        last_log = Instant::now();
-                    }
-                }
-
-                warn!(
-                    "⚠️ [Sequencing] Node {} median worker-{} exiting (channel closed)",
-                    sequencing.process_id, worker_id
-                );
-            });
-        }
-
-        let median_rx = Arc::clone(&self.median_rx);
-        let process_id = self.process_id;
-        tokio::spawn(async move {
-            let mut next_idx = 0usize;
-            let worker_count = worker_senders.len();
-            if worker_count == 0 {
-                return;
+                });
             }
 
-            loop {
-                let maybe_message = {
-                    let mut rx = median_rx.lock().await;
-                    rx.recv().await
-                };
-
-                let Some(mut item) = maybe_message else {
-                    break;
-                };
-
-                let mut attempts = 0usize;
-                loop {
-                    let idx = next_idx % worker_count;
-                    next_idx = next_idx.wrapping_add(1);
-                    attempts += 1;
-
-                    match worker_senders[idx].send(item) {
-                        Ok(_) => break,
-                        Err(err) => {
-                            item = err.0;
-                            warn!(
-                                "⚠️ [Sequencing] Node {} median dispatcher failed to deliver to worker {}",
-                                process_id, idx
-                            );
-
-                            if attempts >= worker_count {
-                                warn!(
-                                    "⚠️ [Sequencing] Node {} median dispatcher dropping median after exhausting workers",
-                                    process_id
-                                );
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            info!(
-                "[Sequencing] Node {} median dispatcher exiting (channel closed)",
-                process_id
+            warn!(
+                "⚠️ [Sequencing] Node {} median dispatcher exiting (channel closed)",
+                sequencing.process_id
             );
         });
     }
@@ -1613,208 +1892,99 @@ impl TransactionSequencing {
     }
 
     fn spawn_final_sign_processor(self: &Arc<Self>) {
-        let worker_count = FINAL_SIGN_WORKER_COUNT.max(1);
-
-        let mut worker_senders = Vec::with_capacity(worker_count);
-
-        for worker_id in 0..worker_count {
-            let (worker_tx, mut worker_rx) = async_mpsc::unbounded_channel::<FinalSignTask>();
-            worker_senders.push(worker_tx);
-
-            let backlog_counter = Arc::clone(&self.final_sign_backlog);
-            let sequencing = Arc::clone(self);
-            tokio::spawn(async move {
-                info!(
-                    "[Sequencing] Node {} final sign worker-{} started",
-                    sequencing.process_id, worker_id
-                );
-
-                while let Some(task) = worker_rx.recv().await {
-                    let previous = backlog_counter.fetch_sub(1, Ordering::Relaxed);
-                    let backlog = previous.saturating_sub(1);
-                    metrics::gauge!(
-                        "smrol.channel_backlog",
-                        "channel" => "final_sign"
-                    )
-                    .set(backlog as f64);
-
-                    let start = Instant::now();
-                    if let Err(e) = sequencing.process_final_sign_task(task).await {
-                        warn!(
-                            "⚠️ [Sequencing] Node {} final sign worker-{} failed: {}",
-                            sequencing.process_id, worker_id, e
-                        );
-                    }
-                    let elapsed = start.elapsed();
-                    if elapsed > Duration::from_millis(10) {
-                        warn!(
-                            "🐌 [Sequencing] Final sign worker-{} slow for node {}: {:?}",
-                            worker_id, sequencing.process_id, elapsed
-                        );
-                    }
-                }
-
-                warn!(
-                    "⚠️ [Sequencing] Node {} final sign worker-{} exiting (channel closed)",
-                    sequencing.process_id, worker_id
-                );
-            });
-        }
-
         let sign_rx = Arc::clone(&self.final_sign_rx);
-        let process_id = self.process_id;
+        let backlog_counter = Arc::clone(&self.final_sign_backlog);
+        let semaphore = Arc::clone(&self.final_sign_semaphore);
+        let concurrency = self.final_sign_concurrency;
+        let sequencing = Arc::clone(self);
+
         tokio::spawn(async move {
-            let mut next_idx = 0usize;
-            let worker_count = worker_senders.len();
-            if worker_count == 0 {
-                return;
-            }
-
-            loop {
-                let maybe_task = {
-                    let mut rx = sign_rx.lock().await;
-                    rx.recv().await
-                };
-
-                let Some(mut task) = maybe_task else {
-                    break;
-                };
-
-                let mut attempts = 0usize;
-                loop {
-                    let idx = next_idx % worker_count;
-                    next_idx = next_idx.wrapping_add(1);
-                    attempts += 1;
-
-                    match worker_senders[idx].send(task) {
-                        Ok(_) => break,
-                        Err(err) => {
-                            task = err.0;
-                            warn!(
-                                "⚠️ [Sequencing] Node {} final sign dispatcher retry worker {}",
-                                process_id, idx
-                            );
-
-                            if attempts >= worker_count {
-                                warn!(
-                                    "⚠️ [Sequencing] Node {} final sign dispatcher dropping task",
-                                    process_id
-                                );
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
             info!(
-                "[Sequencing] Node {} final sign dispatcher exiting (channel closed)",
-                process_id
+                "[Sequencing] Node {} final sign dispatcher started",
+                sequencing.process_id
+            );
+
+            while let Some(task) = {
+                let mut rx = sign_rx.lock().await;
+                rx.recv().await
+            } {
+                let previous = backlog_counter.fetch_sub(1, Ordering::Relaxed);
+                let backlog = previous.saturating_sub(1);
+                metrics::gauge!(
+                    "smrol.channel_backlog",
+                    "channel" => "final_sign"
+                )
+                .set(backlog as f64);
+                metrics::counter!("smrol.dispatch_total", "stage" => "final_sign").increment(1);
+
+                let sequencing_for_task = Arc::clone(&sequencing);
+                spawn_detached(
+                    "final_sign",
+                    Arc::clone(&semaphore),
+                    concurrency,
+                    async move {
+                        if let Err(e) = sequencing_for_task.process_final_sign_task(task).await {
+                            warn!(
+                                "⚠️ [Sequencing] Node {} final sign task failed: {}",
+                                sequencing_for_task.process_id, e
+                            );
+                        }
+                    },
+                );
+            }
+
+            warn!(
+                "⚠️ [Sequencing] Node {} final sign dispatcher exiting (channel closed)",
+                sequencing.process_id
             );
         });
     }
 
     fn spawn_final_verify_processor(self: &Arc<Self>) {
-        let worker_count = FINAL_VERIFY_WORKER_COUNT.max(1);
-
-        let mut worker_senders = Vec::with_capacity(worker_count);
-
-        for worker_id in 0..worker_count {
-            let (worker_tx, mut worker_rx) = async_mpsc::unbounded_channel::<FinalVerifyTask>();
-            worker_senders.push(worker_tx);
-
-            let backlog_counter = Arc::clone(&self.final_verify_backlog);
-            let sequencing = Arc::clone(self);
-            tokio::spawn(async move {
-                info!(
-                    "[Sequencing] Node {} final verify worker-{} started",
-                    sequencing.process_id, worker_id
-                );
-
-                while let Some(task) = worker_rx.recv().await {
-                    let previous = backlog_counter.fetch_sub(1, Ordering::Relaxed);
-                    let backlog = previous.saturating_sub(1);
-                    metrics::gauge!(
-                        "smrol.channel_backlog",
-                        "channel" => "final_verify"
-                    )
-                    .set(backlog as f64);
-
-                    let start = Instant::now();
-                    if let Err(e) = sequencing.process_final_verify_task(task).await {
-                        warn!(
-                            "⚠️ [Sequencing] Node {} final verify worker-{} failed: {}",
-                            sequencing.process_id, worker_id, e
-                        );
-                    }
-                    let elapsed = start.elapsed();
-                    if elapsed > Duration::from_millis(10) {
-                        warn!(
-                            "🐌 [Sequencing] Final verify worker-{} slow for node {}: {:?}",
-                            worker_id, sequencing.process_id, elapsed
-                        );
-                    }
-                }
-
-                warn!(
-                    "⚠️ [Sequencing] Node {} final verify worker-{} exiting (channel closed)",
-                    sequencing.process_id, worker_id
-                );
-            });
-        }
-
         let verify_rx = Arc::clone(&self.final_verify_rx);
-        let sequencing_dispatch = Arc::clone(self);
-        let process_id = self.process_id;
+        let backlog_counter = Arc::clone(&self.final_verify_backlog);
+        let semaphore = Arc::clone(&self.final_verify_semaphore);
+        let concurrency = self.final_verify_concurrency;
+        let sequencing = Arc::clone(self);
+
         tokio::spawn(async move {
-            let mut next_idx = 0usize;
-            let worker_count = worker_senders.len();
-            if worker_count == 0 {
-                return;
-            }
-
-            loop {
-                let maybe_task = {
-                    let mut rx = verify_rx.lock().await;
-                    rx.recv().await
-                };
-
-                let Some(mut task) = maybe_task else {
-                    break;
-                };
-
-                let mut attempts = 0usize;
-                loop {
-                    let idx = next_idx % worker_count;
-                    next_idx = next_idx.wrapping_add(1);
-                    attempts += 1;
-
-                    match worker_senders[idx].send(task) {
-                        Ok(_) => break,
-                        Err(err) => {
-                            task = err.0;
-                            warn!(
-                                "⚠️ [Sequencing] Node {} final verify dispatcher retry worker {}",
-                                process_id, idx
-                            );
-
-                            if attempts >= worker_count {
-                                warn!(
-                                    "⚠️ [Sequencing] Node {} final verify dispatcher dropping task",
-                                    process_id
-                                );
-                                let vc_key = VC::from_slice(&task.final_msg.vc);
-                                sequencing_dispatch.final_verify_inflight.remove(&vc_key);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
             info!(
-                "[Sequencing] Node {} final verify dispatcher exiting (channel closed)",
-                process_id
+                "[Sequencing] Node {} final verify dispatcher started",
+                sequencing.process_id
+            );
+
+            while let Some(task) = {
+                let mut rx = verify_rx.lock().await;
+                rx.recv().await
+            } {
+                let previous = backlog_counter.fetch_sub(1, Ordering::Relaxed);
+                let backlog = previous.saturating_sub(1);
+                metrics::gauge!(
+                    "smrol.channel_backlog",
+                    "channel" => "final_verify"
+                )
+                .set(backlog as f64);
+                metrics::counter!("smrol.dispatch_total", "stage" => "final_verify").increment(1);
+
+                let sequencing_for_task = Arc::clone(&sequencing);
+                spawn_detached(
+                    "final_verify",
+                    Arc::clone(&semaphore),
+                    concurrency,
+                    async move {
+                        if let Err(e) = sequencing_for_task.process_final_verify_task(task).await {
+                            warn!(
+                                "⚠️ [Sequencing] Node {} final verify task failed: {}",
+                                sequencing_for_task.process_id, e
+                            );
+                        }
+                    },
+                );
+            }
+
+            warn!(
+                "⚠️ [Sequencing] Node {} final verify dispatcher exiting (channel closed)",
+                sequencing.process_id
             );
         });
     }
@@ -1984,11 +2154,17 @@ impl TransactionSequencing {
         let total_shards = std::cmp::max(data_shards, self.n);
         let serialized_for_encode = serialized.clone();
         let encode_start = Instant::now();
-        let encoded_package = run_seq_offload_task("erasure_encode", move || {
+        let encoded_package = {
+            /*
+            run_seq_offload_task("erasure_encode", move || {
+                ErasurePackage::encode(&serialized_for_encode, data_shards, total_shards)
+                    .map_err(|e| format!("Erasure coding task failed: {}", e))
+            })
+            .await?
+            */
             ErasurePackage::encode(&serialized_for_encode, data_shards, total_shards)
-                .map_err(|e| format!("Erasure coding task failed: {}", e))
-        })
-        .await?;
+                .map_err(|e| format!("Erasure coding task failed: {}", e))?
+        };
         let encode_duration = encode_start.elapsed();
 
         let seq_request = SeqRequest {
@@ -2171,6 +2347,7 @@ impl TransactionSequencing {
         // );
         let process_id = self.process_id;
 
+        self.erasure_store.insert(vc_key, encoded_package.clone());
         // Persist mapping for later finalize broadcast
         self.pending_txs
             .entry(vc_key)
@@ -2487,8 +2664,7 @@ impl TransactionSequencing {
             if total_time > Duration::from_millis(10) {
                 warn!(
                     "🐌 finalize_seq_order SLOW: total={:?}, median_calc={:?}",
-                    total_time,
-                    median_time
+                    total_time, median_time
                 );
             }
             return Ok(());
@@ -2508,9 +2684,7 @@ impl TransactionSequencing {
         if total_time > Duration::from_millis(10) {
             warn!(
                 "🐌 finalize_seq_order enqueue slow: total={:?}, median_calc={:?}, enqueue={:?}",
-                total_time,
-                median_time,
-                enqueue_time
+                total_time, median_time, enqueue_time
             );
         }
 
@@ -2788,13 +2962,16 @@ impl TransactionSequencing {
         let share = SignatureShare::from_bytes(share_bytes)
             .map_err(|e| format!("Failed to parse threshold share: {}", e))?;
 
-        let threshold_public = self.threshold_public.clone();
-        let message_bytes = Self::build_median_signature_message(&median.vc, median.s_tx);
+        if sender >= self.pk_share_cache.len() {
+            return Err(format!("invalid sender id {} (cache size {})", sender, self.pk_share_cache.len()));
+        }
+        let pk_share = self.pk_share_cache[sender];
+        let message_bytes = Arc::new(Self::build_median_signature_message(&median.vc, median.s_tx));
         let share_for_task = share.clone();
+        let message_for_task = Arc::clone(&message_bytes);
 
-        let is_valid = run_threshold_crypto_task("verify_median_share", move || {
-            let pk_share = threshold_public.public_key_share(sender);
-            Ok(pk_share.verify(&share_for_task, &message_bytes))
+        let is_valid = run_threshold_median_verify_task("verify_median_share", move || {
+            Ok(SHARE_BATCHER.verify(message_for_task, pk_share, share_for_task))
         })
         .await?;
 
@@ -2815,7 +2992,7 @@ impl TransactionSequencing {
         let spawn_start = Instant::now();
 
         let (signature, worker_time) =
-            run_threshold_crypto_task("combine_median_shares", move || {
+            run_threshold_sign_task("combine_median_shares", move || {
                 let work_start = Instant::now();
                 let outcome = threshold_public
                     .combine_signatures(shares.iter().map(|(id, share)| (*id, share)))
@@ -2900,10 +3077,13 @@ impl TransactionSequencing {
 
         let sign_send_start = Instant::now();
         let threshold_share = self.threshold_share.clone();
-        let message_for_sign = message.clone();
-        let (sigma_seq, sign_exec_time) = run_threshold_crypto_task("threshold_sign", move || {
+        let message_for_sign = message;
+        let (sigma_seq, sign_exec_time) = run_threshold_sign_task("threshold_sign", move || {
             let sign_start = Instant::now();
-            let sigma = threshold_share.sign(&message_for_sign).to_bytes().to_vec();
+            let sigma = threshold_share
+                .sign(message_for_sign.as_slice())
+                .to_bytes()
+                .to_vec();
             Ok((sigma, sign_start.elapsed()))
         })
         .await?;
@@ -2939,10 +3119,7 @@ impl TransactionSequencing {
         if total_time > Duration::from_millis(10) {
             warn!(
                 "🐌 final sign task slow: node={} total={:?}, sign={:?}, send={:?}",
-                self.process_id,
-                total_time,
-                sign_time,
-                send_time
+                self.process_id, total_time, sign_time, send_time
             );
         }
 
@@ -2967,12 +3144,14 @@ impl TransactionSequencing {
             .map_err(|e| format!("Failed to parse combined signature: {}", e))?;
 
         let threshold_public = self.threshold_public.clone();
-        let message_bytes = Self::build_final_signature_message(&final_msg.vc, final_msg.s_tx);
-
-        run_threshold_crypto_task("verify_combined_signature", move || {
-            Ok(threshold_public
-                .public_key()
-                .verify(&signature, &message_bytes))
+        let message_bytes = Arc::new(Self::build_median_signature_message(&final_msg.vc, final_msg.s_tx));
+        let message_for_task = Arc::clone(&message_bytes);
+        run_threshold_verify_task("verify_combined_signature", move || {
+            Ok(COMBINED_BATCHER.verify(
+                message_for_task,
+                signature,
+                threshold_public.public_key(),
+            ))
         })
         .await
     }
@@ -2982,7 +3161,7 @@ impl TransactionSequencing {
     }
 
     async fn process_final_verify_task(&self, task: FinalVerifyTask) -> Result<(), String> {
-        let total_start = Instant::now();
+        // let total_start = Instant::now();
         let final_msg = task.final_msg;
         let vc_key = VC::from_slice(&final_msg.vc);
 
@@ -2990,6 +3169,14 @@ impl TransactionSequencing {
         let verified = match self.verify_combined_signature_async(&final_msg).await {
             Ok(v) => v,
             Err(e) => {
+                metrics::counter!(
+                    "smrol_verify_result_total",
+                    "stage" => "final_verify",
+                    "result" => "fail"
+                )
+                .increment(1);
+                self.final_verify_inflight.remove(&vc_key);
+                return Err(e);
                 self.final_verify_inflight.remove(&vc_key);
                 return Err(e);
             }
@@ -2997,8 +3184,23 @@ impl TransactionSequencing {
         let verify_time = verify_start.elapsed();
 
         if !verified {
+            metrics::counter!(
+                "smrol_verify_result_total",
+                "stage" => "final_verify",
+                "result" => "fail"
+            )
+            .increment(1);
             self.final_verify_inflight.remove(&vc_key);
             return Ok(());
+            self.final_verify_inflight.remove(&vc_key);
+            return Ok(());
+        } else {
+            metrics::counter!(
+                "smrol_verify_result_total",
+                "stage" => "final_verify",
+                "result" => "ok"
+            )
+            .increment(1);
         }
 
         if self.finalized_vcs.contains(&vc_key) {
@@ -3030,17 +3232,17 @@ impl TransactionSequencing {
             self.emit_sequenced_entry(entry).await?;
         }
 
-        let total_time = total_start.elapsed();
-        if total_time > Duration::from_millis(10) {
-            warn!(
-                "🐌 final verify task slow: node={} total={:?}, verify={:?}, check={:?}, finalize={:?}",
-                self.process_id,
-                total_time,
-                verify_time,
-                check_time,
-                finalize_time
-            );
-        }
+        // let total_time = total_start.elapsed();
+        // if total_time > Duration::from_millis(10) {
+        //     warn!(
+        //         "🐌 final verify task slow: node={} total={:?}, verify={:?}, check={:?}, finalize={:?}",
+        //         self.process_id,
+        //         total_time,
+        //         verify_time,
+        //         check_time,
+        //         finalize_time
+        //     );
+        // }
 
         Ok(())
     }
@@ -3113,7 +3315,7 @@ impl TransactionSequencing {
             .ok()
             .and_then(|v| v.parse::<usize>().ok())
             .filter(|&v| v > 0)
-            .unwrap_or(1000)
+            .unwrap_or(100000)
     }
 
     fn cleanup_log_prefix() -> &'static str {
@@ -3327,10 +3529,13 @@ impl TransactionSequencing {
         let vc_key = VC::from_slice(&final_msg.vc);
 
         let mut payload = if let Some((_, tx)) = self.pending_txs.remove(&vc_key) {
+            metrics::counter!("smrol_finalize_ready_source","src"=>"pending_txs").increment(1);
             tx.payload
         } else if let Some((_, bytes)) = self.seq_payloads.remove(&final_msg.s_tx) {
+            metrics::counter!("smrol_finalize_ready_source","src"=>"seq_payloads").increment(1);
             bytes
         } else if let Some(pkg_entry) = self.erasure_store.get(&vc_key) {
+            metrics::counter!("smrol_finalize_ready_source","src"=>"erasure").increment(1);
             warn!(
                 "Try Reconstructing... s_tx={}, vc={:?}",
                 final_msg.s_tx,
@@ -3352,6 +3557,7 @@ impl TransactionSequencing {
                 }
             }
         } else {
+            metrics::counter!("smrol_finalize_ready_source","src"=>"pending").increment(1);
             // Still waiting for request context; cache for later retry
             self.store_pending_final(final_msg).await;
             return None;

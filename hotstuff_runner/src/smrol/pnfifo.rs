@@ -113,9 +113,10 @@ impl ThresholdThreadPool {
 }
 
 static PNFIFO_THRESHOLD_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
-    let workers = thread::available_parallelism()
-        .map(|n| (n.get() * 2).max(4))
-        .unwrap_or(4);
+    // let workers = thread::available_parallelism()
+    //     .map(|n| (n.get() * 2).max(4))
+    //     .unwrap_or(4);
+    let workers = 16;
     ThresholdThreadPool::new(workers)
 });
 

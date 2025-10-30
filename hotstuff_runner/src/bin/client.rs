@@ -490,6 +490,7 @@ impl ClientNode {
 
         let mut total_sent = 0;
         let mut batch_counter = 0;
+        let mut rng = rand::thread_rng();
 
         while Instant::now() < end_time {
             for node_offset in 0..node_num {
@@ -535,7 +536,12 @@ impl ClientNode {
                 self.stats.log_summary();
             }
 
-            tokio::time::sleep(batch_interval).await;
+            // Apply light symmetric jitter to reduce phase alignment across clients
+            let base_ms = std::cmp::max(1, batch_interval.as_millis() as i64);
+            let jitter_window_ms = std::cmp::max(1, base_ms / 5);
+            let jitter_offset_ms = rng.gen_range(-jitter_window_ms, jitter_window_ms + 1);
+            let sleep_ms = std::cmp::max(1, base_ms + jitter_offset_ms) as u64;
+            tokio::time::sleep(Duration::from_millis(sleep_ms)).await;
             // Debug hook: send one transaction every 120 seconds
             // tokio::time::sleep(Duration::from_millis(100)).await;
         }
@@ -556,6 +562,7 @@ impl ClientNode {
         info!("[client] entering interactive mode");
 
         let mut tx_counter = 0;
+        let mut rng = rand::thread_rng();
 
         loop {
             let batch_size = 5;
@@ -593,7 +600,12 @@ impl ClientNode {
                 self.stats.log_summary();
             }
 
-            tokio::time::sleep(Duration::from_millis(1000)).await;
+            // Interactive mode jitter: keep average pacing but break strict periodicity
+            let base_ms = 1000i64;
+            let jitter_window_ms = std::cmp::max(1, base_ms / 5);
+            let jitter_offset_ms = rng.gen_range(-jitter_window_ms, jitter_window_ms + 1);
+            let sleep_ms = std::cmp::max(1, base_ms + jitter_offset_ms) as u64;
+            tokio::time::sleep(Duration::from_millis(sleep_ms)).await;
         }
     }
 }
@@ -1099,7 +1111,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .unwrap_or_else(|_| "100".to_string())
                 .parse()
                 .unwrap_or(100);
-            info!("[client] target TPS: {}", target_tps);
+            info!("[client] target TPS: {} x n", target_tps);
 
             let duration: u64 = env::var("TEST_DURATION")
                 .unwrap_or_else(|_| "60".to_string())

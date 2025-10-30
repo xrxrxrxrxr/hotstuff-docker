@@ -1,4 +1,5 @@
 // hotstuff_runner/src/lib.rs
+pub mod affinity;
 pub mod app;
 pub mod event;
 pub mod kv_store;

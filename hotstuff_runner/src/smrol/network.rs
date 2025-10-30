@@ -2,6 +2,7 @@
 //! This keeps the connection-pool/backoff design while dispatching
 //! incoming frames to PNFIFO / Sequencing / Consensus queues directly.
 
+use crate::affinity::{affinity_from_env, bind_current_thread};
 use crate::smrol::message::SmrolMessage;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
@@ -63,18 +64,45 @@ impl SmrolTcpNetwork {
 
         let (message_tx, message_rx) = async_mpsc::unbounded_channel();
 
-        let rt_threads: usize = std::env::var("SMROL_RT_THREADS")
+        let affinity_label = format!("smrol_net_rt_node{}", node_id);
+        let affinity = affinity_from_env("SMROL_RT_CORES", &affinity_label).map(Arc::new);
+        let requested_threads: usize = std::env::var("SMROL_RT_THREADS")
             .ok()
             .and_then(|s| s.parse().ok())
             .unwrap_or(2);
-        let runtime = Arc::new(
-            Builder::new_multi_thread()
-                .worker_threads(rt_threads)
-                .enable_all()
-                .thread_name(&format!("smrol-net-{}", node_id))
-                .build()
-                .expect("Failed to build SMROL runtime"),
-        );
+        let rt_threads = match affinity.as_ref() {
+            Some(cores) => {
+                if cores.len() != requested_threads {
+                    info!(
+                        "[affinity] smrol network: overriding worker count {} -> {} to match core set",
+                        requested_threads,
+                        cores.len()
+                    );
+                }
+                cores.len().max(1)
+            }
+            None => requested_threads.max(1),
+        };
+
+        let mut builder = Builder::new_multi_thread();
+        builder
+            .worker_threads(rt_threads)
+            .enable_all()
+            .thread_name(&format!("smrol-net-{}", node_id));
+
+        if let Some(cores) = affinity.clone() {
+            let cores = cores.clone();
+            let label = affinity_label.clone();
+            let assignment = Arc::new(AtomicUsize::new(0));
+            builder.on_thread_start(move || {
+                let idx = assignment.fetch_add(1, Ordering::Relaxed);
+                if let Some(core) = cores.get(idx % cores.len()).copied() {
+                    bind_current_thread(&label, core);
+                }
+            });
+        }
+
+        let runtime = Arc::new(builder.build().expect("Failed to build SMROL runtime"));
 
         info!(
             "🌐 [SMROL] Node {} initialised network runtime with {} worker(s) on port {}",
