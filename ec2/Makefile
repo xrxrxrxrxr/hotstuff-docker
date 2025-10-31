@@ -87,7 +87,7 @@ stop:
 	fi
 	@ssh $(SSH_OPTS) $(CLIENT) "cd ~/hotstuff && (docker compose --profile client down || docker-compose --profile client down)" || { echo "Failed to stop client"; exit 1; }
 	@echo "Experiment stopped; preparing to collect logs"
-	@$(MAKE) logs
+	@$(MAKE) logs-core
 
 logs:
 	@echo "Collecting logs..."

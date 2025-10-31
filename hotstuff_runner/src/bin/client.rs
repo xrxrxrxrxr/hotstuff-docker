@@ -158,9 +158,9 @@ impl LatencyTracker {
                 let latency_ms = latency as f64 / 1000.0;
                 self.consensus_latencies.push(latency);
                 self.consensus_recorded.insert(tx_id);
-                // if tx_id % 1000 == 0 {
-                info!("[latency] tx {} consensus delay: {} ms", tx_id, latency_ms);
-                // }
+                if tx_id % 1000 == 0 {
+                    info!("[latency] tx {} consensus delay: {} ms", tx_id, latency_ms);
+                }
             }
             if let Some(pushed_time) = self.pushed_timestamps.remove(&tx_id) {
                 let latency = pushed_time.elapsed().as_micros();

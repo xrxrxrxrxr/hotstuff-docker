@@ -1,19 +1,18 @@
 use crate::affinity::{affinity_from_env, bind_current_thread};
 use crate::smrol::{
     consensus::TransactionEntry,
-    crypto::ErasurePackage,
+    crypto::{ErasurePackage, MultiSigContext},
     finalization::OutputFinalization,
     message::{SmrolMessage, SmrolTransaction},
     network::SmrolTcpNetwork,
     pnfifo::PnfifoBc,
     ModuleMessage,
 };
-use blsttc::{
-    hash_g2, PublicKey, PublicKeySet, PublicKeyShare, SecretKeyShare,
-    Signature as ThresholdSignature, SignatureShare, SIG_SIZE,
+use blst::min_sig::{
+    AggregatePublicKey as BlstAggregatePublicKey, AggregateSignature as BlstAggregateSignature,
+    PublicKey as BlstPublicKey, Signature as BlstSignature,
 };
-use blsttc::blstrs::{pairing, G1Affine, G1Projective, G2Affine, G2Projective, Scalar as Fr};
-use blsttc::group::{ff::Field, Curve, Group};
+use blst::BLST_ERROR;
 use core_affinity::CoreId;
 use crossbeam::channel::{unbounded, Sender};
 use dashmap::{mapref::entry::Entry, DashMap, DashSet};
@@ -23,7 +22,6 @@ use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use std::sync::{
     atomic::{AtomicU64, AtomicUsize, Ordering},
-    mpsc as std_mpsc,
     Arc, Mutex,
 };
 use std::task::{Context, Poll};
@@ -41,319 +39,17 @@ use tokio::{
 };
 use tracing::{debug, error, info, warn};
 use tracing_subscriber::field::debug;
-use rand08::rngs::OsRng;
 
-const BATCH_VERIFIER_WINDOW: Duration = Duration::from_micros(200);
-const BATCH_VERIFIER_SIZE: usize = 16;
+const MULTISIG_SIGNATURE_LEN: usize = 48;
 
-static DISABLE_THRESHOLD_SIG_VERIFICATION: Lazy<bool> =
-    Lazy::new(|| match std::env::var("SMROL_DISABLE_THRESHOLD_SIG") {
-        Ok(val) => match val.trim().to_ascii_lowercase().as_str() {
-            "0" | "false" | "no" | "off" => false,
-            "1" | "true" | "yes" | "on" => true,
-            _ => true,
-        },
-        Err(_) => true,
+static DISABLE_MULTISIG_VERIFICATION: Lazy<bool> =
+    Lazy::new(|| match std::env::var("SMROL_DISABLE_MULTISIG") {
+        Ok(val) => matches!(
+            val.trim().to_ascii_lowercase().as_str(),
+            "1" | "true" | "yes" | "on"
+        ),
+        Err(_) => false,
     });
-
-struct ShareVerifyRequest {
-    message: Arc<Vec<u8>>,
-    public_key_share: PublicKeyShare,
-    signature_share: SignatureShare,
-    responder: std_mpsc::Sender<bool>,
-    enqueued_at: Instant,
-}
-
-struct CombinedVerifyRequest {
-    message: Arc<Vec<u8>>,
-    signature: ThresholdSignature,
-    public_key: PublicKey,
-    responder: std_mpsc::Sender<bool>,
-    enqueued_at: Instant,
-}
-
-struct ShareBucket {
-    requests: Vec<ShareVerifyRequest>,
-    first_enqueued: Instant,
-}
-
-struct ShareBatcher {
-    sender: std_mpsc::Sender<ShareVerifyRequest>,
-}
-
-struct CombinedBatcher {
-    sender: std_mpsc::Sender<CombinedVerifyRequest>,
-}
-
-static SHARE_BATCHER: Lazy<ShareBatcher> = Lazy::new(ShareBatcher::new);
-static COMBINED_BATCHER: Lazy<CombinedBatcher> = Lazy::new(CombinedBatcher::new);
-
-impl ShareBatcher {
-    fn new() -> Self {
-        let (sender, receiver) = std_mpsc::channel::<ShareVerifyRequest>();
-        thread::Builder::new()
-            .name("share-batch-worker".to_owned())
-            .spawn(move || share_batch_worker(receiver))
-            .expect("failed to start share batch worker");
-        Self { sender }
-    }
-
-    fn verify(
-        &self,
-        message: Arc<Vec<u8>>,
-        public_key_share: PublicKeyShare,
-        signature_share: SignatureShare,
-    ) -> bool {
-        let (resp_tx, resp_rx) = std_mpsc::channel();
-        let request = ShareVerifyRequest {
-            message,
-            public_key_share,
-            signature_share,
-            responder: resp_tx,
-            enqueued_at: Instant::now(),
-        };
-        if self.sender.send(request).is_err() {
-            return false;
-        }
-        resp_rx.recv().unwrap_or(false)
-    }
-}
-
-impl CombinedBatcher {
-    fn new() -> Self {
-        let (sender, receiver) = std_mpsc::channel::<CombinedVerifyRequest>();
-        thread::Builder::new()
-            .name("combined-batch-worker".to_owned())
-            .spawn(move || combined_batch_worker(receiver))
-            .expect("failed to start combined batch worker");
-        Self { sender }
-    }
-
-    fn verify(
-        &self,
-        message: Arc<Vec<u8>>,
-        signature: ThresholdSignature,
-        public_key: PublicKey,
-    ) -> bool {
-        let (resp_tx, resp_rx) = std_mpsc::channel();
-        let request = CombinedVerifyRequest {
-            message,
-            signature,
-            public_key,
-            responder: resp_tx,
-            enqueued_at: Instant::now(),
-        };
-        if self.sender.send(request).is_err() {
-            return false;
-        }
-        resp_rx.recv().unwrap_or(false)
-    }
-}
-
-fn share_batch_worker(receiver: std_mpsc::Receiver<ShareVerifyRequest>) {
-    let mut buckets: HashMap<Vec<u8>, ShareBucket> = HashMap::new();
-
-    while let Ok(request) = receiver.recv() {
-        let key = (*request.message).clone();
-        let entry = buckets.entry(key.clone()).or_insert_with(|| ShareBucket {
-            requests: Vec::new(),
-            first_enqueued: request.enqueued_at,
-        });
-        entry.requests.push(request);
-        if entry.requests.len() >= BATCH_VERIFIER_SIZE {
-            if let Some(bucket) = buckets.remove(&key) {
-                process_share_batch(bucket.requests);
-            }
-            continue;
-        }
-
-        flush_expired_share_buckets(&mut buckets);
-    }
-
-    for (_, bucket) in buckets {
-        process_share_batch(bucket.requests);
-    }
-}
-
-fn flush_expired_share_buckets(buckets: &mut HashMap<Vec<u8>, ShareBucket>) {
-    let now = Instant::now();
-    let expired: Vec<Vec<u8>> = buckets
-        .iter()
-        .filter(|(_, bucket)| now.duration_since(bucket.first_enqueued) >= BATCH_VERIFIER_WINDOW)
-        .map(|(k, _)| k.clone())
-        .collect();
-
-    for key in expired {
-        if let Some(bucket) = buckets.remove(&key) {
-            process_share_batch(bucket.requests);
-        }
-    }
-}
-
-fn process_share_batch(requests: Vec<ShareVerifyRequest>) {
-    if requests.is_empty() {
-        return;
-    }
-
-    if requests.len() == 1 {
-        let req = requests.into_iter().next().unwrap();
-        let result = req
-            .public_key_share
-            .verify(&req.signature_share, &req.message[..]);
-        let _ = req.responder.send(result);
-        return;
-    }
-
-    let message = Arc::clone(&requests[0].message);
-    let hash = hash_g2(&message[..]);
-    let mut agg_public = <G1Projective as Group>::identity();
-    let mut agg_signature = <G2Projective as Group>::identity();
-    let mut prepared: Vec<(Fr, G1Projective, G2Projective)> = Vec::with_capacity(requests.len());
-
-    for req in &requests {
-        let scalar = random_scalar();
-
-        let pk_bytes = req.public_key_share.clone().to_bytes();
-        let public_key = match PublicKey::from_bytes(pk_bytes) {
-            Ok(pk) => pk,
-            Err(_) => {
-                fallback_share_batch(requests, message);
-                return;
-            }
-        };
-        let sig_bytes = req.signature_share.to_bytes();
-        let sig_ct = G2Affine::from_compressed(&sig_bytes);
-        if bool::from(sig_ct.is_none()) {
-            fallback_share_batch(requests, message);
-            return;
-        }
-        let sig_proj = G2Projective::from(sig_ct.unwrap());
-        let pk_proj: G1Projective = G1Projective::from(public_key);
-        prepared.push((scalar, pk_proj, sig_proj));
-    }
-
-    for (scalar, pk_proj, sig_proj) in &prepared {
-        agg_public += pk_proj.clone() * *scalar;
-        agg_signature += sig_proj.clone() * *scalar;
-    }
-
-    let agg_public_affine = G1Affine::from(agg_public);
-    let agg_signature_affine = G2Affine::from(agg_signature);
-    let lhs = pairing(&agg_public_affine, &hash);
-    let generator = G1Affine::from(<G1Projective as Group>::generator());
-    let rhs = pairing(&generator, &agg_signature_affine);
-
-    if lhs == rhs {
-        for req in requests {
-            let _ = req.responder.send(true);
-        }
-    } else {
-        fallback_share_batch(requests, message);
-    }
-}
-
-fn fallback_share_batch(requests: Vec<ShareVerifyRequest>, message: Arc<Vec<u8>>) {
-    for req in requests {
-        let res = req
-            .public_key_share
-            .verify(&req.signature_share, &message[..]);
-        let _ = req.responder.send(res);
-    }
-}
-
-fn combined_batch_worker(receiver: std_mpsc::Receiver<CombinedVerifyRequest>) {
-    let mut batch: Vec<CombinedVerifyRequest> = Vec::with_capacity(BATCH_VERIFIER_SIZE);
-
-    loop {
-        match receiver.recv_timeout(BATCH_VERIFIER_WINDOW) {
-            Ok(request) => {
-                batch.push(request);
-                if batch.len() >= BATCH_VERIFIER_SIZE {
-                    process_combined_batch(batch.drain(..).collect());
-                }
-            }
-            Err(std_mpsc::RecvTimeoutError::Timeout) => {
-                if !batch.is_empty() {
-                    process_combined_batch(batch.drain(..).collect());
-                }
-            }
-            Err(std_mpsc::RecvTimeoutError::Disconnected) => {
-                if !batch.is_empty() {
-                    process_combined_batch(batch.drain(..).collect());
-                }
-                break;
-            }
-        }
-    }
-}
-
-fn process_combined_batch(requests: Vec<CombinedVerifyRequest>) {
-    if requests.is_empty() {
-        return;
-    }
-
-    if requests.len() == 1 {
-        let req = requests.into_iter().next().unwrap();
-        let res = req
-            .public_key
-            .verify(&req.signature, &req.message[..]);
-        let _ = req.responder.send(res);
-        return;
-    }
-
-    let public_key = requests[0].public_key;
-    let mut agg_hash = <G2Projective as Group>::identity();
-    let mut agg_signature = <G2Projective as Group>::identity();
-    let mut prepared: Vec<(Fr, G2Projective, G2Projective)> = Vec::with_capacity(requests.len());
-
-    for req in &requests {
-        let scalar = random_scalar();
-        let hash_proj = G2Projective::from(hash_g2(&req.message[..]));
-        let sig_bytes = req.signature.to_bytes();
-        let sig_ct = G2Affine::from_compressed(&sig_bytes);
-        if bool::from(sig_ct.is_none()) {
-            fallback_combined_batch(requests);
-            return;
-        }
-        let sig_proj = G2Projective::from(sig_ct.unwrap());
-        prepared.push((scalar, hash_proj, sig_proj));
-    }
-
-    for (scalar, hash_proj, sig_proj) in &prepared {
-        agg_hash += hash_proj.clone() * *scalar;
-        agg_signature += sig_proj.clone() * *scalar;
-    }
-
-    let agg_hash_affine = G2Affine::from(agg_hash);
-    let agg_signature_affine = G2Affine::from(agg_signature);
-    let pk_affine = G1Affine::from(G1Projective::from(public_key));
-
-    let lhs = pairing(&pk_affine, &agg_hash_affine);
-    let generator = G1Affine::from(<G1Projective as Group>::generator());
-    let rhs = pairing(&generator, &agg_signature_affine);
-
-    if lhs == rhs {
-        for req in requests {
-            let _ = req.responder.send(true);
-        }
-    } else {
-        fallback_combined_batch(requests);
-    }
-}
-
-fn fallback_combined_batch(requests: Vec<CombinedVerifyRequest>) {
-    for req in requests {
-        let res = req
-            .public_key
-            .verify(&req.signature, &req.message[..]);
-        let _ = req.responder.send(res);
-    }
-}
-
-fn random_scalar() -> Fr {
-    let mut rng = OsRng;
-    <Fr as Field>::random(&mut rng)
-}
 
 trait ThresholdJob: Send {
     fn run(self: Box<Self>);
@@ -458,16 +154,15 @@ fn read_inflight(var: &str, default: usize) -> usize {
         .unwrap_or(default)
 }
 
-static THRESHOLD_SIGN_COMBINE_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
-    // let default_workers = default_worker_count();
+static MULTISIG_SIGN_COMBINE_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
     let default_workers = (default_worker_count() * 2).min(32);
-    let requested_workers = parse_worker_count("SMROL_THRESHOLD_CRYPTO_WORKERS", default_workers);
-    let affinity = affinity_from_env("SMROL_THRESHOLD_COMBINE_CORES", "threshold_sign_combine");
+    let requested_workers = parse_worker_count("SMROL_MULTISIG_CRYPTO_WORKERS", default_workers);
+    let affinity = affinity_from_env("SMROL_MULTISIG_COMBINE_CORES", "multisig_sign_combine");
     let workers = match affinity.as_ref() {
         Some(cores) => {
             if cores.len() != requested_workers {
                 warn!(
-                    "[affinity] threshold_sign_combine: overriding worker count {} -> {} to match core set",
+                    "[affinity] multisig_sign_combine: overriding worker count {} -> {} to match core set",
                     requested_workers,
                     cores.len()
                 );
@@ -476,19 +171,18 @@ static THRESHOLD_SIGN_COMBINE_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
         }
         None => requested_workers,
     };
-    ThresholdThreadPool::new(workers, "threshold_sign_combine", affinity)
+    ThresholdThreadPool::new(workers, "multisig_sign_combine", affinity)
 });
 
-static THRESHOLD_VERIFY_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
-    // let default_workers = default_worker_count();
-    let default_workers = (default_worker_count()).min(32);
-    let requested_workers = parse_worker_count("SMROL_THRESHOLD_VERIFY_WORKERS", default_workers);
-    let affinity = affinity_from_env("SMROL_THRESHOLD_VERIFY_CORES", "threshold_verify");
+static MULTISIG_VERIFY_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
+    let default_workers = (default_worker_count() * 4).min(32);
+    let requested_workers = parse_worker_count("SMROL_MULTISIG_VERIFY_WORKERS", default_workers);
+    let affinity = affinity_from_env("SMROL_MULTISIG_VERIFY_CORES", "multisig_verify");
     let workers = match affinity.as_ref() {
         Some(cores) => {
             if cores.len() != requested_workers {
                 info!(
-                    "[affinity] threshold_verify: overriding worker count {} -> {} to match core set",
+                    "[affinity] multisig_verify: overriding worker count {} -> {} to match core set",
                     requested_workers,
                     cores.len()
                 );
@@ -497,14 +191,7 @@ static THRESHOLD_VERIFY_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
         }
         None => requested_workers,
     };
-    ThresholdThreadPool::new(workers, "threshold_verify", affinity)
-});
-
-static THRESHOLD_MEDIAN_VERIFY_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
-    // let default_workers = (default_worker_count() ).min(32);
-    let default_workers=2;
-    let workers = parse_worker_count("SMROL_THRESHOLD_MEDIAN_VERIFY_WORKERS", default_workers);
-    ThresholdThreadPool::new(workers, "threshold_median_verify", None)
+    ThresholdThreadPool::new(workers, "multisig_verify", affinity)
 });
 
 static SEQ_OFFLOAD_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
@@ -514,38 +201,30 @@ static SEQ_OFFLOAD_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
     ThresholdThreadPool::new(workers, "seq_offload", None)
 });
 
-const PNFIFO_BROADCAST_CONCURRENCY: usize = 8;
-const ORDER_VERIFY_CONCURRENCY: usize = 8;
-const REQUEST_WORKER_COUNT: usize = 8;
-const MEDIAN_WORKER_COUNT: usize = 8;
-const MEDIAN_COMBINE_WORKER_COUNT: usize = 8;
-const FINAL_WORKER_COUNT: usize = 8;
+const PNFIFO_BROADCAST_CONCURRENCY: usize = 4;
+const ORDER_VERIFY_CONCURRENCY: usize = 4;
+const REQUEST_WORKER_COUNT: usize = 4;
+const MEDIAN_WORKER_COUNT: usize = 4;
+const MEDIAN_COMBINE_WORKER_COUNT: usize = 4;
+const FINAL_WORKER_COUNT: usize = 4;
 const MSG_TAG_SEQUENCE: u8 = 0x01;
 const MSG_TAG_MEDIAN: u8 = 0x02;
 const MSG_TAG_FINAL: u8 = 0x03;
 
-async fn run_threshold_sign_task<R, F>(label: &'static str, task: F) -> Result<R, String>
+async fn run_multisig_sign_task<R, F>(label: &'static str, task: F) -> Result<R, String>
 where
     R: Send + 'static,
     F: FnOnce() -> Result<R, String> + Send + 'static,
 {
-    THRESHOLD_SIGN_COMBINE_POOL.submit(label, task)?.await
+    MULTISIG_SIGN_COMBINE_POOL.submit(label, task)?.await
 }
 
-async fn run_threshold_verify_task<R, F>(label: &'static str, task: F) -> Result<R, String>
+async fn run_multisig_verify_task<R, F>(label: &'static str, task: F) -> Result<R, String>
 where
     R: Send + 'static,
     F: FnOnce() -> Result<R, String> + Send + 'static,
 {
-    THRESHOLD_VERIFY_POOL.submit(label, task)?.await
-}
-
-async fn run_threshold_median_verify_task<R, F>(label: &'static str, task: F) -> Result<R, String>
-where
-    R: Send + 'static,
-    F: FnOnce() -> Result<R, String> + Send + 'static,
-{
-    THRESHOLD_MEDIAN_VERIFY_POOL.submit(label, task)?.await
+    MULTISIG_VERIFY_POOL.submit(label, task)?.await
 }
 
 async fn run_seq_offload_task<R, F>(label: &'static str, task: F) -> Result<R, String>
@@ -731,6 +410,7 @@ pub struct SeqFinal {
     pub vc: Vec<u8>,
     pub s_tx: u64, // median sequence number
     pub sigma: Vec<u8>,
+    pub signers: Vec<usize>,
     pub tx_id: u64,
 }
 
@@ -745,7 +425,7 @@ pub struct SeqResponseRecord {
 struct MedianCombineTask {
     vc: Vec<u8>,
     s_tx: u64,
-    shares: Vec<(usize, SignatureShare)>,
+    signatures: Vec<(usize, Vec<u8>)>,
 }
 
 #[derive(Debug)]
@@ -802,9 +482,7 @@ pub struct TransactionSequencing {
     final_sign_concurrency: usize,
     final_verify_semaphore: Arc<Semaphore>,
     final_verify_concurrency: usize,
-    pub threshold_share: SecretKeyShare,
-    pub threshold_public: PublicKeySet,
-    pk_share_cache: Arc<Vec<PublicKeyShare>>,
+    pub multisig_ctx: Arc<MultiSigContext>,
     signing_key: SigningKey,
     verifying_keys: Arc<HashMap<usize, VerifyingKey>>,
     pub finalization: Arc<RwLock<OutputFinalization>>,
@@ -817,7 +495,7 @@ pub struct TransactionSequencing {
     pending_seq_finals: DashMap<VC, Vec<SeqFinal>>,
     response_shares: Arc<DashMap<VC, HashMap<usize, SeqResponseRecord>>>,
     completed_responses: DashSet<VC>,
-    median_shares: DashMap<VC, HashMap<usize, SignatureShare>>,
+    median_sigs: DashMap<VC, HashMap<usize, Vec<u8>>>,
     median_waiters: DashMap<VC, HashSet<usize>>,
     final_broadcasted: DashSet<VC>,
     finalized_vcs: DashSet<VC>,
@@ -866,8 +544,7 @@ impl TransactionSequencing {
         pnfifo_threshold: usize,
         network: Arc<SmrolTcpNetwork>,
         pnfifo: Arc<PnfifoBc>,
-        threshold_share: SecretKeyShare,
-        threshold_public: PublicKeySet,
+        multisig_ctx: Arc<MultiSigContext>,
         signing_key: SigningKey,
         verifying_keys: HashMap<usize, VerifyingKey>,
         finalization: Arc<RwLock<OutputFinalization>>,
@@ -956,11 +633,6 @@ impl TransactionSequencing {
 
         warn!("SMROL_MEDIAN_INFLIGHT={}, SMROL_ORDER_FINALIZE_INFLIGHT={}, SMROL_FINAL_SIGN_INFLIGHT={}, SMROL_FINAL_VERIFY_INFLIGHT={}", median_concurrency, order_finalize_concurrency, final_sign_concurrency, final_verify_concurrency);
 
-        let pk_share_cache = Arc::new(
-            (0..n)
-                .map(|idx| threshold_public.public_key_share(idx))
-                .collect::<Vec<_>>(),
-        );
         Self {
             f,
             n,
@@ -978,9 +650,7 @@ impl TransactionSequencing {
             final_sign_concurrency,
             final_verify_semaphore,
             final_verify_concurrency,
-            threshold_share,
-            threshold_public,
-            pk_share_cache,
+            multisig_ctx,
             signing_key,
             verifying_keys: Arc::new(verifying_keys),
             finalization,
@@ -993,7 +663,7 @@ impl TransactionSequencing {
             pending_seq_finals: DashMap::new(),
             response_shares: Arc::new(DashMap::new()),
             completed_responses: DashSet::new(),
-            median_shares: DashMap::new(),
+            median_sigs: DashMap::new(),
             median_waiters: DashMap::new(),
             final_broadcasted: DashSet::new(),
             finalized_vcs: DashSet::new(),
@@ -1084,8 +754,8 @@ impl TransactionSequencing {
 
     pub fn start_processing(self: &Arc<Self>) {
         warn!(
-            "[Sequencing] Node {} Threshold signature verification disabled: {}",
-            self.process_id, *DISABLE_THRESHOLD_SIG_VERIFICATION
+            "[Sequencing] Node {} multi-signature verification disabled: {}",
+            self.process_id, *DISABLE_MULTISIG_VERIFICATION
         );
         self.spawn_request_processor(); // workers
         self.spawn_response_processor();
@@ -1094,7 +764,7 @@ impl TransactionSequencing {
         self.spawn_order_finalizer(); // send median to node
         self.spawn_median_processor(); // workers
         self.spawn_median_combine_processor(); // combine workers
-        self.spawn_final_sign_processor(); // threshold sign workers
+        self.spawn_final_sign_processor(); // multi-sign workers
         self.spawn_final_verify_processor(); // final verification workers
         self.spawn_final_processor(); // workers
     }
@@ -1948,7 +1618,7 @@ impl TransactionSequencing {
         let sequencing = Arc::clone(self);
 
         tokio::spawn(async move {
-            info!(
+            warn!(
                 "[Sequencing] Node {} final verify dispatcher started",
                 sequencing.process_id
             );
@@ -2023,6 +1693,7 @@ impl TransactionSequencing {
                             vc,
                             final_sequence,
                             combined_signature,
+                            signers,
                             tx_id,
                             sender_id: _msg_sender,
                         } => {
@@ -2030,6 +1701,7 @@ impl TransactionSequencing {
                                 vc,
                                 s_tx: final_sequence,
                                 sigma: combined_signature,
+                                signers,
                                 tx_id,
                             };
                             if let Err(e) = sequencing.process_seq_final_message(final_msg).await {
@@ -2649,7 +2321,7 @@ impl TransactionSequencing {
 
         let message = Self::build_median_signature_message(&order.vc, median);
 
-        if *DISABLE_THRESHOLD_SIG_VERIFICATION {
+        if *DISABLE_MULTISIG_VERIFICATION {
             let median_msg = SmrolMessage::SeqMedian {
                 vc: order.vc.clone(),
                 median_sequence: median,
@@ -2699,7 +2371,7 @@ impl TransactionSequencing {
         // point to point so skip the check
         // if self.originated_vcs.contains(&median.vc) {
         // Original SEQ-REQUEST sender gathers median shares (Algorithm 2, line 30)
-        if *DISABLE_THRESHOLD_SIG_VERIFICATION {
+        if *DISABLE_MULTISIG_VERIFICATION {
             let vc_key = VC::from_slice(&median.vc);
             let threshold = self.f + 1;
             let map_update_start = Instant::now();
@@ -2738,6 +2410,7 @@ impl TransactionSequencing {
                     vc: median.vc.clone(),
                     final_sequence: median.s_tx,
                     combined_signature: Vec::new(),
+                    signers: Vec::new(),
                     sender_id: self.process_id,
                     tx_id,
                 };
@@ -2766,66 +2439,67 @@ impl TransactionSequencing {
             return Ok(());
         }
         let verify_start = Instant::now();
-        // slow
-        let maybe_share = self.verify_median_share_async(&median, sender).await?;
+        let maybe_signature = self.verify_median_signature_async(&median, sender).await?;
         let verify_time = verify_start.elapsed();
 
-        if let Some(valid_share) = maybe_share {
+        if let Some(signature_bytes) = maybe_signature {
             let vc_key = VC::from_slice(&median.vc);
+            if self.final_broadcasted.contains(&vc_key) {
+                return Ok(());
+            }
             let threshold = self.f + 1;
 
-            let mut ready_to_broadcast: Option<Vec<(usize, SignatureShare)>> = None;
-            let mut share_slot = Some(valid_share);
+            let mut ready_to_broadcast: Option<Vec<(usize, Vec<u8>)>> = None;
+            let mut signature_slot = Some(signature_bytes);
             let map_update_start = Instant::now();
-            let entry_len = match self.median_shares.entry(vc_key) {
+            let entry_len = match self.median_sigs.entry(vc_key) {
                 Entry::Occupied(mut occ) => {
                     let map = occ.get_mut();
                     if map.contains_key(&sender) {
                         map.len()
-                    } else if map.len() >= threshold {
-                        map.len()
                     } else {
-                        if let Some(share) = share_slot.take() {
-                            map.insert(sender, share);
+                        if let Some(sig) = signature_slot.take() {
+                            map.insert(sender, sig);
                         }
                         let len = map.len();
-                        if len == threshold {
-                            let taken_map = std::mem::take(map);
-                            occ.remove();
-                            ready_to_broadcast = Some(taken_map.into_iter().collect::<Vec<(
-                                usize,
-                                SignatureShare,
-                            )>>(
-                            ));
+                        if len >= threshold {
+                            let collected = map
+                                .iter()
+                                .take(threshold)
+                                .map(|(id, sig)| (*id, sig.clone()))
+                                .collect::<Vec<_>>();
+                            ready_to_broadcast = Some(collected);
                         }
                         len
                     }
                 }
                 Entry::Vacant(vac) => {
                     let mut map = HashMap::with_capacity(threshold);
-                    if let Some(share) = share_slot.take() {
-                        map.insert(sender, share);
+                    if let Some(sig) = signature_slot.take() {
+                        map.insert(sender, sig);
                     }
                     let len = map.len();
-                    if len == threshold {
-                        ready_to_broadcast =
-                            Some(map.into_iter().collect::<Vec<(usize, SignatureShare)>>());
-                        len
-                    } else {
-                        vac.insert(map);
-                        len
+                    if len >= threshold {
+                        let collected = map
+                            .iter()
+                            .take(threshold)
+                            .map(|(id, sig)| (*id, sig.clone()))
+                            .collect::<Vec<_>>();
+                        ready_to_broadcast = Some(collected);
                     }
+                    vac.insert(map);
+                    len
                 }
             };
             let map_update_time = map_update_start.elapsed();
 
-            if let Some(shares) = ready_to_broadcast {
-                let collected = shares.len();
+            if let Some(signatures) = ready_to_broadcast {
+                let collected = signatures.len();
                 if self.final_broadcasted.insert(vc_key) {
                     let task = MedianCombineTask {
                         vc: median.vc.clone(),
                         s_tx: median.s_tx,
-                        shares,
+                        signatures,
                     };
                     if let Err(e) = self.enqueue_median_combine(task) {
                         self.final_broadcasted.remove(&vc_key);
@@ -2834,7 +2508,7 @@ impl TransactionSequencing {
                     let total_time = total_start.elapsed();
                     if total_time > Duration::from_millis(10) {
                         warn!(
-                            "🐌 handle_seq_median enqueue slow: total={:?}, verify={:?}, map_update={:?}, queued_shares={}",
+                            "🐌 handle_seq_median enqueue slow: total={:?}, verify={:?}, map_update={:?}, queued_signatures={}",
                             total_time,
                             verify_time,
                             map_update_time,
@@ -2852,24 +2526,20 @@ impl TransactionSequencing {
                 let total_time = total_start.elapsed();
                 if total_time > Duration::from_millis(10) {
                     warn!(
-                        "🐌 handle_seq_median SLOW: total={:?}, verify={:?}, map_update={:?}, combine={:?}, broadcast={:?}",
-                        total_time,
-                        verify_time,
-                        map_update_time,
-                        Duration::ZERO,
-                        Duration::ZERO
+                        "🐌 handle_seq_median SLOW: total={:?}, verify={:?}, map_update={:?}",
+                        total_time, verify_time, map_update_time
                     );
                 }
             }
         } else {
             warn!(
-                "❌ [Sequencing] Invalid threshold share in SEQ-MEDIAN from node {}",
+                "❌ [Sequencing] Invalid multi-signature in SEQ-MEDIAN from node {}",
                 sender
             );
             let total_time = total_start.elapsed();
             if total_time > Duration::from_millis(10) {
                 warn!(
-                    "🐌 handle_seq_median SLOW (invalid share): total={:?}, verify={:?}",
+                    "🐌 handle_seq_median SLOW (invalid signature): total={:?}, verify={:?}",
                     total_time, verify_time
                 );
             }
@@ -2930,75 +2600,82 @@ impl TransactionSequencing {
         Ok(verifying_key.verify_strict(&message, &signature).is_ok())
     }
 
-    async fn verify_median_share_async(
+    async fn verify_median_signature_async(
         &self,
         median: &SeqMedian,
         sender: usize,
-    ) -> Result<Option<SignatureShare>, String> {
-        if *DISABLE_THRESHOLD_SIG_VERIFICATION {
-            if median.sigma_seq.len() != SIG_SIZE {
-                return Err(format!(
-                    "threshold signature share length invalid: {}",
-                    median.sigma_seq.len()
-                ));
-            }
-
-            let mut share_bytes = [0u8; SIG_SIZE];
-            share_bytes.copy_from_slice(&median.sigma_seq);
-            let share = SignatureShare::from_bytes(share_bytes)
-                .map_err(|e| format!("Failed to parse threshold share: {}", e))?;
-            return Ok(Some(share));
-        }
-
-        if median.sigma_seq.len() != SIG_SIZE {
+    ) -> Result<Option<Vec<u8>>, String> {
+        if median.sigma_seq.len() != MULTISIG_SIGNATURE_LEN {
             return Err(format!(
-                "threshold signature share length invalid: {}",
+                "median signature length invalid: {}",
                 median.sigma_seq.len()
             ));
         }
 
-        let mut share_bytes = [0u8; SIG_SIZE];
-        share_bytes.copy_from_slice(&median.sigma_seq);
-        let share = SignatureShare::from_bytes(share_bytes)
-            .map_err(|e| format!("Failed to parse threshold share: {}", e))?;
-
-        if sender >= self.pk_share_cache.len() {
-            return Err(format!("invalid sender id {} (cache size {})", sender, self.pk_share_cache.len()));
+        if *DISABLE_MULTISIG_VERIFICATION {
+            return Ok(Some(median.sigma_seq.clone()));
         }
-        let pk_share = self.pk_share_cache[sender];
-        let message_bytes = Arc::new(Self::build_median_signature_message(&median.vc, median.s_tx));
-        let share_for_task = share.clone();
-        let message_for_task = Arc::clone(&message_bytes);
 
-        let is_valid = run_threshold_median_verify_task("verify_median_share", move || {
-            Ok(SHARE_BATCHER.verify(message_for_task, pk_share, share_for_task))
+        let sig_bytes = median.sigma_seq.clone();
+        let sig_bytes_for_task = sig_bytes.clone();
+        let message_bytes = Self::build_median_signature_message(&median.vc, median.s_tx);
+        let ctx = Arc::clone(&self.multisig_ctx);
+        let sender_id = sender;
+
+        let is_valid = run_multisig_verify_task("verify_median_signature", move || {
+            let sig = BlstSignature::from_bytes(&sig_bytes_for_task)
+                .map_err(|e| format!("invalid multi-signature from node {}: {:?}", sender_id, e))?;
+            let pk = ctx.public_key(sender_id).ok_or_else(|| {
+                format!("missing multi-signature public key for node {}", sender_id)
+            })?;
+            let err = sig.verify(true, &message_bytes, MultiSigContext::DST, &[], pk, true);
+            Ok(err == BLST_ERROR::BLST_SUCCESS)
         })
         .await?;
 
-        Ok(if is_valid { Some(share) } else { None })
+        Ok(if is_valid { Some(sig_bytes) } else { None })
     }
 
-    async fn combine_median_shares_async(
+    async fn aggregate_median_signatures_async(
         &self,
-        shares: Vec<(usize, SignatureShare)>,
-    ) -> Result<ThresholdSignature, String> {
-        if *DISABLE_THRESHOLD_SIG_VERIFICATION {
-            return Err(
-                "combine_median_shares_async called while threshold verification disabled".into(),
-            );
+        signatures: Vec<(usize, Vec<u8>)>,
+    ) -> Result<Vec<u8>, String> {
+        if signatures.len() < self.f + 1 {
+            return Err(format!(
+                "insufficient median signatures: {} < {}",
+                signatures.len(),
+                self.f + 1
+            ));
         }
 
-        let threshold_public = self.threshold_public.clone();
+        if *DISABLE_MULTISIG_VERIFICATION {
+            return Ok(vec![0u8; MULTISIG_SIGNATURE_LEN]);
+        }
+
         let spawn_start = Instant::now();
 
-        let (signature, worker_time) =
-            run_threshold_sign_task("combine_median_shares", move || {
+        let (aggregated, worker_time) =
+            run_multisig_sign_task("aggregate_median_signatures", move || {
+                if signatures.is_empty() {
+                    return Err("no signatures provided".to_string());
+                }
+
                 let work_start = Instant::now();
-                let outcome = threshold_public
-                    .combine_signatures(shares.iter().map(|(id, share)| (*id, share)))
-                    .map_err(|e| format!("Threshold signature combine failed: {}", e));
+                let mut sig_objects = Vec::with_capacity(signatures.len());
+                for (id, sig_bytes) in &signatures {
+                    let sig = BlstSignature::from_bytes(sig_bytes)
+                        .map_err(|e| format!("invalid signature from node {}: {:?}", id, e))?;
+                    sig_objects.push(sig);
+                }
+
+                let sig_refs: Vec<&BlstSignature> = sig_objects.iter().collect();
+                let agg_bytes = BlstAggregateSignature::aggregate(&sig_refs, true)
+                    .map_err(|e| format!("aggregate signatures failed: {:?}", e))?
+                    .to_signature()
+                    .to_bytes()
+                    .to_vec();
                 let elapsed = work_start.elapsed();
-                outcome.map(|sig| (sig, elapsed))
+                Ok((agg_bytes, elapsed))
             })
             .await?;
 
@@ -3006,22 +2683,29 @@ impl TransactionSequencing {
         let scheduling_overhead = total_time.saturating_sub(worker_time);
         if scheduling_overhead > Duration::from_millis(1) {
             warn!(
-                "[threshold_worker] combine_median_shares_async scheduling overhead {:?}",
+                "[multisig_worker] aggregate_median_signatures_async scheduling overhead {:?}",
                 scheduling_overhead
             );
         }
 
-        Ok(signature)
+        Ok(aggregated)
     }
 
     async fn process_median_combine_task(&self, task: MedianCombineTask) -> Result<(), String> {
         let total_start = Instant::now();
-        let MedianCombineTask { vc, s_tx, shares } = task;
+        let MedianCombineTask {
+            vc,
+            s_tx,
+            signatures,
+        } = task;
         let vc_key = VC::from_slice(&vc);
-        let collected = shares.len();
+        let collected = signatures.len();
 
         let combine_start = Instant::now();
-        let combined_sig = match self.combine_median_shares_async(shares).await {
+        let combined_sig = match self
+            .aggregate_median_signatures_async(signatures.clone())
+            .await
+        {
             Ok(sig) => sig,
             Err(e) => {
                 self.final_broadcasted.remove(&vc_key);
@@ -3030,12 +2714,14 @@ impl TransactionSequencing {
         };
         let combine_time = combine_start.elapsed();
 
-        let sigma_bytes = combined_sig.to_bytes().to_vec();
+        let sigma_bytes = combined_sig;
+        let signers: Vec<usize> = signatures.iter().map(|(id, _)| *id).collect();
         let tx_id = self.resolve_tx_id(&vc_key);
         let final_msg = SmrolMessage::SeqFinal {
             vc: vc.clone(),
             final_sequence: s_tx,
             combined_signature: sigma_bytes,
+            signers,
             sender_id: self.process_id,
             tx_id,
         };
@@ -3063,7 +2749,7 @@ impl TransactionSequencing {
     }
 
     async fn process_final_sign_task(&self, task: FinalSignTask) -> Result<(), String> {
-        if *DISABLE_THRESHOLD_SIG_VERIFICATION {
+        if *DISABLE_MULTISIG_VERIFICATION {
             return Ok(());
         }
 
@@ -3076,29 +2762,26 @@ impl TransactionSequencing {
         } = task;
 
         let sign_send_start = Instant::now();
-        let threshold_share = self.threshold_share.clone();
+        let multisig_ctx = Arc::clone(&self.multisig_ctx);
         let message_for_sign = message;
-        let (sigma_seq, sign_exec_time) = run_threshold_sign_task("threshold_sign", move || {
+        let node_id = self.process_id;
+        let (sigma_seq, sign_exec_time) = run_multisig_sign_task("multisig_sign", move || {
             let sign_start = Instant::now();
-            let sigma = threshold_share
-                .sign(message_for_sign.as_slice())
-                .to_bytes()
-                .to_vec();
-            Ok((sigma, sign_start.elapsed()))
+            let signature = multisig_ctx
+                .sign(node_id, message_for_sign.as_slice())
+                .ok_or_else(|| "failed to sign median".to_string())?;
+            Ok((signature.to_bytes().to_vec(), sign_start.elapsed()))
         })
         .await?;
 
         if sign_exec_time > Duration::from_millis(5) {
-            warn!(
-                "[threshold_worker] Threshold sign took {:?}",
-                sign_exec_time
-            );
+            warn!("[multisig_worker] median sign took {:?}", sign_exec_time);
         }
         let sign_time = sign_send_start.elapsed();
         let scheduling_overhead = sign_time.saturating_sub(sign_exec_time);
         if scheduling_overhead > Duration::from_millis(1) {
             warn!(
-                "[threshold_worker] threshold_sign scheduling overhead {:?}",
+                "[multisig_worker] multisig_sign scheduling overhead {:?}",
                 scheduling_overhead
             );
         }
@@ -3127,31 +2810,56 @@ impl TransactionSequencing {
     }
 
     async fn verify_combined_signature_async(&self, final_msg: &SeqFinal) -> Result<bool, String> {
-        if *DISABLE_THRESHOLD_SIG_VERIFICATION {
+        if *DISABLE_MULTISIG_VERIFICATION {
             return Ok(true);
         }
 
-        if final_msg.sigma.len() != SIG_SIZE {
+        if final_msg.sigma.len() != MULTISIG_SIGNATURE_LEN {
             return Err(format!(
                 "combined signature length invalid: {}",
                 final_msg.sigma.len()
             ));
         }
 
-        let mut sig_bytes = [0u8; SIG_SIZE];
-        sig_bytes.copy_from_slice(&final_msg.sigma);
-        let signature = ThresholdSignature::from_bytes(sig_bytes)
-            .map_err(|e| format!("Failed to parse combined signature: {}", e))?;
+        if final_msg.signers.is_empty() {
+            return Ok(false);
+        }
 
-        let threshold_public = self.threshold_public.clone();
-        let message_bytes = Arc::new(Self::build_median_signature_message(&final_msg.vc, final_msg.s_tx));
-        let message_for_task = Arc::clone(&message_bytes);
-        run_threshold_verify_task("verify_combined_signature", move || {
-            Ok(COMBINED_BATCHER.verify(
-                message_for_task,
-                signature,
-                threshold_public.public_key(),
-            ))
+        let mut unique = HashSet::with_capacity(final_msg.signers.len());
+        if !final_msg.signers.iter().all(|id| unique.insert(*id)) {
+            return Err("duplicate signer detected in SEQ-FINAL".to_string());
+        }
+
+        let sig_bytes = final_msg.sigma.clone();
+        let signers = final_msg.signers.clone();
+        let message_bytes = Self::build_median_signature_message(&final_msg.vc, final_msg.s_tx);
+        let ctx = Arc::clone(&self.multisig_ctx);
+
+        run_multisig_verify_task("verify_combined_signature", move || {
+            let signature = BlstSignature::from_bytes(&sig_bytes)
+                .map_err(|e| format!("invalid combined signature bytes: {:?}", e))?;
+
+            let mut pk_refs: Vec<&BlstPublicKey> = Vec::with_capacity(signers.len());
+            for signer in &signers {
+                let pk = ctx.public_key(*signer).ok_or_else(|| {
+                    format!("missing multi-signature public key for node {}", signer)
+                })?;
+                pk_refs.push(pk);
+            }
+
+            let agg_pk = BlstAggregatePublicKey::aggregate(&pk_refs, true)
+                .map_err(|e| format!("aggregate public keys failed: {:?}", e))?;
+
+            let err = signature.verify(
+                true,
+                &message_bytes,
+                MultiSigContext::DST,
+                &[],
+                &agg_pk.to_public_key(),
+                true,
+            );
+
+            Ok(err == BLST_ERROR::BLST_SUCCESS)
         })
         .await
     }
@@ -3165,6 +2873,15 @@ impl TransactionSequencing {
         let final_msg = task.final_msg;
         let vc_key = VC::from_slice(&final_msg.vc);
 
+        if !*DISABLE_MULTISIG_VERIFICATION && final_msg.signers.len() < self.f + 1 {
+            self.final_verify_inflight.remove(&vc_key);
+            return Err(format!(
+                "SEQ-FINAL includes insufficient signers: {} < {}",
+                final_msg.signers.len(),
+                self.f + 1
+            ));
+        }
+
         let verify_start = Instant::now();
         let verified = match self.verify_combined_signature_async(&final_msg).await {
             Ok(v) => v,
@@ -3175,8 +2892,6 @@ impl TransactionSequencing {
                     "result" => "fail"
                 )
                 .increment(1);
-                self.final_verify_inflight.remove(&vc_key);
-                return Err(e);
                 self.final_verify_inflight.remove(&vc_key);
                 return Err(e);
             }
@@ -3190,8 +2905,6 @@ impl TransactionSequencing {
                 "result" => "fail"
             )
             .increment(1);
-            self.final_verify_inflight.remove(&vc_key);
-            return Ok(());
             self.final_verify_inflight.remove(&vc_key);
             return Ok(());
         } else {
@@ -3469,9 +3182,9 @@ impl TransactionSequencing {
             );
         }
 
-        if self.median_shares.len() > limit {
-            let removed = self.median_shares.len();
-            self.median_shares.clear();
+        if self.median_sigs.len() > limit {
+            let removed = self.median_sigs.len();
+            self.median_sigs.clear();
             debug!(
                 "{} cleared {} median entries",
                 Self::cleanup_log_prefix(),

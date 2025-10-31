@@ -790,9 +790,7 @@ async fn start_lockfree_performance_monitor(
     }
 }
 
-// #[tokio::main]
-
-#[tokio::main(flavor = "multi_thread")]
+#[tokio::main]
 async fn main() -> Result<(), String> {
     let node_id: usize = env::var("NODE_ID")
         .unwrap_or_else(|_| "9".to_string())

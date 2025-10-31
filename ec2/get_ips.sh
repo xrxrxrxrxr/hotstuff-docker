@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
 # Retrieve public and private IPs for all running instances and store them in hosts.txt
 # Public IP section
-# Public IP section
 aws ec2 describe-instances \
   --filters "Name=instance-state-name,Values=running" \
   --query 'Reservations[*].Instances[*].[PublicIpAddress,PrivateIpAddress,Tags[?Key==`Name`].Value | [0]]' \
   --output text | awk '
 BEGIN { n=0; c_pub=""; }
 $1 != "None" && $1 != "" {
-  if ($3 == "hs-test") {
+  if ($3 == "client") {
     c_pub = $1
   } else {
     pub[n] = $1
@@ -28,7 +27,7 @@ aws ec2 describe-instances \
   --output text | awk '
 BEGIN { n=0; c_pri=""; }
 $2 != "None" && $2 != "" {
-  if ($3 == "hs-test") {
+  if ($3 == "client") {
     c_pri = $2
   } else {
     pri[n] = $2

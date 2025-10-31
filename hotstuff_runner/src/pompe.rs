@@ -1164,7 +1164,7 @@ impl PompeManager {
         .unwrap_or(false);
         let verify_duration = verify_start.elapsed();
         if verify_duration > Duration::from_millis(2) {
-            warn!(
+            debug!(
                 "⏱️ [Verify Signature] Node {} signature verification duration: {:?}, hash = {}, signatures={}",
                 node_id,
                 verify_duration,

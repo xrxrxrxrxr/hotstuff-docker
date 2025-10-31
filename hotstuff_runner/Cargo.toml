@@ -44,6 +44,7 @@ metrics-util = { version = "0.16", default-features = false, features = ["recenc
 # ds: ed25519_dalek
 # threshold signature
 blsttc = "8"
+blst = "0.3.16"
 # erasure coding
 reed-solomon-erasure = "6.0"
 # vc

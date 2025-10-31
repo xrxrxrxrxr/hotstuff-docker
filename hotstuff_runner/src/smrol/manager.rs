@@ -2,7 +2,7 @@ use crate::event::SystemEvent;
 use crate::smrol::{
     adapter::SmrolHotStuffAdapter,
     consensus::{Consensus, TransactionEntry},
-    crypto::derive_threshold_keys,
+    crypto::{derive_multisig_context, derive_threshold_keys},
     finalization::OutputFinalization,
     message::{SmrolMessage, SmrolTransaction},
     network::SmrolTcpNetwork,
@@ -96,6 +96,11 @@ impl SmrolManager {
             derive_threshold_keys(node_id, config.f, &verifying_keys)
                 .map_err(|e| format!("derive threshold keys failed: {}", e))?;
 
+        let multisig_ctx = Arc::new(
+            derive_multisig_context(&verifying_keys)
+                .map_err(|e| format!("derive multisig context failed: {}", e))?,
+        );
+
         let pnfifo = Arc::new(
             PnfifoBc::new(
                 node_id,
@@ -146,8 +151,7 @@ impl SmrolManager {
             config.pnfifo_threshold,
             Arc::clone(&network),
             Arc::clone(&pnfifo),
-            threshold_share,
-            threshold_public.clone(),
+            Arc::clone(&multisig_ctx),
             signing_key.clone(),
             verifying_keys.clone(),
             Arc::clone(&finalization),
@@ -607,6 +611,7 @@ impl SmrolManager {
                 vc,
                 final_sequence,
                 combined_signature,
+                signers,
                 tx_id,
                 sender_id: msg_sender,
             } => {
@@ -623,6 +628,7 @@ impl SmrolManager {
                             vc,
                             final_sequence,
                             combined_signature,
+                            signers,
                             sender_id: msg_sender,
                             tx_id,
                         },

@@ -8,6 +8,15 @@ use sha2::Digest;
 use sha2::Sha256 as Sha256Digest;
 use std::collections::HashMap;
 
+use blst::{
+    min_sig::{
+        AggregatePublicKey as BlstAggregatePublicKey, AggregateSignature as BlstAggregateSignature,
+        PublicKey as BlstPublicKey, SecretKey as BlstSecretKey, Signature as BlstSignature,
+    },
+    BLST_ERROR,
+};
+use std::sync::Arc;
+
 pub fn derive_threshold_keys(
     node_id: usize,
     f: usize,
@@ -145,4 +154,128 @@ pub fn compute_merkle_root(shards: &[Vec<u8>]) -> [u8; 32] {
     MerkleTree::<Sha256>::from_leaves(&leaf_hashes)
         .root()
         .unwrap_or([0u8; 32])
+}
+
+/// Multi-signature key material for all participants, backed by `blst`.
+pub struct MultiSigContext {
+    secret_keys: Vec<BlstSecretKey>,
+    public_keys: Vec<BlstPublicKey>,
+}
+
+impl MultiSigContext {
+    /// Domain separation tag used for BLS signatures in this context.
+    pub const DST: &'static [u8] = b"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_NUL_";
+
+    /// Deterministically derive per-node keys from a seed.
+    pub fn new(num_nodes: usize, ikm_seed: &[u8]) -> Result<Self, BLST_ERROR> {
+        let mut secret_keys = Vec::with_capacity(num_nodes);
+        let mut public_keys = Vec::with_capacity(num_nodes);
+
+        for idx in 0..num_nodes {
+            let mut hasher = Sha256Digest::new();
+            hasher.update(ikm_seed);
+            hasher.update((idx as u64).to_be_bytes());
+            let ikm = hasher.finalize();
+
+            let sk = BlstSecretKey::key_gen(ikm.as_slice(), &[])?;
+            let pk = sk.sk_to_pk();
+            secret_keys.push(sk);
+            public_keys.push(pk);
+        }
+
+        Ok(Self {
+            secret_keys,
+            public_keys,
+        })
+    }
+
+    pub fn participant_count(&self) -> usize {
+        self.secret_keys.len()
+    }
+
+    pub fn public_key(&self, node_id: usize) -> Option<&BlstPublicKey> {
+        self.public_keys.get(node_id)
+    }
+
+    pub fn sign(&self, node_id: usize, msg: &[u8]) -> Option<BlstSignature> {
+        self.secret_keys
+            .get(node_id)
+            .map(|sk| sk.sign(msg, Self::DST, &[]))
+    }
+
+    pub fn aggregate(
+        &self,
+        signatures: &[(usize, BlstSignature)],
+    ) -> Result<(BlstAggregateSignature, BlstAggregatePublicKey), BLST_ERROR> {
+        if signatures.is_empty() {
+            return Err(BLST_ERROR::BLST_AGGR_TYPE_MISMATCH);
+        }
+
+        let mut sig_refs: Vec<&BlstSignature> = Vec::with_capacity(signatures.len());
+        let mut pk_refs: Vec<&BlstPublicKey> = Vec::with_capacity(signatures.len());
+
+        for (idx, sig) in signatures {
+            let pk = self
+                .public_keys
+                .get(*idx)
+                .ok_or(BLST_ERROR::BLST_AGGR_TYPE_MISMATCH)?;
+            sig_refs.push(sig);
+            pk_refs.push(pk);
+        }
+
+        let agg_sig = BlstAggregateSignature::aggregate(&sig_refs, true)?;
+        let agg_pk = BlstAggregatePublicKey::aggregate(&pk_refs, true)?;
+        Ok((agg_sig, agg_pk))
+    }
+
+    pub fn verify(
+        &self,
+        msg: &[u8],
+        aggregate_sig: &BlstAggregateSignature,
+        signers: &[usize],
+    ) -> Result<bool, BLST_ERROR> {
+        if signers.is_empty() {
+            return Ok(false);
+        }
+
+        let mut pk_refs: Vec<&BlstPublicKey> = Vec::with_capacity(signers.len());
+        for idx in signers {
+            let pk = self
+                .public_keys
+                .get(*idx)
+                .ok_or(BLST_ERROR::BLST_AGGR_TYPE_MISMATCH)?;
+            pk_refs.push(pk);
+        }
+
+        let agg_pk = BlstAggregatePublicKey::aggregate(&pk_refs, true)?;
+        let sig = aggregate_sig.to_signature();
+        let err = sig.verify(true, msg, Self::DST, &[], &agg_pk.to_public_key(), true);
+        Ok(err == BLST_ERROR::BLST_SUCCESS)
+    }
+}
+
+pub fn derive_multisig_context(
+    verifying_keys: &HashMap<usize, VerifyingKey>,
+) -> Result<MultiSigContext, String> {
+    if verifying_keys.is_empty() {
+        return Err("verifying key set is empty".to_string());
+    }
+
+    let mut ids: Vec<_> = verifying_keys.keys().cloned().collect();
+    ids.sort_unstable();
+
+    let mut hasher = Sha256Digest::new();
+    hasher.update((ids.len() as u32).to_be_bytes());
+
+    for id in &ids {
+        let vk = verifying_keys
+            .get(id)
+            .ok_or_else(|| format!("missing verifying key for node {}", id))?;
+        hasher.update((*id as u64).to_be_bytes());
+        hasher.update(vk.to_bytes());
+    }
+
+    let seed: [u8; 32] = hasher.finalize().into();
+    MultiSigContext::new(ids.len(), &seed)
+        .map_err(|e| format!("failed to derive multisig context: {:?}", e))
 }

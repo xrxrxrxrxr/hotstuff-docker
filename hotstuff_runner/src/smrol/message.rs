@@ -53,6 +53,7 @@ pub enum SmrolMessage {
         vc: Vec<u8>,
         final_sequence: u64,
         combined_signature: Vec<u8>,
+        signers: Vec<usize>,
         sender_id: usize,
         tx_id: u64,
     },

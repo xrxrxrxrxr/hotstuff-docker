@@ -1,0 +1,834 @@
+2025-10-31T05:53:46.874757Z  WARN ThreadId(01) docker_node: metrics exporter disabled by SMROL_DISABLE_METRICS
+2025-10-31T05:54:02.092170Z  WARN ThreadId(01) hotstuff_runner::tcp_node: Node 1 view timeout set to 2000 ms
+2025-10-31T05:54:02.144386Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: SMROL_MEDIAN_INFLIGHT=64, SMROL_ORDER_FINALIZE_INFLIGHT=64, SMROL_FINAL_SIGN_INFLIGHT=64, SMROL_FINAL_VERIFY_INFLIGHT=64
+2025-10-31T05:54:02.149988Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: [Sequencing] Node 1 multi-signature verification disabled: false
+2025-10-31T05:54:02.159953Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [Sequencing] Node 1 final verify dispatcher started
+2025-10-31T05:54:04.292978Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 0 timed out; latency may accumulate
+2025-10-31T05:54:07.206027Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-10-31T05:54:07.276811Z  WARN ThreadId(01) docker_node: Node 1 port 20001 temporarily unreachable: Connection refused (os error 111)
+2025-10-31T05:54:07.285385Z  WARN ThreadId(01) docker_node: Node 2 port 20002 temporarily unreachable: Connection refused (os error 111)
+2025-10-31T05:54:07.286906Z  WARN ThreadId(01) docker_node: Node 3 port 20003 temporarily unreachable: Connection refused (os error 111)
+2025-10-31T05:54:07.309527Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-2 stats node 1: 1 msgs, avg=150.333µs, max=150.333µs, rate=1/s
+2025-10-31T05:54:07.331756Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-1 stats node 1: 1 msgs, avg=509.542µs, max=509.542µs, rate=1/s
+2025-10-31T05:54:07.311599Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-0 stats node 1: 1 msgs, avg=255.333µs, max=255.333µs, rate=1/s
+2025-10-31T05:54:07.400087Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 📊 [Critical] Order stats node 1: 1 msgs, avg=11.333µs, max=11.333µs, rate=1/s
+2025-10-31T05:54:07.331932Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 📊 [Critical] Response stats node 1: 1 msgs, avg=96.875µs, max=96.875µs, rate=1/s
+2025-10-31T05:54:07.430000Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Order verify processor slow for node 1: 25.902208ms
+2025-10-31T05:54:07.333477Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-3 stats node 1: 1 msgs, avg=679.5µs, max=679.5µs, rate=1/s
+2025-10-31T05:54:07.412917Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_request SLOW: total=19.546167ms, state_update=2.375µs, broadcast=1.916µs, sign_and_send=19.496666ms, finalize_pending=167ns, encode=12.75µs
+2025-10-31T05:54:07.430040Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 26.552207ms
+2025-10-31T05:54:07.430047Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 26.852375ms
+2025-10-31T05:54:07.511218Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=107.787916ms, sign=26.996333ms, send=11.5µs
+2025-10-31T05:54:07.430523Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 1 msgs, avg=97.58275ms, max=97.58275ms, rate=1/s
+2025-10-31T05:54:07.530255Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-1 stats node 1: 1 msgs, avg=1.958µs, max=1.958µs, rate=1/s
+2025-10-31T05:54:07.430535Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 25.812167ms
+2025-10-31T05:54:07.430711Z  WARN ThreadId(09) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 1 msgs, avg=28.77725ms, max=28.77725ms, rate=1/s
+2025-10-31T05:54:07.593606Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=106.979375ms, verify=106.964833ms, map_update=13.75µs
+2025-10-31T05:54:07.594262Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 107.65325ms
+2025-10-31T05:54:07.594536Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Order verify processor slow for node 1: 63.039583ms
+2025-10-31T05:54:07.476825Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Order verify processor slow for node 1: 46.010625ms
+2025-10-31T05:54:07.486306Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Order verify processor slow for node 1: 55.576833ms
+2025-10-31T05:54:07.503798Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=100.593583ms, sign=26.850291ms, send=7.416µs
+2025-10-31T05:54:07.610266Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Order verify processor slow for node 1: 77.86ms
+2025-10-31T05:54:07.516899Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 40.075458ms
+2025-10-31T05:54:07.612240Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=133.726167ms, sign=40.247375ms, send=3.875µs
+2025-10-31T05:54:07.549561Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-0 stats node 1: 1 msgs, avg=3.375µs, max=3.375µs, rate=1/s
+2025-10-31T05:54:07.549645Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_request SLOW: total=17.746458ms, state_update=4.459µs, broadcast=1µs, sign_and_send=17.69625ms, finalize_pending=250ns, encode=10.166µs
+2025-10-31T05:54:07.612263Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=80.415584ms, verify=80.4125ms, map_update=2.334µs
+2025-10-31T05:54:07.614408Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.971416ms
+2025-10-31T05:54:07.614651Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.120125ms
+2025-10-31T05:54:07.627548Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 15.056416ms
+2025-10-31T05:54:07.627560Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 15.111916ms
+2025-10-31T05:54:07.628488Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=16.177125ms, sign=15.254833ms, send=1.625µs
+2025-10-31T05:54:07.627601Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 84 timed out; latency may accumulate
+2025-10-31T05:54:07.627926Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Order verify processor slow for node 1: 15.558125ms
+2025-10-31T05:54:07.628273Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 96.407ms
+2025-10-31T05:54:07.642460Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=48.908584ms, verify=48.905625ms, map_update=1.291µs, queued_signatures=2
+2025-10-31T05:54:07.628338Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=16.0385ms, sign=2.115708ms, send=1.333µs
+2025-10-31T05:54:07.646749Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-3 stats node 1: 1 msgs, avg=1.334µs, max=1.334µs, rate=1/s
+2025-10-31T05:54:07.628399Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=16.0945ms, sign=2.333833ms, send=375ns
+2025-10-31T05:54:07.648141Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 18.729584ms
+2025-10-31T05:54:07.633072Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=16.21225ms, sign=15.233208ms, send=82.291µs
+2025-10-31T05:54:07.648424Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 35.839375ms
+2025-10-31T05:54:07.633118Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=226.270833ms, sign=27.641375ms, send=7.75µs
+2025-10-31T05:54:07.642227Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=35.698583ms, verify=35.696334ms, map_update=1µs, queued_signatures=2
+2025-10-31T05:54:07.652918Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 59.351334ms
+2025-10-31T05:54:07.646568Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 53.019083ms
+2025-10-31T05:54:07.646642Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Order verify processor slow for node 1: 23.34375ms
+2025-10-31T05:54:07.655507Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_request SLOW: total=27.220667ms, state_update=7.125µs, broadcast=42.333µs, sign_and_send=199.666µs, finalize_pending=26.911333ms, encode=116.209µs
+2025-10-31T05:54:07.647235Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-2 stats node 1: 1 msgs, avg=916ns, max=916ns, rate=1/s
+2025-10-31T05:54:07.648283Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=19.027292ms, sign=18.877459ms, send=5.916µs
+2025-10-31T05:54:07.656765Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 3.059166ms
+2025-10-31T05:54:07.652387Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Order verify processor slow for node 1: 57.761125ms
+2025-10-31T05:54:07.656198Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.482666ms
+2025-10-31T05:54:07.658195Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.224499ms
+2025-10-31T05:54:07.671404Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 3.496083ms
+2025-10-31T05:54:07.686807Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 1 -> 3 slow write: 13.571875ms
+2025-10-31T05:54:07.693943Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 1 msgs, avg=7.112625ms, max=7.112625ms, rate=1/s
+2025-10-31T05:54:07.730698Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=22.786417ms, verify=22.781583ms, map_update=1.958µs, queued_signatures=2
+2025-10-31T05:54:07.740297Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 32.380417ms
+2025-10-31T05:54:07.769556Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.447375ms
+2025-10-31T05:54:07.792758Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 15.422834ms
+2025-10-31T05:54:07.819213Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=42.208292ms, sign=15.77ms, send=1.375µs
+2025-10-31T05:54:07.806660Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=39.3815ms, sign=2.596958ms, send=5.042µs
+2025-10-31T05:54:07.856511Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Order verify processor slow for node 1: 13.882291ms
+2025-10-31T05:54:07.856521Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=34.609292ms, verify=34.607458ms, map_update=1.167µs
+2025-10-31T05:54:07.857327Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 35.412459ms
+2025-10-31T05:54:07.865423Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=80.997041ms, verify=80.9945ms, map_update=1.709µs
+2025-10-31T05:54:07.865457Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 3.347668ms
+2025-10-31T05:54:07.866206Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [multisig_worker] median sign took 6.259584ms
+2025-10-31T05:54:07.866034Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 88.039875ms
+2025-10-31T05:54:07.866382Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 17.500333ms
+2025-10-31T05:54:07.867245Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=24.625041ms, sign=23.759917ms, send=3.041µs
+2025-10-31T05:54:07.869731Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=26.223083ms, verify=26.22ms, map_update=1.458µs, queued_signatures=2
+2025-10-31T05:54:07.871035Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 28.402125ms
+2025-10-31T05:54:07.869784Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=27.143167ms, verify=27.140208ms, map_update=1.583µs, queued_signatures=2
+2025-10-31T05:54:07.871264Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 28.626833ms
+2025-10-31T05:54:07.869804Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 33.040458ms
+2025-10-31T05:54:07.873719Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 2.445333ms
+2025-10-31T05:54:07.873841Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 2.553583ms
+2025-10-31T05:54:07.874453Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 44.160542ms
+2025-10-31T05:54:07.927077Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 15.935083ms
+2025-10-31T05:54:07.948029Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=37.286416ms, sign=16.327208ms, send=2.541µs
+2025-10-31T05:54:07.928277Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] median sign took 11.314792ms
+2025-10-31T05:54:07.994608Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 72.5455ms
+2025-10-31T05:54:08.004755Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=91.177791ms, sign=83.860292ms, send=6.875µs
+2025-10-31T05:54:08.045152Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: [multisig_worker] median sign took 5.2755ms
+2025-10-31T05:54:08.045163Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.336459ms
+2025-10-31T05:54:08.048157Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 3.15775ms
+2025-10-31T05:54:08.053405Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.968834ms
+2025-10-31T05:54:08.054271Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=10.627875ms, verify=10.623333ms, map_update=1.833µs, queued_signatures=2
+2025-10-31T05:54:08.056562Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 12.924917ms
+2025-10-31T05:54:08.252994Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.060291ms
+2025-10-31T05:54:08.253837Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.765791ms
+2025-10-31T05:54:08.277553Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.719709ms
+2025-10-31T05:54:08.278025Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.555957ms
+2025-10-31T05:54:08.278050Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=10.002625ms, verify=10.001ms, map_update=1.292µs
+2025-10-31T05:54:08.278382Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.744042ms
+2025-10-31T05:54:08.286119Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=10.629ms, sign=2.913042ms, send=3.458µs
+2025-10-31T05:54:08.281446Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 [Emit slow] emit took: 3.843875ms
+2025-10-31T05:54:08.283328Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=14.527625ms, verify=14.526917ms, map_update=417ns
+2025-10-31T05:54:08.290279Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 21.790291ms
+2025-10-31T05:54:08.283743Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=14.522416ms, verify=14.521708ms, map_update=375ns, queued_signatures=2
+2025-10-31T05:54:08.292616Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 23.691125ms
+2025-10-31T05:54:08.285277Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 17.195166ms
+2025-10-31T05:54:08.288157Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 19.383083ms
+2025-10-31T05:54:08.431683Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 📊 [Critical] Response stats node 1: 40 msgs, avg=112.572µs, max=1.859125ms, rate=40/s
+2025-10-31T05:54:08.431828Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-0 stats node 1: 10 msgs, avg=9.538712ms, max=92.965333ms, rate=10/s
+2025-10-31T05:54:08.431874Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-2 stats node 1: 10 msgs, avg=36.408µs, max=66.917µs, rate=10/s
+2025-10-31T05:54:08.443572Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 📊 [Critical] Order stats node 1: 40 msgs, avg=587ns, max=2µs, rate=40/s
+2025-10-31T05:54:08.431985Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-1 stats node 1: 10 msgs, avg=146.779µs, max=888.75µs, rate=10/s
+2025-10-31T05:54:08.449066Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.871749ms
+2025-10-31T05:54:08.450088Z  WARN ThreadId(26) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 1 -> 2 slow write: 5.765083ms
+2025-10-31T05:54:08.468682Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=14.887667ms, verify=14.881917ms, map_update=2.875µs, queued_signatures=2
+2025-10-31T05:54:08.470450Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 15.410167ms
+2025-10-31T05:54:08.470465Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 11.230416ms
+2025-10-31T05:54:08.470467Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 8.092542ms
+2025-10-31T05:54:08.476479Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 median combine task slow: node=1 shares=2 total=16.83725ms, combine=16.834125ms, broadcast=2.083µs
+2025-10-31T05:54:08.470473Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 12.115667ms
+2025-10-31T05:54:08.475431Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 2.712041ms
+2025-10-31T05:54:08.480930Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 median combine task slow: node=1 shares=2 total=10.155667ms, combine=10.154333ms, broadcast=250ns
+2025-10-31T05:54:08.476730Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median combine worker-3 slow for node 1: 16.943292ms
+2025-10-31T05:54:08.484289Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median combine worker-0 slow for node 1: 13.5235ms
+2025-10-31T05:54:08.536800Z  WARN ThreadId(06) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 188 msgs, avg=4.44248ms, max=86.647292ms, rate=188/s
+2025-10-31T05:54:08.600220Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 103 msgs, avg=9.776613ms, max=105.656375ms, rate=103/s
+2025-10-31T05:54:08.618028Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.435209ms
+2025-10-31T05:54:08.627658Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=12.192833ms, sign=2.585792ms, send=2.916µs
+2025-10-31T05:54:08.618043Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.459958ms
+2025-10-31T05:54:08.628295Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-3 stats node 1: 12 msgs, avg=10.603305ms, max=96.290167ms, rate=12/s
+2025-10-31T05:54:08.640556Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=24.748375ms, sign=2.600416ms, send=30.208µs
+2025-10-31T05:54:08.654377Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 3.896375ms
+2025-10-31T05:54:08.654611Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 4.081708ms
+2025-10-31T05:54:08.687916Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=37.475458ms, sign=4.223333ms, send=1.625µs
+2025-10-31T05:54:08.687960Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=37.877ms, sign=4.198792ms, send=5.75µs
+2025-10-31T05:54:08.804356Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 83 msgs, avg=11.316342ms, max=102.607ms, rate=83/s
+2025-10-31T05:54:08.808213Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=119.862459ms, verify=119.854792ms, map_update=3.167µs, queued_signatures=2
+2025-10-31T05:54:08.696433Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 45.350167ms
+2025-10-31T05:54:08.816255Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=165.553501ms, sign=45.84375ms, send=34.083µs
+2025-10-31T05:54:08.696854Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 8.878084ms
+2025-10-31T05:54:08.829772Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=141.967709ms, sign=9.021667ms, send=26.167µs
+2025-10-31T05:54:08.696906Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 8.872458ms
+2025-10-31T05:54:08.830792Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=142.840417ms, sign=9.022833ms, send=6.5µs
+2025-10-31T05:54:08.697116Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_request SLOW: total=23.254416ms, state_update=6.166µs, broadcast=4.458µs, sign_and_send=89.125µs, finalize_pending=125ns, encode=46.167µs
+2025-10-31T05:54:08.809719Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 121.678709ms
+2025-10-31T05:54:08.829714Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=10.579208ms, verify=10.572084ms, map_update=3.292µs, queued_signatures=2
+2025-10-31T05:54:08.829806Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-0 stats node 1: 14 msgs, avg=18.642µs, max=232.542µs, rate=14/s
+2025-10-31T05:54:08.832206Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 13.070709ms
+2025-10-31T05:54:08.839006Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-2 stats node 1: 14 msgs, avg=1.737µs, max=3.833µs, rate=14/s
+2025-10-31T05:54:08.839143Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-1 stats node 1: 14 msgs, avg=1.61µs, max=3.375µs, rate=14/s
+2025-10-31T05:54:08.843238Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-3 stats node 1: 14 msgs, avg=3.61µs, max=29.167µs, rate=14/s
+2025-10-31T05:54:08.963114Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Order verify processor slow for node 1: 10.52975ms
+2025-10-31T05:54:08.982504Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.392375ms
+2025-10-31T05:54:08.990168Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 10.450791ms
+2025-10-31T05:54:08.991424Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=12.069833ms, sign=10.781541ms, send=2.458µs
+2025-10-31T05:54:09.051993Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=72.618875ms, verify=72.615209ms, map_update=2.834µs
+2025-10-31T05:54:09.068678Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 89.328458ms
+2025-10-31T05:54:09.054897Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=69.154125ms, verify=69.148833ms, map_update=1.792µs, queued_signatures=2
+2025-10-31T05:54:09.070870Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 85.165792ms
+2025-10-31T05:54:09.075360Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 3.508667ms
+2025-10-31T05:54:09.059105Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=58.188125ms, verify=58.184917ms, map_update=2.333µs
+2025-10-31T05:54:09.079372Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 78.45775ms
+2025-10-31T05:54:09.082313Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.431875ms
+2025-10-31T05:54:09.059122Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 44.689667ms
+2025-10-31T05:54:09.088440Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 4.443084ms
+2025-10-31T05:54:09.062793Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=48.340125ms, verify=48.335375ms, map_update=1.834µs, queued_signatures=2
+2025-10-31T05:54:09.092130Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 77.674208ms
+2025-10-31T05:54:09.063400Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 84.05ms
+2025-10-31T05:54:09.068667Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 18.722625ms
+2025-10-31T05:54:09.328848Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Order verify processor slow for node 1: 18.78975ms
+2025-10-31T05:54:09.331638Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Order verify processor slow for node 1: 21.747584ms
+2025-10-31T05:54:09.331686Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Order verify processor slow for node 1: 21.798167ms
+2025-10-31T05:54:09.331727Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Order verify processor slow for node 1: 21.846375ms
+2025-10-31T05:54:09.333063Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_request SLOW: total=120.601917ms, state_update=2.375µs, broadcast=625ns, sign_and_send=120.593167ms, finalize_pending=167ns, encode=2.709µs
+2025-10-31T05:54:09.333111Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_response SLOW: total=105.087ms, verify=105.084833ms, map_update=1.708µs, broadcast=0ns
+2025-10-31T05:54:09.383127Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Response handler slow for node 1: 155.011917ms
+2025-10-31T05:54:09.371960Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 3.314541ms
+2025-10-31T05:54:09.384772Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=16.267458ms, sign=3.456333ms, send=27.75µs
+2025-10-31T05:54:09.389707Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 18.963291ms
+2025-10-31T05:54:09.392821Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=22.23575ms, sign=19.112625ms, send=5.5µs
+2025-10-31T05:54:09.394924Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Order verify processor slow for node 1: 10.61425ms
+2025-10-31T05:54:09.399070Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 3.582167ms
+2025-10-31T05:54:09.399350Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 4.108875ms
+2025-10-31T05:54:09.413431Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 12.449375ms
+2025-10-31T05:54:09.419601Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=18.558875ms, verify=18.55475ms, map_update=2µs, queued_signatures=2
+2025-10-31T05:54:09.423782Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 22.746667ms
+2025-10-31T05:54:09.421645Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 19.569792ms
+2025-10-31T05:54:09.452615Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-0 stats node 1: 8 msgs, avg=35.245µs, max=59.542µs, rate=8/s
+2025-10-31T05:54:09.455433Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-1 stats node 1: 8 msgs, avg=52.765µs, max=114.334µs, rate=8/s
+2025-10-31T05:54:09.452642Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 1 -> 3 slow write: 8.957709ms
+2025-10-31T05:54:09.456227Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-2 stats node 1: 8 msgs, avg=20.884213ms, max=166.297875ms, rate=8/s
+2025-10-31T05:54:09.456264Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 📊 [Critical] Response stats node 1: 32 msgs, avg=5.031337ms, max=155.011917ms, rate=32/s
+2025-10-31T05:54:09.480691Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 📊 [Critical] Order stats node 1: 32 msgs, avg=541ns, max=2µs, rate=32/s
+2025-10-31T05:54:09.485575Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.383374ms
+2025-10-31T05:54:09.486919Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.480667ms
+2025-10-31T05:54:09.485588Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.81175ms
+2025-10-31T05:54:09.486940Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.497332ms
+2025-10-31T05:54:09.486962Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.49575ms
+2025-10-31T05:54:09.514732Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=31.100667ms, verify=31.095375ms, map_update=1.708µs
+2025-10-31T05:54:09.543601Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=56.728917ms, verify=56.724667ms, map_update=3.333µs
+2025-10-31T05:54:09.546768Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 59.867583ms
+2025-10-31T05:54:09.545251Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=58.208125ms, verify=58.201584ms, map_update=2.25µs, queued_signatures=2
+2025-10-31T05:54:09.545276Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=59.405208ms, verify=59.39975ms, map_update=2.25µs, queued_signatures=2
+2025-10-31T05:54:09.551398Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 65.529541ms
+2025-10-31T05:54:09.546293Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 62.665917ms
+2025-10-31T05:54:09.546334Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 59.011791ms
+2025-10-31T05:54:09.546362Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 105 msgs, avg=7.493873ms, max=135.512ms, rate=105/s
+2025-10-31T05:54:09.546683Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [multisig_worker] median sign took 54.820958ms
+2025-10-31T05:54:09.551112Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 64.078458ms
+2025-10-31T05:54:09.577362Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=90.303375ms, sign=59.303333ms, send=3.291µs
+2025-10-31T05:54:09.581775Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 39.865876ms
+2025-10-31T05:54:09.604045Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=116.986041ms, sign=94.686834ms, send=4.459µs
+2025-10-31T05:54:09.606890Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 62 msgs, avg=16.152913ms, max=135.654292ms, rate=62/s
+2025-10-31T05:54:09.684842Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-3 stats node 1: 8 msgs, avg=19.712745ms, max=157.268126ms, rate=8/s
+2025-10-31T05:54:09.705098Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.066416ms
+2025-10-31T05:54:09.710066Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.228958ms
+2025-10-31T05:54:09.711506Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.587375ms
+2025-10-31T05:54:09.711522Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.828667ms
+2025-10-31T05:54:09.717620Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=18.815542ms, verify=18.813541ms, map_update=792ns, queued_signatures=2
+2025-10-31T05:54:09.719249Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 20.449583ms
+2025-10-31T05:54:09.838466Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 61 msgs, avg=16.949785ms, max=162.506542ms, rate=61/s
+2025-10-31T05:54:09.909850Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 2.755292ms
+2025-10-31T05:54:09.942029Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 median combine task slow: node=1 shares=2 total=36.878917ms, combine=36.668292ms, broadcast=208.333µs
+2025-10-31T05:54:09.945506Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median combine worker-1 slow for node 1: 40.339875ms
+2025-10-31T05:54:09.946779Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-0 stats node 1: 11 msgs, avg=1.469µs, max=3.542µs, rate=11/s
+2025-10-31T05:54:09.910844Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-2 stats node 1: 10 msgs, avg=2.62µs, max=8.083µs, rate=10/s
+2025-10-31T05:54:09.911278Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-1 stats node 1: 10 msgs, avg=1.587µs, max=2.583µs, rate=10/s
+2025-10-31T05:54:09.916865Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-3 stats node 1: 10 msgs, avg=1.866µs, max=3.75µs, rate=10/s
+2025-10-31T05:54:09.916902Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.652292ms
+2025-10-31T05:54:09.968959Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=55.158541ms, sign=3.01125ms, send=10µs
+2025-10-31T05:54:09.916905Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=16.10225ms, verify=16.099958ms, map_update=1.708µs
+2025-10-31T05:54:09.929160Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=18.129875ms, verify=18.125042ms, map_update=1.792µs, queued_signatures=2
+2025-10-31T05:54:09.969994Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 58.997291ms
+2025-10-31T05:54:09.929233Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 18.200834ms
+2025-10-31T05:54:09.969869Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 69.735417ms
+2025-10-31T05:54:10.160975Z  WARN ThreadId(26) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 1 -> 3 slow write: 5.156125ms
+2025-10-31T05:54:10.175552Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.927791ms
+2025-10-31T05:54:10.175593Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.394333ms
+2025-10-31T05:54:10.209611Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=33.005667ms, verify=33.002916ms, map_update=2.167µs
+2025-10-31T05:54:10.209826Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 33.203833ms
+2025-10-31T05:54:10.215722Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=39.288792ms, verify=39.287083ms, map_update=1.25µs
+2025-10-31T05:54:10.215825Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 39.396166ms
+2025-10-31T05:54:10.239892Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=24.04225ms, verify=24.034709ms, map_update=2.833µs, queued_signatures=2
+2025-10-31T05:54:10.240007Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 24.212167ms
+2025-10-31T05:54:10.239982Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 12.491375ms
+2025-10-31T05:54:10.240153Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=29.149ms, verify=29.146042ms, map_update=1.208µs, queued_signatures=2
+2025-10-31T05:54:10.240094Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 41.780667ms
+2025-10-31T05:54:10.240290Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 41.998208ms
+2025-10-31T05:54:10.240224Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 29.209667ms
+2025-10-31T05:54:10.359220Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 4.579458ms
+2025-10-31T05:54:10.396877Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=42.338375ms, sign=4.722833ms, send=8.541µs
+2025-10-31T05:54:10.366416Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 6.940625ms
+2025-10-31T05:54:10.476618Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=117.444041ms, sign=7.234ms, send=3.916µs
+2025-10-31T05:54:10.388693Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=17.812833ms, verify=17.809583ms, map_update=1.083µs, queued_signatures=2
+2025-10-31T05:54:10.392450Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=23.852958ms, verify=23.850458ms, map_update=2.042µs
+2025-10-31T05:54:10.495781Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 127.208417ms
+2025-10-31T05:54:10.495868Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 125.055334ms
+2025-10-31T05:54:10.537446Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 1.086708ms
+2025-10-31T05:54:10.543089Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 median combine task slow: node=1 shares=2 total=45.893709ms, combine=45.885042ms, broadcast=7.167µs
+2025-10-31T05:54:10.543484Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median combine worker-1 slow for node 1: 46.288333ms
+2025-10-31T05:54:10.574261Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-1 stats node 1: 10 msgs, avg=130.316µs, max=500µs, rate=10/s
+2025-10-31T05:54:10.574391Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-0 stats node 1: 10 msgs, avg=421.999µs, max=3.749292ms, rate=10/s
+2025-10-31T05:54:10.583907Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 156 msgs, avg=4.63675ms, max=88.041792ms, rate=156/s
+2025-10-31T05:54:10.603884Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-2 stats node 1: 10 msgs, avg=40.312µs, max=100.125µs, rate=10/s
+2025-10-31T05:54:10.604647Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 📊 [Critical] Order stats node 1: 40 msgs, avg=868ns, max=5.084µs, rate=40/s
+2025-10-31T05:54:10.604708Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 📊 [Critical] Response stats node 1: 40 msgs, avg=107.556µs, max=2.223ms, rate=40/s
+2025-10-31T05:54:10.677128Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 4.942417ms
+2025-10-31T05:54:10.620126Z  WARN ThreadId(07) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 125 msgs, avg=8.030998ms, max=77.419458ms, rate=125/s
+2025-10-31T05:54:10.667936Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.250833ms
+2025-10-31T05:54:10.696011Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=29.632375ms, sign=1.55ms, send=7.333µs
+2025-10-31T05:54:10.685726Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=13.687458ms, sign=5.08575ms, send=791ns
+2025-10-31T05:54:10.697557Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-3 stats node 1: 9 msgs, avg=65.967µs, max=150.5µs, rate=9/s
+2025-10-31T05:54:10.721891Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.379833ms
+2025-10-31T05:54:10.723661Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 3.147626ms
+2025-10-31T05:54:10.723679Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 3.185209ms
+2025-10-31T05:54:10.729780Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 16.357542ms
+2025-10-31T05:54:10.900726Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 102 msgs, avg=10.320309ms, max=98.131083ms, rate=102/s
+2025-10-31T05:54:10.913414Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=10.995ms, verify=10.992666ms, map_update=917ns, queued_signatures=2
+2025-10-31T05:54:10.917385Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 14.959583ms
+2025-10-31T05:54:10.924934Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 5.97875ms
+2025-10-31T05:54:10.927419Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 8.182375ms
+2025-10-31T05:54:10.929397Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 median combine task slow: node=1 shares=2 total=11.942541ms, combine=11.93975ms, broadcast=1.875µs
+2025-10-31T05:54:10.932780Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median combine worker-1 slow for node 1: 15.311208ms
+2025-10-31T05:54:11.140350Z  WARN ThreadId(26) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 1 -> 0 slow write: 10.493ms
+2025-10-31T05:54:11.141814Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.784125ms
+2025-10-31T05:54:11.152566Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=12.672208ms, sign=1.925041ms, send=1.584µs
+2025-10-31T05:54:11.152926Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=13.027375ms, verify=13.025084ms, map_update=1.833µs
+2025-10-31T05:54:11.144094Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-2 stats node 1: 10 msgs, avg=2.071µs, max=3.25µs, rate=10/s
+2025-10-31T05:54:11.154048Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=14.334708ms, verify=14.330834ms, map_update=1.5µs, queued_signatures=2
+2025-10-31T05:54:11.170508Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 30.801166ms
+2025-10-31T05:54:11.154399Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 10.534ms
+2025-10-31T05:54:11.172240Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 1.5215ms
+2025-10-31T05:54:11.156828Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 16.920042ms
+2025-10-31T05:54:11.168840Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.260333ms
+2025-10-31T05:54:11.181763Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=15.635209ms, sign=2.726167ms, send=349.75µs
+2025-10-31T05:54:11.174019Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-0 stats node 1: 10 msgs, avg=6.47µs, max=45.25µs, rate=10/s
+2025-10-31T05:54:11.174197Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-3 stats node 1: 10 msgs, avg=3.004µs, max=10µs, rate=10/s
+2025-10-31T05:54:11.175758Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-1 stats node 1: 11 msgs, avg=2.492µs, max=7.042µs, rate=11/s
+2025-10-31T05:54:11.323574Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=10.891292ms, verify=10.887167ms, map_update=1.542µs, queued_signatures=2
+2025-10-31T05:54:11.326561Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 13.883542ms
+2025-10-31T05:54:11.326810Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.718875ms
+2025-10-31T05:54:11.338854Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=13.910209ms, sign=1.873458ms, send=11.833µs
+2025-10-31T05:54:11.328621Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 15.492917ms
+2025-10-31T05:54:11.505963Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 3.827375ms
+2025-10-31T05:54:11.514053Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=13.435875ms, sign=5.371375ms, send=7.5µs
+2025-10-31T05:54:11.509423Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 8.594042ms
+2025-10-31T05:54:11.533643Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=17.654333ms, verify=17.649875ms, map_update=2.458µs, queued_signatures=2
+2025-10-31T05:54:11.535906Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=33.101667ms, sign=8.735167ms, send=2.5µs
+2025-10-31T05:54:11.537859Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 21.746333ms
+2025-10-31T05:54:11.540013Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.91025ms
+2025-10-31T05:54:11.690557Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 122 msgs, avg=8.222337ms, max=77.616208ms, rate=122/s
+2025-10-31T05:54:11.694062Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-0 stats node 1: 10 msgs, avg=106.337µs, max=436.125µs, rate=10/s
+2025-10-31T05:54:11.694258Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 📊 [Critical] Response stats node 1: 40 msgs, avg=343.262µs, max=9.365375ms, rate=40/s
+2025-10-31T05:54:11.694789Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-1 stats node 1: 10 msgs, avg=71.133µs, max=237.208µs, rate=10/s
+2025-10-31T05:54:11.694969Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 📊 [Critical] Order stats node 1: 40 msgs, avg=548ns, max=2.667µs, rate=40/s
+2025-10-31T05:54:11.695057Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-2 stats node 1: 10 msgs, avg=45.67µs, max=86.667µs, rate=10/s
+2025-10-31T05:54:11.695579Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 159 msgs, avg=2.635608ms, max=37.187666ms, rate=159/s
+2025-10-31T05:54:11.706383Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-3 stats node 1: 10 msgs, avg=158.754µs, max=837.625µs, rate=10/s
+2025-10-31T05:54:11.711842Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 5.176458ms
+2025-10-31T05:54:11.712018Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 4.743541ms
+2025-10-31T05:54:11.712113Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=10.100542ms, verify=10.097166ms, map_update=1.084µs, queued_signatures=2
+2025-10-31T05:54:11.713905Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 11.882708ms
+2025-10-31T05:54:11.714069Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=10.363416ms, verify=10.360334ms, map_update=1.5µs, queued_signatures=2
+2025-10-31T05:54:11.716543Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 12.8385ms
+2025-10-31T05:54:11.716574Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 2.367334ms
+2025-10-31T05:54:11.926333Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 3.165792ms
+2025-10-31T05:54:11.933049Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=10.031834ms, sign=3.313709ms, send=2.459µs
+2025-10-31T05:54:11.926500Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 3.326791ms
+2025-10-31T05:54:11.934333Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=11.303542ms, sign=3.47225ms, send=375ns
+2025-10-31T05:54:11.927999Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_response SLOW: total=11.030958ms, verify=10.961458ms, map_update=1.375µs, broadcast=66.708µs
+2025-10-31T05:54:11.929858Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 5.099584ms
+2025-10-31T05:54:11.929898Z  WARN ThreadId(09) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 161 msgs, avg=6.390966ms, max=58.618625ms, rate=161/s
+2025-10-31T05:54:11.932276Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.554666ms
+2025-10-31T05:54:11.933132Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 7.136167ms
+2025-10-31T05:54:11.936969Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=13.756375ms, sign=9.919917ms, send=1.958µs
+2025-10-31T05:54:11.934788Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Response handler slow for node 1: 17.829083ms
+2025-10-31T05:54:11.934863Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=11.647417ms, sign=6.598625ms, send=17.875µs
+2025-10-31T05:54:11.963477Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=25.998417ms, verify=25.997416ms, map_update=791ns
+2025-10-31T05:54:11.963553Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=29.131083ms, verify=29.126166ms, map_update=2.292µs, queued_signatures=2
+2025-10-31T05:54:11.963567Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=16.619958ms, verify=16.617958ms, map_update=1.084µs, queued_signatures=2
+2025-10-31T05:54:11.963583Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 29.8765ms
+2025-10-31T05:54:11.964121Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 21.596292ms
+2025-10-31T05:54:11.966429Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 28.824917ms
+2025-10-31T05:54:11.969319Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 27.257292ms
+2025-10-31T05:54:11.969349Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 17.927791ms
+2025-10-31T05:54:11.969372Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 34.9495ms
+2025-10-31T05:54:12.103231Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 4.6025ms
+2025-10-31T05:54:12.115826Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 3.381582ms
+2025-10-31T05:54:12.117326Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 11.555375ms
+2025-10-31T05:54:12.124884Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 20.6125ms
+2025-10-31T05:54:12.134133Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: [multisig_worker] median sign took 19.09925ms
+2025-10-31T05:54:12.136732Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 4.929292ms
+2025-10-31T05:54:12.143185Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=30.481292ms, sign=24.028542ms, send=3.084µs
+2025-10-31T05:54:12.167782Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-10-31T05:54:12.176797Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-2 stats node 1: 12 msgs, avg=1.788µs, max=3.583µs, rate=12/s
+2025-10-31T05:54:12.295754Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 4.576625ms
+2025-10-31T05:54:12.297851Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-0 stats node 1: 12 msgs, avg=1.791µs, max=5.25µs, rate=12/s
+2025-10-31T05:54:12.315163Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=10.743125ms, verify=10.741667ms, map_update=500ns, queued_signatures=2
+2025-10-31T05:54:12.317050Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 12.620583ms
+2025-10-31T05:54:12.300605Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.357084ms
+2025-10-31T05:54:12.304543Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-1 stats node 1: 12 msgs, avg=1.791µs, max=9.75µs, rate=12/s
+2025-10-31T05:54:12.313029Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 3.314834ms
+2025-10-31T05:54:12.313037Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 3.078791ms
+2025-10-31T05:54:12.315031Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=24.155ms, sign=4.866375ms, send=8.343375ms
+2025-10-31T05:54:12.319368Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 14.945209ms
+2025-10-31T05:54:12.319376Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-3 stats node 1: 13 msgs, avg=1.878µs, max=4.125µs, rate=13/s
+2025-10-31T05:54:12.328048Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 2.759584ms
+2025-10-31T05:54:12.380806Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 median combine task slow: node=1 shares=2 total=51.678083ms, combine=51.666291ms, broadcast=9.084µs
+2025-10-31T05:54:12.336420Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=41.198792ms, sign=2.661625ms, send=2.708µs
+2025-10-31T05:54:12.342262Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=23.075583ms, verify=23.073625ms, map_update=1µs, queued_signatures=2
+2025-10-31T05:54:12.382519Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 63.347ms
+2025-10-31T05:54:12.357976Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=62.297625ms, sign=3.6075ms, send=625ns
+2025-10-31T05:54:12.360893Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=64.973083ms, sign=3.364375ms, send=667ns
+2025-10-31T05:54:12.365258Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 46.912042ms
+2025-10-31T05:54:12.380829Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 1 -> 3 slow write: 7.115458ms
+2025-10-31T05:54:12.381823Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median combine worker-3 slow for node 1: 56.806417ms
+2025-10-31T05:54:12.480883Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 3.362167ms
+2025-10-31T05:54:12.483108Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.010667ms
+2025-10-31T05:54:12.497635Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=20.478542ms, sign=5.953333ms, send=4.333µs
+2025-10-31T05:54:12.489658Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.433124ms
+2025-10-31T05:54:12.492003Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_response SLOW: total=18.600083ms, verify=18.599041ms, map_update=667ns, broadcast=0ns
+2025-10-31T05:54:12.503873Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=17.04525ms, sign=2.753833ms, send=3.75µs
+2025-10-31T05:54:12.505234Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Response handler slow for node 1: 31.807416ms
+2025-10-31T05:54:12.507702Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Order verify processor slow for node 1: 10.036583ms
+2025-10-31T05:54:12.507715Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Order verify processor slow for node 1: 10.053917ms
+2025-10-31T05:54:12.550782Z  WARN ThreadId(26) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 1 -> 3 slow write: 8.093167ms
+2025-10-31T05:54:12.561958Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=11.858833ms, verify=11.853708ms, map_update=2.166µs, queued_signatures=2
+2025-10-31T05:54:12.562015Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 13.22375ms
+2025-10-31T05:54:12.562048Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 11.9585ms
+2025-10-31T05:54:12.699188Z  WARN ThreadId(09) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 162 msgs, avg=2.766622ms, max=21.580625ms, rate=162/s
+2025-10-31T05:54:12.703457Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 123 msgs, avg=8.21097ms, max=34.22ms, rate=123/s
+2025-10-31T05:54:12.727483Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 📊 [Critical] Response stats node 1: 42 msgs, avg=1.275706ms, max=31.807416ms, rate=42/s
+2025-10-31T05:54:12.727561Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 📊 [Critical] Order stats node 1: 40 msgs, avg=534ns, max=4.5µs, rate=40/s
+2025-10-31T05:54:12.740743Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.001375ms
+2025-10-31T05:54:12.742473Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 3.068625ms
+2025-10-31T05:54:12.742556Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.9885ms
+2025-10-31T05:54:12.742631Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.883083ms
+2025-10-31T05:54:12.779816Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.466958ms
+2025-10-31T05:54:12.795829Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=13.388458ms, verify=13.3835ms, map_update=1.958µs, queued_signatures=2
+2025-10-31T05:54:12.795962Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 15.369791ms
+2025-10-31T05:54:12.803777Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 23.220375ms
+2025-10-31T05:54:12.804751Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=23.968916ms, verify=23.964334ms, map_update=3.167µs, queued_signatures=2
+2025-10-31T05:54:12.808577Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 28.043583ms
+2025-10-31T05:54:12.797106Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[231, 181, 26, 75, 139, 164, 115, 154, 215, 208, 1, 171, 118, 164, 84, 80, 148, 132, 225, 31, 108, 77, 184, 236, 168, 150, 48, 234, 128, 45, 116, 197] view=148 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=true (exists=true) | cond3(view>locked || extends)=false (pc.view=148, locked.view=150, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[217, 107, 182, 92, 3, 170, 207, 180, 240, 76, 55, 121, 116, 98, 14, 106, 37, 151, 36, 232, 126, 108, 65, 92, 246, 114, 88, 131, 145, 2, 222, 151] highest_pc.view=151 locked.block=[136, 228, 32, 121, 0, 85, 127, 6, 136, 209, 137, 40, 53, 137, 5, 198, 202, 90, 45, 183, 39, 26, 138, 87, 152, 183, 175, 239, 69, 130, 154, 240] locked.view=150    
+2025-10-31T05:54:12.804955Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 152 timed out; latency may accumulate
+2025-10-31T05:54:12.805199Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 25.268167ms
+2025-10-31T05:54:12.808834Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[71, 57, 5, 9, 70, 0, 254, 185, 158, 84, 16, 91, 215, 203, 95, 126, 179, 221, 164, 96, 198, 198, 207, 97, 93, 190, 171, 1, 151, 215, 129, 193] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[231, 181, 26, 75, 139, 164, 115, 154, 215, 208, 1, 171, 118, 164, 84, 80, 148, 132, 225, 31, 108, 77, 184, 236, 168, 150, 48, 234, 128, 45, 116, 197] justify.view=148 | highest_pc.block=[217, 107, 182, 92, 3, 170, 207, 180, 240, 76, 55, 121, 116, 98, 14, 106, 37, 151, 36, 232, 126, 108, 65, 92, 246, 114, 88, 131, 145, 2, 222, 151] highest_pc.view=151 | locked.block=[136, 228, 32, 121, 0, 85, 127, 6, 136, 209, 137, 40, 53, 137, 5, 198, 202, 90, 45, 183, 39, 26, 138, 87, 152, 183, 175, 239, 69, 130, 154, 240] locked.view=150    
+2025-10-31T05:54:12.899578Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-0 stats node 1: 12 msgs, avg=219.18µs, max=1.498875ms, rate=12/s
+2025-10-31T05:54:12.910218Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-2 stats node 1: 12 msgs, avg=59.086µs, max=373.583µs, rate=12/s
+2025-10-31T05:54:12.900166Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-1 stats node 1: 12 msgs, avg=171.364µs, max=515.959µs, rate=12/s
+2025-10-31T05:54:12.910272Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-3 stats node 1: 11 msgs, avg=95.814µs, max=386.458µs, rate=11/s
+2025-10-31T05:54:12.927005Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.694458ms
+2025-10-31T05:54:12.934576Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.787292ms
+2025-10-31T05:54:12.938396Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 5.151ms
+2025-10-31T05:54:12.938464Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 3.630667ms
+2025-10-31T05:54:12.938486Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 3.255459ms
+2025-10-31T05:54:12.946814Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 1.359834ms
+2025-10-31T05:54:12.950715Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.938751ms
+2025-10-31T05:54:12.956803Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 120 msgs, avg=7.866551ms, max=45.79975ms, rate=120/s
+2025-10-31T05:54:12.977756Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 1 -> 3 slow write: 7.07525ms
+2025-10-31T05:54:13.125793Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=12.177667ms, verify=12.175458ms, map_update=916ns, queued_signatures=2
+2025-10-31T05:54:13.131530Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 3.090041ms
+2025-10-31T05:54:13.132380Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 4.025791ms
+2025-10-31T05:54:13.144246Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=16.212458ms, sign=4.334541ms, send=14.5µs
+2025-10-31T05:54:13.133791Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 11.601125ms
+2025-10-31T05:54:13.137108Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 23.4455ms
+2025-10-31T05:54:13.138082Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=10.041709ms, sign=3.500833ms, send=18µs
+2025-10-31T05:54:13.143975Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 21.36375ms
+2025-10-31T05:54:13.168394Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 5.347625ms
+2025-10-31T05:54:13.181895Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 median combine task slow: node=1 shares=2 total=19.056958ms, combine=18.958917ms, broadcast=95.25µs
+2025-10-31T05:54:13.184441Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median combine worker-1 slow for node 1: 21.614292ms
+2025-10-31T05:54:13.196312Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-2 stats node 1: 11 msgs, avg=2.056µs, max=6.708µs, rate=11/s
+2025-10-31T05:54:13.349344Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.451375ms
+2025-10-31T05:54:13.354278Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.996793ms
+2025-10-31T05:54:13.357489Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.75575ms
+2025-10-31T05:54:13.366091Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=13.243875ms, verify=13.242083ms, map_update=1.375µs
+2025-10-31T05:54:13.376463Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 23.621083ms
+2025-10-31T05:54:13.366103Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=15.027667ms, verify=15.026834ms, map_update=541ns
+2025-10-31T05:54:13.366114Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=15.023667ms, verify=15.022292ms, map_update=459ns, queued_signatures=2
+2025-10-31T05:54:13.405555Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 54.467417ms
+2025-10-31T05:54:13.366836Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 12.403167ms
+2025-10-31T05:54:13.414440Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 3.375792ms
+2025-10-31T05:54:13.368257Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=18.260208ms, verify=18.258792ms, map_update=708ns, queued_signatures=2
+2025-10-31T05:54:13.414757Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 65.639791ms
+2025-10-31T05:54:13.414917Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-3 stats node 1: 10 msgs, avg=1.77µs, max=4.166µs, rate=10/s
+2025-10-31T05:54:13.368266Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=16.060666ms, sign=3.138334ms, send=307.292µs
+2025-10-31T05:54:13.368273Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 16.305292ms
+2025-10-31T05:54:13.375457Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=21.10625ms, sign=3.058458ms, send=416ns
+2025-10-31T05:54:13.402431Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 51.355834ms
+2025-10-31T05:54:13.408809Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 54.450542ms
+2025-10-31T05:54:13.410760Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-1 stats node 1: 11 msgs, avg=1.284µs, max=1.792µs, rate=11/s
+2025-10-31T05:54:13.415006Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-0 stats node 1: 11 msgs, avg=1.753µs, max=3.291µs, rate=11/s
+2025-10-31T05:54:13.425460Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 3.258542ms
+2025-10-31T05:54:13.444504Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=22.48525ms, sign=3.399542ms, send=8.208µs
+2025-10-31T05:54:13.607721Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 1 -> 0 slow write: 9.074875ms
+2025-10-31T05:54:13.619232Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 7.323459ms
+2025-10-31T05:54:13.621595Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=10.030625ms, sign=7.631417ms, send=2.875µs
+2025-10-31T05:54:13.619702Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 4.479375ms
+2025-10-31T05:54:13.637996Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=23.057208ms, sign=4.771ms, send=10.334µs
+2025-10-31T05:54:13.619789Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 3.49625ms
+2025-10-31T05:54:13.645637Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=29.479541ms, sign=3.637333ms, send=8µs
+2025-10-31T05:54:13.645705Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 15.349208ms
+2025-10-31T05:54:13.619815Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.941791ms
+2025-10-31T05:54:13.653838Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=37.07175ms, sign=3.082416ms, send=3.375µs
+2025-10-31T05:54:13.620070Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 3.709667ms
+2025-10-31T05:54:13.654107Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=38.333333ms, sign=3.99725ms, send=750ns
+2025-10-31T05:54:13.632266Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.202125ms
+2025-10-31T05:54:13.654497Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=23.826584ms, sign=1.4925ms, send=2.375µs
+2025-10-31T05:54:13.635570Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.416791ms
+2025-10-31T05:54:13.643837Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=13.289916ms, verify=13.286083ms, map_update=1.75µs, queued_signatures=2
+2025-10-31T05:54:13.654657Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=23.973542ms, sign=4.881208ms, send=1.375µs
+2025-10-31T05:54:13.654715Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 24.351667ms
+2025-10-31T05:54:13.735440Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 113 msgs, avg=8.986038ms, max=56.805959ms, rate=113/s
+2025-10-31T05:54:13.795726Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 📊 [Critical] Response stats node 1: 38 msgs, avg=81.948µs, max=734µs, rate=38/s
+2025-10-31T05:54:13.805098Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 📊 [Critical] Order stats node 1: 40 msgs, avg=481ns, max=1.833µs, rate=40/s
+2025-10-31T05:54:13.796245Z  WARN ThreadId(06) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 158 msgs, avg=2.764161ms, max=33.99825ms, rate=158/s
+2025-10-31T05:54:13.820463Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.676084ms
+2025-10-31T05:54:13.820558Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.759ms
+2025-10-31T05:54:13.829133Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=11.306084ms, verify=11.304542ms, map_update=1.209µs
+2025-10-31T05:54:13.831183Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 13.359709ms
+2025-10-31T05:54:13.831787Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=24.611959ms, verify=24.610667ms, map_update=1µs
+2025-10-31T05:54:13.831841Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 24.667ms
+2025-10-31T05:54:13.836275Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=18.439709ms, verify=18.437917ms, map_update=708ns, queued_signatures=2
+2025-10-31T05:54:13.836444Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 18.63725ms
+2025-10-31T05:54:13.838720Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 31.239375ms
+2025-10-31T05:54:13.840764Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 11.5875ms
+2025-10-31T05:54:13.842463Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 13.282875ms
+2025-10-31T05:54:13.839645Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 10.473917ms
+2025-10-31T05:54:13.842442Z  WARN ThreadId(26) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 1 -> 2 slow write: 37.036416ms
+2025-10-31T05:54:13.960051Z  WARN ThreadId(06) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 115 msgs, avg=7.593054ms, max=77.028417ms, rate=115/s
+2025-10-31T05:54:14.010686Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-1 stats node 1: 10 msgs, avg=177.558µs, max=1.126417ms, rate=10/s
+2025-10-31T05:54:14.019162Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-3 stats node 1: 10 msgs, avg=55.162µs, max=106.958µs, rate=10/s
+2025-10-31T05:54:14.019231Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-0 stats node 1: 10 msgs, avg=48.225µs, max=78.875µs, rate=10/s
+2025-10-31T05:54:14.019254Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-2 stats node 1: 10 msgs, avg=39.204µs, max=57.333µs, rate=10/s
+2025-10-31T05:54:14.041785Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=10.564708ms, verify=10.563084ms, map_update=1.291µs
+2025-10-31T05:54:14.041917Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 10.703ms
+2025-10-31T05:54:14.041317Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 10.414875ms
+2025-10-31T05:54:14.042540Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 1.312166ms
+2025-10-31T05:54:14.043692Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.045542ms
+2025-10-31T05:54:14.051137Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.444374ms
+2025-10-31T05:54:14.067546Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=23.871583ms, verify=23.869042ms, map_update=1.209µs, queued_signatures=2
+2025-10-31T05:54:14.078853Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 35.181ms
+2025-10-31T05:54:14.270343Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.18325ms
+2025-10-31T05:54:14.277919Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-2 stats node 1: 9 msgs, avg=1.689µs, max=3.208µs, rate=9/s
+2025-10-31T05:54:14.278928Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 1.300791ms
+2025-10-31T05:54:14.279821Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 2.1595ms
+2025-10-31T05:54:14.280965Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Order verify processor slow for node 1: 15.884125ms
+2025-10-31T05:54:14.284090Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.540417ms
+2025-10-31T05:54:14.284230Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 13.702625ms
+2025-10-31T05:54:14.302509Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=31.903417ms, verify=31.899625ms, map_update=1.792µs, queued_signatures=2
+2025-10-31T05:54:14.302803Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 32.251209ms
+2025-10-31T05:54:14.421511Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-3 stats node 1: 11 msgs, avg=1.89µs, max=3.583µs, rate=11/s
+2025-10-31T05:54:14.421814Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Order verify processor slow for node 1: 10.637667ms
+2025-10-31T05:54:14.429502Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=19.983375ms, verify=19.979458ms, map_update=3.25µs
+2025-10-31T05:54:14.429581Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 20.07925ms
+2025-10-31T05:54:14.429790Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=18.389125ms, verify=18.385917ms, map_update=1.208µs, queued_signatures=2
+2025-10-31T05:54:14.429861Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 18.598208ms
+2025-10-31T05:54:14.430401Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 20.046208ms
+2025-10-31T05:54:14.433264Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.17175ms
+2025-10-31T05:54:14.433356Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.364167ms
+2025-10-31T05:54:14.434814Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 3.564749ms
+2025-10-31T05:54:14.438243Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.963042ms
+2025-10-31T05:54:14.456379Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=25.681834ms, sign=2.264708ms, send=16.833µs
+2025-10-31T05:54:14.441832Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: [multisig_worker] median sign took 6.520084ms
+2025-10-31T05:54:14.459613Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 23.615624ms
+2025-10-31T05:54:14.447246Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=16.531375ms, verify=16.528416ms, map_update=2.292µs
+2025-10-31T05:54:14.460041Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 29.328958ms
+2025-10-31T05:54:14.450154Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=29.36ms, verify=29.357375ms, map_update=1µs, queued_signatures=2
+2025-10-31T05:54:14.460788Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 39.991875ms
+2025-10-31T05:54:14.451440Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-0 stats node 1: 12 msgs, avg=1.42µs, max=3.209µs, rate=12/s
+2025-10-31T05:54:14.452141Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 21.436458ms
+2025-10-31T05:54:14.452199Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 42.516ms
+2025-10-31T05:54:14.459761Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=30.288042ms, sign=30.135708ms, send=416ns
+2025-10-31T05:54:14.471873Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 10.810251ms
+2025-10-31T05:54:14.471995Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 median combine task slow: node=1 shares=2 total=11.0575ms, combine=11.053834ms, broadcast=1µs
+2025-10-31T05:54:14.472150Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median combine worker-2 slow for node 1: 11.209917ms
+2025-10-31T05:54:14.473186Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-1 stats node 1: 12 msgs, avg=2.711µs, max=6.708µs, rate=12/s
+2025-10-31T05:54:14.689520Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=13.6005ms, verify=13.598083ms, map_update=1.167µs, queued_signatures=2
+2025-10-31T05:54:14.690167Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 14.252333ms
+2025-10-31T05:54:14.690246Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=13.400709ms, verify=13.399459ms, map_update=625ns, queued_signatures=2
+2025-10-31T05:54:14.691450Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 14.605375ms
+2025-10-31T05:54:14.694082Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 3.714374ms
+2025-10-31T05:54:14.691462Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 10.313375ms
+2025-10-31T05:54:14.691486Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 10.239209ms
+2025-10-31T05:54:14.701831Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Order verify processor slow for node 1: 10.078416ms
+2025-10-31T05:54:14.740074Z  WARN ThreadId(06) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 96 msgs, avg=10.449647ms, max=41.078917ms, rate=96/s
+2025-10-31T05:54:14.802723Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 153 timed out; latency may accumulate
+2025-10-31T05:54:14.867624Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 📊 [Critical] Response stats node 1: 40 msgs, avg=72.339µs, max=221.292µs, rate=40/s
+2025-10-31T05:54:14.870431Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 📊 [Critical] Order stats node 1: 40 msgs, avg=1.006µs, max=14.334µs, rate=40/s
+2025-10-31T05:54:14.867654Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 160 msgs, avg=3.221783ms, max=38.206584ms, rate=160/s
+2025-10-31T05:54:14.913677Z  WARN ThreadId(26) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 1 -> 2 slow write: 6.339709ms
+2025-10-31T05:54:14.913822Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 6.121209ms
+2025-10-31T05:54:14.926764Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=18.843542ms, sign=6.297125ms, send=15.916µs
+2025-10-31T05:54:14.928544Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 1.862875ms
+2025-10-31T05:54:14.940332Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 median combine task slow: node=1 shares=2 total=13.838417ms, combine=13.818ms, broadcast=15.208µs
+2025-10-31T05:54:14.942570Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median combine worker-2 slow for node 1: 16.114834ms
+2025-10-31T05:54:14.992824Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 116 msgs, avg=7.604704ms, max=37.00525ms, rate=116/s
+2025-10-31T05:54:15.097155Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-0 stats node 1: 10 msgs, avg=52.766µs, max=106.291µs, rate=10/s
+2025-10-31T05:54:15.100126Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-2 stats node 1: 10 msgs, avg=39.32µs, max=87.708µs, rate=10/s
+2025-10-31T05:54:15.100130Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-1 stats node 1: 10 msgs, avg=54.808µs, max=96.458µs, rate=10/s
+2025-10-31T05:54:15.100136Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-3 stats node 1: 10 msgs, avg=52.154µs, max=81.334µs, rate=10/s
+2025-10-31T05:54:15.122754Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 1 -> 0 slow write: 6.142917ms
+2025-10-31T05:54:15.126372Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.124792ms
+2025-10-31T05:54:15.127407Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.265082ms
+2025-10-31T05:54:15.144903Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=20.027875ms, sign=2.551791ms, send=17.875µs
+2025-10-31T05:54:15.127426Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.661251ms
+2025-10-31T05:54:15.136778Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 5.578458ms
+2025-10-31T05:54:15.157858Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=33.003541ms, sign=2.612834ms, send=1.625µs
+2025-10-31T05:54:15.160922Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=29.868542ms, sign=5.882292ms, send=15.833µs
+2025-10-31T05:54:15.374357Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_request SLOW: total=13.564583ms, state_update=1.208µs, broadcast=375ns, sign_and_send=13.558917ms, finalize_pending=83ns, encode=1.583µs
+2025-10-31T05:54:15.378292Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.068041ms
+2025-10-31T05:54:15.378417Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.324917ms
+2025-10-31T05:54:15.380129Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.243667ms
+2025-10-31T05:54:15.391767Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.0845ms
+2025-10-31T05:54:15.392699Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=12.487167ms, sign=1.3735ms, send=2.959µs
+2025-10-31T05:54:15.393067Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=14.927083ms, verify=14.924333ms, map_update=2.166µs
+2025-10-31T05:54:15.396582Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 15.091625ms
+2025-10-31T05:54:15.396760Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-2 stats node 1: 11 msgs, avg=2.405µs, max=4.333µs, rate=11/s
+2025-10-31T05:54:15.396816Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=14.296833ms, verify=14.293459ms, map_update=1.375µs, queued_signatures=2
+2025-10-31T05:54:15.396844Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 16.724958ms
+2025-10-31T05:54:15.397148Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=18.520667ms, sign=16.882208ms, send=6.917µs
+2025-10-31T05:54:15.397050Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 15.828041ms
+2025-10-31T05:54:15.402527Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 4.463166ms
+2025-10-31T05:54:15.406026Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 1.799583ms
+2025-10-31T05:54:15.436147Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 1 -> 0 slow write: 49.388625ms
+2025-10-31T05:54:15.440951Z  WARN ThreadId(26) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 1 -> 3 slow write: 9.562875ms
+2025-10-31T05:54:15.568712Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 3.611917ms
+2025-10-31T05:54:15.568751Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=10.680708ms, verify=10.678584ms, map_update=833ns, queued_signatures=2
+2025-10-31T05:54:15.573666Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=17.87ms, verify=17.865584ms, map_update=1.583µs, queued_signatures=2
+2025-10-31T05:54:15.600374Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 44.578083ms
+2025-10-31T05:54:15.575802Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 17.660667ms
+2025-10-31T05:54:15.590395Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-3 stats node 1: 11 msgs, avg=1.799µs, max=3.75µs, rate=11/s
+2025-10-31T05:54:15.590592Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-0 stats node 1: 10 msgs, avg=1.129µs, max=2.25µs, rate=10/s
+2025-10-31T05:54:15.606345Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-1 stats node 1: 10 msgs, avg=1.725µs, max=2.916µs, rate=10/s
+2025-10-31T05:54:15.745799Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.947792ms
+2025-10-31T05:54:15.746781Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.420584ms
+2025-10-31T05:54:15.755186Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=13.427833ms, verify=13.425667ms, map_update=834ns, queued_signatures=2
+2025-10-31T05:54:15.755317Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 13.568375ms
+2025-10-31T05:54:15.755252Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 124 msgs, avg=8.183821ms, max=55.95425ms, rate=124/s
+2025-10-31T05:54:15.767956Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=12.541209ms, verify=12.539625ms, map_update=833ns, queued_signatures=2
+2025-10-31T05:54:15.768198Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 12.793417ms
+2025-10-31T05:54:15.768679Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 22.813375ms
+2025-10-31T05:54:15.782400Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=26.868459ms, verify=26.864417ms, map_update=1.625µs, queued_signatures=2
+2025-10-31T05:54:15.782660Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 27.263917ms
+2025-10-31T05:54:15.790277Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 7.30575ms
+2025-10-31T05:54:15.805353Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 median combine task slow: node=1 shares=2 total=22.616458ms, combine=22.609042ms, broadcast=5.625µs
+2025-10-31T05:54:15.805545Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median combine worker-3 slow for node 1: 22.818292ms
+2025-10-31T05:54:15.915151Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 160 msgs, avg=3.074973ms, max=36.108792ms, rate=160/s
+2025-10-31T05:54:15.915305Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 📊 [Critical] Response stats node 1: 40 msgs, avg=77.41µs, max=191.958µs, rate=40/s
+2025-10-31T05:54:15.922921Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 📊 [Critical] Order stats node 1: 40 msgs, avg=469ns, max=1.75µs, rate=40/s
+2025-10-31T05:54:15.949914Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 1.989666ms
+2025-10-31T05:54:15.995336Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 12.352208ms
+2025-10-31T05:54:15.996171Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 118 msgs, avg=8.381698ms, max=47.486208ms, rate=118/s
+2025-10-31T05:54:16.002987Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=22.282333ms, verify=22.27775ms, map_update=2.041µs, queued_signatures=2
+2025-10-31T05:54:16.018537Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 37.482042ms
+2025-10-31T05:54:16.045656Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 26.602374ms
+2025-10-31T05:54:16.045672Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 17.206208ms
+2025-10-31T05:54:16.045777Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=27.037208ms, sign=26.893083ms, send=6.333µs
+2025-10-31T05:54:16.045837Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 median combine task slow: node=1 shares=2 total=17.622875ms, combine=17.621417ms, broadcast=708ns
+2025-10-31T05:54:16.045939Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median combine worker-2 slow for node 1: 17.730625ms
+2025-10-31T05:54:16.115052Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-2 stats node 1: 10 msgs, avg=44.65µs, max=75.709µs, rate=10/s
+2025-10-31T05:54:16.115402Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-0 stats node 1: 10 msgs, avg=65.633µs, max=162.083µs, rate=10/s
+2025-10-31T05:54:16.127304Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.029458ms
+2025-10-31T05:54:16.127523Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 3.127ms
+2025-10-31T05:54:16.127910Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-1 stats node 1: 11 msgs, avg=1.304556ms, max=13.701917ms, rate=11/s
+2025-10-31T05:54:16.131519Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-3 stats node 1: 11 msgs, avg=48.969µs, max=97.208µs, rate=11/s
+2025-10-31T05:54:16.144817Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 17.338374ms
+2025-10-31T05:54:16.152589Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=25.303708ms, sign=17.484833ms, send=2.375µs
+2025-10-31T05:54:16.144955Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 10.117291ms
+2025-10-31T05:54:16.153077Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=18.546875ms, sign=10.437166ms, send=2.333µs
+2025-10-31T05:54:16.144968Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 10.196792ms
+2025-10-31T05:54:16.156613Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=22.101208ms, sign=10.486334ms, send=4.041µs
+2025-10-31T05:54:16.150343Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=22.043334ms, verify=22.038ms, map_update=4.458µs
+2025-10-31T05:54:16.150453Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=19.881667ms, verify=19.878ms, map_update=1.75µs, queued_signatures=2
+2025-10-31T05:54:16.150815Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 22.61225ms
+2025-10-31T05:54:16.150847Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=22.704083ms, verify=22.700167ms, map_update=2.416µs, queued_signatures=2
+2025-10-31T05:54:16.156693Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 25.17575ms
+2025-10-31T05:54:16.156845Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 26.293166ms
+2025-10-31T05:54:16.156848Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 28.614334ms
+2025-10-31T05:54:16.156997Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 28.8415ms
+2025-10-31T05:54:16.347310Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 32.734499ms
+2025-10-31T05:54:16.349491Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 31.116292ms
+2025-10-31T05:54:16.349500Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=33.913208ms, sign=32.881583ms, send=19.375µs
+2025-10-31T05:54:16.349502Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=30.781458ms, verify=30.778791ms, map_update=2.084µs
+2025-10-31T05:54:16.351322Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 29.978167ms
+2025-10-31T05:54:16.376234Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=55.712166ms, sign=30.785917ms, send=4.458µs
+2025-10-31T05:54:16.351359Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 30.4755ms
+2025-10-31T05:54:16.389296Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=68.740667ms, sign=30.776125ms, send=5.333µs
+2025-10-31T05:54:16.389570Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [multisig_worker] median sign took 53.910917ms
+2025-10-31T05:54:16.352492Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 23.3565ms
+2025-10-31T05:54:16.393468Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=64.532541ms, sign=23.50275ms, send=7.25µs
+2025-10-31T05:54:16.352496Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=35.011916ms, verify=35.009ms, map_update=2.125µs
+2025-10-31T05:54:16.355138Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 35.039876ms
+2025-10-31T05:54:16.404387Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=84.588708ms, sign=35.342459ms, send=583ns
+2025-10-31T05:54:16.362646Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=48.058875ms, sign=32.775584ms, send=9.75µs
+2025-10-31T05:54:16.371996Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: [multisig_worker] median sign took 15.325125ms
+2025-10-31T05:54:16.375330Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 58.382833ms
+2025-10-31T05:54:16.380615Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=33.034292ms, verify=33.028917ms, map_update=2.125µs, queued_signatures=2
+2025-10-31T05:54:16.393358Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 23.748041ms
+2025-10-31T05:54:16.464371Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=148.650417ms, sign=77.658958ms, send=2.875µs
+2025-10-31T05:54:16.399665Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 82.837958ms
+2025-10-31T05:54:16.419920Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=26.234875ms, verify=26.230666ms, map_update=2.208µs, queued_signatures=2
+2025-10-31T05:54:16.488976Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 95.283542ms
+2025-10-31T05:54:16.420422Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 26.7395ms
+2025-10-31T05:54:16.424745Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-2 stats node 1: 12 msgs, avg=6.416µs, max=59.166µs, rate=12/s
+2025-10-31T05:54:16.438533Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 100.852583ms
+2025-10-31T05:54:16.495190Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=172.916417ms, sign=116.177708ms, send=11.666µs
+2025-10-31T05:54:16.449191Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 101.551ms
+2025-10-31T05:54:16.501660Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 5.985834ms
+2025-10-31T05:54:16.513812Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 median combine task slow: node=1 shares=2 total=18.361166ms, combine=18.353666ms, broadcast=4.209µs
+2025-10-31T05:54:16.514149Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median combine worker-1 slow for node 1: 18.70675ms
+2025-10-31T05:54:16.546458Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 5.262375ms
+2025-10-31T05:54:16.549422Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Order verify processor slow for node 1: 10.118458ms
+2025-10-31T05:54:16.553677Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=12.419458ms, sign=5.408041ms, send=267.792µs
+2025-10-31T05:54:16.549431Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Order verify processor slow for node 1: 11.91625ms
+2025-10-31T05:54:16.562336Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=14.2405ms, verify=14.23725ms, map_update=2.708µs
+2025-10-31T05:54:16.565121Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 17.068334ms
+2025-10-31T05:54:16.552162Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.356042ms
+2025-10-31T05:54:16.569353Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=18.763708ms, sign=1.645ms, send=12.042µs
+2025-10-31T05:54:16.573988Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=19.828417ms, verify=19.826167ms, map_update=1.083µs, queued_signatures=2
+2025-10-31T05:54:16.552395Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Order verify processor slow for node 1: 11.487125ms
+2025-10-31T05:54:16.552431Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 1.617708ms
+2025-10-31T05:54:16.584114Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=33.606917ms, sign=1.918625ms, send=333ns
+2025-10-31T05:54:16.552603Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: [multisig_worker] median sign took 11.186334ms
+2025-10-31T05:54:16.584231Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 32.141458ms
+2025-10-31T05:54:16.584033Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 26.494084ms
+2025-10-31T05:54:16.584099Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=18.875333ms, verify=18.872833ms, map_update=1.916µs
+2025-10-31T05:54:16.584178Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 36.166125ms
+2025-10-31T05:54:16.584288Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=43.383792ms, sign=43.327792ms, send=2.584µs
+2025-10-31T05:54:16.589186Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 4.506834ms
+2025-10-31T05:54:16.594621Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=10.280375ms, sign=4.81425ms, send=6.5µs
+2025-10-31T05:54:16.593758Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 9.10075ms
+2025-10-31T05:54:16.593853Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 45.834666ms
+2025-10-31T05:54:16.594370Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 32.397833ms
+2025-10-31T05:54:16.595676Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=11.332792ms, sign=9.413625ms, send=1.458µs
+2025-10-31T05:54:16.637413Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=75.403791ms, verify=75.397792ms, map_update=2.417µs, queued_signatures=2
+2025-10-31T05:54:16.640482Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 78.337209ms
+2025-10-31T05:54:16.647256Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 6.370167ms
+2025-10-31T05:54:16.761372Z  WARN ThreadId(06) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 95 msgs, avg=10.584704ms, max=87.976375ms, rate=95/s
+2025-10-31T05:54:16.777716Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-3 stats node 1: 13 msgs, avg=2.118µs, max=3.542µs, rate=13/s
+2025-10-31T05:54:16.790031Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=13.467666ms, verify=13.46625ms, map_update=1.041µs
+2025-10-31T05:54:16.792654Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 16.065417ms
+2025-10-31T05:54:16.790079Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=15.567833ms, verify=15.566ms, map_update=708ns, queued_signatures=2
+2025-10-31T05:54:16.794657Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 20.104959ms
+2025-10-31T05:54:16.790599Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=13.375917ms, verify=13.373666ms, map_update=1.959µs
+2025-10-31T05:54:16.802528Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 25.271583ms
+2025-10-31T05:54:16.791258Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: [multisig_worker] median sign took 20.838375ms
+2025-10-31T05:54:16.807017Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 15.797792ms
+2025-10-31T05:54:16.791873Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=20.036583ms, verify=20.032625ms, map_update=1.792µs, queued_signatures=2
+2025-10-31T05:54:16.800849Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: [multisig_worker] aggregate_median_signatures_async scheduling overhead 4.255541ms
+2025-10-31T05:54:16.807250Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 median combine task slow: node=1 shares=2 total=12.472208ms, combine=12.47ms, broadcast=625ns
+2025-10-31T05:54:16.805999Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 34.21325ms
+2025-10-31T05:54:16.807064Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-0 stats node 1: 13 msgs, avg=2.006µs, max=3.292µs, rate=13/s
+2025-10-31T05:54:16.807094Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=36.720667ms, sign=36.636167ms, send=1.875µs
+2025-10-31T05:54:16.807105Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 📊 [Critical] Final worker-1 stats node 1: 13 msgs, avg=1.471µs, max=3.75µs, rate=13/s
+2025-10-31T05:54:16.807184Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 35.408584ms
+2025-10-31T05:54:16.807329Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median combine worker-3 slow for node 1: 12.553083ms
+2025-10-31T05:54:16.855082Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 156 timed out; latency may accumulate
+2025-10-31T05:54:16.937601Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 📊 [Critical] Response stats node 1: 40 msgs, avg=85.079µs, max=956.292µs, rate=40/s
+2025-10-31T05:54:16.937901Z  WARN ThreadId(09) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 160 msgs, avg=4.160881ms, max=49.654958ms, rate=160/s
+2025-10-31T05:54:16.939682Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 📊 [Critical] Order stats node 1: 40 msgs, avg=589ns, max=1.916µs, rate=40/s
+2025-10-31T05:54:16.948568Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 5.727167ms
+2025-10-31T05:54:16.952665Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=11.122375ms, sign=7.003125ms, send=2.292µs
+2025-10-31T05:54:16.975782Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 27.028625ms
+2025-10-31T05:54:16.985212Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 3.739208ms
+2025-10-31T05:54:16.989651Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 3.448958ms
+2025-10-31T05:54:17.009905Z  WARN ThreadId(09) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 106 msgs, avg=9.361364ms, max=53.459042ms, rate=106/s
+2025-10-31T05:54:17.135225Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-0 stats node 1: 10 msgs, avg=55.699µs, max=168.416µs, rate=10/s
+2025-10-31T05:54:17.135272Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-1 stats node 1: 9 msgs, avg=45.208µs, max=85.75µs, rate=9/s
+2025-10-31T05:54:17.139754Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-3 stats node 1: 9 msgs, avg=157.217µs, max=822.917µs, rate=9/s
+2025-10-31T05:54:17.139787Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: 📊 [Critical] Request worker-2 stats node 1: 10 msgs, avg=24.587µs, max=30.167µs, rate=10/s
+2025-10-31T05:54:17.159447Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.256208ms
+2025-10-31T05:54:17.159908Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [multisig_worker] multisig_sign scheduling overhead 2.723834ms
+2025-10-31T05:54:17.173834Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 final sign task slow: node=1 total=16.757167ms, sign=2.869417ms, send=13.792µs
+2025-10-31T05:54:17.162845Z  WARN ThreadId(04) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-10-31T05:54:17.180777Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=20.204583ms, verify=20.20125ms, map_update=2.875µs
+2025-10-31T05:54:17.212431Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 51.814625ms
+2025-10-31T05:54:17.215546Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=48.059334ms, verify=48.05575ms, map_update=1.666µs, queued_signatures=2
+2025-10-31T05:54:17.215788Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 48.31475ms
+2025-10-31T05:54:17.225497Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 63.470333ms
+2025-10-31T05:54:17.228279Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 65.830084ms
+2025-10-31T05:54:17.241445Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median SLOW: total=59.6475ms, verify=59.645375ms, map_update=1.875µs
+2025-10-31T05:54:17.241460Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 73.963583ms
+2025-10-31T05:54:17.241534Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 46.207417ms
+2025-10-31T05:54:17.242062Z  WARN ThreadId(04) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 60.043959ms
+2025-10-31T05:54:17.251752Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 handle_seq_median enqueue slow: total=80.825125ms, verify=80.823708ms, map_update=500ns, queued_signatures=2
+2025-10-31T05:54:17.251997Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: 🐌 [Sequencing] Median task slow for node 1: 91.379625ms
+2025-10-31T05:54:17.764591Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 122 msgs, avg=8.206204ms, max=54.3395ms, rate=122/s
+2025-10-31T05:54:18.024310Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 112 msgs, avg=9.054947ms, max=91.934834ms, rate=112/s
+2025-10-31T05:54:18.624559Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[47, 133, 247, 111, 76, 39, 17, 219, 38, 54, 185, 207, 40, 128, 120, 217, 205, 129, 218, 174, 94, 145, 101, 84, 147, 166, 173, 126, 9, 108, 35, 26] view=222 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=false (exists=false) | cond3(view>locked || extends)=true (pc.view=222, locked.view=219, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[97, 79, 51, 77, 75, 22, 64, 200, 248, 246, 38, 153, 94, 109, 187, 20, 245, 62, 248, 156, 86, 117, 100, 39, 4, 225, 38, 163, 177, 32, 25, 201] highest_pc.view=220 locked.block=[199, 77, 211, 99, 222, 191, 186, 201, 163, 107, 232, 59, 157, 136, 242, 239, 23, 152, 115, 162, 58, 29, 220, 123, 106, 79, 2, 175, 44, 160, 221, 55] locked.view=219    
+2025-10-31T05:54:18.624703Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[6, 65, 202, 210, 163, 101, 12, 56, 90, 37, 33, 110, 156, 162, 3, 21, 220, 181, 20, 85, 204, 71, 7, 69, 42, 204, 250, 29, 8, 236, 118, 156] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[47, 133, 247, 111, 76, 39, 17, 219, 38, 54, 185, 207, 40, 128, 120, 217, 205, 129, 218, 174, 94, 145, 101, 84, 147, 166, 173, 126, 9, 108, 35, 26] justify.view=222 | highest_pc.block=[97, 79, 51, 77, 75, 22, 64, 200, 248, 246, 38, 153, 94, 109, 187, 20, 245, 62, 248, 156, 86, 117, 100, 39, 4, 225, 38, 163, 177, 32, 25, 201] highest_pc.view=220 | locked.block=[199, 77, 211, 99, 222, 191, 186, 201, 163, 107, 232, 59, 157, 136, 242, 239, 23, 152, 115, 162, 58, 29, 220, 123, 106, 79, 2, 175, 44, 160, 221, 55] locked.view=219    
+2025-10-31T05:54:18.646684Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[6, 65, 202, 210, 163, 101, 12, 56, 90, 37, 33, 110, 156, 162, 3, 21, 220, 181, 20, 85, 204, 71, 7, 69, 42, 204, 250, 29, 8, 236, 118, 156] view=223 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=false (exists=false) | cond3(view>locked || extends)=true (pc.view=223, locked.view=219, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[97, 79, 51, 77, 75, 22, 64, 200, 248, 246, 38, 153, 94, 109, 187, 20, 245, 62, 248, 156, 86, 117, 100, 39, 4, 225, 38, 163, 177, 32, 25, 201] highest_pc.view=220 locked.block=[199, 77, 211, 99, 222, 191, 186, 201, 163, 107, 232, 59, 157, 136, 242, 239, 23, 152, 115, 162, 58, 29, 220, 123, 106, 79, 2, 175, 44, 160, 221, 55] locked.view=219    
+2025-10-31T05:54:18.767268Z  WARN ThreadId(09) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 120 msgs, avg=8.344984ms, max=60.567459ms, rate=120/s
+2025-10-31T05:54:19.027528Z  WARN ThreadId(09) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 139 msgs, avg=7.153302ms, max=43.579792ms, rate=139/s
+2025-10-31T05:54:19.768183Z  WARN ThreadId(09) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 140 msgs, avg=7.113316ms, max=53.778042ms, rate=140/s
+2025-10-31T05:54:20.062626Z  WARN ThreadId(09) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 142 msgs, avg=6.932084ms, max=59.8625ms, rate=142/s
+2025-10-31T05:54:21.090611Z  WARN ThreadId(09) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 91 msgs, avg=7.401117ms, max=69.149ms, rate=91/s
+2025-10-31T05:54:22.162814Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-10-31T05:54:25.280588Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 412 timed out; latency may accumulate
+2025-10-31T05:54:25.292521Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[199, 127, 35, 111, 254, 153, 75, 191, 194, 158, 97, 59, 216, 131, 255, 243, 223, 10, 130, 230, 216, 105, 57, 136, 250, 81, 81, 180, 240, 125, 58, 245] view=409 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=true (exists=true) | cond3(view>locked || extends)=false (pc.view=409, locked.view=410, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[82, 224, 38, 149, 39, 7, 192, 254, 191, 119, 143, 47, 153, 99, 171, 36, 196, 140, 196, 33, 63, 98, 48, 248, 41, 209, 66, 251, 27, 14, 146, 79] highest_pc.view=411 locked.block=[202, 200, 130, 107, 170, 97, 75, 232, 122, 254, 231, 119, 40, 226, 51, 84, 36, 213, 151, 61, 27, 36, 49, 145, 36, 37, 3, 27, 22, 230, 150, 156] locked.view=410    
+2025-10-31T05:54:25.292944Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[207, 92, 57, 144, 1, 10, 124, 77, 146, 96, 67, 169, 153, 58, 73, 41, 124, 79, 225, 58, 17, 137, 202, 120, 98, 36, 27, 133, 8, 29, 198, 49] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[199, 127, 35, 111, 254, 153, 75, 191, 194, 158, 97, 59, 216, 131, 255, 243, 223, 10, 130, 230, 216, 105, 57, 136, 250, 81, 81, 180, 240, 125, 58, 245] justify.view=409 | highest_pc.block=[82, 224, 38, 149, 39, 7, 192, 254, 191, 119, 143, 47, 153, 99, 171, 36, 196, 140, 196, 33, 63, 98, 48, 248, 41, 209, 66, 251, 27, 14, 146, 79] highest_pc.view=411 | locked.block=[202, 200, 130, 107, 170, 97, 75, 232, 122, 254, 231, 119, 40, 226, 51, 84, 36, 213, 151, 61, 27, 36, 49, 145, 36, 37, 3, 27, 22, 230, 150, 156] locked.view=410    
+2025-10-31T05:54:27.162944Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-10-31T05:54:31.349167Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 418 timed out; latency may accumulate
+2025-10-31T05:54:32.172531Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-10-31T05:54:37.164622Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-10-31T05:54:38.839527Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[168, 113, 77, 235, 231, 65, 32, 55, 199, 153, 176, 201, 235, 76, 5, 225, 211, 116, 108, 36, 35, 147, 178, 13, 236, 233, 34, 247, 123, 198, 229, 76] view=862 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=false (exists=false) | cond3(view>locked || extends)=true (pc.view=862, locked.view=859, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[18, 240, 7, 248, 50, 118, 226, 134, 105, 188, 216, 12, 211, 242, 238, 34, 180, 2, 73, 251, 205, 187, 122, 18, 156, 101, 97, 15, 83, 211, 144, 42] highest_pc.view=860 locked.block=[132, 108, 138, 74, 218, 103, 174, 130, 11, 204, 159, 113, 149, 108, 81, 238, 100, 251, 37, 249, 172, 110, 208, 143, 59, 13, 173, 108, 212, 132, 8, 69] locked.view=859    
+2025-10-31T05:54:38.840634Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[72, 125, 104, 23, 31, 223, 217, 0, 13, 177, 16, 155, 227, 182, 108, 147, 205, 191, 10, 131, 209, 78, 196, 153, 156, 51, 138, 228, 50, 113, 214, 110] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[168, 113, 77, 235, 231, 65, 32, 55, 199, 153, 176, 201, 235, 76, 5, 225, 211, 116, 108, 36, 35, 147, 178, 13, 236, 233, 34, 247, 123, 198, 229, 76] justify.view=862 | highest_pc.block=[18, 240, 7, 248, 50, 118, 226, 134, 105, 188, 216, 12, 211, 242, 238, 34, 180, 2, 73, 251, 205, 187, 122, 18, 156, 101, 97, 15, 83, 211, 144, 42] highest_pc.view=860 | locked.block=[132, 108, 138, 74, 218, 103, 174, 130, 11, 204, 159, 113, 149, 108, 81, 238, 100, 251, 37, 249, 172, 110, 208, 143, 59, 13, 173, 108, 212, 132, 8, 69] locked.view=859    
+2025-10-31T05:54:38.845786Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[72, 125, 104, 23, 31, 223, 217, 0, 13, 177, 16, 155, 227, 182, 108, 147, 205, 191, 10, 131, 209, 78, 196, 153, 156, 51, 138, 228, 50, 113, 214, 110] view=863 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=false (exists=false) | cond3(view>locked || extends)=true (pc.view=863, locked.view=859, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[18, 240, 7, 248, 50, 118, 226, 134, 105, 188, 216, 12, 211, 242, 238, 34, 180, 2, 73, 251, 205, 187, 122, 18, 156, 101, 97, 15, 83, 211, 144, 42] highest_pc.view=860 locked.block=[132, 108, 138, 74, 218, 103, 174, 130, 11, 204, 159, 113, 149, 108, 81, 238, 100, 251, 37, 249, 172, 110, 208, 143, 59, 13, 173, 108, 212, 132, 8, 69] locked.view=859    
+2025-10-31T05:54:40.840459Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 863 timed out; latency may accumulate
+2025-10-31T05:54:42.163470Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-10-31T05:54:47.170429Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-10-31T05:54:49.580551Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 1114 timed out; latency may accumulate
+2025-10-31T05:54:52.164262Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-10-31T05:54:53.181932Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 1193 timed out; latency may accumulate
+2025-10-31T05:54:55.221056Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 1196 timed out; latency may accumulate
+2025-10-31T05:54:56.571812Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[72, 133, 188, 148, 196, 34, 27, 238, 66, 224, 125, 174, 44, 215, 14, 131, 140, 231, 85, 100, 77, 181, 92, 250, 250, 49, 52, 144, 73, 247, 173, 68] view=1282 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=false (exists=false) | cond3(view>locked || extends)=true (pc.view=1282, locked.view=1278, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[255, 101, 105, 237, 222, 246, 126, 165, 189, 250, 140, 50, 172, 251, 53, 72, 84, 143, 211, 22, 245, 183, 188, 233, 240, 156, 132, 144, 98, 187, 75, 84] highest_pc.view=1279 locked.block=[27, 157, 124, 46, 63, 83, 232, 49, 27, 185, 237, 12, 223, 176, 180, 76, 110, 108, 76, 174, 196, 56, 82, 182, 43, 229, 24, 70, 246, 117, 166, 167] locked.view=1278    
+2025-10-31T05:54:56.572449Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[246, 126, 123, 206, 52, 85, 107, 237, 121, 165, 18, 69, 247, 104, 189, 130, 14, 247, 194, 68, 244, 3, 13, 209, 222, 115, 201, 83, 230, 185, 154, 129] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[72, 133, 188, 148, 196, 34, 27, 238, 66, 224, 125, 174, 44, 215, 14, 131, 140, 231, 85, 100, 77, 181, 92, 250, 250, 49, 52, 144, 73, 247, 173, 68] justify.view=1282 | highest_pc.block=[255, 101, 105, 237, 222, 246, 126, 165, 189, 250, 140, 50, 172, 251, 53, 72, 84, 143, 211, 22, 245, 183, 188, 233, 240, 156, 132, 144, 98, 187, 75, 84] highest_pc.view=1279 | locked.block=[27, 157, 124, 46, 63, 83, 232, 49, 27, 185, 237, 12, 223, 176, 180, 76, 110, 108, 76, 174, 196, 56, 82, 182, 43, 229, 24, 70, 246, 117, 166, 167] locked.view=1278    
+2025-10-31T05:54:56.607733Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[246, 126, 123, 206, 52, 85, 107, 237, 121, 165, 18, 69, 247, 104, 189, 130, 14, 247, 194, 68, 244, 3, 13, 209, 222, 115, 201, 83, 230, 185, 154, 129] view=1283 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=false (exists=false) | cond3(view>locked || extends)=true (pc.view=1283, locked.view=1278, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[255, 101, 105, 237, 222, 246, 126, 165, 189, 250, 140, 50, 172, 251, 53, 72, 84, 143, 211, 22, 245, 183, 188, 233, 240, 156, 132, 144, 98, 187, 75, 84] highest_pc.view=1279 locked.block=[27, 157, 124, 46, 63, 83, 232, 49, 27, 185, 237, 12, 223, 176, 180, 76, 110, 108, 76, 174, 196, 56, 82, 182, 43, 229, 24, 70, 246, 117, 166, 167] locked.view=1278    
+2025-10-31T05:54:57.164430Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-10-31T05:54:58.569565Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[72, 133, 188, 148, 196, 34, 27, 238, 66, 224, 125, 174, 44, 215, 14, 131, 140, 231, 85, 100, 77, 181, 92, 250, 250, 49, 52, 144, 73, 247, 173, 68] view=1282 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=false (exists=false) | cond3(view>locked || extends)=true (pc.view=1282, locked.view=1278, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[255, 101, 105, 237, 222, 246, 126, 165, 189, 250, 140, 50, 172, 251, 53, 72, 84, 143, 211, 22, 245, 183, 188, 233, 240, 156, 132, 144, 98, 187, 75, 84] highest_pc.view=1279 locked.block=[27, 157, 124, 46, 63, 83, 232, 49, 27, 185, 237, 12, 223, 176, 180, 76, 110, 108, 76, 174, 196, 56, 82, 182, 43, 229, 24, 70, 246, 117, 166, 167] locked.view=1278    
+2025-10-31T05:54:58.581658Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 1283 timed out; latency may accumulate
+2025-10-31T05:54:58.587488Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[72, 133, 188, 148, 196, 34, 27, 238, 66, 224, 125, 174, 44, 215, 14, 131, 140, 231, 85, 100, 77, 181, 92, 250, 250, 49, 52, 144, 73, 247, 173, 68] view=1282 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=false (exists=false) | cond3(view>locked || extends)=true (pc.view=1282, locked.view=1279, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[132, 175, 150, 144, 94, 236, 13, 171, 252, 114, 10, 120, 235, 33, 172, 151, 202, 42, 225, 15, 244, 170, 75, 66, 9, 150, 124, 20, 23, 162, 250, 148] highest_pc.view=1280 locked.block=[255, 101, 105, 237, 222, 246, 126, 165, 189, 250, 140, 50, 172, 251, 53, 72, 84, 143, 211, 22, 245, 183, 188, 233, 240, 156, 132, 144, 98, 187, 75, 84] locked.view=1279    
+2025-10-31T05:55:00.792404Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 1292 timed out; latency may accumulate
+2025-10-31T05:55:02.162886Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-10-31T05:55:02.706370Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[35, 26, 235, 117, 155, 119, 105, 168, 108, 158, 165, 183, 96, 159, 50, 48, 180, 35, 170, 72, 38, 98, 248, 43, 205, 66, 91, 105, 170, 185, 100, 129] view=1405 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=false (exists=false) | cond3(view>locked || extends)=true (pc.view=1405, locked.view=1402, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[211, 163, 234, 16, 122, 41, 23, 252, 86, 211, 33, 122, 158, 11, 134, 108, 22, 205, 15, 65, 19, 111, 21, 220, 125, 248, 122, 182, 84, 14, 219, 115] highest_pc.view=1403 locked.block=[89, 167, 134, 220, 208, 20, 110, 20, 11, 252, 143, 146, 92, 142, 211, 57, 7, 60, 137, 97, 211, 216, 23, 175, 197, 236, 20, 18, 247, 223, 91, 178] locked.view=1402    
+2025-10-31T05:55:02.712400Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[222, 114, 198, 59, 144, 79, 109, 164, 160, 175, 48, 138, 122, 207, 153, 88, 137, 155, 66, 127, 162, 11, 22, 183, 106, 248, 163, 185, 179, 94, 217, 117] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[35, 26, 235, 117, 155, 119, 105, 168, 108, 158, 165, 183, 96, 159, 50, 48, 180, 35, 170, 72, 38, 98, 248, 43, 205, 66, 91, 105, 170, 185, 100, 129] justify.view=1405 | highest_pc.block=[211, 163, 234, 16, 122, 41, 23, 252, 86, 211, 33, 122, 158, 11, 134, 108, 22, 205, 15, 65, 19, 111, 21, 220, 125, 248, 122, 182, 84, 14, 219, 115] highest_pc.view=1403 | locked.block=[89, 167, 134, 220, 208, 20, 110, 20, 11, 252, 143, 146, 92, 142, 211, 57, 7, 60, 137, 97, 211, 216, 23, 175, 197, 236, 20, 18, 247, 223, 91, 178] locked.view=1402    
+2025-10-31T05:55:02.721137Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[222, 114, 198, 59, 144, 79, 109, 164, 160, 175, 48, 138, 122, 207, 153, 88, 137, 155, 66, 127, 162, 11, 22, 183, 106, 248, 163, 185, 179, 94, 217, 117] view=1406 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=false (exists=false) | cond3(view>locked || extends)=true (pc.view=1406, locked.view=1402, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[211, 163, 234, 16, 122, 41, 23, 252, 86, 211, 33, 122, 158, 11, 134, 108, 22, 205, 15, 65, 19, 111, 21, 220, 125, 248, 122, 182, 84, 14, 219, 115] highest_pc.view=1403 locked.block=[89, 167, 134, 220, 208, 20, 110, 20, 11, 252, 143, 146, 92, 142, 211, 57, 7, 60, 137, 97, 211, 216, 23, 175, 197, 236, 20, 18, 247, 223, 91, 178] locked.view=1402    
+2025-10-31T05:55:02.729735Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[205, 119, 180, 88, 162, 255, 1, 22, 164, 185, 206, 171, 32, 94, 244, 3, 59, 5, 246, 188, 194, 14, 130, 217, 51, 147, 171, 159, 226, 206, 50, 239] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[222, 114, 198, 59, 144, 79, 109, 164, 160, 175, 48, 138, 122, 207, 153, 88, 137, 155, 66, 127, 162, 11, 22, 183, 106, 248, 163, 185, 179, 94, 217, 117] justify.view=1406 | highest_pc.block=[211, 163, 234, 16, 122, 41, 23, 252, 86, 211, 33, 122, 158, 11, 134, 108, 22, 205, 15, 65, 19, 111, 21, 220, 125, 248, 122, 182, 84, 14, 219, 115] highest_pc.view=1403 | locked.block=[89, 167, 134, 220, 208, 20, 110, 20, 11, 252, 143, 146, 92, 142, 211, 57, 7, 60, 137, 97, 211, 216, 23, 175, 197, 236, 20, 18, 247, 223, 91, 178] locked.view=1402    
+2025-10-31T05:55:02.743397Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[205, 119, 180, 88, 162, 255, 1, 22, 164, 185, 206, 171, 32, 94, 244, 3, 59, 5, 246, 188, 194, 14, 130, 217, 51, 147, 171, 159, 226, 206, 50, 239] view=1407 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=false (exists=false) | cond3(view>locked || extends)=true (pc.view=1407, locked.view=1402, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[211, 163, 234, 16, 122, 41, 23, 252, 86, 211, 33, 122, 158, 11, 134, 108, 22, 205, 15, 65, 19, 111, 21, 220, 125, 248, 122, 182, 84, 14, 219, 115] highest_pc.view=1403 locked.block=[89, 167, 134, 220, 208, 20, 110, 20, 11, 252, 143, 146, 92, 142, 211, 57, 7, 60, 137, 97, 211, 216, 23, 175, 197, 236, 20, 18, 247, 223, 91, 178] locked.view=1402    
+2025-10-31T05:55:02.754346Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[222, 114, 198, 59, 144, 79, 109, 164, 160, 175, 48, 138, 122, 207, 153, 88, 137, 155, 66, 127, 162, 11, 22, 183, 106, 248, 163, 185, 179, 94, 217, 117] view=1406 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=false (exists=false) | cond3(view>locked || extends)=true (pc.view=1406, locked.view=1403, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[101, 149, 105, 220, 104, 142, 194, 78, 250, 30, 70, 117, 194, 228, 132, 224, 175, 163, 148, 39, 217, 74, 203, 45, 212, 54, 244, 113, 60, 65, 184, 139] highest_pc.view=1404 locked.block=[211, 163, 234, 16, 122, 41, 23, 252, 86, 211, 33, 122, 158, 11, 134, 108, 22, 205, 15, 65, 19, 111, 21, 220, 125, 248, 122, 182, 84, 14, 219, 115] locked.view=1403    
+2025-10-31T05:55:04.726468Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 1407 timed out; latency may accumulate
+2025-10-31T05:55:07.162789Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-10-31T05:55:08.343548Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[105, 3, 246, 236, 32, 237, 91, 49, 85, 6, 234, 209, 185, 227, 0, 66, 173, 109, 29, 59, 145, 250, 219, 113, 85, 144, 34, 145, 172, 246, 83, 199] view=1626 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=false (exists=false) | cond3(view>locked || extends)=true (pc.view=1626, locked.view=1623, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[151, 89, 24, 190, 93, 180, 66, 184, 156, 74, 118, 211, 97, 235, 181, 155, 92, 109, 230, 52, 176, 126, 195, 138, 12, 243, 14, 218, 136, 155, 212, 175] highest_pc.view=1624 locked.block=[248, 62, 97, 96, 96, 81, 103, 15, 214, 165, 227, 114, 252, 223, 114, 18, 179, 113, 41, 249, 234, 41, 225, 158, 154, 204, 175, 35, 167, 189, 74, 251] locked.view=1623    
+2025-10-31T05:55:08.346352Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[94, 160, 65, 116, 104, 232, 9, 80, 224, 98, 13, 35, 244, 67, 70, 187, 99, 124, 115, 111, 237, 212, 148, 160, 15, 15, 231, 163, 37, 171, 164, 242] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[105, 3, 246, 236, 32, 237, 91, 49, 85, 6, 234, 209, 185, 227, 0, 66, 173, 109, 29, 59, 145, 250, 219, 113, 85, 144, 34, 145, 172, 246, 83, 199] justify.view=1626 | highest_pc.block=[151, 89, 24, 190, 93, 180, 66, 184, 156, 74, 118, 211, 97, 235, 181, 155, 92, 109, 230, 52, 176, 126, 195, 138, 12, 243, 14, 218, 136, 155, 212, 175] highest_pc.view=1624 | locked.block=[248, 62, 97, 96, 96, 81, 103, 15, 214, 165, 227, 114, 252, 223, 114, 18, 179, 113, 41, 249, 234, 41, 225, 158, 154, 204, 175, 35, 167, 189, 74, 251] locked.view=1623    
+2025-10-31T05:55:08.362628Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[94, 160, 65, 116, 104, 232, 9, 80, 224, 98, 13, 35, 244, 67, 70, 187, 99, 124, 115, 111, 237, 212, 148, 160, 15, 15, 231, 163, 37, 171, 164, 242] view=1627 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=false (exists=false) | cond3(view>locked || extends)=true (pc.view=1627, locked.view=1623, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[151, 89, 24, 190, 93, 180, 66, 184, 156, 74, 118, 211, 97, 235, 181, 155, 92, 109, 230, 52, 176, 126, 195, 138, 12, 243, 14, 218, 136, 155, 212, 175] highest_pc.view=1624 locked.block=[248, 62, 97, 96, 96, 81, 103, 15, 214, 165, 227, 114, 252, 223, 114, 18, 179, 113, 41, 249, 234, 41, 225, 158, 154, 204, 175, 35, 167, 189, 74, 251] locked.view=1623    
+2025-10-31T05:55:12.163142Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-10-31T05:55:17.072618Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[109, 212, 164, 0, 182, 50, 92, 114, 29, 231, 210, 111, 241, 4, 143, 143, 126, 77, 231, 177, 114, 172, 39, 108, 228, 46, 189, 227, 108, 81, 251, 31] view=2117 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=false (exists=false) | cond3(view>locked || extends)=true (pc.view=2117, locked.view=2114, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[102, 124, 44, 211, 87, 108, 15, 87, 106, 55, 206, 32, 40, 205, 89, 25, 4, 222, 146, 190, 162, 10, 93, 132, 237, 221, 115, 150, 91, 0, 34, 151] highest_pc.view=2115 locked.block=[193, 128, 201, 224, 125, 85, 112, 21, 22, 97, 3, 237, 163, 158, 248, 94, 159, 164, 231, 234, 64, 226, 46, 255, 68, 155, 44, 5, 70, 159, 142, 248] locked.view=2114    
+2025-10-31T05:55:17.086206Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[80, 94, 194, 61, 100, 177, 184, 227, 212, 35, 150, 33, 224, 0, 105, 72, 204, 83, 207, 117, 119, 131, 0, 2, 115, 146, 97, 34, 226, 236, 224, 150] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[109, 212, 164, 0, 182, 50, 92, 114, 29, 231, 210, 111, 241, 4, 143, 143, 126, 77, 231, 177, 114, 172, 39, 108, 228, 46, 189, 227, 108, 81, 251, 31] justify.view=2117 | highest_pc.block=[102, 124, 44, 211, 87, 108, 15, 87, 106, 55, 206, 32, 40, 205, 89, 25, 4, 222, 146, 190, 162, 10, 93, 132, 237, 221, 115, 150, 91, 0, 34, 151] highest_pc.view=2115 | locked.block=[193, 128, 201, 224, 125, 85, 112, 21, 22, 97, 3, 237, 163, 158, 248, 94, 159, 164, 231, 234, 64, 226, 46, 255, 68, 155, 44, 5, 70, 159, 142, 248] locked.view=2114    
+2025-10-31T05:55:17.098553Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[80, 94, 194, 61, 100, 177, 184, 227, 212, 35, 150, 33, 224, 0, 105, 72, 204, 83, 207, 117, 119, 131, 0, 2, 115, 146, 97, 34, 226, 236, 224, 150] view=2118 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=false (exists=false) | cond3(view>locked || extends)=true (pc.view=2118, locked.view=2114, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[102, 124, 44, 211, 87, 108, 15, 87, 106, 55, 206, 32, 40, 205, 89, 25, 4, 222, 146, 190, 162, 10, 93, 132, 237, 221, 115, 150, 91, 0, 34, 151] highest_pc.view=2115 locked.block=[193, 128, 201, 224, 125, 85, 112, 21, 22, 97, 3, 237, 163, 158, 248, 94, 159, 164, 231, 234, 64, 226, 46, 255, 68, 155, 44, 5, 70, 159, 142, 248] locked.view=2114    
+2025-10-31T05:55:17.104493Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[231, 195, 98, 123, 242, 65, 115, 110, 162, 207, 127, 253, 102, 53, 67, 146, 242, 200, 56, 161, 204, 148, 93, 42, 97, 141, 13, 228, 114, 228, 59, 185] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[80, 94, 194, 61, 100, 177, 184, 227, 212, 35, 150, 33, 224, 0, 105, 72, 204, 83, 207, 117, 119, 131, 0, 2, 115, 146, 97, 34, 226, 236, 224, 150] justify.view=2118 | highest_pc.block=[102, 124, 44, 211, 87, 108, 15, 87, 106, 55, 206, 32, 40, 205, 89, 25, 4, 222, 146, 190, 162, 10, 93, 132, 237, 221, 115, 150, 91, 0, 34, 151] highest_pc.view=2115 | locked.block=[193, 128, 201, 224, 125, 85, 112, 21, 22, 97, 3, 237, 163, 158, 248, 94, 159, 164, 231, 234, 64, 226, 46, 255, 68, 155, 44, 5, 70, 159, 142, 248] locked.view=2114    
+2025-10-31T05:55:17.111283Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[231, 195, 98, 123, 242, 65, 115, 110, 162, 207, 127, 253, 102, 53, 67, 146, 242, 200, 56, 161, 204, 148, 93, 42, 97, 141, 13, 228, 114, 228, 59, 185] view=2119 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=false (exists=false) | cond3(view>locked || extends)=true (pc.view=2119, locked.view=2114, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[102, 124, 44, 211, 87, 108, 15, 87, 106, 55, 206, 32, 40, 205, 89, 25, 4, 222, 146, 190, 162, 10, 93, 132, 237, 221, 115, 150, 91, 0, 34, 151] highest_pc.view=2115 locked.block=[193, 128, 201, 224, 125, 85, 112, 21, 22, 97, 3, 237, 163, 158, 248, 94, 159, 164, 231, 234, 64, 226, 46, 255, 68, 155, 44, 5, 70, 159, 142, 248] locked.view=2114    
+2025-10-31T05:55:17.138674Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[80, 94, 194, 61, 100, 177, 184, 227, 212, 35, 150, 33, 224, 0, 105, 72, 204, 83, 207, 117, 119, 131, 0, 2, 115, 146, 97, 34, 226, 236, 224, 150] view=2118 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=false (exists=false) | cond3(view>locked || extends)=true (pc.view=2118, locked.view=2115, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[48, 148, 211, 21, 8, 144, 88, 176, 193, 155, 88, 138, 90, 157, 25, 104, 154, 120, 240, 209, 71, 121, 174, 58, 202, 123, 51, 245, 162, 113, 77, 54] highest_pc.view=2116 locked.block=[102, 124, 44, 211, 87, 108, 15, 87, 106, 55, 206, 32, 40, 205, 89, 25, 4, 222, 146, 190, 162, 10, 93, 132, 237, 221, 115, 150, 91, 0, 34, 151] locked.view=2115    
+2025-10-31T05:55:17.166928Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-10-31T05:55:19.100144Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 2119 timed out; latency may accumulate
+2025-10-31T05:55:22.195746Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-10-31T05:55:27.162673Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-10-31T05:55:32.156854Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-10-31T05:55:37.150748Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-10-31T05:55:39.269310Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 3205 timed out; latency may accumulate
+2025-10-31T05:55:42.152510Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-10-31T05:55:47.016733Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 3482 timed out; latency may accumulate
+2025-10-31T05:55:47.023889Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[126, 195, 80, 152, 128, 38, 251, 43, 145, 173, 162, 90, 53, 210, 212, 255, 198, 157, 209, 112, 157, 49, 35, 211, 87, 200, 155, 220, 26, 12, 160, 208] view=3478 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=true (exists=true) | cond3(view>locked || extends)=false (pc.view=3478, locked.view=3480, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[30, 9, 191, 71, 81, 20, 203, 185, 200, 103, 178, 79, 160, 135, 101, 85, 179, 133, 91, 141, 209, 194, 184, 225, 102, 244, 231, 211, 57, 131, 12, 140] highest_pc.view=3481 locked.block=[185, 88, 132, 13, 222, 107, 69, 76, 95, 22, 199, 251, 206, 108, 204, 217, 113, 189, 49, 185, 75, 151, 44, 178, 243, 105, 81, 56, 241, 75, 247, 103] locked.view=3480    
+2025-10-31T05:55:47.024555Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[16, 210, 207, 41, 39, 128, 171, 7, 156, 252, 40, 6, 14, 128, 182, 170, 164, 120, 93, 98, 153, 176, 108, 31, 79, 166, 248, 222, 123, 18, 224, 225] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[126, 195, 80, 152, 128, 38, 251, 43, 145, 173, 162, 90, 53, 210, 212, 255, 198, 157, 209, 112, 157, 49, 35, 211, 87, 200, 155, 220, 26, 12, 160, 208] justify.view=3478 | highest_pc.block=[30, 9, 191, 71, 81, 20, 203, 185, 200, 103, 178, 79, 160, 135, 101, 85, 179, 133, 91, 141, 209, 194, 184, 225, 102, 244, 231, 211, 57, 131, 12, 140] highest_pc.view=3481 | locked.block=[185, 88, 132, 13, 222, 107, 69, 76, 95, 22, 199, 251, 206, 108, 204, 217, 113, 189, 49, 185, 75, 151, 44, 178, 243, 105, 81, 56, 241, 75, 247, 103] locked.view=3480    
+2025-10-31T05:55:47.150822Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-10-31T05:55:49.025566Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 3483 timed out; latency may accumulate
+2025-10-31T05:55:51.056492Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 3486 timed out; latency may accumulate
+2025-10-31T05:55:52.150729Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-10-31T05:55:57.154638Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-10-31T05:55:59.506712Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[137, 238, 49, 173, 226, 215, 144, 242, 69, 211, 112, 75, 158, 156, 203, 148, 46, 165, 63, 61, 208, 170, 195, 247, 112, 193, 45, 82, 49, 76, 7, 76] view=3806 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=false (exists=false) | cond3(view>locked || extends)=true (pc.view=3806, locked.view=3802, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[58, 88, 57, 249, 191, 203, 139, 251, 211, 185, 211, 3, 81, 52, 165, 148, 42, 48, 111, 102, 203, 211, 75, 253, 11, 201, 152, 47, 135, 13, 215, 30] highest_pc.view=3803 locked.block=[138, 80, 116, 198, 137, 203, 223, 138, 245, 237, 206, 37, 192, 174, 32, 135, 85, 37, 209, 175, 125, 236, 26, 225, 33, 29, 218, 188, 64, 55, 127, 199] locked.view=3802    
+2025-10-31T05:55:59.509727Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[95, 198, 109, 51, 27, 88, 215, 44, 79, 1, 217, 102, 12, 138, 40, 243, 205, 98, 251, 3, 182, 25, 197, 215, 163, 228, 74, 10, 109, 234, 15, 171] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[137, 238, 49, 173, 226, 215, 144, 242, 69, 211, 112, 75, 158, 156, 203, 148, 46, 165, 63, 61, 208, 170, 195, 247, 112, 193, 45, 82, 49, 76, 7, 76] justify.view=3806 | highest_pc.block=[58, 88, 57, 249, 191, 203, 139, 251, 211, 185, 211, 3, 81, 52, 165, 148, 42, 48, 111, 102, 203, 211, 75, 253, 11, 201, 152, 47, 135, 13, 215, 30] highest_pc.view=3803 | locked.block=[138, 80, 116, 198, 137, 203, 223, 138, 245, 237, 206, 37, 192, 174, 32, 135, 85, 37, 209, 175, 125, 236, 26, 225, 33, 29, 218, 188, 64, 55, 127, 199] locked.view=3802    
+2025-10-31T05:55:59.518241Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[95, 198, 109, 51, 27, 88, 215, 44, 79, 1, 217, 102, 12, 138, 40, 243, 205, 98, 251, 3, 182, 25, 197, 215, 163, 228, 74, 10, 109, 234, 15, 171] view=3807 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=false (exists=false) | cond3(view>locked || extends)=true (pc.view=3807, locked.view=3802, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[58, 88, 57, 249, 191, 203, 139, 251, 211, 185, 211, 3, 81, 52, 165, 148, 42, 48, 111, 102, 203, 211, 75, 253, 11, 201, 152, 47, 135, 13, 215, 30] highest_pc.view=3803 locked.block=[138, 80, 116, 198, 137, 203, 223, 138, 245, 237, 206, 37, 192, 174, 32, 135, 85, 37, 209, 175, 125, 236, 26, 225, 33, 29, 218, 188, 64, 55, 127, 199] locked.view=3802    
+2025-10-31T05:56:01.519101Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 3807 timed out; latency may accumulate
+2025-10-31T05:56:02.167470Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-10-31T05:56:07.162873Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-10-31T05:56:12.164299Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-10-31T05:56:17.362172Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
