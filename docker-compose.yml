@@ -247,7 +247,7 @@ services:
       - CLIENT_MODE=load_test
       - CLIENT_ORDERING_MODE=${CLIENT_ORDERING_MODE}
       - TARGET_TPS=${TARGET_TPS}
-      - TEST_DURATION=10
+      - TEST_DURATION=100
       - RUST_LOG=${LOG_LEVEL}
       - NODE_LEAST_ID=${NODE_LEAST_ID}  
       - NODE_NUM=${NODE_NUM}

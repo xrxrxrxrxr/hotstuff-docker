@@ -2,6 +2,7 @@
 // hotstuff_runner/src/bin/client.rs
 
 use ed25519_dalek::SigningKey;
+use hotstuff_runner::affinity::build_tokio_runtime;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use sha2::digest::consts::U328;
@@ -985,8 +986,13 @@ async fn handle_node_responses(
     Ok(())
 }
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let runtime = build_tokio_runtime("SMROL_TOKIO_CORES", "tokio_runtime")
+        .map_err(|e| format!("failed to build tokio runtime: {}", e))?;
+    runtime.block_on(async_main())
+}
+
+async fn async_main() -> Result<(), Box<dyn std::error::Error>> {
     let client_id = env::var("CLIENT_ID").unwrap_or_else(|_| "client_1".to_string());
     let mode = env::var("CLIENT_MODE").unwrap_or_else(|_| "interactive".to_string());
     setup_tracing_logger(mode.as_str());

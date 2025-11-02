@@ -1,8 +1,10 @@
+use crate::affinity::{affinity_from_env, bind_current_thread};
 use crate::smrol::message::SmrolMessage;
 use crate::smrol::network::SmrolTcpNetwork;
 use blsttc::{
     PublicKeySet, SecretKeyShare, Signature as ThresholdSignature, SignatureShare, SIG_SIZE,
 };
+use core_affinity::CoreId;
 use crossbeam::channel::{unbounded, Sender};
 use dashmap::DashMap;
 use futures::task::AtomicWaker;
@@ -53,7 +55,7 @@ struct ThresholdThreadPool {
 }
 
 impl ThresholdThreadPool {
-    fn new(worker_count: usize) -> Self {
+    fn new(worker_count: usize, affinity: Option<Vec<CoreId>>) -> Self {
         let (sender, receiver) = unbounded::<Box<dyn ThresholdJob>>();
         let pending_jobs = Arc::new(AtomicUsize::new(0));
         metrics::gauge!(
@@ -61,13 +63,27 @@ impl ThresholdThreadPool {
             "pool" => "pnfifo"
         )
         .set(0.0);
+        let affinity = affinity.map(Arc::new);
         for idx in 0..worker_count {
             let thread_receiver = receiver.clone();
+            let worker_name = format!("pnfifo-threshold-worker-{}", idx);
+            let core_assignment = affinity
+                .as_ref()
+                .and_then(|cores| cores.get(idx % cores.len()))
+                .cloned();
             thread::Builder::new()
-                .name(format!("pnfifo-threshold-worker-{}", idx))
-                .spawn(move || {
-                    for job in thread_receiver.iter() {
-                        job.run();
+                .name(worker_name.clone())
+                .spawn({
+                    let worker_name = worker_name.clone();
+                    move || {
+                        if let Some(core) = core_assignment {
+                            let core_id = core.id;
+                            bind_current_thread(&worker_name, core);
+                            debug!("[affinity] {} bound to core {}", worker_name, core_id);
+                        }
+                        for job in thread_receiver.iter() {
+                            job.run();
+                        }
                     }
                 })
                 .expect("failed to spawn pnfifo threshold worker thread");
@@ -112,12 +128,34 @@ impl ThresholdThreadPool {
     }
 }
 
+fn parse_worker_count(var: &str, default: usize) -> usize {
+    std::env::var(var)
+        .ok()
+        .and_then(|value| value.trim().parse::<usize>().ok())
+        .filter(|&count| count > 0)
+        .unwrap_or(default)
+}
+
 static PNFIFO_THRESHOLD_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
-    let workers = thread::available_parallelism()
+    let default_workers = thread::available_parallelism()
         .map(|n| (n.get() * 2).max(4))
         .unwrap_or(4);
-    // let workers = 16;
-    ThresholdThreadPool::new(workers)
+    let requested_workers = parse_worker_count("SMROL_PNFIFO_THRESHOLD_WORKERS", default_workers);
+    let affinity = affinity_from_env("SMROL_PNFIFO_THRESHOLD_CORES", "pnfifo_threshold");
+    let worker_count = match affinity.as_ref() {
+        Some(cores) => {
+            if cores.len() != requested_workers {
+                warn!(
+                    "[affinity] pnfifo_threshold: overriding worker count {} -> {} to match core set",
+                    requested_workers,
+                    cores.len()
+                );
+            }
+            cores.len().max(1)
+        }
+        None => requested_workers.max(1),
+    };
+    ThresholdThreadPool::new(worker_count, affinity)
 });
 
 async fn run_pnfifo_threshold_task<R, F>(label: &'static str, task: F) -> Result<R, String>

@@ -9,6 +9,7 @@ use hotstuff_rs::types::{
     update_sets::{AppStateUpdates, ValidatorSetUpdates},
 };
 use hotstuff_runner::{
+    affinity::build_tokio_runtime,
     app::TestApp,
     event::{self, ResponseCommand, SystemEvent, TestTransaction},
     pompe::{self, load_pompe_config, LockFreeHotStuffAdapter},
@@ -673,8 +674,12 @@ async fn adversary(pompe_manager: Option<Arc<PompeManager>>) {
     }
 }
 
-#[tokio::main]
-async fn main() -> Result<(), String> {
+fn main() -> Result<(), String> {
+    let runtime = build_tokio_runtime("SMROL_TOKIO_CORES", "tokio_runtime")?;
+    runtime.block_on(async_main())
+}
+
+async fn async_main() -> Result<(), String> {
     let node_id: usize = env::var("NODE_ID")
         .unwrap_or_else(|_| "9".to_string())
         .parse()

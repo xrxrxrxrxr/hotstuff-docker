@@ -83,6 +83,10 @@ impl ThresholdThreadPool {
                 .spawn(move || {
                     if let Some(core_id) = core_assignment {
                         bind_current_thread(&worker_name, core_id);
+                        warn!(
+                            "[affinity] bound thread {} to core {:?}",
+                            worker_name, core_id
+                        );
                     }
                     for job in thread_receiver.iter() {
                         job.run();
@@ -155,7 +159,9 @@ fn read_inflight(var: &str, default: usize) -> usize {
 }
 
 static MULTISIG_SIGN_COMBINE_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
-    let default_workers = (default_worker_count() * 2).min(32);
+    let default_workers = thread::available_parallelism()
+        .map(|n| (n.get() * 2).max(4))
+        .unwrap_or(4);
     let requested_workers = parse_worker_count("SMROL_MULTISIG_CRYPTO_WORKERS", default_workers);
     let affinity = affinity_from_env("SMROL_MULTISIG_COMBINE_CORES", "multisig_sign_combine");
     let workers = match affinity.as_ref() {
@@ -174,15 +180,21 @@ static MULTISIG_SIGN_COMBINE_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
     ThresholdThreadPool::new(workers, "multisig_sign_combine", affinity)
 });
 
-static MULTISIG_VERIFY_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
-    let default_workers = (default_worker_count() * 4).min(32);
-    let requested_workers = parse_worker_count("SMROL_MULTISIG_VERIFY_WORKERS", default_workers);
-    let affinity = affinity_from_env("SMROL_MULTISIG_VERIFY_CORES", "multisig_verify");
+static MULTISIG_VERIFY_POOL_MEDIAN: Lazy<ThresholdThreadPool> = Lazy::new(|| {
+    let default_workers = thread::available_parallelism()
+        .map(|n| (n.get() * 2).max(4))
+        .unwrap_or(4);
+    let requested_workers =
+        parse_worker_count("SMROL_MULTISIG_VERIFY_MEDIAN_WORKERS", default_workers);
+    let affinity = affinity_from_env(
+        "SMROL_MULTISIG_VERIFY_MEDIAN_CORES",
+        "multisig_verify_median",
+    );
     let workers = match affinity.as_ref() {
         Some(cores) => {
             if cores.len() != requested_workers {
-                info!(
-                    "[affinity] multisig_verify: overriding worker count {} -> {} to match core set",
+                warn!(
+                    "[affinity] multisig_verify_median: overriding worker count {} -> {} to match core set",
                     requested_workers,
                     cores.len()
                 );
@@ -191,14 +203,54 @@ static MULTISIG_VERIFY_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
         }
         None => requested_workers,
     };
-    ThresholdThreadPool::new(workers, "multisig_verify", affinity)
+    ThresholdThreadPool::new(workers, "multisig_verify_median", affinity)
+});
+
+static MULTISIG_VERIFY_POOL_COMBINED: Lazy<ThresholdThreadPool> = Lazy::new(|| {
+    let default_workers = thread::available_parallelism()
+        .map(|n| (n.get() * 2).max(4))
+        .unwrap_or(4);
+    let requested_workers =
+        parse_worker_count("SMROL_MULTISIG_VERIFY_COMBINED_WORKERS", default_workers);
+    let affinity = affinity_from_env(
+        "SMROL_MULTISIG_VERIFY_COMBINED_CORES",
+        "multisig_verify_combined",
+    );
+    let workers = match affinity.as_ref() {
+        Some(cores) => {
+            if cores.len() != requested_workers {
+                warn!(
+                    "[affinity] multisig_verify_combined: overriding worker count {} -> {} to match core set",
+                    requested_workers,
+                    cores.len()
+                );
+            }
+            cores.len()
+        }
+        None => requested_workers,
+    };
+    ThresholdThreadPool::new(workers, "multisig_verify_combined", affinity)
 });
 
 static SEQ_OFFLOAD_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
     // let default_workers = default_worker_count();
     let default_workers = 4;
-    let workers = parse_worker_count("SMROL_SEQ_OFFLOAD_WORKERS", default_workers);
-    ThresholdThreadPool::new(workers, "seq_offload", None)
+    let requested_workers = parse_worker_count("SMROL_SEQ_OFFLOAD_WORKERS", default_workers);
+    let affinity = affinity_from_env("SMROL_SEQ_OFFLOAD_CORES", "seq_offload");
+    let workers = match affinity.as_ref() {
+        Some(cores) => {
+            if cores.len() != requested_workers {
+                info!(
+                    "[affinity] seq_offload: overriding worker count {} -> {} to match core set",
+                    requested_workers,
+                    cores.len()
+                );
+            }
+            cores.len()
+        }
+        None => requested_workers,
+    };
+    ThresholdThreadPool::new(workers, "seq_offload", affinity)
 });
 
 const PNFIFO_BROADCAST_CONCURRENCY: usize = 4;
@@ -219,12 +271,20 @@ where
     MULTISIG_SIGN_COMBINE_POOL.submit(label, task)?.await
 }
 
-async fn run_multisig_verify_task<R, F>(label: &'static str, task: F) -> Result<R, String>
+async fn run_multisig_verify_median_task<R, F>(label: &'static str, task: F) -> Result<R, String>
 where
     R: Send + 'static,
     F: FnOnce() -> Result<R, String> + Send + 'static,
 {
-    MULTISIG_VERIFY_POOL.submit(label, task)?.await
+    MULTISIG_VERIFY_POOL_MEDIAN.submit(label, task)?.await
+}
+
+async fn run_multisig_verify_combined_task<R, F>(label: &'static str, task: F) -> Result<R, String>
+where
+    R: Send + 'static,
+    F: FnOnce() -> Result<R, String> + Send + 'static,
+{
+    MULTISIG_VERIFY_POOL_COMBINED.submit(label, task)?.await
 }
 
 async fn run_seq_offload_task<R, F>(label: &'static str, task: F) -> Result<R, String>
@@ -617,17 +677,18 @@ impl TransactionSequencing {
 
         let pnfifo_broadcast_semaphore = Arc::new(Semaphore::new(PNFIFO_BROADCAST_CONCURRENCY));
         let order_verify_semaphore = Arc::new(Semaphore::new(ORDER_VERIFY_CONCURRENCY));
-        let median_concurrency = read_inflight("SMROL_MEDIAN_INFLIGHT", 64).max(1);
+        let median_concurrency = read_inflight("SMROL_MEDIAN_INFLIGHT", 3).max(1);
         let median_semaphore = Arc::new(Semaphore::new(median_concurrency));
-        let order_finalize_concurrency = read_inflight("SMROL_ORDER_FINALIZE_INFLIGHT", 64).max(1);
-        let order_finalize_semaphore = Arc::new(Semaphore::new(order_finalize_concurrency));
+        let order_finalize_concurrency = read_inflight("SMROL_ORDER_FINALIZE_INFLIGHT", 3).max(1);
+        let order_finalize_semaphore: Arc<Semaphore> =
+            Arc::new(Semaphore::new(order_finalize_concurrency));
         set_inflight("order_finalize", 0);
-        let default_final_sign = (default_worker_count() * 4).max(64);
+        // let default_final_sign = (default_worker_count() * 4).max(1);
         let final_sign_concurrency =
-            read_inflight("SMROL_FINAL_SIGN_INFLIGHT", default_final_sign).max(1);
+            read_inflight("SMROL_FINAL_SIGN_INFLIGHT", 3).max(1);
         let final_sign_semaphore = Arc::new(Semaphore::new(final_sign_concurrency));
         set_inflight("final_sign", 0);
-        let final_verify_concurrency = read_inflight("SMROL_FINAL_VERIFY_INFLIGHT", 64).max(1);
+        let final_verify_concurrency = read_inflight("SMROL_FINAL_VERIFY_INFLIGHT", 3).max(1);
         let final_verify_semaphore = Arc::new(Semaphore::new(final_verify_concurrency));
         set_inflight("final_verify", 0);
 
@@ -946,7 +1007,7 @@ impl TransactionSequencing {
                         } else {
                             Duration::ZERO
                         };
-                        warn!(
+                        debug!(
                             "📊 [Critical] Request worker-{} stats node {}: {} msgs, avg={:?}, max={:?}, rate={}/s",
                             worker_id,
                             sequencing.process_id,
@@ -1076,7 +1137,7 @@ impl TransactionSequencing {
                 }
                 let elapsed = start.elapsed();
                 if elapsed > Duration::from_millis(10) {
-                    warn!(
+                    debug!(
                         "🐌 [Sequencing] Response handler slow for node {}: {:?}",
                         sequencing.process_id, elapsed
                     );
@@ -1089,7 +1150,7 @@ impl TransactionSequencing {
                     } else {
                         Duration::ZERO
                     };
-                    warn!(
+                    debug!(
                         "📊 [Critical] Response stats node {}: {} msgs, avg={:?}, max={:?}, rate={}/s",
                         sequencing.process_id, count, avg, max_time, count
                     );
@@ -1150,7 +1211,7 @@ impl TransactionSequencing {
                 }
                 let elapsed = start.elapsed();
                 if elapsed > Duration::from_millis(10) {
-                    warn!(
+                    debug!(
                         "🐌 [Sequencing] Order handler slow for node {}: {:?}",
                         sequencing.process_id, elapsed
                     );
@@ -1163,7 +1224,7 @@ impl TransactionSequencing {
                     } else {
                         Duration::ZERO
                     };
-                    warn!(
+                    debug!(
                         "📊 [Critical] Order stats node {}: {} msgs, avg={:?}, max={:?}, rate={}/s",
                         sequencing.process_id, count, avg, max_time, count
                     );
@@ -1292,7 +1353,7 @@ impl TransactionSequencing {
 
                     let elapsed = start.elapsed();
                     if elapsed > Duration::from_millis(10) {
-                        warn!(
+                        debug!(
                             "🐌 [Sequencing] Order verify processor slow for node {}: {:?}",
                             sequencing_for_task.process_id, elapsed
                         );
@@ -1441,7 +1502,7 @@ impl TransactionSequencing {
                     }
                     let elapsed = start.elapsed();
                     if elapsed > Duration::from_millis(10) {
-                        warn!(
+                        debug!(
                             "🐌 [Sequencing] Median task slow for node {}: {:?}",
                             sequencing_for_task.process_id, elapsed
                         );
@@ -1491,7 +1552,7 @@ impl TransactionSequencing {
                     }
                     let elapsed = start.elapsed();
                     if elapsed > Duration::from_millis(10) {
-                        warn!(
+                        debug!(
                             "🐌 [Sequencing] Median combine worker-{} slow for node {}: {:?}",
                             worker_id, sequencing.process_id, elapsed
                         );
@@ -1721,7 +1782,7 @@ impl TransactionSequencing {
 
                     let elapsed = start.elapsed();
                     if elapsed > Duration::from_millis(10) {
-                        warn!(
+                        debug!(
                             "🐌 [Sequencing] Final worker-{} slow for node {}: {:?}",
                             worker_id, sequencing.process_id, elapsed
                         );
@@ -1736,7 +1797,7 @@ impl TransactionSequencing {
                         } else {
                             Duration::ZERO
                         };
-                        warn!(
+                        debug!(
                             "📊 [Critical] Final worker-{} stats node {}: {} msgs, avg={:?}, max={:?}, rate={}/s",
                             worker_id,
                             sequencing.process_id,
@@ -1877,6 +1938,9 @@ impl TransactionSequencing {
         sequence_number: u64,
     ) -> Result<(), String> {
         let vc_key = VC::from_slice(&vc);
+        if !self.originated_vcs.contains(&vc_key) {
+            return Ok(());
+        }
         if self.completed_responses.contains(&vc_key) {
             return Ok(());
         }
@@ -1930,6 +1994,9 @@ impl TransactionSequencing {
         proof: Vec<u8>,
     ) -> Result<(), String> {
         let vc_key = VC::from_slice(&vc);
+        if !self.originated_vcs.contains(&vc_key) {
+            return Ok(());
+        }
         if self.finalized_vcs.contains(&vc_key) || self.final_broadcasted.contains(&vc_key) {
             return Ok(());
         }
@@ -1938,6 +2005,7 @@ impl TransactionSequencing {
             s_tx: median_sequence,
             sigma_seq: proof,
         };
+        // TODO: line 30? why median sign is similar to median verify
         self.handle_seq_median(sender_id, median).await
     }
 
@@ -1953,20 +2021,20 @@ impl TransactionSequencing {
 
     #[tracing::instrument(skip(self))]
     async fn emit_sequenced_entry(&self, entry: TransactionEntry) -> Result<(), String> {
-        let emit_start = Instant::now();
+        // let emit_start = Instant::now();
         self.sequenced_entry_tx
             .send(entry)
             .map_err(|e| format!("sequenced entry send failed: {}", e))?;
-        let yield_start = Instant::now();
+        // let yield_start = Instant::now();
         // tokio::task::yield_now().await;
-        let yield_time = yield_start.elapsed();
-        if yield_time > Duration::from_millis(1) {
-            warn!("🐌 [Emit slow] yield_now took: {:?}", yield_time);
-        }
-        let emit_time = emit_start.elapsed();
-        if emit_time > Duration::from_millis(1) {
-            warn!("🐌 [Emit slow] emit took: {:?}", emit_time);
-        }
+        // let yield_time = yield_start.elapsed();
+        // if yield_time > Duration::from_millis(1) {
+        //     debug!("🐌 [Emit slow] yield_now took: {:?}", yield_time);
+        // }
+        // let emit_time = emit_start.elapsed();
+        // if emit_time > Duration::from_millis(1) {
+        //     debug!("🐌 [Emit slow] emit took: {:?}", emit_time);
+        // }
         Ok(())
     }
 
@@ -2131,7 +2199,7 @@ impl TransactionSequencing {
 
         let total_time = total_start.elapsed();
         if total_time > Duration::from_millis(10) {
-            warn!(
+            debug!(
                 "🐌 handle_seq_request SLOW: total={:?}, state_update={:?}, broadcast={:?}, sign_and_send={:?}, finalize_pending={:?}, encode={:?}",
                 total_time,
                 state_update_time,
@@ -2152,8 +2220,10 @@ impl TransactionSequencing {
         sender: usize,
         resp: SeqResponse,
     ) -> Result<(), String> {
-        // point to point so skip the check
-        // if self.originated_vcs.contains(&resp.vc) {
+        let vc_key = VC::from_slice(&resp.vc);
+        if !self.originated_vcs.contains(&vc_key) {
+            return Ok(());
+        }
         info!(
             "📥 [Sequencing] received SEQ-RESPONSE from Node {} as leader",
             sender
@@ -2165,7 +2235,6 @@ impl TransactionSequencing {
         let verified = self.verify_seq_response_sig(&resp, sender).await?;
         let verify_time = verify_start.elapsed();
         if verified {
-            let vc_key = VC::from_slice(&resp.vc);
             if self.completed_responses.contains(&vc_key) {
                 return Ok(());
             }
@@ -2235,7 +2304,7 @@ impl TransactionSequencing {
             if collected > 2 * self.f + 1 {
                 let total_time = total_start.elapsed();
                 if total_time > Duration::from_millis(10) {
-                    warn!(
+                    debug!(
                         "🐌 handle_seq_response SLOW: total={:?}, verify={:?}, map_update={:?}, broadcast={:?}",
                         total_time,
                         verify_time,
@@ -2267,7 +2336,7 @@ impl TransactionSequencing {
 
                 let total_time = total_start.elapsed();
                 if total_time > Duration::from_millis(10) {
-                    warn!(
+                    debug!(
                         "🐌 handle_seq_response SLOW: total={:?}, verify={:?}, map_update={:?}, broadcast={:?}",
                         total_time,
                         verify_time,
@@ -2278,7 +2347,7 @@ impl TransactionSequencing {
             } else {
                 let total_time = total_start.elapsed();
                 if total_time > Duration::from_millis(10) {
-                    warn!(
+                    debug!(
                         "🐌 handle_seq_response SLOW: total={:?}, verify={:?}, map_update={:?}, broadcast={:?}",
                         total_time,
                         verify_time,
@@ -2294,7 +2363,7 @@ impl TransactionSequencing {
             );
             let total_time = total_start.elapsed();
             if total_time > Duration::from_millis(10) {
-                warn!(
+                debug!(
                     "🐌 handle_seq_response SLOW (invalid share): total={:?}, verify={:?}",
                     total_time, verify_time
                 );
@@ -2334,7 +2403,7 @@ impl TransactionSequencing {
 
             let total_time = total_start.elapsed();
             if total_time > Duration::from_millis(10) {
-                warn!(
+                debug!(
                     "🐌 finalize_seq_order SLOW: total={:?}, median_calc={:?}",
                     total_time, median_time
                 );
@@ -2354,7 +2423,7 @@ impl TransactionSequencing {
 
         let total_time = total_start.elapsed();
         if total_time > Duration::from_millis(10) {
-            warn!(
+            debug!(
                 "🐌 finalize_seq_order enqueue slow: total={:?}, median_calc={:?}, enqueue={:?}",
                 total_time, median_time, enqueue_time
             );
@@ -2366,13 +2435,16 @@ impl TransactionSequencing {
     // Handle SEQ-MEDIAN message - Lines 29-35
     #[tracing::instrument(skip(self))]
     pub async fn handle_seq_median(&self, sender: usize, median: SeqMedian) -> Result<(), String> {
+        let vc_key = VC::from_slice(&median.vc);
+        if !self.originated_vcs.contains(&vc_key) {
+            return Ok(());
+        }
         info!("📥 [Sequencing] received SEQ-MEDIAN from {}", sender);
         let total_start = Instant::now();
         // point to point so skip the check
         // if self.originated_vcs.contains(&median.vc) {
         // Original SEQ-REQUEST sender gathers median shares (Algorithm 2, line 30)
         if *DISABLE_MULTISIG_VERIFICATION {
-            let vc_key = VC::from_slice(&median.vc);
             let threshold = self.f + 1;
             let map_update_start = Instant::now();
             let mut ready_to_broadcast = false;
@@ -2420,7 +2492,7 @@ impl TransactionSequencing {
 
                 let total_time = total_start.elapsed();
                 if total_time > Duration::from_millis(10) {
-                    warn!(
+                    debug!(
                         "🐌 handle_seq_median (no-threshold) SLOW: total={:?}, map_update={:?}, combine={:?}",
                         total_time,
                         map_update_time,
@@ -2428,7 +2500,7 @@ impl TransactionSequencing {
                     );
                 }
             } else if total_start.elapsed() > Duration::from_millis(10) {
-                warn!(
+                debug!(
                     "🐌 handle_seq_median (no-threshold) pending: total={:?}, map_update={:?}, collected={}/{}",
                     total_start.elapsed(),
                     map_update_time,
@@ -2507,7 +2579,7 @@ impl TransactionSequencing {
                     }
                     let total_time = total_start.elapsed();
                     if total_time > Duration::from_millis(10) {
-                        warn!(
+                        debug!(
                             "🐌 handle_seq_median enqueue slow: total={:?}, verify={:?}, map_update={:?}, queued_signatures={}",
                             total_time,
                             verify_time,
@@ -2525,7 +2597,7 @@ impl TransactionSequencing {
             } else {
                 let total_time = total_start.elapsed();
                 if total_time > Duration::from_millis(10) {
-                    warn!(
+                    debug!(
                         "🐌 handle_seq_median SLOW: total={:?}, verify={:?}, map_update={:?}",
                         total_time, verify_time, map_update_time
                     );
@@ -2538,7 +2610,7 @@ impl TransactionSequencing {
             );
             let total_time = total_start.elapsed();
             if total_time > Duration::from_millis(10) {
-                warn!(
+                debug!(
                     "🐌 handle_seq_median SLOW (invalid signature): total={:?}, verify={:?}",
                     total_time, verify_time
                 );
@@ -2617,12 +2689,13 @@ impl TransactionSequencing {
         }
 
         let sig_bytes = median.sigma_seq.clone();
+        // warn!("veify median sig share: {:?}", sig_bytes); // debug
         let sig_bytes_for_task = sig_bytes.clone();
         let message_bytes = Self::build_median_signature_message(&median.vc, median.s_tx);
         let ctx = Arc::clone(&self.multisig_ctx);
         let sender_id = sender;
 
-        let is_valid = run_multisig_verify_task("verify_median_signature", move || {
+        let is_valid = run_multisig_verify_median_task("verify_median_signature", move || {
             let sig = BlstSignature::from_bytes(&sig_bytes_for_task)
                 .map_err(|e| format!("invalid multi-signature from node {}: {:?}", sender_id, e))?;
             let pk = ctx.public_key(sender_id).ok_or_else(|| {
@@ -2682,7 +2755,7 @@ impl TransactionSequencing {
         let total_time = spawn_start.elapsed();
         let scheduling_overhead = total_time.saturating_sub(worker_time);
         if scheduling_overhead > Duration::from_millis(1) {
-            warn!(
+            debug!(
                 "[multisig_worker] aggregate_median_signatures_async scheduling overhead {:?}",
                 scheduling_overhead
             );
@@ -2735,7 +2808,7 @@ impl TransactionSequencing {
 
         let total_time = total_start.elapsed();
         if total_time > Duration::from_millis(10) {
-            warn!(
+            debug!(
                 "🐌 median combine task slow: node={} shares={} total={:?}, combine={:?}, broadcast={:?}",
                 self.process_id,
                 collected,
@@ -2775,12 +2848,12 @@ impl TransactionSequencing {
         .await?;
 
         if sign_exec_time > Duration::from_millis(5) {
-            warn!("[multisig_worker] median sign took {:?}", sign_exec_time);
+            debug!("[multisig_worker] median sign took {:?}", sign_exec_time);
         }
         let sign_time = sign_send_start.elapsed();
         let scheduling_overhead = sign_time.saturating_sub(sign_exec_time);
         if scheduling_overhead > Duration::from_millis(1) {
-            warn!(
+            debug!(
                 "[multisig_worker] multisig_sign scheduling overhead {:?}",
                 scheduling_overhead
             );
@@ -2800,7 +2873,7 @@ impl TransactionSequencing {
 
         let total_time = total_start.elapsed();
         if total_time > Duration::from_millis(10) {
-            warn!(
+            debug!(
                 "🐌 final sign task slow: node={} total={:?}, sign={:?}, send={:?}",
                 self.process_id, total_time, sign_time, send_time
             );
@@ -2831,11 +2904,12 @@ impl TransactionSequencing {
         }
 
         let sig_bytes = final_msg.sigma.clone();
+        // warn!("Verify aggregated sig: {:?}", sig_bytes);
         let signers = final_msg.signers.clone();
         let message_bytes = Self::build_median_signature_message(&final_msg.vc, final_msg.s_tx);
         let ctx = Arc::clone(&self.multisig_ctx);
 
-        run_multisig_verify_task("verify_combined_signature", move || {
+        run_multisig_verify_combined_task("verify_combined_signature", move || {
             let signature = BlstSignature::from_bytes(&sig_bytes)
                 .map_err(|e| format!("invalid combined signature bytes: {:?}", e))?;
 
@@ -3120,7 +3194,6 @@ impl TransactionSequencing {
         }
 
         entries.sort_by_key(|(seq, _)| *seq);
-
         let keep = limit.min(entries.len());
         for (_, vc) in entries.into_iter().rev().skip(keep) {
             map.remove(&vc);
