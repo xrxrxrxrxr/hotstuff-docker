@@ -132,6 +132,7 @@ logs-core:
 		exit 1; \
 	fi
 	@echo "Core log collection complete"
+	@$(MAKE) clean
 
 hosts-clean:
 	@echo "Cleaning old known_hosts entries (EC2 IPs only)..."

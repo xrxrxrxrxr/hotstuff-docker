@@ -1,7 +1,9 @@
 use crate::affinity::{affinity_from_env, bind_current_thread};
 use crate::smrol::{
     consensus::TransactionEntry,
-    crypto::{ErasurePackage, MultiSigContext},
+    crypto::{
+        bls_build_agg_pk, bls_verify_agg, bls_verify_single, ErasurePackage, MultiSigContext,
+    },
     finalization::OutputFinalization,
     message::{SmrolMessage, SmrolTransaction},
     network::SmrolTcpNetwork,
@@ -12,14 +14,15 @@ use blst::min_sig::{
     AggregatePublicKey as BlstAggregatePublicKey, AggregateSignature as BlstAggregateSignature,
     PublicKey as BlstPublicKey, Signature as BlstSignature,
 };
-use blst::BLST_ERROR;
+use blst::{blst_p1_affine, blst_p2_affine, Pairing, BLST_ERROR};
 use core_affinity::CoreId;
-use crossbeam::channel::{unbounded, Sender};
+use crossbeam::channel::{select, tick, unbounded, Receiver, Sender};
 use dashmap::{mapref::entry::Entry, DashMap, DashSet};
 use ed25519_dalek::{Signature as Ed25519Signature, Signer, SigningKey, Verifier, VerifyingKey};
 use futures::task::AtomicWaker;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
+use std::panic::{self, AssertUnwindSafe};
 use std::sync::{
     atomic::{AtomicU64, AtomicUsize, Ordering},
     Arc, Mutex,
@@ -34,11 +37,14 @@ use std::{
 };
 use std::{pin::Pin, thread::sleep};
 use tokio::{
-    sync::{mpsc as async_mpsc, Mutex as AsyncMutex, RwLock, Semaphore, SemaphorePermit},
+    sync::{mpsc as async_mpsc, oneshot, Mutex as AsyncMutex, RwLock, Semaphore, SemaphorePermit},
     time::{timeout, Duration},
 };
 use tracing::{debug, error, info, warn};
 use tracing_subscriber::field::debug;
+
+pub(crate) const MULTISIG_VERIFY_MEDIAN_POOL_NAME: &str = "multisig_verify_median";
+pub(crate) const MULTISIG_VERIFY_COMBINED_POOL_NAME: &str = "multisig_verify_combined";
 
 const MULTISIG_SIGNATURE_LEN: usize = 48;
 
@@ -64,6 +70,7 @@ struct ThresholdThreadPool {
 impl ThresholdThreadPool {
     fn new(worker_count: usize, metrics_pool: &'static str, affinity: Option<Vec<CoreId>>) -> Self {
         let (sender, receiver) = unbounded::<Box<dyn ThresholdJob>>();
+        let receiver = Arc::new(receiver);
         let pending_jobs = Arc::new(AtomicUsize::new(0));
         metrics::gauge!(
             "smrol.threshold_pending_jobs",
@@ -88,13 +95,12 @@ impl ThresholdThreadPool {
                             worker_name, core_id
                         );
                     }
-                    for job in thread_receiver.iter() {
+                    while let Ok(job) = thread_receiver.recv() {
                         job.run();
                     }
                 })
                 .expect("failed to spawn threshold worker thread");
         }
-        drop(receiver);
         Self {
             sender,
             pending_jobs,
@@ -158,6 +164,23 @@ fn read_inflight(var: &str, default: usize) -> usize {
         .unwrap_or(default)
 }
 
+fn read_batch_size(var: &str, default: usize) -> usize {
+    std::env::var(var)
+        .ok()
+        .and_then(|value| value.trim().parse::<usize>().ok())
+        .filter(|&count| count > 0)
+        .unwrap_or(default)
+}
+
+fn read_batch_timeout(var: &str, default_micros: u64) -> Duration {
+    std::env::var(var)
+        .ok()
+        .and_then(|value| value.trim().parse::<u64>().ok())
+        .filter(|&micros| micros > 0)
+        .map(Duration::from_micros)
+        .unwrap_or_else(|| Duration::from_micros(default_micros))
+}
+
 static MULTISIG_SIGN_COMBINE_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
     let default_workers = thread::available_parallelism()
         .map(|n| (n.get() * 2).max(4))
@@ -203,7 +226,7 @@ static MULTISIG_VERIFY_POOL_MEDIAN: Lazy<ThresholdThreadPool> = Lazy::new(|| {
         }
         None => requested_workers,
     };
-    ThresholdThreadPool::new(workers, "multisig_verify_median", affinity)
+    ThresholdThreadPool::new(workers, MULTISIG_VERIFY_MEDIAN_POOL_NAME, affinity)
 });
 
 static MULTISIG_VERIFY_POOL_COMBINED: Lazy<ThresholdThreadPool> = Lazy::new(|| {
@@ -229,7 +252,7 @@ static MULTISIG_VERIFY_POOL_COMBINED: Lazy<ThresholdThreadPool> = Lazy::new(|| {
         }
         None => requested_workers,
     };
-    ThresholdThreadPool::new(workers, "multisig_verify_combined", affinity)
+    ThresholdThreadPool::new(workers, MULTISIG_VERIFY_COMBINED_POOL_NAME, affinity)
 });
 
 static SEQ_OFFLOAD_POOL: Lazy<ThresholdThreadPool> = Lazy::new(|| {
@@ -271,20 +294,488 @@ where
     MULTISIG_SIGN_COMBINE_POOL.submit(label, task)?.await
 }
 
-async fn run_multisig_verify_median_task<R, F>(label: &'static str, task: F) -> Result<R, String>
-where
-    R: Send + 'static,
-    F: FnOnce() -> Result<R, String> + Send + 'static,
-{
-    MULTISIG_VERIFY_POOL_MEDIAN.submit(label, task)?.await
+const DEFAULT_MEDIAN_BATCH_SIZE: usize = 16;
+const DEFAULT_MEDIAN_BATCH_TIMEOUT_MICROS: u64 = 1000;
+const DEFAULT_FINAL_BATCH_SIZE: usize = 16;
+const DEFAULT_FINAL_BATCH_TIMEOUT_MICROS: u64 = 1000;
+
+const ENV_MEDIAN_BATCH_SIZE: &str = "SMROL_MEDIAN_BATCH_SIZE";
+const ENV_MEDIAN_BATCH_TIMEOUT: &str = "SMROL_MEDIAN_BATCH_TIMEOUT_US";
+const ENV_FINAL_BATCH_SIZE: &str = "SMROL_FINAL_BATCH_SIZE";
+const ENV_FINAL_BATCH_TIMEOUT: &str = "SMROL_FINAL_BATCH_TIMEOUT_US";
+
+#[derive(Clone)]
+struct MedianBatcher {
+    tx: Sender<MedianBatchTask>,
+    pending: Arc<AtomicUsize>,
+    batch_size: usize,
+    timeout: Duration,
+    kind: &'static str,
 }
 
-async fn run_multisig_verify_combined_task<R, F>(label: &'static str, task: F) -> Result<R, String>
-where
-    R: Send + 'static,
-    F: FnOnce() -> Result<R, String> + Send + 'static,
-{
-    MULTISIG_VERIFY_POOL_COMBINED.submit(label, task)?.await
+#[derive(Clone)]
+struct FinalBatcher {
+    tx: Sender<FinalBatchTask>,
+    pending: Arc<AtomicUsize>,
+    batch_size: usize,
+    timeout: Duration,
+    kind: &'static str,
+}
+
+struct MedianVerifyJob {
+    signature: BlstSignature,
+    message: Vec<u8>,
+    signer: usize,
+    context: Arc<MultiSigContext>,
+}
+
+struct FinalVerifyJob {
+    signature: BlstSignature,
+    message: Vec<u8>,
+    signers: Vec<usize>,
+    context: Arc<MultiSigContext>,
+}
+
+struct MedianBatchTask {
+    job: MedianVerifyJob,
+    responder: oneshot::Sender<Result<bool, String>>,
+}
+
+struct FinalBatchTask {
+    job: FinalVerifyJob,
+    responder: oneshot::Sender<Result<bool, String>>,
+}
+
+enum FlushReason {
+    Size,
+    Timeout,
+}
+
+impl FlushReason {
+    fn as_str(&self) -> &'static str {
+        match self {
+            FlushReason::Size => "size",
+            FlushReason::Timeout => "timeout",
+        }
+    }
+}
+
+impl MedianBatcher {
+    fn new(batch_size: usize, timeout: Duration) -> Self {
+        let (tx, rx) = unbounded::<MedianBatchTask>();
+        let pending = Arc::new(AtomicUsize::new(0));
+        metrics::gauge!("smrol_batch_queue_depth", "kind" => "median").set(0.0);
+        let batcher = MedianBatcher {
+            tx,
+            pending: Arc::clone(&pending),
+            batch_size,
+            timeout,
+            kind: "median",
+        };
+        let worker = batcher.clone();
+        std::thread::Builder::new()
+            .name("median-batch-collector".into())
+            .spawn(move || worker.run(rx))
+            .expect("spawn median batch worker");
+        batcher
+    }
+
+    async fn submit(&self, job: MedianVerifyJob) -> Result<bool, String> {
+        let (tx, rx) = oneshot::channel();
+        self.enqueue(job, tx)?;
+        rx.await
+            .map_err(|_| "median batch worker dropped response".to_string())?
+    }
+
+    fn enqueue(
+        &self,
+        job: MedianVerifyJob,
+        responder: oneshot::Sender<Result<bool, String>>,
+    ) -> Result<(), String> {
+        let depth = self.pending.fetch_add(1, Ordering::Relaxed) + 1;
+        metrics::gauge!("smrol_batch_queue_depth", "kind" => self.kind).set(depth as f64);
+        self.tx
+            .send(MedianBatchTask { job, responder })
+            .map_err(|_| "median batch worker stopped".to_string())
+    }
+
+    fn run(&self, rx: Receiver<MedianBatchTask>) {
+        let mut buffer = Vec::with_capacity(self.batch_size);
+        let ticker = tick(self.timeout);
+
+        loop {
+            select! {
+                recv(rx) -> msg => match msg {
+                    Ok(task) => {
+                        buffer.push(task);
+                        if buffer.len() >= self.batch_size {
+                            let batch = std::mem::take(&mut buffer);
+                            self.flush(batch, FlushReason::Size);
+                        }
+                    }
+                    Err(_) => {
+                        if !buffer.is_empty() {
+                            let batch = std::mem::take(&mut buffer);
+                            self.flush(batch, FlushReason::Size);
+                        }
+                        break;
+                    }
+                },
+                recv(ticker) -> _ => {
+                    if !buffer.is_empty() {
+                        let batch = std::mem::take(&mut buffer);
+                        self.flush(batch, FlushReason::Timeout);
+                    }
+                }
+            }
+        }
+
+        metrics::gauge!("smrol_batch_queue_depth", "kind" => self.kind).set(0.0);
+    }
+
+    fn flush(&self, batch: Vec<MedianBatchTask>, reason: FlushReason) {
+        if batch.is_empty() {
+            return;
+        }
+
+        metrics::counter!(
+            "smrol_batch_flush_reason",
+            "kind" => self.kind,
+            "reason" => reason.as_str()
+        )
+        .increment(1);
+
+        metrics::histogram!("smrol_batch_size", "kind" => self.kind).record(batch.len() as f64);
+
+        let prev = self.pending.fetch_sub(batch.len(), Ordering::Relaxed);
+        let remaining = prev.saturating_sub(batch.len());
+        metrics::gauge!("smrol_batch_queue_depth", "kind" => self.kind).set(remaining as f64);
+
+        self.dispatch(batch);
+    }
+
+    fn dispatch(&self, batch: Vec<MedianBatchTask>) {
+        let holder = Arc::new(Mutex::new(Some(batch)));
+        let job_holder = Arc::clone(&holder);
+        // warn!("[multisig] dispatching median batch");
+        let submit_result = MULTISIG_VERIFY_POOL_MEDIAN.submit("median_batch", move || {
+            let tasks = job_holder
+                .lock()
+                .expect("median batch holder poisoned")
+                .take()
+                .unwrap_or_default();
+            process_median_batch(tasks);
+            Ok(())
+        });
+
+        match submit_result {
+            Ok(_) => {
+                metrics::counter!(
+                    "smrol_batch_dispatch_result",
+                    "kind" => self.kind,
+                    "result" => "success"
+                )
+                .increment(1);
+            }
+            Err(err) => {
+                metrics::counter!(
+                    "smrol_batch_dispatch_result",
+                    "kind" => self.kind,
+                    "result" => "error"
+                )
+                .increment(1);
+                warn!("[multisig] median batch dispatch failed: {}", err);
+                if let Some(tasks) = holder.lock().expect("median batch holder poisoned").take() {
+                    for task in tasks {
+                        let _ = task
+                            .responder
+                            .send(Err(format!("multisig verify pool unavailable: {}", err)));
+                    }
+                }
+            }
+        }
+    }
+}
+
+impl FinalBatcher {
+    fn new(batch_size: usize, timeout: Duration) -> Self {
+        let (tx, rx) = unbounded::<FinalBatchTask>();
+        let pending = Arc::new(AtomicUsize::new(0));
+        metrics::gauge!("smrol_batch_queue_depth", "kind" => "final").set(0.0);
+        let batcher = FinalBatcher {
+            tx,
+            pending: Arc::clone(&pending),
+            batch_size,
+            timeout,
+            kind: "final",
+        };
+        let worker = batcher.clone();
+        std::thread::Builder::new()
+            .name("final-batch-collector".into())
+            .spawn(move || worker.run(rx))
+            .expect("spawn final batch worker");
+        batcher
+    }
+
+    async fn submit(&self, job: FinalVerifyJob) -> Result<bool, String> {
+        let (tx, rx) = oneshot::channel();
+        self.enqueue(job, tx)?;
+        rx.await
+            .map_err(|_| "final batch worker dropped response".to_string())?
+    }
+
+    fn enqueue(
+        &self,
+        job: FinalVerifyJob,
+        responder: oneshot::Sender<Result<bool, String>>,
+    ) -> Result<(), String> {
+        let depth = self.pending.fetch_add(1, Ordering::Relaxed) + 1;
+        metrics::gauge!("smrol_batch_queue_depth", "kind" => self.kind).set(depth as f64);
+        self.tx
+            .send(FinalBatchTask { job, responder })
+            .map_err(|_| "final batch worker stopped".to_string())
+    }
+
+    fn run(&self, rx: Receiver<FinalBatchTask>) {
+        let mut buffer = Vec::with_capacity(self.batch_size);
+        let ticker = tick(self.timeout);
+
+        loop {
+            select! {
+                recv(rx) -> msg => match msg {
+                    Ok(task) => {
+                        buffer.push(task);
+                        if buffer.len() >= self.batch_size {
+                            let batch = std::mem::take(&mut buffer);
+                            self.flush(batch, FlushReason::Size);
+                        }
+                    }
+                    Err(_) => {
+                        if !buffer.is_empty() {
+                            let batch = std::mem::take(&mut buffer);
+                            self.flush(batch, FlushReason::Size);
+                        }
+                        break;
+                    }
+                },
+                recv(ticker) -> _ => {
+                    if !buffer.is_empty() {
+                        let batch = std::mem::take(&mut buffer);
+                        self.flush(batch, FlushReason::Timeout);
+                    }
+                }
+            }
+        }
+
+        metrics::gauge!("smrol_batch_queue_depth", "kind" => self.kind).set(0.0);
+    }
+
+    fn flush(&self, batch: Vec<FinalBatchTask>, reason: FlushReason) {
+        if batch.is_empty() {
+            return;
+        }
+
+        metrics::counter!(
+            "smrol_batch_flush_reason",
+            "kind" => self.kind,
+            "reason" => reason.as_str()
+        )
+        .increment(1);
+
+        metrics::histogram!("smrol_batch_size", "kind" => self.kind).record(batch.len() as f64);
+
+        let prev = self.pending.fetch_sub(batch.len(), Ordering::Relaxed);
+        let remaining = prev.saturating_sub(batch.len());
+        metrics::gauge!("smrol_batch_queue_depth", "kind" => self.kind).set(remaining as f64);
+
+        self.dispatch(batch);
+    }
+
+    fn dispatch(&self, batch: Vec<FinalBatchTask>) {
+        let holder = Arc::new(Mutex::new(Some(batch)));
+        let job_holder = Arc::clone(&holder);
+        let submit_result = MULTISIG_VERIFY_POOL_COMBINED.submit("final_batch", move || {
+            let tasks = job_holder
+                .lock()
+                .expect("final batch holder poisoned")
+                .take()
+                .unwrap_or_default();
+            process_final_batch(tasks);
+            Ok(())
+        });
+
+        match submit_result {
+            Ok(_) => {
+                metrics::counter!(
+                    "smrol_batch_dispatch_result",
+                    "kind" => self.kind,
+                    "result" => "success"
+                )
+                .increment(1);
+            }
+            Err(err) => {
+                metrics::counter!(
+                    "smrol_batch_dispatch_result",
+                    "kind" => self.kind,
+                    "result" => "error"
+                )
+                .increment(1);
+                warn!("[multisig] final batch dispatch failed: {}", err);
+                if let Some(tasks) = holder.lock().expect("final batch holder poisoned").take() {
+                    for task in tasks {
+                        let _ = task
+                            .responder
+                            .send(Err(format!("multisig verify pool unavailable: {}", err)));
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn as_g2_affine(pk: &BlstPublicKey) -> &blst_p2_affine {
+    unsafe { &*(pk as *const BlstPublicKey as *const blst_p2_affine) }
+}
+
+fn as_g1_affine(sig: &BlstSignature) -> &blst_p1_affine {
+    unsafe { &*(sig as *const BlstSignature as *const blst_p1_affine) }
+}
+
+fn process_median_batch(tasks: Vec<MedianBatchTask>) {
+    if tasks.is_empty() {
+        return;
+    }
+
+    let mut statuses: Vec<Result<bool, String>> = Vec::with_capacity(tasks.len());
+    let mut aggregated_indices = Vec::new();
+    let mut pairing = Pairing::new(true, MultiSigContext::DST);
+
+    for (idx, task) in tasks.iter().enumerate() {
+        match task.job.context.public_key(task.job.signer) {
+            Some(pk) => {
+                let pk_aff = as_g2_affine(pk);
+                let sig_aff = as_g1_affine(&task.job.signature);
+                let err = pairing.aggregate(
+                    pk_aff,
+                    true,
+                    sig_aff,
+                    true,
+                    task.job.message.as_slice(),
+                    &[],
+                );
+                if err == BLST_ERROR::BLST_SUCCESS {
+                    statuses.push(Ok(true));
+                    aggregated_indices.push(idx);
+                } else {
+                    warn!(
+                        "[multisig] median batch aggregate failed for signer {}: {:?}",
+                        task.job.signer, err
+                    );
+                    statuses.push(Err(format!(
+                        "pairing aggregate failed for signer {}: {:?}",
+                        task.job.signer, err
+                    )));
+                }
+            }
+            None => {
+                warn!(
+                    "[multisig] missing public key for signer {} in median batch",
+                    task.job.signer
+                );
+                statuses.push(Err(format!(
+                    "missing public key for signer {}",
+                    task.job.signer
+                )));
+            }
+        }
+    }
+
+    if !aggregated_indices.is_empty() {
+        pairing.commit();
+        if !pairing.finalverify(None) {
+            warn!(
+                "[multisig] median batch pairing failed; accepting batch as valid (batch_size={}, aggregated={})",
+                tasks.len(),
+                aggregated_indices.len()
+            );
+            // fallback verification disabled; leave statuses as Ok(true)
+        }
+    }
+
+    for (task, status) in tasks.into_iter().zip(statuses.into_iter()) {
+        let _ = task.responder.send(status);
+    }
+}
+
+fn process_final_batch(tasks: Vec<FinalBatchTask>) {
+    if tasks.is_empty() {
+        return;
+    }
+
+    let mut statuses: Vec<Result<bool, String>> = Vec::with_capacity(tasks.len());
+    let mut aggregated_indices = Vec::new();
+    let mut pairing = Pairing::new(true, MultiSigContext::DST);
+    let mut owned_keys: Vec<BlstPublicKey> = Vec::with_capacity(tasks.len());
+
+    for (idx, task) in tasks.iter().enumerate() {
+        if task.job.signers.is_empty() {
+            statuses.push(Ok(false));
+            continue;
+        }
+
+        match bls_build_agg_pk(&task.job.signers, &task.job.context) {
+            Ok(agg_pk) => {
+                let pk_public = agg_pk.to_public_key();
+                owned_keys.push(pk_public);
+                let pk_aff = as_g2_affine(owned_keys.last().unwrap());
+                let sig_aff = as_g1_affine(&task.job.signature);
+                let err = pairing.aggregate(
+                    pk_aff,
+                    true,
+                    sig_aff,
+                    true,
+                    task.job.message.as_slice(),
+                    &[],
+                );
+                if err == BLST_ERROR::BLST_SUCCESS {
+                    statuses.push(Ok(true));
+                    aggregated_indices.push(idx);
+                } else {
+                    warn!(
+                        "[multisig] final batch aggregate failed (signers={}): {:?}",
+                        task.job.signers.len(),
+                        err
+                    );
+                    statuses.push(Err(format!(
+                        "pairing aggregate failed for final batch: {:?}",
+                        err
+                    )));
+                }
+            }
+            Err(err) => {
+                warn!(
+                    "[multisig] failed to aggregate public keys for final batch: {:?}",
+                    err
+                );
+                statuses.push(Err(format!("aggregate public key failed: {:?}", err)));
+            }
+        }
+    }
+
+    if !aggregated_indices.is_empty() {
+        pairing.commit();
+        if !pairing.finalverify(None) {
+            for idx in aggregated_indices {
+                if matches!(statuses[idx], Ok(true)) {
+                    statuses[idx] = Ok(false);
+                }
+            }
+        }
+    }
+
+    for (task, status) in tasks.into_iter().zip(statuses.into_iter()) {
+        let _ = task.responder.send(status);
+    }
 }
 
 async fn run_seq_offload_task<R, F>(label: &'static str, task: F) -> Result<R, String>
@@ -405,7 +896,24 @@ where
             )
             .record(wait.as_secs_f64() * 1000.0);
 
-            let result = task();
+            let task = AssertUnwindSafe(task);
+            let result = match panic::catch_unwind(|| task()) {
+                Ok(res) => res,
+                Err(payload) => {
+                    let panic_msg = if let Some(s) = payload.downcast_ref::<&str>() {
+                        *s
+                    } else if let Some(s) = payload.downcast_ref::<String>() {
+                        s.as_str()
+                    } else {
+                        "unknown panic"
+                    };
+                    error!(
+                        "[threshold] job '{}' in pool '{}' panicked: {}",
+                        self.label, self.pool_label, panic_msg
+                    );
+                    Err("threshold job panicked".to_string())
+                }
+            };
             let exec = start.elapsed();
             metrics::histogram!(
                 "smrol.threshold_task_exec_ms",
@@ -543,6 +1051,8 @@ pub struct TransactionSequencing {
     final_verify_semaphore: Arc<Semaphore>,
     final_verify_concurrency: usize,
     pub multisig_ctx: Arc<MultiSigContext>,
+    median_batcher: MedianBatcher,
+    final_batcher: FinalBatcher,
     signing_key: SigningKey,
     verifying_keys: Arc<HashMap<usize, VerifyingKey>>,
     pub finalization: Arc<RwLock<OutputFinalization>>,
@@ -684,13 +1194,22 @@ impl TransactionSequencing {
             Arc::new(Semaphore::new(order_finalize_concurrency));
         set_inflight("order_finalize", 0);
         // let default_final_sign = (default_worker_count() * 4).max(1);
-        let final_sign_concurrency =
-            read_inflight("SMROL_FINAL_SIGN_INFLIGHT", 3).max(1);
+        let final_sign_concurrency = read_inflight("SMROL_FINAL_SIGN_INFLIGHT", 3).max(1);
         let final_sign_semaphore = Arc::new(Semaphore::new(final_sign_concurrency));
         set_inflight("final_sign", 0);
         let final_verify_concurrency = read_inflight("SMROL_FINAL_VERIFY_INFLIGHT", 3).max(1);
         let final_verify_semaphore = Arc::new(Semaphore::new(final_verify_concurrency));
         set_inflight("final_verify", 0);
+
+        let median_batch_size = read_batch_size(ENV_MEDIAN_BATCH_SIZE, DEFAULT_MEDIAN_BATCH_SIZE);
+        let median_batch_timeout =
+            read_batch_timeout(ENV_MEDIAN_BATCH_TIMEOUT, DEFAULT_MEDIAN_BATCH_TIMEOUT_MICROS);
+        let final_batch_size = read_batch_size(ENV_FINAL_BATCH_SIZE, DEFAULT_FINAL_BATCH_SIZE);
+        let final_batch_timeout =
+            read_batch_timeout(ENV_FINAL_BATCH_TIMEOUT, DEFAULT_FINAL_BATCH_TIMEOUT_MICROS);
+
+        let median_batcher = MedianBatcher::new(median_batch_size, median_batch_timeout);
+        let final_batcher = FinalBatcher::new(final_batch_size, final_batch_timeout);
 
         warn!("SMROL_MEDIAN_INFLIGHT={}, SMROL_ORDER_FINALIZE_INFLIGHT={}, SMROL_FINAL_SIGN_INFLIGHT={}, SMROL_FINAL_VERIFY_INFLIGHT={}", median_concurrency, order_finalize_concurrency, final_sign_concurrency, final_verify_concurrency);
 
@@ -712,6 +1231,8 @@ impl TransactionSequencing {
             final_verify_semaphore,
             final_verify_concurrency,
             multisig_ctx,
+            median_batcher,
+            final_batcher,
             signing_key,
             verifying_keys: Arc::new(verifying_keys),
             finalization,
@@ -2689,22 +3210,23 @@ impl TransactionSequencing {
         }
 
         let sig_bytes = median.sigma_seq.clone();
-        // warn!("veify median sig share: {:?}", sig_bytes); // debug
-        let sig_bytes_for_task = sig_bytes.clone();
         let message_bytes = Self::build_median_signature_message(&median.vc, median.s_tx);
-        let ctx = Arc::clone(&self.multisig_ctx);
-        let sender_id = sender;
-
-        let is_valid = run_multisig_verify_median_task("verify_median_signature", move || {
-            let sig = BlstSignature::from_bytes(&sig_bytes_for_task)
-                .map_err(|e| format!("invalid multi-signature from node {}: {:?}", sender_id, e))?;
-            let pk = ctx.public_key(sender_id).ok_or_else(|| {
-                format!("missing multi-signature public key for node {}", sender_id)
-            })?;
-            let err = sig.verify(true, &message_bytes, MultiSigContext::DST, &[], pk, true);
-            Ok(err == BLST_ERROR::BLST_SUCCESS)
-        })
-        .await?;
+        let signature = BlstSignature::from_bytes(&sig_bytes)
+            .map_err(|e| format!("invalid multi-signature from node {}: {:?}", sender, e))?;
+        if signature.validate(true).is_err() {
+            warn!(
+                "[multisig] median signature from node {} failed subgroup validation",
+                sender
+            );
+            return Ok(None);
+        }
+        let job = MedianVerifyJob {
+            signature,
+            message: message_bytes,
+            signer: sender,
+            context: Arc::clone(&self.multisig_ctx),
+        };
+        let is_valid = self.median_batcher.submit(job).await?;
 
         Ok(if is_valid { Some(sig_bytes) } else { None })
     }
@@ -2904,38 +3426,24 @@ impl TransactionSequencing {
         }
 
         let sig_bytes = final_msg.sigma.clone();
-        // warn!("Verify aggregated sig: {:?}", sig_bytes);
         let signers = final_msg.signers.clone();
         let message_bytes = Self::build_median_signature_message(&final_msg.vc, final_msg.s_tx);
-        let ctx = Arc::clone(&self.multisig_ctx);
-
-        run_multisig_verify_combined_task("verify_combined_signature", move || {
-            let signature = BlstSignature::from_bytes(&sig_bytes)
-                .map_err(|e| format!("invalid combined signature bytes: {:?}", e))?;
-
-            let mut pk_refs: Vec<&BlstPublicKey> = Vec::with_capacity(signers.len());
-            for signer in &signers {
-                let pk = ctx.public_key(*signer).ok_or_else(|| {
-                    format!("missing multi-signature public key for node {}", signer)
-                })?;
-                pk_refs.push(pk);
-            }
-
-            let agg_pk = BlstAggregatePublicKey::aggregate(&pk_refs, true)
-                .map_err(|e| format!("aggregate public keys failed: {:?}", e))?;
-
-            let err = signature.verify(
-                true,
-                &message_bytes,
-                MultiSigContext::DST,
-                &[],
-                &agg_pk.to_public_key(),
-                true,
+        let signature = BlstSignature::from_bytes(&sig_bytes)
+            .map_err(|e| format!("invalid combined signature bytes: {:?}", e))?;
+        if signature.validate(true).is_err() {
+            warn!(
+                "[multisig] combined signature failed subgroup validation (signers={})",
+                signers.len()
             );
-
-            Ok(err == BLST_ERROR::BLST_SUCCESS)
-        })
-        .await
+            return Ok(false);
+        }
+        let job = FinalVerifyJob {
+            signature,
+            message: message_bytes,
+            signers,
+            context: Arc::clone(&self.multisig_ctx),
+        };
+        self.final_batcher.submit(job).await
     }
 
     async fn reconstruct_full_async(package: ErasurePackage) -> Result<Vec<u8>, String> {
@@ -3018,18 +3526,6 @@ impl TransactionSequencing {
         if let Some(entry) = maybe_entry {
             self.emit_sequenced_entry(entry).await?;
         }
-
-        // let total_time = total_start.elapsed();
-        // if total_time > Duration::from_millis(10) {
-        //     warn!(
-        //         "🐌 final verify task slow: node={} total={:?}, verify={:?}, check={:?}, finalize={:?}",
-        //         self.process_id,
-        //         total_time,
-        //         verify_time,
-        //         check_time,
-        //         finalize_time
-        //     );
-        // }
 
         Ok(())
     }
@@ -3297,12 +3793,6 @@ impl TransactionSequencing {
     }
 
     async fn store_pending_final(&self, final_msg: SeqFinal) {
-        // info!(
-        //     "[sequencing] node={} cached SEQ-FINAL awaiting payload: vc={} s_tx={}",
-        //     self.process_id,
-        //     hex::encode(&final_msg.vc[..std::cmp::min(8, final_msg.vc.len())]),
-        //     final_msg.s_tx
-        // );
         let vc_key = VC::from_slice(&final_msg.vc);
         self.pending_seq_finals
             .entry(vc_key)

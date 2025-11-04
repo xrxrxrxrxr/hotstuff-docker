@@ -1,3 +1,10 @@
+use blst::{
+    min_sig::{
+        AggregatePublicKey as BlstAggregatePublicKey, AggregateSignature as BlstAggregateSignature,
+        PublicKey as BlstPublicKey, SecretKey as BlstSecretKey, Signature as BlstSignature,
+    },
+    BLST_ERROR,
+};
 use blsttc::{PublicKeySet, SecretKeySet, SecretKeyShare};
 use ed25519_dalek::VerifyingKey;
 use rand08::{rngs::StdRng, SeedableRng};
@@ -7,15 +14,6 @@ use serde::{Deserialize, Serialize};
 use sha2::Digest;
 use sha2::Sha256 as Sha256Digest;
 use std::collections::HashMap;
-
-use blst::{
-    min_sig::{
-        AggregatePublicKey as BlstAggregatePublicKey, AggregateSignature as BlstAggregateSignature,
-        PublicKey as BlstPublicKey, SecretKey as BlstSecretKey, Signature as BlstSignature,
-    },
-    BLST_ERROR,
-};
-use std::sync::Arc;
 
 pub fn derive_threshold_keys(
     node_id: usize,
@@ -252,6 +250,35 @@ impl MultiSigContext {
         let err = sig.verify(true, msg, Self::DST, &[], &agg_pk.to_public_key(), true);
         Ok(err == BLST_ERROR::BLST_SUCCESS)
     }
+}
+
+pub fn bls_verify_single(pk: &BlstPublicKey, sig: &BlstSignature, msg: &[u8]) -> bool {
+    sig.verify(true, msg, MultiSigContext::DST, &[], pk, false) == BLST_ERROR::BLST_SUCCESS
+}
+
+pub fn bls_verify_agg(agg_pk: &BlstAggregatePublicKey, sig: &BlstSignature, msg: &[u8]) -> bool {
+    let pk = agg_pk.to_public_key();
+    sig.verify(true, msg, MultiSigContext::DST, &[], &pk, false) == BLST_ERROR::BLST_SUCCESS
+}
+
+pub fn bls_build_agg_pk(
+    signers: &[usize],
+    ctx: &MultiSigContext,
+) -> Result<BlstAggregatePublicKey, BLST_ERROR> {
+    if signers.is_empty() {
+        return Err(BLST_ERROR::BLST_AGGR_TYPE_MISMATCH);
+    }
+
+    let mut pk_refs = Vec::with_capacity(signers.len());
+    for signer in signers {
+        let pk = ctx
+            .public_keys
+            .get(*signer)
+            .ok_or(BLST_ERROR::BLST_AGGR_TYPE_MISMATCH)?;
+        pk_refs.push(pk);
+    }
+
+    BlstAggregatePublicKey::aggregate(&pk_refs, true)
 }
 
 pub fn derive_multisig_context(

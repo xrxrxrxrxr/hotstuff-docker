@@ -43,3 +43,5 @@ echo "Generated hosts.txt:"
 ./generate-node-envs.sh
 echo "Updated envs/"
 cat hosts.txt
+
+make deploy

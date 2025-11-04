@@ -1,0 +1,361 @@
+2025-11-03T03:01:04.726615Z  WARN ThreadId(01) hotstuff_runner::telemetry: Prometheus metrics exporter started ✅ listen_addr=0.0.0.0:9900
+2025-11-03T03:01:04.726688Z  WARN ThreadId(01) hotstuff_runner::telemetry: ✅ wrote smrol.node_up=1 (boot) node_id=0
+2025-11-03T03:01:19.929359Z  WARN ThreadId(01) hotstuff_runner::tcp_node: Node 0 view timeout set to 2000 ms
+2025-11-03T03:01:19.934957Z ERROR ThreadId(13) hotstuff_runner::pompe_network: Node 0 failed to connect to node 1: Connection refused (os error 111)
+2025-11-03T03:01:19.935394Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: SMROL_MEDIAN_INFLIGHT=3, SMROL_ORDER_FINALIZE_INFLIGHT=3, SMROL_FINAL_SIGN_INFLIGHT=3, SMROL_FINAL_VERIFY_INFLIGHT=3
+2025-11-03T03:01:19.935466Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: [Sequencing] Node 0 multi-signature verification disabled: false
+2025-11-03T03:01:19.936329Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [Sequencing] Node 0 final verify dispatcher started
+2025-11-03T03:01:19.937976Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-03T03:01:21.929927Z  WARN ThreadId(11) hotstuff_runner::tcp_node: Node 0 view 0 timed out; latency may accumulate
+2025-11-03T03:01:24.937730Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-03T03:01:24.944209Z  WARN ThreadId(01) docker_node: Node 0 port 20000 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-03T03:01:24.946155Z  WARN ThreadId(01) docker_node: Node 1 port 20001 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-03T03:01:24.948413Z  WARN ThreadId(01) docker_node: Node 2 port 20002 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-03T03:01:24.953611Z  WARN ThreadId(01) docker_node: Node 3 port 20003 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-03T03:01:29.938407Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-03T03:01:34.938190Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-03T03:01:39.938730Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-03T03:01:44.938532Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-03T03:01:45.551965Z  WARN ThreadId(10) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[15, 37, 74, 89, 241, 235, 253, 219, 24, 111, 59, 225, 95, 9, 20, 211, 186, 80, 216, 192, 30, 251, 40, 210, 146, 56, 93, 51, 196, 177, 110, 89] view=2150 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=false (exists=false) | cond3(view>locked || extends)=true (pc.view=2150, locked.view=2147, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[54, 58, 92, 57, 76, 118, 205, 108, 217, 18, 84, 102, 42, 25, 238, 217, 68, 185, 4, 3, 108, 184, 187, 98, 246, 220, 22, 61, 104, 24, 212, 252] highest_pc.view=2148 locked.block=[37, 207, 123, 85, 174, 188, 165, 87, 167, 0, 35, 192, 238, 144, 99, 67, 219, 168, 17, 220, 212, 81, 155, 99, 84, 144, 13, 181, 13, 62, 33, 189] locked.view=2147    
+2025-11-03T03:01:45.552106Z  WARN ThreadId(10) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[11, 181, 122, 123, 55, 47, 83, 128, 204, 96, 116, 62, 68, 225, 194, 63, 77, 192, 206, 129, 86, 39, 73, 69, 179, 38, 124, 6, 218, 144, 17, 211] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[15, 37, 74, 89, 241, 235, 253, 219, 24, 111, 59, 225, 95, 9, 20, 211, 186, 80, 216, 192, 30, 251, 40, 210, 146, 56, 93, 51, 196, 177, 110, 89] justify.view=2150 | highest_pc.block=[54, 58, 92, 57, 76, 118, 205, 108, 217, 18, 84, 102, 42, 25, 238, 217, 68, 185, 4, 3, 108, 184, 187, 98, 246, 220, 22, 61, 104, 24, 212, 252] highest_pc.view=2148 | locked.block=[37, 207, 123, 85, 174, 188, 165, 87, 167, 0, 35, 192, 238, 144, 99, 67, 219, 168, 17, 220, 212, 81, 155, 99, 84, 144, 13, 181, 13, 62, 33, 189] locked.view=2147    
+2025-11-03T03:01:45.571732Z  WARN ThreadId(10) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[11, 181, 122, 123, 55, 47, 83, 128, 204, 96, 116, 62, 68, 225, 194, 63, 77, 192, 206, 129, 86, 39, 73, 69, 179, 38, 124, 6, 218, 144, 17, 211] view=2151 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=false (exists=false) | cond3(view>locked || extends)=true (pc.view=2151, locked.view=2147, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[54, 58, 92, 57, 76, 118, 205, 108, 217, 18, 84, 102, 42, 25, 238, 217, 68, 185, 4, 3, 108, 184, 187, 98, 246, 220, 22, 61, 104, 24, 212, 252] highest_pc.view=2148 locked.block=[37, 207, 123, 85, 174, 188, 165, 87, 167, 0, 35, 192, 238, 144, 99, 67, 219, 168, 17, 220, 212, 81, 155, 99, 84, 144, 13, 181, 13, 62, 33, 189] locked.view=2147    
+2025-11-03T03:01:45.571875Z  WARN ThreadId(10) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[99, 142, 207, 94, 208, 71, 72, 228, 222, 155, 238, 249, 86, 58, 8, 35, 7, 170, 33, 202, 152, 168, 2, 158, 63, 63, 171, 168, 46, 0, 175, 0] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[11, 181, 122, 123, 55, 47, 83, 128, 204, 96, 116, 62, 68, 225, 194, 63, 77, 192, 206, 129, 86, 39, 73, 69, 179, 38, 124, 6, 218, 144, 17, 211] justify.view=2151 | highest_pc.block=[54, 58, 92, 57, 76, 118, 205, 108, 217, 18, 84, 102, 42, 25, 238, 217, 68, 185, 4, 3, 108, 184, 187, 98, 246, 220, 22, 61, 104, 24, 212, 252] highest_pc.view=2148 | locked.block=[37, 207, 123, 85, 174, 188, 165, 87, 167, 0, 35, 192, 238, 144, 99, 67, 219, 168, 17, 220, 212, 81, 155, 99, 84, 144, 13, 181, 13, 62, 33, 189] locked.view=2147    
+2025-11-03T03:01:45.573765Z  WARN ThreadId(10) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[99, 142, 207, 94, 208, 71, 72, 228, 222, 155, 238, 249, 86, 58, 8, 35, 7, 170, 33, 202, 152, 168, 2, 158, 63, 63, 171, 168, 46, 0, 175, 0] view=2152 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=false (exists=false) | cond3(view>locked || extends)=true (pc.view=2152, locked.view=2147, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[54, 58, 92, 57, 76, 118, 205, 108, 217, 18, 84, 102, 42, 25, 238, 217, 68, 185, 4, 3, 108, 184, 187, 98, 246, 220, 22, 61, 104, 24, 212, 252] highest_pc.view=2148 locked.block=[37, 207, 123, 85, 174, 188, 165, 87, 167, 0, 35, 192, 238, 144, 99, 67, 219, 168, 17, 220, 212, 81, 155, 99, 84, 144, 13, 181, 13, 62, 33, 189] locked.view=2147    
+2025-11-03T03:01:45.596966Z  WARN ThreadId(10) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[11, 181, 122, 123, 55, 47, 83, 128, 204, 96, 116, 62, 68, 225, 194, 63, 77, 192, 206, 129, 86, 39, 73, 69, 179, 38, 124, 6, 218, 144, 17, 211] view=2151 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=false (exists=false) | cond3(view>locked || extends)=true (pc.view=2151, locked.view=2148, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[120, 141, 42, 160, 75, 132, 210, 19, 63, 61, 245, 56, 45, 37, 80, 37, 52, 94, 244, 179, 222, 169, 158, 115, 45, 142, 248, 146, 132, 4, 224, 17] highest_pc.view=2149 locked.block=[54, 58, 92, 57, 76, 118, 205, 108, 217, 18, 84, 102, 42, 25, 238, 217, 68, 185, 4, 3, 108, 184, 187, 98, 246, 220, 22, 61, 104, 24, 212, 252] locked.view=2148    
+2025-11-03T03:01:47.487780Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 1 msgs, avg=1.771137ms, max=1.771137ms, rate=1/s
+2025-11-03T03:01:47.491769Z  WARN ThreadId(21) hotstuff_runner::smrol::sequencing: [affinity] bound thread seq_offload-worker-1 to core CoreId { id: 1 }
+2025-11-03T03:01:47.492720Z  WARN ThreadId(20) hotstuff_runner::smrol::sequencing: [affinity] bound thread seq_offload-worker-0 to core CoreId { id: 0 }
+2025-11-03T03:01:47.496680Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [affinity] multisig_sign_combine: overriding worker count 8 -> 2 to match core set
+2025-11-03T03:01:47.497386Z  WARN ThreadId(23) hotstuff_runner::smrol::sequencing: [affinity] bound thread multisig_sign_combine-worker-1 to core CoreId { id: 1 }
+2025-11-03T03:01:47.497610Z  WARN ThreadId(22) hotstuff_runner::smrol::sequencing: [affinity] bound thread multisig_sign_combine-worker-0 to core CoreId { id: 0 }
+2025-11-03T03:01:47.499871Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [affinity] multisig_verify_median: overriding worker count 1 -> 2 to match core set
+2025-11-03T03:01:47.502589Z  WARN ThreadId(24) hotstuff_runner::smrol::sequencing: [affinity] bound thread multisig_verify_median-worker-0 to core CoreId { id: 2 }
+2025-11-03T03:01:47.502911Z  WARN ThreadId(25) hotstuff_runner::smrol::sequencing: [affinity] bound thread multisig_verify_median-worker-1 to core CoreId { id: 3 }
+2025-11-03T03:01:47.508205Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 1 msgs, avg=20.321602ms, max=20.321602ms, rate=1/s
+2025-11-03T03:01:47.515024Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [affinity] multisig_verify_combined: overriding worker count 1 -> 2 to match core set
+2025-11-03T03:01:47.516708Z  WARN ThreadId(26) hotstuff_runner::smrol::sequencing: [affinity] bound thread multisig_verify_combined-worker-0 to core CoreId { id: 2 }
+2025-11-03T03:01:47.516806Z  WARN ThreadId(27) hotstuff_runner::smrol::sequencing: [affinity] bound thread multisig_verify_combined-worker-1 to core CoreId { id: 3 }
+2025-11-03T03:01:47.532363Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 1 msgs, avg=3.913795ms, max=3.913795ms, rate=1/s
+2025-11-03T03:01:47.565552Z  WARN ThreadId(11) hotstuff_runner::tcp_node: Node 0 view 2152 timed out; latency may accumulate
+2025-11-03T03:01:48.488942Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 652 msgs, avg=1.534339ms, max=9.297818ms, rate=652/s
+2025-11-03T03:01:48.514075Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 123 msgs, avg=8.16206ms, max=24.714604ms, rate=123/s
+2025-11-03T03:01:48.538868Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 103 msgs, avg=8.10648ms, max=17.223301ms, rate=103/s
+2025-11-03T03:01:49.491667Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 622 msgs, avg=1.610744ms, max=12.065674ms, rate=622/s
+2025-11-03T03:01:49.516307Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 123 msgs, avg=8.138563ms, max=29.617824ms, rate=123/s
+2025-11-03T03:01:49.549005Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 96 msgs, avg=7.513391ms, max=17.425115ms, rate=96/s
+2025-11-03T03:01:49.939805Z  WARN ThreadId(03) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-03T03:01:49.939855Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-03T03:01:50.492277Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 603 msgs, avg=1.658265ms, max=10.592762ms, rate=603/s
+2025-11-03T03:01:50.535055Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 1373 msgs, avg=711.062µs, max=25.733283ms, rate=1373/s
+2025-11-03T03:01:50.563986Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 147 msgs, avg=4.301173ms, max=19.682896ms, rate=147/s
+2025-11-03T03:01:50.944534Z  WARN ThreadId(14) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 5.383365ms
+2025-11-03T03:01:51.493606Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 636 msgs, avg=1.573211ms, max=10.91244ms, rate=636/s
+2025-11-03T03:01:51.536244Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 161 msgs, avg=6.215064ms, max=18.195474ms, rate=161/s
+2025-11-03T03:01:51.567306Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 116 msgs, avg=6.706147ms, max=21.689656ms, rate=116/s
+2025-11-03T03:01:52.493865Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 617 msgs, avg=1.618633ms, max=10.647231ms, rate=617/s
+2025-11-03T03:01:52.541271Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 145 msgs, avg=6.92796ms, max=17.208326ms, rate=145/s
+2025-11-03T03:01:52.576221Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 139 msgs, avg=6.230303ms, max=14.127151ms, rate=139/s
+2025-11-03T03:01:53.356648Z  WARN ThreadId(14) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 5.174372ms
+2025-11-03T03:01:53.496387Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 656 msgs, avg=1.526265ms, max=10.421231ms, rate=656/s
+2025-11-03T03:01:53.522536Z  WARN ThreadId(14) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 5.577068ms
+2025-11-03T03:01:53.550252Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 133 msgs, avg=7.582872ms, max=18.114287ms, rate=133/s
+2025-11-03T03:01:53.585702Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 121 msgs, avg=6.581376ms, max=24.533019ms, rate=121/s
+2025-11-03T03:01:54.499111Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 611 msgs, avg=1.629461ms, max=11.47915ms, rate=611/s
+2025-11-03T03:01:54.556705Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 121 msgs, avg=8.31424ms, max=27.760303ms, rate=121/s
+2025-11-03T03:01:54.587975Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 139 msgs, avg=5.733045ms, max=17.784585ms, rate=139/s
+2025-11-03T03:01:54.937917Z  WARN ThreadId(02) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-03T03:01:54.937966Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-03T03:01:55.501549Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 666 msgs, avg=1.501223ms, max=9.197279ms, rate=666/s
+2025-11-03T03:01:55.562163Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 136 msgs, avg=7.361977ms, max=21.718194ms, rate=136/s
+2025-11-03T03:01:55.595137Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 108 msgs, avg=6.353124ms, max=17.693369ms, rate=108/s
+2025-11-03T03:01:56.501820Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 609 msgs, avg=1.641044ms, max=9.918466ms, rate=609/s
+2025-11-03T03:01:56.569547Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 114 msgs, avg=8.831477ms, max=25.408886ms, rate=114/s
+2025-11-03T03:01:56.608672Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 120 msgs, avg=8.427041ms, max=24.757826ms, rate=120/s
+2025-11-03T03:01:57.508552Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 615 msgs, avg=1.626983ms, max=10.161939ms, rate=615/s
+2025-11-03T03:01:57.573682Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 114 msgs, avg=8.803459ms, max=27.330757ms, rate=114/s
+2025-11-03T03:01:57.612781Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 111 msgs, avg=8.793349ms, max=23.319047ms, rate=111/s
+2025-11-03T03:01:58.508849Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 629 msgs, avg=1.589201ms, max=9.037566ms, rate=629/s
+2025-11-03T03:01:58.574085Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 118 msgs, avg=8.473922ms, max=22.692824ms, rate=118/s
+2025-11-03T03:01:58.622343Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 125 msgs, avg=8.067747ms, max=19.192324ms, rate=125/s
+2025-11-03T03:01:59.509099Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 635 msgs, avg=1.574193ms, max=10.042253ms, rate=635/s
+2025-11-03T03:01:59.581968Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 124 msgs, avg=8.1099ms, max=15.288324ms, rate=124/s
+2025-11-03T03:01:59.628051Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 129 msgs, avg=7.787367ms, max=16.285588ms, rate=129/s
+2025-11-03T03:01:59.938095Z  WARN ThreadId(04) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-03T03:01:59.938127Z  WARN ThreadId(04) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-03T03:02:00.509949Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 580 msgs, avg=1.724287ms, max=9.761973ms, rate=580/s
+2025-11-03T03:02:00.586839Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 126 msgs, avg=7.970028ms, max=14.604105ms, rate=126/s
+2025-11-03T03:02:00.638223Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 149 msgs, avg=6.775381ms, max=14.348461ms, rate=149/s
+2025-11-03T03:02:01.513499Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 613 msgs, avg=1.631191ms, max=18.04994ms, rate=613/s
+2025-11-03T03:02:01.589735Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 125 msgs, avg=8.020874ms, max=18.760293ms, rate=125/s
+2025-11-03T03:02:01.648602Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 111 msgs, avg=9.099134ms, max=18.741302ms, rate=111/s
+2025-11-03T03:02:02.515197Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 602 msgs, avg=1.662905ms, max=11.385814ms, rate=602/s
+2025-11-03T03:02:02.596799Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 117 msgs, avg=8.602943ms, max=19.987072ms, rate=117/s
+2025-11-03T03:02:02.654293Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 126 msgs, avg=7.977096ms, max=20.95564ms, rate=126/s
+2025-11-03T03:02:03.516742Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 657 msgs, avg=1.523435ms, max=10.326153ms, rate=657/s
+2025-11-03T03:02:03.599093Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 126 msgs, avg=7.892007ms, max=20.245074ms, rate=126/s
+2025-11-03T03:02:03.666268Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 113 msgs, avg=7.921687ms, max=20.605962ms, rate=113/s
+2025-11-03T03:02:04.521710Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 581 msgs, avg=1.72853ms, max=10.588467ms, rate=581/s
+2025-11-03T03:02:04.601831Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 97 msgs, avg=10.326635ms, max=32.508325ms, rate=97/s
+2025-11-03T03:02:04.686260Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 101 msgs, avg=9.224401ms, max=22.60471ms, rate=101/s
+2025-11-03T03:02:04.937582Z  WARN ThreadId(04) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-03T03:02:04.937615Z  WARN ThreadId(04) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-03T03:02:05.523958Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 544 msgs, avg=1.841218ms, max=38.858815ms, rate=544/s
+2025-11-03T03:02:05.606021Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 114 msgs, avg=8.777236ms, max=25.314057ms, rate=114/s
+2025-11-03T03:02:05.698278Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 114 msgs, avg=8.836965ms, max=23.727083ms, rate=114/s
+2025-11-03T03:02:06.351521Z  WARN ThreadId(14) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 5.889207ms
+2025-11-03T03:02:06.526868Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 599 msgs, avg=1.672967ms, max=9.828359ms, rate=599/s
+2025-11-03T03:02:06.608063Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 124 msgs, avg=8.066893ms, max=23.535257ms, rate=124/s
+2025-11-03T03:02:06.701485Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 114 msgs, avg=8.750774ms, max=28.31457ms, rate=114/s
+2025-11-03T03:02:07.528343Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 576 msgs, avg=1.737374ms, max=8.708037ms, rate=576/s
+2025-11-03T03:02:07.611469Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 119 msgs, avg=8.361782ms, max=18.084708ms, rate=119/s
+2025-11-03T03:02:07.705118Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 129 msgs, avg=7.77693ms, max=15.024799ms, rate=129/s
+2025-11-03T03:02:08.529544Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 655 msgs, avg=1.527354ms, max=9.909252ms, rate=655/s
+2025-11-03T03:02:08.612421Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 121 msgs, avg=8.26293ms, max=23.456133ms, rate=121/s
+2025-11-03T03:02:08.725439Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 131 msgs, avg=7.493736ms, max=15.165005ms, rate=131/s
+2025-11-03T03:02:09.531331Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 650 msgs, avg=1.540138ms, max=16.680221ms, rate=650/s
+2025-11-03T03:02:09.627380Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 133 msgs, avg=7.573892ms, max=24.486337ms, rate=133/s
+2025-11-03T03:02:09.730488Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 118 msgs, avg=8.453705ms, max=19.389644ms, rate=118/s
+2025-11-03T03:02:09.941656Z  WARN ThreadId(02) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-03T03:02:09.941690Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-03T03:02:10.536129Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 548 msgs, avg=1.832356ms, max=14.68961ms, rate=548/s
+2025-11-03T03:02:10.631698Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 136 msgs, avg=7.342991ms, max=14.049118ms, rate=136/s
+2025-11-03T03:02:10.731334Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 116 msgs, avg=8.624701ms, max=26.306099ms, rate=116/s
+2025-11-03T03:02:11.543592Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 616 msgs, avg=1.632088ms, max=13.932978ms, rate=616/s
+2025-11-03T03:02:11.633175Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 114 msgs, avg=8.776113ms, max=17.469556ms, rate=114/s
+2025-11-03T03:02:11.743031Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 107 msgs, avg=9.111438ms, max=19.969902ms, rate=107/s
+2025-11-03T03:02:12.549139Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 623 msgs, avg=1.612817ms, max=13.825285ms, rate=623/s
+2025-11-03T03:02:12.635609Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 120 msgs, avg=8.347991ms, max=17.585831ms, rate=120/s
+2025-11-03T03:02:12.752266Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 116 msgs, avg=8.695658ms, max=19.682895ms, rate=116/s
+2025-11-03T03:02:13.550012Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 680 msgs, avg=1.470739ms, max=12.579789ms, rate=680/s
+2025-11-03T03:02:13.638421Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 127 msgs, avg=7.890612ms, max=18.327012ms, rate=127/s
+2025-11-03T03:02:13.755349Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 126 msgs, avg=7.899425ms, max=18.74225ms, rate=126/s
+2025-11-03T03:02:14.556255Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 644 msgs, avg=1.560958ms, max=13.369761ms, rate=644/s
+2025-11-03T03:02:14.647361Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 124 msgs, avg=8.09771ms, max=22.877669ms, rate=124/s
+2025-11-03T03:02:14.772374Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 91 msgs, avg=8.676221ms, max=18.900869ms, rate=91/s
+2025-11-03T03:02:14.937607Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-03T03:02:14.937639Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-03T03:02:15.557885Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 634 msgs, avg=1.578758ms, max=9.003568ms, rate=634/s
+2025-11-03T03:02:15.574529Z  WARN ThreadId(14) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 5.929474ms
+2025-11-03T03:02:15.650896Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 113 msgs, avg=8.869375ms, max=20.001853ms, rate=113/s
+2025-11-03T03:02:15.773202Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 115 msgs, avg=8.084983ms, max=19.764622ms, rate=115/s
+2025-11-03T03:02:16.558523Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 606 msgs, avg=1.649955ms, max=10.266159ms, rate=606/s
+2025-11-03T03:02:16.658804Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 134 msgs, avg=7.494201ms, max=22.273667ms, rate=134/s
+2025-11-03T03:02:16.782851Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 141 msgs, avg=7.121253ms, max=15.394249ms, rate=141/s
+2025-11-03T03:02:17.474331Z  WARN ThreadId(14) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 8.485452ms
+2025-11-03T03:02:17.558908Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 614 msgs, avg=1.62824ms, max=11.807358ms, rate=614/s
+2025-11-03T03:02:17.663922Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 129 msgs, avg=7.781074ms, max=21.892266ms, rate=129/s
+2025-11-03T03:02:17.784676Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 83 msgs, avg=8.595726ms, max=19.393323ms, rate=83/s
+2025-11-03T03:02:18.559983Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 643 msgs, avg=1.555063ms, max=7.791709ms, rate=643/s
+2025-11-03T03:02:18.666661Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 118 msgs, avg=8.488554ms, max=24.317647ms, rate=118/s
+2025-11-03T03:02:18.787170Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 114 msgs, avg=8.240963ms, max=25.297505ms, rate=114/s
+2025-11-03T03:02:19.563922Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 613 msgs, avg=1.636452ms, max=10.10798ms, rate=613/s
+2025-11-03T03:02:19.672188Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 137 msgs, avg=7.336828ms, max=24.498537ms, rate=137/s
+2025-11-03T03:02:19.789281Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 102 msgs, avg=8.229709ms, max=21.99813ms, rate=102/s
+2025-11-03T03:02:20.051018Z  WARN ThreadId(03) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-03T03:02:20.051161Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-03T03:02:20.327550Z  WARN ThreadId(14) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 5.062093ms
+2025-11-03T03:02:20.564464Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 549 msgs, avg=1.821427ms, max=115.499818ms, rate=549/s
+2025-11-03T03:02:20.676673Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 14807 msgs, avg=60.145µs, max=29.986314ms, rate=14807/s
+2025-11-03T03:02:20.976305Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 21 msgs, avg=7.497271ms, max=14.072705ms, rate=21/s
+2025-11-03T03:02:21.564679Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 614 msgs, avg=1.624357ms, max=7.728293ms, rate=614/s
+2025-11-03T03:02:21.683402Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 166 msgs, avg=6.052449ms, max=28.004651ms, rate=166/s
+2025-11-03T03:02:21.980653Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 52 msgs, avg=8.036053ms, max=20.047028ms, rate=52/s
+2025-11-03T03:02:22.566698Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 571 msgs, avg=1.753751ms, max=10.911383ms, rate=571/s
+2025-11-03T03:02:22.687552Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 130 msgs, avg=7.716912ms, max=23.23509ms, rate=130/s
+2025-11-03T03:02:22.988648Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 102 msgs, avg=8.652326ms, max=19.916287ms, rate=102/s
+2025-11-03T03:02:23.567830Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 607 msgs, avg=1.648057ms, max=14.210424ms, rate=607/s
+2025-11-03T03:02:23.703852Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 163 msgs, avg=6.217461ms, max=20.995899ms, rate=163/s
+2025-11-03T03:02:24.032225Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 64 msgs, avg=7.350151ms, max=15.146206ms, rate=64/s
+2025-11-03T03:02:24.570567Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 664 msgs, avg=1.507838ms, max=7.968226ms, rate=664/s
+2025-11-03T03:02:24.705519Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 130 msgs, avg=7.697966ms, max=19.239461ms, rate=130/s
+2025-11-03T03:02:24.937713Z  WARN ThreadId(04) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-03T03:02:24.937735Z  WARN ThreadId(04) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-03T03:02:25.035515Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 126 msgs, avg=7.581647ms, max=14.780905ms, rate=126/s
+2025-11-03T03:02:25.571462Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 653 msgs, avg=1.531534ms, max=9.970427ms, rate=653/s
+2025-11-03T03:02:25.709476Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 115 msgs, avg=8.721794ms, max=17.555786ms, rate=115/s
+2025-11-03T03:02:26.036569Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 106 msgs, avg=9.440243ms, max=22.256905ms, rate=106/s
+2025-11-03T03:02:26.576634Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 637 msgs, avg=1.576776ms, max=13.723329ms, rate=637/s
+2025-11-03T03:02:26.716202Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 108 msgs, avg=9.312193ms, max=26.712247ms, rate=108/s
+2025-11-03T03:02:26.832335Z  WARN ThreadId(14) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 6.700636ms
+2025-11-03T03:02:27.045029Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 115 msgs, avg=8.753975ms, max=22.30635ms, rate=115/s
+2025-11-03T03:02:27.577284Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 662 msgs, avg=1.51046ms, max=12.070148ms, rate=662/s
+2025-11-03T03:02:27.725536Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 114 msgs, avg=8.837029ms, max=18.43731ms, rate=114/s
+2025-11-03T03:02:28.048361Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 117 msgs, avg=8.57206ms, max=14.819958ms, rate=117/s
+2025-11-03T03:02:28.577675Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 660 msgs, avg=1.514627ms, max=11.582996ms, rate=660/s
+2025-11-03T03:02:28.732563Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 117 msgs, avg=8.590663ms, max=18.093521ms, rate=117/s
+2025-11-03T03:02:29.052660Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 120 msgs, avg=8.253077ms, max=16.435537ms, rate=120/s
+2025-11-03T03:02:29.577851Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 643 msgs, avg=1.554503ms, max=9.232709ms, rate=643/s
+2025-11-03T03:02:29.737388Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 110 msgs, avg=9.120422ms, max=22.744915ms, rate=110/s
+2025-11-03T03:02:29.750526Z  WARN ThreadId(14) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 5.974025ms
+2025-11-03T03:02:29.938477Z  WARN ThreadId(02) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-03T03:02:29.938508Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-03T03:02:30.059769Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 109 msgs, avg=9.229757ms, max=27.265651ms, rate=109/s
+2025-11-03T03:02:30.578553Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 649 msgs, avg=1.53663ms, max=10.204007ms, rate=649/s
+2025-11-03T03:02:30.743467Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 108 msgs, avg=9.260337ms, max=24.874673ms, rate=108/s
+2025-11-03T03:02:31.068076Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 123 msgs, avg=8.188018ms, max=18.821308ms, rate=123/s
+2025-11-03T03:02:31.579130Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 653 msgs, avg=1.531013ms, max=16.940746ms, rate=653/s
+2025-11-03T03:02:31.746974Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 111 msgs, avg=9.037438ms, max=21.734842ms, rate=111/s
+2025-11-03T03:02:32.070340Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 121 msgs, avg=8.273771ms, max=18.935977ms, rate=121/s
+2025-11-03T03:02:32.579518Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 656 msgs, avg=1.52382ms, max=10.667823ms, rate=656/s
+2025-11-03T03:02:32.748435Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 134 msgs, avg=7.462321ms, max=16.598173ms, rate=134/s
+2025-11-03T03:02:33.074435Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 107 msgs, avg=9.379256ms, max=24.19208ms, rate=107/s
+2025-11-03T03:02:33.580634Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 657 msgs, avg=1.522469ms, max=7.797905ms, rate=657/s
+2025-11-03T03:02:33.750331Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 113 msgs, avg=8.847927ms, max=26.859091ms, rate=113/s
+2025-11-03T03:02:34.081393Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 115 msgs, avg=8.710611ms, max=22.798892ms, rate=115/s
+2025-11-03T03:02:34.229611Z  WARN ThreadId(14) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 7.792449ms
+2025-11-03T03:02:34.584539Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 641 msgs, avg=1.565081ms, max=10.084926ms, rate=641/s
+2025-11-03T03:02:34.762469Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 111 msgs, avg=9.09387ms, max=22.685074ms, rate=111/s
+2025-11-03T03:02:34.779068Z  WARN ThreadId(14) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 8.133313ms
+2025-11-03T03:02:34.937645Z  WARN ThreadId(02) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-03T03:02:34.937783Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-03T03:02:35.090615Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 116 msgs, avg=8.697568ms, max=27.139238ms, rate=116/s
+2025-11-03T03:02:35.590210Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 586 msgs, avg=1.713294ms, max=9.751463ms, rate=586/s
+2025-11-03T03:02:35.762669Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 140 msgs, avg=7.1405ms, max=23.300725ms, rate=140/s
+2025-11-03T03:02:36.097025Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 137 msgs, avg=7.341577ms, max=14.31421ms, rate=137/s
+2025-11-03T03:02:36.590958Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 674 msgs, avg=1.4837ms, max=28.971984ms, rate=674/s
+2025-11-03T03:02:36.764428Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 127 msgs, avg=7.880851ms, max=27.014856ms, rate=127/s
+2025-11-03T03:02:37.101300Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 129 msgs, avg=7.769919ms, max=21.545934ms, rate=129/s
+2025-11-03T03:02:37.438503Z  WARN ThreadId(14) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 5.643105ms
+2025-11-03T03:02:37.591259Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 674 msgs, avg=1.483118ms, max=10.150564ms, rate=674/s
+2025-11-03T03:02:37.767026Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 107 msgs, avg=9.344573ms, max=17.235495ms, rate=107/s
+2025-11-03T03:02:38.106693Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 116 msgs, avg=8.664003ms, max=15.15007ms, rate=116/s
+2025-11-03T03:02:38.593862Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 634 msgs, avg=1.580326ms, max=13.317451ms, rate=634/s
+2025-11-03T03:02:38.775325Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 107 msgs, avg=9.420104ms, max=20.372809ms, rate=107/s
+2025-11-03T03:02:39.114123Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 111 msgs, avg=9.031114ms, max=20.774317ms, rate=111/s
+2025-11-03T03:02:39.594653Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 685 msgs, avg=1.459842ms, max=11.833616ms, rate=685/s
+2025-11-03T03:02:39.777786Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 117 msgs, avg=8.555094ms, max=19.62723ms, rate=117/s
+2025-11-03T03:02:39.937549Z  WARN ThreadId(02) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-03T03:02:39.937577Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-03T03:02:40.119508Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 129 msgs, avg=7.787378ms, max=20.658289ms, rate=129/s
+2025-11-03T03:02:40.485550Z  WARN ThreadId(14) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 6.974464ms
+2025-11-03T03:02:40.597721Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 633 msgs, avg=1.583278ms, max=14.11ms, rate=633/s
+2025-11-03T03:02:40.778425Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 103 msgs, avg=9.654507ms, max=23.291613ms, rate=103/s
+2025-11-03T03:02:40.808511Z  WARN ThreadId(14) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 5.151129ms
+2025-11-03T03:02:40.895518Z  WARN ThreadId(15) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 6.625541ms
+2025-11-03T03:02:41.127220Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 110 msgs, avg=9.158576ms, max=25.24641ms, rate=110/s
+2025-11-03T03:02:41.598345Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 565 msgs, avg=1.769391ms, max=16.991087ms, rate=565/s
+2025-11-03T03:02:41.787422Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 96 msgs, avg=10.507083ms, max=30.769341ms, rate=96/s
+2025-11-03T03:02:42.135042Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 99 msgs, avg=10.114983ms, max=29.252234ms, rate=99/s
+2025-11-03T03:02:42.451701Z  WARN ThreadId(15) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 13.218382ms
+2025-11-03T03:02:42.599302Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 570 msgs, avg=1.754509ms, max=17.061743ms, rate=570/s
+2025-11-03T03:02:42.791777Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 96 msgs, avg=10.449334ms, max=38.431179ms, rate=96/s
+2025-11-03T03:02:43.136345Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 112 msgs, avg=8.935965ms, max=37.103543ms, rate=112/s
+2025-11-03T03:02:43.487674Z  WARN ThreadId(15) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 6.18659ms
+2025-11-03T03:02:43.602018Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 533 msgs, avg=1.880207ms, max=20.733799ms, rate=533/s
+2025-11-03T03:02:43.800470Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 90 msgs, avg=11.158699ms, max=39.457805ms, rate=90/s
+2025-11-03T03:02:43.872511Z  WARN ThreadId(15) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 13.023987ms
+2025-11-03T03:02:44.139804Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 113 msgs, avg=8.867587ms, max=18.957854ms, rate=113/s
+2025-11-03T03:02:44.602541Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 539 msgs, avg=1.855249ms, max=11.0239ms, rate=539/s
+2025-11-03T03:02:44.812715Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 92 msgs, avg=10.930424ms, max=23.258253ms, rate=92/s
+2025-11-03T03:02:44.937991Z  WARN ThreadId(04) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-03T03:02:44.938022Z  WARN ThreadId(04) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-03T03:02:45.152537Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 98 msgs, avg=10.286268ms, max=16.839901ms, rate=98/s
+2025-11-03T03:02:45.602985Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 622 msgs, avg=1.60698ms, max=17.162035ms, rate=622/s
+2025-11-03T03:02:45.815394Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 86 msgs, avg=11.655883ms, max=22.760411ms, rate=86/s
+2025-11-03T03:02:46.159038Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 87 msgs, avg=11.54986ms, max=24.598011ms, rate=87/s
+2025-11-03T03:02:46.604721Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 593 msgs, avg=1.687906ms, max=11.70043ms, rate=593/s
+2025-11-03T03:02:46.818478Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 88 msgs, avg=11.385448ms, max=20.83595ms, rate=88/s
+2025-11-03T03:02:47.167155Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 101 msgs, avg=9.94664ms, max=21.235432ms, rate=101/s
+2025-11-03T03:02:47.607039Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 613 msgs, avg=1.633961ms, max=16.006514ms, rate=613/s
+2025-11-03T03:02:47.827297Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 91 msgs, avg=11.042133ms, max=27.962257ms, rate=91/s
+2025-11-03T03:02:48.172441Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 98 msgs, avg=10.252689ms, max=25.683947ms, rate=98/s
+2025-11-03T03:02:48.607774Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 572 msgs, avg=1.748053ms, max=15.182736ms, rate=572/s
+2025-11-03T03:02:48.831194Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 87 msgs, avg=11.477307ms, max=24.819597ms, rate=87/s
+2025-11-03T03:02:49.181456Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 96 msgs, avg=10.469617ms, max=20.420075ms, rate=96/s
+2025-11-03T03:02:49.608372Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 627 msgs, avg=1.594802ms, max=10.457149ms, rate=627/s
+2025-11-03T03:02:49.831911Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 93 msgs, avg=10.756714ms, max=25.442346ms, rate=93/s
+2025-11-03T03:02:49.955373Z  WARN ThreadId(03) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-03T03:02:49.955437Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-03T03:02:50.608603Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 604 msgs, avg=1.654783ms, max=13.887075ms, rate=604/s
+2025-11-03T03:02:50.833332Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 14525 msgs, avg=67.306µs, max=20.652241ms, rate=14525/s
+2025-11-03T03:02:51.609271Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 693 msgs, avg=1.442733ms, max=8.046012ms, rate=693/s
+2025-11-03T03:02:51.838803Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 387 msgs, avg=2.575894ms, max=18.49044ms, rate=387/s
+2025-11-03T03:02:52.609427Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 706 msgs, avg=1.415588ms, max=9.594935ms, rate=706/s
+2025-11-03T03:02:52.848255Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 215 msgs, avg=4.665795ms, max=23.108176ms, rate=215/s
+2025-11-03T03:02:53.419123Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 229 msgs, avg=3.472804ms, max=19.765655ms, rate=229/s
+2025-11-03T03:02:53.610300Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 656 msgs, avg=1.524064ms, max=16.631087ms, rate=656/s
+2025-11-03T03:02:53.720798Z  WARN ThreadId(14) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 9.052772ms
+2025-11-03T03:02:53.853417Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 196 msgs, avg=5.122667ms, max=17.978722ms, rate=196/s
+2025-11-03T03:02:54.156598Z  WARN ThreadId(14) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 6.463965ms
+2025-11-03T03:02:54.345539Z  WARN ThreadId(15) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 9.058271ms
+2025-11-03T03:02:54.420566Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 46 msgs, avg=10.672053ms, max=19.876927ms, rate=46/s
+2025-11-03T03:02:54.611212Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 626 msgs, avg=1.597535ms, max=14.483602ms, rate=626/s
+2025-11-03T03:02:54.877807Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 191 msgs, avg=5.360204ms, max=33.137567ms, rate=191/s
+2025-11-03T03:02:54.937677Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-03T03:02:54.937728Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-03T03:02:55.426707Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 99 msgs, avg=10.159675ms, max=21.234485ms, rate=99/s
+2025-11-03T03:02:55.612233Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 544 msgs, avg=1.838935ms, max=13.695325ms, rate=544/s
+2025-11-03T03:02:55.881520Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 180 msgs, avg=5.566844ms, max=34.278438ms, rate=180/s
+2025-11-03T03:02:56.431668Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 102 msgs, avg=9.847514ms, max=26.535616ms, rate=102/s
+2025-11-03T03:02:56.612959Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 626 msgs, avg=1.597215ms, max=9.382602ms, rate=626/s
+2025-11-03T03:02:56.889471Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 140 msgs, avg=7.185827ms, max=31.238187ms, rate=140/s
+2025-11-03T03:02:57.434188Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 113 msgs, avg=8.869204ms, max=33.871005ms, rate=113/s
+2025-11-03T03:02:57.613815Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 585 msgs, avg=1.709672ms, max=12.523333ms, rate=585/s
+2025-11-03T03:02:57.891506Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 111 msgs, avg=9.012359ms, max=22.086399ms, rate=111/s
+2025-11-03T03:02:58.444312Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 121 msgs, avg=8.318983ms, max=28.554535ms, rate=121/s
+2025-11-03T03:02:58.614621Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 496 msgs, avg=2.016535ms, max=14.53239ms, rate=496/s
+2025-11-03T03:02:58.893071Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 130 msgs, avg=7.696085ms, max=27.431655ms, rate=130/s
+2025-11-03T03:02:58.981525Z  WARN ThreadId(15) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 8.044813ms
+2025-11-03T03:02:59.205371Z  WARN ThreadId(14) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 7.896741ms
+2025-11-03T03:02:59.444804Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 98 msgs, avg=10.205182ms, max=22.379819ms, rate=98/s
+2025-11-03T03:02:59.615554Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 554 msgs, avg=1.805618ms, max=16.536491ms, rate=554/s
+2025-11-03T03:02:59.901347Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 124 msgs, avg=8.122587ms, max=20.131324ms, rate=124/s
+2025-11-03T03:02:59.937774Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-03T03:02:59.937799Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-03T03:03:00.458726Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 86 msgs, avg=11.684229ms, max=24.254929ms, rate=86/s
+2025-11-03T03:03:00.615903Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 636 msgs, avg=1.571605ms, max=11.973579ms, rate=636/s
+2025-11-03T03:03:00.904143Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 125 msgs, avg=8.000581ms, max=20.176666ms, rate=125/s
+2025-11-03T03:03:01.461076Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 95 msgs, avg=10.548448ms, max=28.91465ms, rate=95/s
+2025-11-03T03:03:01.616122Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 562 msgs, avg=1.778374ms, max=12.80738ms, rate=562/s
+2025-11-03T03:03:01.911428Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 105 msgs, avg=9.562775ms, max=26.529487ms, rate=105/s
+2025-11-03T03:03:02.466467Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 114 msgs, avg=8.774971ms, max=21.886125ms, rate=114/s
+2025-11-03T03:03:02.616553Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 476 msgs, avg=2.099926ms, max=15.595735ms, rate=476/s
+2025-11-03T03:03:02.917160Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 117 msgs, avg=8.587084ms, max=27.934363ms, rate=117/s
+2025-11-03T03:03:03.013279Z  WARN ThreadId(15) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 5.803001ms
+2025-11-03T03:03:03.474266Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 84 msgs, avg=11.984636ms, max=22.573368ms, rate=84/s
+2025-11-03T03:03:03.617381Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 591 msgs, avg=1.692053ms, max=14.613944ms, rate=591/s
+2025-11-03T03:03:03.930917Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 90 msgs, avg=11.184324ms, max=24.214839ms, rate=90/s
+2025-11-03T03:03:04.112080Z  WARN ThreadId(14) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 5.589392ms
+2025-11-03T03:03:04.341382Z  WARN ThreadId(14) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 8.383206ms
+2025-11-03T03:03:04.485971Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 102 msgs, avg=9.915401ms, max=33.747697ms, rate=102/s
+2025-11-03T03:03:04.619246Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 446 msgs, avg=2.245183ms, max=16.493384ms, rate=446/s
+2025-11-03T03:03:04.938839Z  WARN ThreadId(03) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-03T03:03:04.938895Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-03T03:03:04.953707Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 86 msgs, avg=11.886392ms, max=31.660865ms, rate=86/s
+2025-11-03T03:03:05.486357Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 89 msgs, avg=11.230941ms, max=30.824291ms, rate=89/s
+2025-11-03T03:03:05.619478Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 543 msgs, avg=1.840623ms, max=13.028961ms, rate=543/s
+2025-11-03T03:03:05.964723Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 87 msgs, avg=11.558659ms, max=29.987348ms, rate=87/s
+2025-11-03T03:03:06.489339Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 87 msgs, avg=11.490683ms, max=24.792052ms, rate=87/s
+2025-11-03T03:03:06.620424Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 582 msgs, avg=1.718243ms, max=14.699947ms, rate=582/s
+2025-11-03T03:03:06.967525Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 86 msgs, avg=11.65613ms, max=23.755817ms, rate=86/s
+2025-11-03T03:03:07.491274Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 91 msgs, avg=10.999067ms, max=27.174342ms, rate=91/s
+2025-11-03T03:03:07.621248Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 582 msgs, avg=1.718227ms, max=12.358313ms, rate=582/s
+2025-11-03T03:03:07.976084Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 87 msgs, avg=11.578001ms, max=23.838652ms, rate=87/s
+2025-11-03T03:03:08.499754Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 99 msgs, avg=10.180999ms, max=22.151863ms, rate=99/s
+2025-11-03T03:03:08.622478Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 651 msgs, avg=1.536851ms, max=11.699357ms, rate=651/s
+2025-11-03T03:03:08.740367Z  WARN ThreadId(15) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 8.623504ms
+2025-11-03T03:03:08.981094Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 91 msgs, avg=10.982975ms, max=34.264049ms, rate=91/s
+2025-11-03T03:03:09.304230Z  WARN ThreadId(14) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 7.631229ms
+2025-11-03T03:03:09.505997Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 94 msgs, avg=10.587628ms, max=27.173538ms, rate=94/s
+2025-11-03T03:03:09.623339Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 486 msgs, avg=2.05781ms, max=22.640014ms, rate=486/s
+2025-11-03T03:03:09.938979Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-03T03:03:09.939109Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-03T03:03:09.987798Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 84 msgs, avg=11.979866ms, max=28.373397ms, rate=84/s
+2025-11-03T03:03:10.514935Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 89 msgs, avg=11.269838ms, max=25.503061ms, rate=89/s
+2025-11-03T03:03:10.626759Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 595 msgs, avg=1.684255ms, max=10.981205ms, rate=595/s
+2025-11-03T03:03:10.990856Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 79 msgs, avg=12.691867ms, max=26.24798ms, rate=79/s
+2025-11-03T03:03:11.168603Z  WARN ThreadId(14) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 6.287634ms
+2025-11-03T03:03:11.518043Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 77 msgs, avg=13.002ms, max=28.215039ms, rate=77/s
+2025-11-03T03:03:11.629907Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 537 msgs, avg=1.866512ms, max=10.595188ms, rate=537/s
+2025-11-03T03:03:11.991180Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 98 msgs, avg=10.204325ms, max=25.980231ms, rate=98/s
+2025-11-03T03:03:12.528235Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Final stats: 97 msgs, avg=10.373611ms, max=33.241827ms, rate=97/s
+2025-11-03T03:03:12.630682Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Proposal stats: 495 msgs, avg=2.020169ms, max=17.365829ms, rate=495/s
+2025-11-03T03:03:12.992380Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: 📊 [Critical] Vote stats: 96 msgs, avg=10.399101ms, max=18.763265ms, rate=96/s
+2025-11-03T03:03:13.185358Z  WARN ThreadId(14) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 2 failed: Failed to write length: Connection reset by peer (os error 104)
+2025-11-03T03:03:13.186329Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 12986): Failed to send VOTE: Connection failed 172.31.26.117:21002: Connection refused (os error 111)
+2025-11-03T03:03:13.193125Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 13001): Failed to send VOTE: Connection failed 172.31.26.117:21002: Connection refused (os error 111)
+2025-11-03T03:03:13.194342Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 13003): Failed to send VOTE: Connection failed 172.31.26.117:21002: Connection refused (os error 111)
+2025-11-03T03:03:13.197009Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 12988): Failed to send VOTE: Connection failed 172.31.26.117:21002: Connection refused (os error 111)
+2025-11-03T03:03:13.198493Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 13005): Failed to send VOTE: Connection failed 172.31.26.117:21002: Connection refused (os error 111)
+2025-11-03T03:03:13.200685Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 12990): Failed to send VOTE: Connection failed 172.31.26.117:21002: Connection refused (os error 111)
+2025-11-03T03:03:13.205185Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 13007): Failed to send VOTE: Connection failed 172.31.26.117:21002: Connection refused (os error 111)
