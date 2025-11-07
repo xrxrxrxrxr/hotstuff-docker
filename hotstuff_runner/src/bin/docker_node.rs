@@ -941,7 +941,7 @@ async fn async_main() -> Result<(), String> {
     let event_for_response_tx_clone = event_for_response_tx.clone();
 
     info!("Waiting for other nodes to start...");
-    tokio::time::sleep(Duration::from_secs(15)).await;
+    tokio::time::sleep(Duration::from_secs(20)).await;
 
     info!("Creating HotStuff node...");
 

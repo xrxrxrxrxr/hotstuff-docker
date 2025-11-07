@@ -12,18 +12,18 @@ if [[ ! -f "$HOSTS_FILE" ]]; then
   exit 1
 fi
 
-mapfile -t NODES < <(awk '/node[0-9]+$/ {print "ubuntu@"$1}' "$HOSTS_FILE")
+mapfile -t TARGETS < <(awk '/(node[0-9]+$|client$)/ {print "ubuntu@"$1}' "$HOSTS_FILE")
 
-if [[ ${#NODES[@]} -eq 0 ]]; then
-  echo "No node entries found in hosts.txt" >&2
+if [[ ${#TARGETS[@]} -eq 0 ]]; then
+  echo "No node/client entries found in hosts.txt" >&2
   exit 1
 fi
 
 echo "Initializing EC2 instances (installing Docker)..."
 
-for node in "${NODES[@]}"; do
-  echo "Initializing $node..."
-  ssh $SSH_OPTS $node "
+for host in "${TARGETS[@]}"; do
+  echo "Initializing $host..."
+  ssh $SSH_OPTS $host "
     set -e
     # Update the system
     sudo apt-get update -y

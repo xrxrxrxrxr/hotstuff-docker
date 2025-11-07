@@ -1,0 +1,102 @@
+2025-11-04T05:52:13.510111Z  WARN ThreadId(01) hotstuff_runner::telemetry: Prometheus metrics exporter started ✅ listen_addr=0.0.0.0:9900
+2025-11-04T05:52:13.511350Z  WARN ThreadId(01) hotstuff_runner::telemetry: ✅ wrote smrol.node_up=1 (boot) node_id=0
+2025-11-04T05:52:28.713706Z  WARN ThreadId(01) hotstuff_runner::tcp_node: Node 0 view timeout set to 2000 ms
+2025-11-04T05:52:28.715080Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 0 failed to connect to node 1: Connection refused (os error 111)
+2025-11-04T05:52:28.715348Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 0 failed to connect to node 2: Connection refused (os error 111)
+2025-11-04T05:52:28.715639Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 0 failed to connect to node 3: Connection refused (os error 111)
+2025-11-04T05:52:28.716392Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: SMROL_MEDIAN_INFLIGHT=24, SMROL_ORDER_FINALIZE_INFLIGHT=4, SMROL_FINAL_SIGN_INFLIGHT=4, SMROL_FINAL_VERIFY_INFLIGHT=24
+2025-11-04T05:52:28.716437Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: [Sequencing] Node 0 multi-signature verification disabled: false
+2025-11-04T05:52:28.716508Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: [Sequencing] Node 0 final verify dispatcher started
+2025-11-04T05:52:30.714412Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 0 timed out; latency may accumulate
+2025-11-04T05:52:33.719622Z  WARN ThreadId(01) docker_node: Node 0 port 20000 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-04T05:52:33.721294Z  WARN ThreadId(01) docker_node: Node 1 port 20001 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-04T05:52:33.722800Z  WARN ThreadId(01) docker_node: Node 2 port 20002 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-04T05:52:33.724352Z  WARN ThreadId(01) docker_node: Node 3 port 20003 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-04T05:52:53.716975Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:52:58.717978Z  WARN ThreadId(07) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:52:58.881045Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 5.159975ms
+2025-11-04T05:52:59.278070Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 5.060922ms
+2025-11-04T05:53:03.719320Z  WARN ThreadId(03) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:53:04.328281Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 6.416817ms
+2025-11-04T05:53:06.956812Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 25.917566ms
+2025-11-04T05:53:08.159201Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 7.180188ms
+2025-11-04T05:53:08.612866Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 5.467053ms
+2025-11-04T05:53:08.717557Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:53:12.793683Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 5.433002ms
+2025-11-04T05:53:13.716946Z  WARN ThreadId(02) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:53:14.375628Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 6.694835ms
+2025-11-04T05:53:18.721279Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:53:23.717660Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:53:25.314771Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 5.129064ms
+2025-11-04T05:53:25.497329Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 5.606886ms
+2025-11-04T05:53:28.718961Z  WARN ThreadId(02) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:53:30.763824Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 5.918025ms
+2025-11-04T05:53:30.770320Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 6.198831ms
+2025-11-04T05:53:30.770763Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 6.982522ms
+2025-11-04T05:53:33.717899Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:53:34.455592Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 7.050784ms
+2025-11-04T05:53:38.595344Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 5.460693ms
+2025-11-04T05:53:38.717660Z  WARN ThreadId(07) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:53:43.305832Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 5.072722ms
+2025-11-04T05:53:43.717146Z  WARN ThreadId(04) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:53:45.038444Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 5.027571ms
+2025-11-04T05:53:48.275282Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 6.001546ms
+2025-11-04T05:53:48.278291Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 5.050561ms
+2025-11-04T05:53:48.717565Z  WARN ThreadId(07) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:53:50.899633Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 7.372381ms
+2025-11-04T05:53:52.730060Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 5.78882ms
+2025-11-04T05:53:53.119813Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 5.070371ms
+2025-11-04T05:53:53.717286Z  WARN ThreadId(07) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:53:56.073831Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 5.115752ms
+2025-11-04T05:53:56.718618Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 5.532893ms
+2025-11-04T05:53:57.377870Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 5.808471ms
+2025-11-04T05:53:58.399014Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 5.199736ms
+2025-11-04T05:53:58.400217Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 7.031863ms
+2025-11-04T05:53:58.719705Z  WARN ThreadId(08) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:53:59.813786Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 7.523406ms
+2025-11-04T05:54:03.717702Z  WARN ThreadId(03) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:54:04.008128Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 5.277788ms
+2025-11-04T05:54:06.793322Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 5.060623ms
+2025-11-04T05:54:08.717872Z  WARN ThreadId(07) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:54:12.184063Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 6.797807ms
+2025-11-04T05:54:13.717462Z  WARN ThreadId(07) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:54:14.660444Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 5.189245ms
+2025-11-04T05:54:14.667850Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 5.472473ms
+2025-11-04T05:54:15.345302Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 8.80728ms
+2025-11-04T05:54:18.718326Z  WARN ThreadId(03) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:54:19.283163Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 5.093143ms
+2025-11-04T05:54:23.717281Z  WARN ThreadId(03) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:54:26.139672Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 7.921337ms
+2025-11-04T05:54:26.140140Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 9.143739ms
+2025-11-04T05:54:26.153308Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 5.062732ms
+2025-11-04T05:54:28.718218Z  WARN ThreadId(07) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:54:29.395121Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 5.684218ms
+2025-11-04T05:54:30.322737Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 5.265728ms
+2025-11-04T05:54:33.726967Z  WARN ThreadId(02) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:54:37.822687Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 8.359119ms
+2025-11-04T05:54:38.522096Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 7.514417ms
+2025-11-04T05:54:38.719264Z  WARN ThreadId(02) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:54:43.717132Z  WARN ThreadId(02) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:54:43.768738Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 5.33886ms
+2025-11-04T05:54:43.989848Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 5.3382ms
+2025-11-04T05:54:48.720714Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:54:51.442589Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 6.072958ms
+2025-11-04T05:54:53.717395Z  WARN ThreadId(07) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:54:55.244254Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 5.983596ms
+2025-11-04T05:54:55.712050Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 5.73656ms
+2025-11-04T05:54:56.339539Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 5.289719ms
+2025-11-04T05:54:58.719621Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:55:00.187253Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 7.24675ms
+2025-11-04T05:55:02.247973Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 7.497776ms
+2025-11-04T05:55:03.717180Z  WARN ThreadId(04) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:55:08.717925Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:55:11.161853Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 6.834009ms
+2025-11-04T05:55:12.769527Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 8.121242ms
+2025-11-04T05:55:13.718943Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:55:13.725145Z  WARN ThreadId(05) docker_node: Node 0 Regular transaction queue backlog: 1330 transactions
+2025-11-04T05:55:13.829957Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 7.366112ms
+2025-11-04T05:55:15.157312Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 5.056802ms
+2025-11-04T05:55:15.635044Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 5.377701ms
+2025-11-04T05:55:15.875404Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 6.113901ms
+2025-11-04T05:55:18.718629Z  WARN ThreadId(07) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-04T05:55:19.313809Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 5.069112ms

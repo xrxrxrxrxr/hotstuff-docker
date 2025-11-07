@@ -1,0 +1,83 @@
+2025-11-07T02:40:52.071163Z  WARN ThreadId(01) hotstuff_runner::telemetry: Prometheus metrics exporter started ✅ listen_addr=0.0.0.0:9900
+2025-11-07T02:40:52.072367Z  WARN ThreadId(01) hotstuff_runner::telemetry: ✅ wrote smrol.node_up=1 (boot) node_id=0
+2025-11-07T02:41:12.275683Z  WARN ThreadId(01) hotstuff_runner::tcp_node: Node 0 view timeout set to 3000 ms
+2025-11-07T02:41:12.278319Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 0 failed to connect to node 2: Connection refused (os error 111)
+2025-11-07T02:41:12.278517Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 0 failed to connect to node 3: Connection refused (os error 111)
+2025-11-07T02:41:12.278998Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 5: Connection refused (os error 111)
+2025-11-07T02:41:12.279391Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 7: Connection refused (os error 111)
+2025-11-07T02:41:12.279588Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 8: Connection refused (os error 111)
+2025-11-07T02:41:12.280105Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 11: Connection refused (os error 111)
+2025-11-07T02:41:12.280437Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 13: Connection refused (os error 111)
+2025-11-07T02:41:12.280593Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 14: Connection refused (os error 111)
+2025-11-07T02:41:12.281020Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 16: Connection refused (os error 111)
+2025-11-07T02:41:12.281241Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 17: Connection refused (os error 111)
+2025-11-07T02:41:12.281445Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 18: Connection refused (os error 111)
+2025-11-07T02:41:12.281671Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 19: Connection refused (os error 111)
+2025-11-07T02:41:12.281877Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 20: Connection refused (os error 111)
+2025-11-07T02:41:12.284216Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: SMROL_MEDIAN_INFLIGHT=24, SMROL_ORDER_FINALIZE_INFLIGHT=4, SMROL_FINAL_SIGN_INFLIGHT=4, SMROL_FINAL_VERIFY_INFLIGHT=24
+2025-11-07T02:41:12.284275Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: [Sequencing] Node 0 multi-signature verification disabled: false
+2025-11-07T02:41:12.284361Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [Sequencing] Node 0 final verify dispatcher started
+2025-11-07T02:41:12.285493Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:41:17.284850Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:41:17.289113Z  WARN ThreadId(01) docker_node: Node 0 port 20000 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:41:17.291944Z  WARN ThreadId(01) docker_node: Node 1 port 20001 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:41:17.294004Z  WARN ThreadId(01) docker_node: Node 2 port 20002 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:41:17.295676Z  WARN ThreadId(01) docker_node: Node 3 port 20003 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:41:17.297586Z  WARN ThreadId(01) docker_node: Node 4 port 20004 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:41:17.299427Z  WARN ThreadId(01) docker_node: Node 5 port 20005 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:41:17.301317Z  WARN ThreadId(01) docker_node: Node 6 port 20006 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:41:17.303169Z  WARN ThreadId(01) docker_node: Node 7 port 20007 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:41:17.305004Z  WARN ThreadId(01) docker_node: Node 8 port 20008 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:41:17.306653Z  WARN ThreadId(01) docker_node: Node 9 port 20009 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:41:17.308501Z  WARN ThreadId(01) docker_node: Node 10 port 20010 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:41:17.310470Z  WARN ThreadId(01) docker_node: Node 11 port 20011 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:41:17.312262Z  WARN ThreadId(01) docker_node: Node 12 port 20012 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:41:17.314048Z  WARN ThreadId(01) docker_node: Node 13 port 20013 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:41:17.316116Z  WARN ThreadId(01) docker_node: Node 14 port 20014 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:41:17.317821Z  WARN ThreadId(01) docker_node: Node 15 port 20015 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:41:17.319629Z  WARN ThreadId(01) docker_node: Node 16 port 20016 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:41:17.321284Z  WARN ThreadId(01) docker_node: Node 17 port 20017 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:41:17.323052Z  WARN ThreadId(01) docker_node: Node 18 port 20018 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:41:17.324698Z  WARN ThreadId(01) docker_node: Node 19 port 20019 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:41:17.326449Z  WARN ThreadId(01) docker_node: Node 20 port 20020 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:41:22.285581Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:41:27.284939Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:41:32.285341Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:41:36.176852Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Detected transaction backlog: submit rate (41.7) > confirm rate (0.0)
+2025-11-07T02:41:36.567317Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Detected transaction backlog: submit rate (4.8) > confirm rate (0.0)
+2025-11-07T02:41:36.955532Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Detected transaction backlog: submit rate (6.2) > confirm rate (0.0)
+2025-11-07T02:41:37.285520Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (48.7 msg/conn)
+2025-11-07T02:41:37.345421Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Detected transaction backlog: submit rate (5.0) > confirm rate (0.0)
+2025-11-07T02:41:37.717863Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Detected transaction backlog: submit rate (5.1) > confirm rate (0.0)
+2025-11-07T02:41:38.088408Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Detected transaction backlog: submit rate (5.2) > confirm rate (0.0)
+2025-11-07T02:41:38.466370Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Detected transaction backlog: submit rate (5.2) > confirm rate (0.0)
+2025-11-07T02:41:38.848047Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Detected transaction backlog: submit rate (5.2) > confirm rate (0.0)
+2025-11-07T02:41:42.279148Z  WARN ThreadId(03) hotstuff_runner::pompe: 🧹 [Cleanup] Node 0 cleared 651 orphaned ordering1 states
+2025-11-07T02:41:57.285242Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:42:02.285014Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:42:07.284799Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:42:12.280428Z  WARN ThreadId(06) hotstuff_runner::pompe: 🧹 [Cleanup] Node 0 cleared 3108 orphaned ordering1 states
+2025-11-07T02:42:12.285532Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:42:17.285565Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:42:22.285692Z  WARN ThreadId(07) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:42:27.285365Z  WARN ThreadId(07) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:42:32.285174Z  WARN ThreadId(03) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:42:37.285651Z  WARN ThreadId(03) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:42:42.279678Z  WARN ThreadId(07) hotstuff_runner::pompe: 🧹 [Cleanup] Node 0 cleared 3108 orphaned ordering1 states
+2025-11-07T02:42:42.285600Z  WARN ThreadId(07) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:42:47.285149Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:42:52.285375Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:42:57.285293Z  WARN ThreadId(07) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:43:02.284993Z  WARN ThreadId(07) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:43:07.285140Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:43:12.280230Z  WARN ThreadId(06) hotstuff_runner::pompe: 🧹 [Cleanup] Node 0 cleared 3150 orphaned ordering1 states
+2025-11-07T02:43:12.285359Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:43:17.285341Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:43:22.285344Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:43:27.285114Z  WARN ThreadId(03) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:43:32.285572Z  WARN ThreadId(03) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:43:37.284962Z  WARN ThreadId(03) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:43:42.285103Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:43:47.285158Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:43:52.285178Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:43:57.285381Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning

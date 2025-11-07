@@ -475,6 +475,7 @@ impl ClientNode {
 
         // let mut batch_size = std::cmp::max(100, config.target_tps / 5);
         let mut batch_size = config.target_tps / (5 * node_num as u32);
+        // let mut batch_size=1;
         if batch_size == 0 {
             batch_size = 1;
         }
@@ -493,12 +494,11 @@ impl ClientNode {
         let mut batch_counter = 0;
         let mut rng = rand::thread_rng();
 
-        while Instant::now() < end_time {
+        let bar=10000;
+
+        while total_sent < bar {
             for node_offset in 0..node_num {
-                // Debug hook
-                // for node_offset in 0..2 {
                 let node_id = node_least_id + node_offset;
-                // let node_id = node_least_id; // Debug: send only to the first node
                 let transactions = self.tx_generator.generate_batch(batch_size as usize);
 
                 // Notify latency tracker before sending

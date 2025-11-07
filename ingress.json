@@ -1,0 +1,33 @@
+[
+    {
+        "IpProtocol": "tcp",
+        "FromPort": 9000,
+        "ToPort": 22000,
+        "UserIdGroupPairs": [
+            {
+                "Description": "Internal node connection",
+                "UserId": "091628203712",
+                "GroupId": "sg-01e6478bb0e084f15"
+            }
+        ],
+        "IpRanges": [],
+        "Ipv6Ranges": [],
+        "PrefixListIds": []
+    },
+    {
+        "IpProtocol": "tcp",
+        "FromPort": 22,
+        "ToPort": 22,
+        "UserIdGroupPairs": [],
+        "IpRanges": [
+            {
+                "CidrIp": "129.78.56.135/32"
+            },
+            {
+                "CidrIp": "0.0.0.0/0"
+            }
+        ],
+        "Ipv6Ranges": [],
+        "PrefixListIds": []
+    }
+]

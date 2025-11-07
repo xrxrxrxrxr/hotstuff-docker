@@ -1142,7 +1142,7 @@ impl PnfifoBc {
                     } else {
                         Duration::ZERO
                     };
-                    warn!(
+                    debug!(
                         "📊 [Critical] Proposal stats: {} msgs, avg={:?}, max={:?}, rate={}/s",
                         count, avg, max_time, count
                     );
@@ -1206,7 +1206,7 @@ impl PnfifoBc {
                     } else {
                         Duration::ZERO
                     };
-                    warn!(
+                    debug!(
                         "📊 [Critical] Vote stats: {} msgs, avg={:?}, max={:?}, rate={}/s",
                         count, avg, max_time, count
                     );
@@ -1268,7 +1268,7 @@ impl PnfifoBc {
                     } else {
                         Duration::ZERO
                     };
-                    warn!(
+                    debug!(
                         "📊 [Critical] Final stats: {} msgs, avg={:?}, max={:?}, rate={}/s",
                         count, avg, max_time, count
                     );

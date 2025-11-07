@@ -1,0 +1,252 @@
+# TYPE smrol_dispatch_total counter
+smrol_dispatch_total{stage="final_sign"} 23819
+smrol_dispatch_total{stage="median"} 23888
+smrol_dispatch_total{stage="order_finalize"} 23819
+smrol_dispatch_total{stage="final_verify"} 23757
+
+# TYPE smrol_batch_dispatch_result counter
+smrol_batch_dispatch_result{kind="median",result="success"} 5084
+smrol_batch_dispatch_result{kind="final",result="success"} 6742
+
+# TYPE smrol_finalize_ready_source counter
+smrol_finalize_ready_source{src="pending_txs"} 23750
+
+# TYPE smrol_batch_flush_reason counter
+smrol_batch_flush_reason{kind="median",reason="timeout"} 5084
+smrol_batch_flush_reason{kind="final",reason="timeout"} 6741
+smrol_batch_flush_reason{kind="final",reason="size"} 1
+
+# HELP smrol_heartbeat Node heartbeat tick
+# TYPE smrol_heartbeat counter
+smrol_heartbeat{node="0"} 100
+
+# TYPE smrol_verify_result_total counter
+smrol_verify_result_total{stage="final_verify",result="ok"} 23750
+
+# TYPE smrol_inflight gauge
+smrol_inflight{stage="order_finalize"} 0
+smrol_inflight{stage="final_sign"} 0
+smrol_inflight{stage="median"} 24
+smrol_inflight{stage="final_verify"} 7
+
+# HELP smrol_node_up node is up
+# TYPE smrol_node_up gauge
+smrol_node_up{node="0"} 1
+
+# HELP smrol_channel_backlog Pending messages in asynchronous channels
+# TYPE smrol_channel_backlog gauge
+smrol_channel_backlog{channel="final_verify"} 0
+smrol_channel_backlog{channel="median"} 0
+smrol_channel_backlog{channel="order"} 0
+smrol_channel_backlog{channel="order_finalize"} 0
+smrol_channel_backlog{channel="final_sign"} 0
+smrol_channel_backlog{channel="final"} 0
+smrol_channel_backlog{channel="median_combine"} 0
+smrol_channel_backlog{channel="response"} 0
+smrol_channel_backlog{channel="order_verify"} 0
+smrol_channel_backlog{channel="request"} 0
+
+# TYPE smrol_network_writer_backlog gauge
+smrol_network_writer_backlog{target="1"} 0
+smrol_network_writer_backlog{target="3"} 0
+smrol_network_writer_backlog{target="2"} 0
+
+# TYPE smrol_batch_queue_depth gauge
+smrol_batch_queue_depth{kind="median"} 8
+smrol_batch_queue_depth{kind="final"} 4
+
+# HELP smrol_threshold_pending_jobs Current number of pending threshold worker jobs
+# TYPE smrol_threshold_pending_jobs gauge
+smrol_threshold_pending_jobs{pool="seq_offload"} 0
+smrol_threshold_pending_jobs{pool="pnfifo"} 3
+smrol_threshold_pending_jobs{pool="multisig_sign_combine"} 2
+smrol_threshold_pending_jobs{pool="multisig_verify_combined"} 1
+smrol_threshold_pending_jobs{pool="multisig_verify_median"} 3
+
+# HELP smrol_threshold_task_wait_ms Time threshold worker tasks wait before execution (ms)
+# TYPE smrol_threshold_task_wait_ms summary
+smrol_threshold_task_wait_ms{task="aggregate_median_signatures",pool="multisig_sign_combine",quantile="0"} 0.0005080000000000001
+smrol_threshold_task_wait_ms{task="aggregate_median_signatures",pool="multisig_sign_combine",quantile="0.5"} 0.02206196888646753
+smrol_threshold_task_wait_ms{task="aggregate_median_signatures",pool="multisig_sign_combine",quantile="0.9"} 0.3922326940173283
+smrol_threshold_task_wait_ms{task="aggregate_median_signatures",pool="multisig_sign_combine",quantile="0.95"} 0.5464568087247842
+smrol_threshold_task_wait_ms{task="aggregate_median_signatures",pool="multisig_sign_combine",quantile="0.99"} 0.6601422041185447
+smrol_threshold_task_wait_ms{task="aggregate_median_signatures",pool="multisig_sign_combine",quantile="0.999"} 0.6999824566446514
+smrol_threshold_task_wait_ms{task="aggregate_median_signatures",pool="multisig_sign_combine",quantile="1"} 8.851684
+smrol_threshold_task_wait_ms_sum{task="aggregate_median_signatures",pool="multisig_sign_combine"} 2376.782740000004
+smrol_threshold_task_wait_ms_count{task="aggregate_median_signatures",pool="multisig_sign_combine"} 6795
+smrol_threshold_task_wait_ms{task="pnfifo_sign",pool="pnfifo",quantile="0"} 0.000381
+smrol_threshold_task_wait_ms{task="pnfifo_sign",pool="pnfifo",quantile="0.5"} 0.016764360937683492
+smrol_threshold_task_wait_ms{task="pnfifo_sign",pool="pnfifo",quantile="0.9"} 0.03883241217161968
+smrol_threshold_task_wait_ms{task="pnfifo_sign",pool="pnfifo",quantile="0.95"} 0.06996920838899377
+smrol_threshold_task_wait_ms{task="pnfifo_sign",pool="pnfifo",quantile="0.99"} 0.16389980040336033
+smrol_threshold_task_wait_ms{task="pnfifo_sign",pool="pnfifo",quantile="0.999"} 0.19031018020897625
+smrol_threshold_task_wait_ms{task="pnfifo_sign",pool="pnfifo",quantile="1"} 11.761439000000001
+smrol_threshold_task_wait_ms_sum{task="pnfifo_sign",pool="pnfifo"} 7434.820361999988
+smrol_threshold_task_wait_ms_count{task="pnfifo_sign",pool="pnfifo"} 24919
+smrol_threshold_task_wait_ms{task="pnfifo_combine",pool="pnfifo",quantile="0"} 0.000808
+smrol_threshold_task_wait_ms{task="pnfifo_combine",pool="pnfifo",quantile="0.5"} 0.015184197668970854
+smrol_threshold_task_wait_ms{task="pnfifo_combine",pool="pnfifo",quantile="0.9"} 0.3912924642755529
+smrol_threshold_task_wait_ms{task="pnfifo_combine",pool="pnfifo",quantile="0.95"} 0.6379470412687961
+smrol_threshold_task_wait_ms{task="pnfifo_combine",pool="pnfifo",quantile="0.99"} 0.7915992554805433
+smrol_threshold_task_wait_ms{task="pnfifo_combine",pool="pnfifo",quantile="0.999"} 0.8503561599605866
+smrol_threshold_task_wait_ms{task="pnfifo_combine",pool="pnfifo",quantile="1"} 5.899394
+smrol_threshold_task_wait_ms_sum{task="pnfifo_combine",pool="pnfifo"} 394.8940159999999
+smrol_threshold_task_wait_ms_count{task="pnfifo_combine",pool="pnfifo"} 1279
+smrol_threshold_task_wait_ms{task="median_batch",pool="multisig_verify_median",quantile="0"} 0.001341
+smrol_threshold_task_wait_ms{task="median_batch",pool="multisig_verify_median",quantile="0.5"} 0.01574708486406917
+smrol_threshold_task_wait_ms{task="median_batch",pool="multisig_verify_median",quantile="0.9"} 0.22820749230076623
+smrol_threshold_task_wait_ms{task="median_batch",pool="multisig_verify_median",quantile="0.95"} 0.41648700934084
+smrol_threshold_task_wait_ms{task="median_batch",pool="multisig_verify_median",quantile="0.99"} 0.62983335746836
+smrol_threshold_task_wait_ms{task="median_batch",pool="multisig_verify_median",quantile="0.999"} 0.6714605550267014
+smrol_threshold_task_wait_ms{task="median_batch",pool="multisig_verify_median",quantile="1"} 8.614656
+smrol_threshold_task_wait_ms_sum{task="median_batch",pool="multisig_verify_median"} 2642.960002999985
+smrol_threshold_task_wait_ms_count{task="median_batch",pool="multisig_verify_median"} 5084
+smrol_threshold_task_wait_ms{task="multisig_sign",pool="multisig_sign_combine",quantile="0"} 0.000471
+smrol_threshold_task_wait_ms{task="multisig_sign",pool="multisig_sign_combine",quantile="0.5"} 0.05011173759598747
+smrol_threshold_task_wait_ms{task="multisig_sign",pool="multisig_sign_combine",quantile="0.9"} 0.494059162237677
+smrol_threshold_task_wait_ms{task="multisig_sign",pool="multisig_sign_combine",quantile="0.95"} 0.6565870437764133
+smrol_threshold_task_wait_ms{task="multisig_sign",pool="multisig_sign_combine",quantile="0.99"} 0.8011556703909228
+smrol_threshold_task_wait_ms{task="multisig_sign",pool="multisig_sign_combine",quantile="0.999"} 0.8383664309915962
+smrol_threshold_task_wait_ms{task="multisig_sign",pool="multisig_sign_combine",quantile="1"} 9.478034999999998
+smrol_threshold_task_wait_ms_sum{task="multisig_sign",pool="multisig_sign_combine"} 7650.574203000028
+smrol_threshold_task_wait_ms_count{task="multisig_sign",pool="multisig_sign_combine"} 23819
+smrol_threshold_task_wait_ms{task="pnfifo_verify_final",pool="pnfifo",quantile="0"} 0.000993
+smrol_threshold_task_wait_ms{task="pnfifo_verify_final",pool="pnfifo",quantile="0.5"} 0.021781375313678412
+smrol_threshold_task_wait_ms{task="pnfifo_verify_final",pool="pnfifo",quantile="0.9"} 0.81701321789932
+smrol_threshold_task_wait_ms{task="pnfifo_verify_final",pool="pnfifo",quantile="0.95"} 1.1150508345115486
+smrol_threshold_task_wait_ms{task="pnfifo_verify_final",pool="pnfifo",quantile="0.99"} 2.0163722829805795
+smrol_threshold_task_wait_ms{task="pnfifo_verify_final",pool="pnfifo",quantile="0.999"} 2.354433149990447
+smrol_threshold_task_wait_ms{task="pnfifo_verify_final",pool="pnfifo",quantile="1"} 8.720809
+smrol_threshold_task_wait_ms_sum{task="pnfifo_verify_final",pool="pnfifo"} 1535.5293789999969
+smrol_threshold_task_wait_ms_count{task="pnfifo_verify_final",pool="pnfifo"} 5085
+smrol_threshold_task_wait_ms{task="verify_seq_order_batch",pool="seq_offload",quantile="0"} 0.000464
+smrol_threshold_task_wait_ms{task="verify_seq_order_batch",pool="seq_offload",quantile="0.5"} 0.3272273765065951
+smrol_threshold_task_wait_ms{task="verify_seq_order_batch",pool="seq_offload",quantile="0.9"} 1.4435422606730228
+smrol_threshold_task_wait_ms{task="verify_seq_order_batch",pool="seq_offload",quantile="0.95"} 2.1612786141747162
+smrol_threshold_task_wait_ms{task="verify_seq_order_batch",pool="seq_offload",quantile="0.99"} 3.8694021020447056
+smrol_threshold_task_wait_ms{task="verify_seq_order_batch",pool="seq_offload",quantile="0.999"} 7.210223876053195
+smrol_threshold_task_wait_ms{task="verify_seq_order_batch",pool="seq_offload",quantile="1"} 11.464858
+smrol_threshold_task_wait_ms_sum{task="verify_seq_order_batch",pool="seq_offload"} 13990.313566999956
+smrol_threshold_task_wait_ms_count{task="verify_seq_order_batch",pool="seq_offload"} 23819
+smrol_threshold_task_wait_ms{task="pnfifo_verify_share",pool="pnfifo",quantile="0"} 0.001183
+smrol_threshold_task_wait_ms{task="pnfifo_verify_share",pool="pnfifo",quantile="0.5"} 0.017680374878700906
+smrol_threshold_task_wait_ms{task="pnfifo_verify_share",pool="pnfifo",quantile="0.9"} 0.2422705966036689
+smrol_threshold_task_wait_ms{task="pnfifo_verify_share",pool="pnfifo",quantile="0.95"} 0.3584020032684311
+smrol_threshold_task_wait_ms{task="pnfifo_verify_share",pool="pnfifo",quantile="0.99"} 0.4803213079576696
+smrol_threshold_task_wait_ms{task="pnfifo_verify_share",pool="pnfifo",quantile="0.999"} 0.5049479081135831
+smrol_threshold_task_wait_ms{task="pnfifo_verify_share",pool="pnfifo",quantile="1"} 10.843459999999999
+smrol_threshold_task_wait_ms_sum{task="pnfifo_verify_share",pool="pnfifo"} 1375.2836009999971
+smrol_threshold_task_wait_ms_count{task="pnfifo_verify_share",pool="pnfifo"} 5251
+smrol_threshold_task_wait_ms{task="final_batch",pool="multisig_verify_combined",quantile="0"} 0.000984
+smrol_threshold_task_wait_ms{task="final_batch",pool="multisig_verify_combined",quantile="0.5"} 0.02019540818463899
+smrol_threshold_task_wait_ms{task="final_batch",pool="multisig_verify_combined",quantile="0.9"} 1.9199516379876096
+smrol_threshold_task_wait_ms{task="final_batch",pool="multisig_verify_combined",quantile="0.95"} 2.8142618260555703
+smrol_threshold_task_wait_ms{task="final_batch",pool="multisig_verify_combined",quantile="0.99"} 4.993314912657897
+smrol_threshold_task_wait_ms{task="final_batch",pool="multisig_verify_combined",quantile="0.999"} 7.998867762139534
+smrol_threshold_task_wait_ms{task="final_batch",pool="multisig_verify_combined",quantile="1"} 14.1694
+smrol_threshold_task_wait_ms_sum{task="final_batch",pool="multisig_verify_combined"} 3671.298737999998
+smrol_threshold_task_wait_ms_count{task="final_batch",pool="multisig_verify_combined"} 6742
+
+# TYPE smrol_batch_size summary
+smrol_batch_size{kind="final",quantile="0"} 1
+smrol_batch_size{kind="final",quantile="0.5"} 3.000263141522573
+smrol_batch_size{kind="final",quantile="0.9"} 8.000467695685316
+smrol_batch_size{kind="final",quantile="0.95"} 9.999149133010329
+smrol_batch_size{kind="final",quantile="0.99"} 14.000597451292164
+smrol_batch_size{kind="final",quantile="0.999"} 19.001159522702586
+smrol_batch_size{kind="final",quantile="1"} 24
+smrol_batch_size_sum{kind="final"} 23753
+smrol_batch_size_count{kind="final"} 6742
+smrol_batch_size{kind="median",quantile="0"} 1
+smrol_batch_size{kind="median",quantile="0.5"} 3.000263141522573
+smrol_batch_size{kind="median",quantile="0.9"} 9.000678850493848
+smrol_batch_size{kind="median",quantile="0.95"} 11.000052032263987
+smrol_batch_size{kind="median",quantile="0.99"} 15.998580574995373
+smrol_batch_size{kind="median",quantile="0.999"} 19.999354639046004
+smrol_batch_size{kind="median",quantile="1"} 23
+smrol_batch_size_sum{kind="median"} 20525
+smrol_batch_size_count{kind="median"} 5085
+
+# HELP smrol_threshold_task_exec_ms Execution time of threshold worker tasks (ms)
+# TYPE smrol_threshold_task_exec_ms summary
+smrol_threshold_task_exec_ms{task="pnfifo_sign",pool="pnfifo",quantile="0"} 0.542006
+smrol_threshold_task_exec_ms{task="pnfifo_sign",pool="pnfifo",quantile="0.5"} 0.8893183528384778
+smrol_threshold_task_exec_ms{task="pnfifo_sign",pool="pnfifo",quantile="0.9"} 1.8128496454611454
+smrol_threshold_task_exec_ms{task="pnfifo_sign",pool="pnfifo",quantile="0.95"} 3.674069852753385
+smrol_threshold_task_exec_ms{task="pnfifo_sign",pool="pnfifo",quantile="0.99"} 7.989274877674816
+smrol_threshold_task_exec_ms{task="pnfifo_sign",pool="pnfifo",quantile="0.999"} 16.075558360900825
+smrol_threshold_task_exec_ms{task="pnfifo_sign",pool="pnfifo",quantile="1"} 28.141365
+smrol_threshold_task_exec_ms_sum{task="pnfifo_sign",pool="pnfifo"} 31363.084854000164
+smrol_threshold_task_exec_ms_count{task="pnfifo_sign",pool="pnfifo"} 24919
+smrol_threshold_task_exec_ms{task="final_batch",pool="multisig_verify_combined",quantile="0"} 2.135619
+smrol_threshold_task_exec_ms{task="final_batch",pool="multisig_verify_combined",quantile="0.5"} 14.633303664738357
+smrol_threshold_task_exec_ms{task="final_batch",pool="multisig_verify_combined",quantile="0.9"} 36.179765807419614
+smrol_threshold_task_exec_ms{task="final_batch",pool="multisig_verify_combined",quantile="0.95"} 45.55407162424587
+smrol_threshold_task_exec_ms{task="final_batch",pool="multisig_verify_combined",quantile="0.99"} 64.78667884876872
+smrol_threshold_task_exec_ms{task="final_batch",pool="multisig_verify_combined",quantile="0.999"} 84.30996019279691
+smrol_threshold_task_exec_ms{task="final_batch",pool="multisig_verify_combined",quantile="1"} 116.977974
+smrol_threshold_task_exec_ms_sum{task="final_batch",pool="multisig_verify_combined"} 121400.3157759998
+smrol_threshold_task_exec_ms_count{task="final_batch",pool="multisig_verify_combined"} 6741
+smrol_threshold_task_exec_ms{task="median_batch",pool="multisig_verify_median",quantile="0"} 1.928016
+smrol_threshold_task_exec_ms{task="median_batch",pool="multisig_verify_median",quantile="0.5"} 14.848517134394372
+smrol_threshold_task_exec_ms{task="median_batch",pool="multisig_verify_median",quantile="0.9"} 38.363251421746675
+smrol_threshold_task_exec_ms{task="median_batch",pool="multisig_verify_median",quantile="0.95"} 47.38472919260088
+smrol_threshold_task_exec_ms{task="median_batch",pool="multisig_verify_median",quantile="0.99"} 67.29594680320899
+smrol_threshold_task_exec_ms{task="median_batch",pool="multisig_verify_median",quantile="0.999"} 82.17901764596252
+smrol_threshold_task_exec_ms{task="median_batch",pool="multisig_verify_median",quantile="1"} 98.54197400000001
+smrol_threshold_task_exec_ms_sum{task="median_batch",pool="multisig_verify_median"} 94067.7928980001
+smrol_threshold_task_exec_ms_count{task="median_batch",pool="multisig_verify_median"} 5081
+smrol_threshold_task_exec_ms{task="multisig_sign",pool="multisig_sign_combine",quantile="0"} 0.264019
+smrol_threshold_task_exec_ms{task="multisig_sign",pool="multisig_sign_combine",quantile="0.5"} 0.40200127929686613
+smrol_threshold_task_exec_ms{task="multisig_sign",pool="multisig_sign_combine",quantile="0.9"} 0.47639877757313887
+smrol_threshold_task_exec_ms{task="multisig_sign",pool="multisig_sign_combine",quantile="0.95"} 0.8651087949219163
+smrol_threshold_task_exec_ms{task="multisig_sign",pool="multisig_sign_combine",quantile="0.99"} 5.3095123801927695
+smrol_threshold_task_exec_ms{task="multisig_sign",pool="multisig_sign_combine",quantile="0.999"} 13.939130149532671
+smrol_threshold_task_exec_ms{task="multisig_sign",pool="multisig_sign_combine",quantile="1"} 27.020338000000002
+smrol_threshold_task_exec_ms_sum{task="multisig_sign",pool="multisig_sign_combine"} 13585.01833200004
+smrol_threshold_task_exec_ms_count{task="multisig_sign",pool="multisig_sign_combine"} 23819
+smrol_threshold_task_exec_ms{task="verify_seq_order_batch",pool="seq_offload",quantile="0"} 0.223403
+smrol_threshold_task_exec_ms{task="verify_seq_order_batch",pool="seq_offload",quantile="0.5"} 0.2915044495140337
+smrol_threshold_task_exec_ms{task="verify_seq_order_batch",pool="seq_offload",quantile="0.9"} 0.5669410171297566
+smrol_threshold_task_exec_ms{task="verify_seq_order_batch",pool="seq_offload",quantile="0.95"} 2.2204280612042364
+smrol_threshold_task_exec_ms{task="verify_seq_order_batch",pool="seq_offload",quantile="0.99"} 7.4566033960974005
+smrol_threshold_task_exec_ms{task="verify_seq_order_batch",pool="seq_offload",quantile="0.999"} 17.39355968259917
+smrol_threshold_task_exec_ms{task="verify_seq_order_batch",pool="seq_offload",quantile="1"} 39.316223
+smrol_threshold_task_exec_ms_sum{task="verify_seq_order_batch",pool="seq_offload"} 14564.910568999943
+smrol_threshold_task_exec_ms_count{task="verify_seq_order_batch",pool="seq_offload"} 23819
+smrol_threshold_task_exec_ms{task="pnfifo_combine",pool="pnfifo",quantile="0"} 0.6335540000000001
+smrol_threshold_task_exec_ms{task="pnfifo_combine",pool="pnfifo",quantile="0.5"} 0.879061862564141
+smrol_threshold_task_exec_ms{task="pnfifo_combine",pool="pnfifo",quantile="0.9"} 2.0769490155562496
+smrol_threshold_task_exec_ms{task="pnfifo_combine",pool="pnfifo",quantile="0.95"} 3.704321086196362
+smrol_threshold_task_exec_ms{task="pnfifo_combine",pool="pnfifo",quantile="0.99"} 7.215994363060316
+smrol_threshold_task_exec_ms{task="pnfifo_combine",pool="pnfifo",quantile="0.999"} 16.694845254562644
+smrol_threshold_task_exec_ms{task="pnfifo_combine",pool="pnfifo",quantile="1"} 19.759781
+smrol_threshold_task_exec_ms_sum{task="pnfifo_combine",pool="pnfifo"} 1691.1143980000006
+smrol_threshold_task_exec_ms_count{task="pnfifo_combine",pool="pnfifo"} 1279
+smrol_threshold_task_exec_ms{task="aggregate_median_signatures",pool="multisig_sign_combine",quantile="0"} 0.20108199999999998
+smrol_threshold_task_exec_ms{task="aggregate_median_signatures",pool="multisig_sign_combine",quantile="0.5"} 0.28802730072668437
+smrol_threshold_task_exec_ms{task="aggregate_median_signatures",pool="multisig_sign_combine",quantile="0.9"} 0.3305160663260176
+smrol_threshold_task_exec_ms{task="aggregate_median_signatures",pool="multisig_sign_combine",quantile="0.95"} 0.35675714013356463
+smrol_threshold_task_exec_ms{task="aggregate_median_signatures",pool="multisig_sign_combine",quantile="0.99"} 2.9063558132656224
+smrol_threshold_task_exec_ms{task="aggregate_median_signatures",pool="multisig_sign_combine",quantile="0.999"} 8.2937316123892
+smrol_threshold_task_exec_ms{task="aggregate_median_signatures",pool="multisig_sign_combine",quantile="1"} 20.225440000000003
+smrol_threshold_task_exec_ms_sum{task="aggregate_median_signatures",pool="multisig_sign_combine"} 2444.7883300000053
+smrol_threshold_task_exec_ms_count{task="aggregate_median_signatures",pool="multisig_sign_combine"} 6796
+smrol_threshold_task_exec_ms{task="pnfifo_verify_final",pool="pnfifo",quantile="0"} 2.604395
+smrol_threshold_task_exec_ms{task="pnfifo_verify_final",pool="pnfifo",quantile="0.5"} 7.917694000654
+smrol_threshold_task_exec_ms{task="pnfifo_verify_final",pool="pnfifo",quantile="0.9"} 16.532034844558154
+smrol_threshold_task_exec_ms{task="pnfifo_verify_final",pool="pnfifo",quantile="0.95"} 19.867793527225267
+smrol_threshold_task_exec_ms{task="pnfifo_verify_final",pool="pnfifo",quantile="0.99"} 27.762883593182863
+smrol_threshold_task_exec_ms{task="pnfifo_verify_final",pool="pnfifo",quantile="0.999"} 39.334421758475024
+smrol_threshold_task_exec_ms{task="pnfifo_verify_final",pool="pnfifo",quantile="1"} 46.821463
+smrol_threshold_task_exec_ms_sum{task="pnfifo_verify_final",pool="pnfifo"} 46657.501877000046
+smrol_threshold_task_exec_ms_count{task="pnfifo_verify_final",pool="pnfifo"} 5084
+smrol_threshold_task_exec_ms{task="pnfifo_verify_share",pool="pnfifo",quantile="0"} 2.5970400000000002
+smrol_threshold_task_exec_ms{task="pnfifo_verify_share",pool="pnfifo",quantile="0.5"} 7.585966306761956
+smrol_threshold_task_exec_ms{task="pnfifo_verify_share",pool="pnfifo",quantile="0.9"} 16.098079904082866
+smrol_threshold_task_exec_ms{task="pnfifo_verify_share",pool="pnfifo",quantile="0.95"} 19.35788838499948
+smrol_threshold_task_exec_ms{task="pnfifo_verify_share",pool="pnfifo",quantile="0.99"} 27.2458170348003
+smrol_threshold_task_exec_ms{task="pnfifo_verify_share",pool="pnfifo",quantile="0.999"} 35.69105177889268
+smrol_threshold_task_exec_ms{task="pnfifo_verify_share",pool="pnfifo",quantile="1"} 40.470096999999996
+smrol_threshold_task_exec_ms_sum{task="pnfifo_verify_share",pool="pnfifo"} 47476.86364199993
+smrol_threshold_task_exec_ms_count{task="pnfifo_verify_share",pool="pnfifo"} 5250

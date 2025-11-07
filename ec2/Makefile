@@ -35,11 +35,23 @@ deploy:
 
 pull:
 	@echo "Pulling node and client images..."
-	@for node in $(NODES); do \
-		echo "Pulling hotstuff-node image on $${node}..."; \
-		ssh $(SSH_OPTS) $${node} "cd ~/hotstuff && docker compose pull hotstuff-node" || true; \
+	@status=0; pids=""; \
+	for node in $(NODES); do \
+		( \
+			echo "Pulling hotstuff-node image on $${node}..."; \
+			if ! ssh $(SSH_OPTS) $${node} "cd ~/hotstuff && docker compose pull hotstuff-node"; then \
+				echo "Warning: failed to pull on $${node}"; \
+				exit 1; \
+			fi \
+		) & \
+		pids="$$pids $$!"; \
 	done; \
-	wait
+	for pid in $$pids; do \
+		if ! wait $$pid; then status=1; fi; \
+	done; \
+	if [ $$status -ne 0 ]; then \
+		echo "Warning: one or more node pulls failed"; \
+	fi
 	@echo "Pulling client image ($(CLIENT)) ..."
 	@ssh $(SSH_OPTS) $(CLIENT) "cd ~/hotstuff && docker compose pull hotstuff-client" || true
 	@echo "Image pull complete"
@@ -60,7 +72,7 @@ start:
 			echo "Failed to start consensus nodes"; \
 		exit 1; \
 	fi
-	@sleep 15
+	@sleep 20
 	@ssh $(SSH_OPTS) $(CLIENT) "cd ~/hotstuff && docker compose --profile client up -d || docker-compose --profile client up -d" || { echo "Failed to start client"; exit 1; }
 	@echo "Experiment startup complete"
 	@echo "Waiting 2 minutes before automatically stopping..."
@@ -155,6 +167,7 @@ clean:
 	done; \
 	wait
 	@echo "Cleanup finished"
+	@$(MAKE) hosts-clean
 
 clean-ec2:
 	@echo "Cleaning EC2 node data (public IPs only)..."
