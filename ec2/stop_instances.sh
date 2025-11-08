@@ -1,10 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REGION="us-east-1"
+REGION=""
 PROFILE=""
 NAME_VALUES=""
 DRY_RUN=false
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REGIONS_FILE_PATH="$SCRIPT_DIR/regions.txt"
+
+TOTAL_STOPPED=0
+TOTAL_REGIONS=0
 
 # Disable AWS CLI pager to avoid interactive prompts while piping output.
 export AWS_PAGER=""
@@ -52,51 +58,91 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-filters=("Name=instance-state-name,Values=running")
-if [[ -n "$NAME_VALUES" ]]; then
-  filters+=("Name=tag:Name,Values=${NAME_VALUES}")
-fi
+load_regions_from_file() {
+  local file="$1"
+  mapfile -t REGIONS_FROM_FILE < <(sed -e 's/#.*//' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' "$file" | awk 'NF > 0')
+}
 
-describe_cmd=(aws)
-[[ -n "$REGION" ]] && describe_cmd+=(--region "$REGION")
-[[ -n "$PROFILE" ]] && describe_cmd+=(--profile "$PROFILE")
-describe_cmd+=(ec2)
-describe_cmd+=(describe-instances)
-for filter in "${filters[@]}"; do
-  describe_cmd+=(--filters "$filter")
-done
-describe_cmd+=(--query)
-describe_cmd+=("Reservations[].Instances[].InstanceId")
-describe_cmd+=(--output)
-describe_cmd+=(text)
-
-instance_ids=$("${describe_cmd[@]}")
-instance_ids=$(echo "$instance_ids" | xargs)
-
-if [[ -z "$instance_ids" || "$instance_ids" == "None" ]]; then
-  if [[ -n "$NAME_VALUES" ]]; then
-    echo "No running instances match the provided names"
-  else
-    echo "No running instances found in the selected region"
+determine_regions() {
+  if [[ -n "$REGION" ]]; then
+    TARGET_REGIONS=("$REGION")
+    return
   fi
-  exit 0
+
+  if [[ -f "$REGIONS_FILE_PATH" ]]; then
+    load_regions_from_file "$REGIONS_FILE_PATH"
+    if (( ${#REGIONS_FROM_FILE[@]} > 0 )); then
+      mapfile -t TARGET_REGIONS < <(printf '%s\n' "${REGIONS_FROM_FILE[@]}" | awk '!seen[$0]++')
+      return
+    fi
+  fi
+
+  if [[ -n "${AWS_DEFAULT_REGION:-}" ]]; then
+    TARGET_REGIONS=("$AWS_DEFAULT_REGION")
+  else
+    TARGET_REGIONS=("us-east-1")
+  fi
+}
+
+stop_region_instances() {
+  local region="$1"
+  local filters=("Name=instance-state-name,Values=running")
+  if [[ -n "$NAME_VALUES" ]]; then
+    filters+=("Name=tag:Name,Values=${NAME_VALUES}")
+  fi
+
+  local describe_cmd=(aws)
+  [[ -n "$region" ]] && describe_cmd+=(--region "$region")
+  [[ -n "$PROFILE" ]] && describe_cmd+=(--profile "$PROFILE")
+  describe_cmd+=(ec2 describe-instances)
+  for filter in "${filters[@]}"; do
+    describe_cmd+=(--filters "$filter")
+  done
+  describe_cmd+=(--query "Reservations[].Instances[].InstanceId" --output text)
+
+  local instance_ids
+  instance_ids=$("${describe_cmd[@]}") || instance_ids=""
+  instance_ids=$(echo "$instance_ids" | xargs)
+
+  if [[ -z "$instance_ids" || "$instance_ids" == "None" ]]; then
+    if [[ -n "$NAME_VALUES" ]]; then
+      echo "[${region:-default}] No running instances match the provided names"
+    else
+      echo "[${region:-default}] No running instances found"
+    fi
+    return
+  fi
+
+  read -r -a instance_array <<< "$instance_ids"
+
+  if $DRY_RUN; then
+    echo "[${region:-default}] Dry run: would stop instances: ${instance_array[*]}"
+    return
+  fi
+
+  local stop_cmd=(aws)
+  [[ -n "$region" ]] && stop_cmd+=(--region "$region")
+  [[ -n "$PROFILE" ]] && stop_cmd+=(--profile "$PROFILE")
+  stop_cmd+=(ec2 stop-instances --instance-ids "${instance_array[@]}")
+
+  "${stop_cmd[@]}"
+  echo "[${region:-default}] Stopped instances: ${instance_array[*]}"
+
+  TOTAL_STOPPED=$((TOTAL_STOPPED + ${#instance_array[@]}))
+  TOTAL_REGIONS=$((TOTAL_REGIONS + 1))
+}
+
+declare -a TARGET_REGIONS=()
+determine_regions
+
+for region in "${TARGET_REGIONS[@]}"; do
+  stop_region_instances "$region"
+done
+
+if (( TOTAL_REGIONS == 0 )); then
+  echo "Summary: nothing to stop"
+elif $DRY_RUN; then
+  echo "Dry run summary: would stop ${TOTAL_STOPPED} instance(s) across ${TOTAL_REGIONS} region(s)."
+else
+  echo "Summary: stopped ${TOTAL_STOPPED} instance(s) across ${TOTAL_REGIONS} region(s)."
 fi
-
-read -r -a instance_array <<< "$instance_ids"
-
-if $DRY_RUN; then
-  echo "Dry run: would stop instances: ${instance_array[*]}"
-  exit 0
-fi
-
-stop_cmd=(aws)
-[[ -n "$REGION" ]] && stop_cmd+=(--region "$REGION")
-[[ -n "$PROFILE" ]] && stop_cmd+=(--profile "$PROFILE")
-stop_cmd+=(ec2)
-stop_cmd+=(stop-instances)
-stop_cmd+=(--instance-ids)
-stop_cmd+=("${instance_array[@]}")
-
-"${stop_cmd[@]}"
-
-echo "Stopped instances: ${instance_array[*]}"

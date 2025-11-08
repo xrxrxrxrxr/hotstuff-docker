@@ -1,0 +1,206 @@
+2025-11-08T05:06:52.655362Z  WARN ThreadId(01) hotstuff_runner::telemetry: Prometheus metrics exporter started ✅ listen_addr=0.0.0.0:9900
+2025-11-08T05:06:52.657491Z  WARN ThreadId(01) hotstuff_runner::telemetry: ✅ wrote smrol.node_up=1 (boot) node_id=0
+2025-11-08T05:07:12.870035Z  WARN ThreadId(01) hotstuff_runner::tcp_node: Node 0 view timeout set to 3000 ms
+2025-11-08T05:07:12.882703Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 1: Connection refused (os error 111)
+2025-11-08T05:07:12.884504Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 4: Connection refused (os error 111)
+2025-11-08T05:07:12.885999Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 5: Connection refused (os error 111)
+2025-11-08T05:07:12.887494Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 7: Connection refused (os error 111)
+2025-11-08T05:07:12.888659Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 8: Connection refused (os error 111)
+2025-11-08T05:07:12.890343Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 9: Connection refused (os error 111)
+2025-11-08T05:07:12.892327Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 10: Connection refused (os error 111)
+2025-11-08T05:07:12.895644Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 11: Connection refused (os error 111)
+2025-11-08T05:07:12.896625Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 12: Connection refused (os error 111)
+2025-11-08T05:07:12.898117Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 13: Connection refused (os error 111)
+2025-11-08T05:07:12.899246Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 14: Connection refused (os error 111)
+2025-11-08T05:07:12.900502Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 15: Connection refused (os error 111)
+2025-11-08T05:07:12.902440Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 16: Connection refused (os error 111)
+2025-11-08T05:07:12.903096Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 17: Connection refused (os error 111)
+2025-11-08T05:07:12.904160Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 18: Connection refused (os error 111)
+2025-11-08T05:07:12.904996Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 19: Connection refused (os error 111)
+2025-11-08T05:07:12.907241Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 20: Connection refused (os error 111)
+2025-11-08T05:07:12.907339Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: SMROL_MEDIAN_INFLIGHT=24, SMROL_ORDER_FINALIZE_INFLIGHT=4, SMROL_FINAL_SIGN_INFLIGHT=4, SMROL_FINAL_VERIFY_INFLIGHT=24
+2025-11-08T05:07:12.907387Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: [Sequencing] Node 0 multi-signature verification disabled: false
+2025-11-08T05:07:12.908169Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 21: Connection refused (os error 111)
+2025-11-08T05:07:12.908321Z  WARN ThreadId(05) hotstuff_runner::smrol::sequencing: [Sequencing] Node 0 final verify dispatcher started
+2025-11-08T05:07:12.909386Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T05:07:12.909604Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 22: Connection refused (os error 111)
+2025-11-08T05:07:12.911297Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 23: Connection refused (os error 111)
+2025-11-08T05:07:12.912882Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 24: Connection refused (os error 111)
+2025-11-08T05:07:12.914599Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 25: Connection refused (os error 111)
+2025-11-08T05:07:12.914832Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 26: Connection refused (os error 111)
+2025-11-08T05:07:12.916250Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 27: Connection refused (os error 111)
+2025-11-08T05:07:12.916458Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 28: Connection refused (os error 111)
+2025-11-08T05:07:12.918248Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 30: Connection refused (os error 111)
+2025-11-08T05:07:12.919045Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 31: Connection refused (os error 111)
+2025-11-08T05:07:12.919845Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 32: Connection refused (os error 111)
+2025-11-08T05:07:12.920895Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 33: Connection refused (os error 111)
+2025-11-08T05:07:12.922548Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 34: Connection refused (os error 111)
+2025-11-08T05:07:12.924064Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 35: Connection refused (os error 111)
+2025-11-08T05:07:12.926215Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 37: Connection refused (os error 111)
+2025-11-08T05:07:12.927988Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 39: Connection refused (os error 111)
+2025-11-08T05:07:12.930296Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 40: Connection refused (os error 111)
+2025-11-08T05:07:12.931357Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 41: Connection refused (os error 111)
+2025-11-08T05:07:12.931529Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 42: Connection refused (os error 111)
+2025-11-08T05:07:12.932430Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 43: Connection refused (os error 111)
+2025-11-08T05:07:12.932638Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 44: Connection refused (os error 111)
+2025-11-08T05:07:12.933451Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 45: Connection refused (os error 111)
+2025-11-08T05:07:12.935610Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 46: Connection refused (os error 111)
+2025-11-08T05:07:12.936977Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 47: Connection refused (os error 111)
+2025-11-08T05:07:12.937699Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 48: Connection refused (os error 111)
+2025-11-08T05:07:12.940425Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 49: Connection refused (os error 111)
+2025-11-08T05:07:12.940809Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 51: Connection refused (os error 111)
+2025-11-08T05:07:12.941923Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 52: Connection refused (os error 111)
+2025-11-08T05:07:12.942141Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 53: Connection refused (os error 111)
+2025-11-08T05:07:12.943695Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 54: Connection refused (os error 111)
+2025-11-08T05:07:12.945125Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 55: Connection refused (os error 111)
+2025-11-08T05:07:12.946159Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 56: Connection refused (os error 111)
+2025-11-08T05:07:12.947310Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 57: Connection refused (os error 111)
+2025-11-08T05:07:12.948285Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 58: Connection refused (os error 111)
+2025-11-08T05:07:12.948449Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 59: Connection refused (os error 111)
+2025-11-08T05:07:12.948651Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 60: Connection refused (os error 111)
+2025-11-08T05:07:12.948829Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 61: Connection refused (os error 111)
+2025-11-08T05:07:12.949417Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 62: Connection refused (os error 111)
+2025-11-08T05:07:12.950664Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 63: Connection refused (os error 111)
+2025-11-08T05:07:12.951891Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 64: Connection refused (os error 111)
+2025-11-08T05:07:12.952089Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 65: Connection refused (os error 111)
+2025-11-08T05:07:12.952295Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 66: Connection refused (os error 111)
+2025-11-08T05:07:12.953541Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 67: Connection refused (os error 111)
+2025-11-08T05:07:12.955006Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 70: Connection refused (os error 111)
+2025-11-08T05:07:12.955210Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 71: Connection refused (os error 111)
+2025-11-08T05:07:12.955367Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 72: Connection refused (os error 111)
+2025-11-08T05:07:12.955558Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 73: Connection refused (os error 111)
+2025-11-08T05:07:12.956779Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 74: Connection refused (os error 111)
+2025-11-08T05:07:12.956995Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 75: Connection refused (os error 111)
+2025-11-08T05:07:12.957184Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 76: Connection refused (os error 111)
+2025-11-08T05:07:12.957394Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 77: Connection refused (os error 111)
+2025-11-08T05:07:12.958251Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 78: Connection refused (os error 111)
+2025-11-08T05:07:12.958472Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 79: Connection refused (os error 111)
+2025-11-08T05:07:12.959903Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 81: Connection refused (os error 111)
+2025-11-08T05:07:12.960246Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 83: Connection refused (os error 111)
+2025-11-08T05:07:12.960432Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 84: Connection refused (os error 111)
+2025-11-08T05:07:12.968850Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 0 failed to connect to node 85: Connection refused (os error 111)
+2025-11-08T05:07:12.970548Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 87: Connection refused (os error 111)
+2025-11-08T05:07:12.970722Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 88: Connection refused (os error 111)
+2025-11-08T05:07:12.970940Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 89: Connection refused (os error 111)
+2025-11-08T05:07:12.971101Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 90: Connection refused (os error 111)
+2025-11-08T05:07:12.971258Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 91: Connection refused (os error 111)
+2025-11-08T05:07:12.971425Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 92: Connection refused (os error 111)
+2025-11-08T05:07:12.971609Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 93: Connection refused (os error 111)
+2025-11-08T05:07:12.971854Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 94: Connection refused (os error 111)
+2025-11-08T05:07:12.972039Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 95: Connection refused (os error 111)
+2025-11-08T05:07:12.972243Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 96: Connection refused (os error 111)
+2025-11-08T05:07:12.972624Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 97: Connection refused (os error 111)
+2025-11-08T05:07:12.972814Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 98: Connection refused (os error 111)
+2025-11-08T05:07:12.972966Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 99: Connection refused (os error 111)
+2025-11-08T05:07:15.877300Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 0 timed out; latency may accumulate
+2025-11-08T05:07:17.909545Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T05:07:17.911849Z  WARN ThreadId(01) docker_node: Node 0 port 20000 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.913557Z  WARN ThreadId(01) docker_node: Node 1 port 20001 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.915332Z  WARN ThreadId(01) docker_node: Node 2 port 20002 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.917202Z  WARN ThreadId(01) docker_node: Node 3 port 20003 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.918862Z  WARN ThreadId(01) docker_node: Node 4 port 20004 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.920695Z  WARN ThreadId(01) docker_node: Node 5 port 20005 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.922482Z  WARN ThreadId(01) docker_node: Node 6 port 20006 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.924977Z  WARN ThreadId(01) docker_node: Node 7 port 20007 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.926780Z  WARN ThreadId(01) docker_node: Node 8 port 20008 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.928562Z  WARN ThreadId(01) docker_node: Node 9 port 20009 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.930265Z  WARN ThreadId(01) docker_node: Node 10 port 20010 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.931815Z  WARN ThreadId(01) docker_node: Node 11 port 20011 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.933579Z  WARN ThreadId(01) docker_node: Node 12 port 20012 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.935397Z  WARN ThreadId(01) docker_node: Node 13 port 20013 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.938372Z  WARN ThreadId(01) docker_node: Node 14 port 20014 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.939977Z  WARN ThreadId(01) docker_node: Node 15 port 20015 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.941635Z  WARN ThreadId(01) docker_node: Node 16 port 20016 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.943418Z  WARN ThreadId(01) docker_node: Node 17 port 20017 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.944984Z  WARN ThreadId(01) docker_node: Node 18 port 20018 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.946630Z  WARN ThreadId(01) docker_node: Node 19 port 20019 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.948373Z  WARN ThreadId(01) docker_node: Node 20 port 20020 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.950977Z  WARN ThreadId(01) docker_node: Node 21 port 20021 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.952634Z  WARN ThreadId(01) docker_node: Node 22 port 20022 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.954522Z  WARN ThreadId(01) docker_node: Node 23 port 20023 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.956460Z  WARN ThreadId(01) docker_node: Node 24 port 20024 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.958294Z  WARN ThreadId(01) docker_node: Node 25 port 20025 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.960077Z  WARN ThreadId(01) docker_node: Node 26 port 20026 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.962005Z  WARN ThreadId(01) docker_node: Node 27 port 20027 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.964657Z  WARN ThreadId(01) docker_node: Node 28 port 20028 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.966530Z  WARN ThreadId(01) docker_node: Node 29 port 20029 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.968381Z  WARN ThreadId(01) docker_node: Node 30 port 20030 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.970276Z  WARN ThreadId(01) docker_node: Node 31 port 20031 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.972135Z  WARN ThreadId(01) docker_node: Node 32 port 20032 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.974045Z  WARN ThreadId(01) docker_node: Node 33 port 20033 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.975808Z  WARN ThreadId(01) docker_node: Node 34 port 20034 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.977580Z  WARN ThreadId(01) docker_node: Node 35 port 20035 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.979344Z  WARN ThreadId(01) docker_node: Node 36 port 20036 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.981051Z  WARN ThreadId(01) docker_node: Node 37 port 20037 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.982812Z  WARN ThreadId(01) docker_node: Node 38 port 20038 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.984852Z  WARN ThreadId(01) docker_node: Node 39 port 20039 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.986804Z  WARN ThreadId(01) docker_node: Node 40 port 20040 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.988790Z  WARN ThreadId(01) docker_node: Node 41 port 20041 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.990463Z  WARN ThreadId(01) docker_node: Node 42 port 20042 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.992203Z  WARN ThreadId(01) docker_node: Node 43 port 20043 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.994142Z  WARN ThreadId(01) docker_node: Node 44 port 20044 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.995961Z  WARN ThreadId(01) docker_node: Node 45 port 20045 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.997806Z  WARN ThreadId(01) docker_node: Node 46 port 20046 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:17.999810Z  WARN ThreadId(01) docker_node: Node 47 port 20047 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.001603Z  WARN ThreadId(01) docker_node: Node 48 port 20048 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.003310Z  WARN ThreadId(01) docker_node: Node 49 port 20049 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.005112Z  WARN ThreadId(01) docker_node: Node 50 port 20050 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.006992Z  WARN ThreadId(01) docker_node: Node 51 port 20051 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.008621Z  WARN ThreadId(01) docker_node: Node 52 port 20052 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.010667Z  WARN ThreadId(01) docker_node: Node 53 port 20053 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.013444Z  WARN ThreadId(01) docker_node: Node 54 port 20054 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.015104Z  WARN ThreadId(01) docker_node: Node 55 port 20055 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.016907Z  WARN ThreadId(01) docker_node: Node 56 port 20056 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.019281Z  WARN ThreadId(01) docker_node: Node 57 port 20057 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.021243Z  WARN ThreadId(01) docker_node: Node 58 port 20058 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.022909Z  WARN ThreadId(01) docker_node: Node 59 port 20059 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.024541Z  WARN ThreadId(01) docker_node: Node 60 port 20060 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.026490Z  WARN ThreadId(01) docker_node: Node 61 port 20061 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.028595Z  WARN ThreadId(01) docker_node: Node 62 port 20062 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.030479Z  WARN ThreadId(01) docker_node: Node 63 port 20063 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.032132Z  WARN ThreadId(01) docker_node: Node 64 port 20064 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.033735Z  WARN ThreadId(01) docker_node: Node 65 port 20065 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.035335Z  WARN ThreadId(01) docker_node: Node 66 port 20066 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.036804Z  WARN ThreadId(01) docker_node: Node 67 port 20067 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.038333Z  WARN ThreadId(01) docker_node: Node 68 port 20068 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.040141Z  WARN ThreadId(01) docker_node: Node 69 port 20069 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.042153Z  WARN ThreadId(01) docker_node: Node 70 port 20070 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.043738Z  WARN ThreadId(01) docker_node: Node 71 port 20071 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.045582Z  WARN ThreadId(01) docker_node: Node 72 port 20072 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.047507Z  WARN ThreadId(01) docker_node: Node 73 port 20073 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.049287Z  WARN ThreadId(01) docker_node: Node 74 port 20074 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.051201Z  WARN ThreadId(01) docker_node: Node 75 port 20075 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.053175Z  WARN ThreadId(01) docker_node: Node 76 port 20076 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.054866Z  WARN ThreadId(01) docker_node: Node 77 port 20077 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.056887Z  WARN ThreadId(01) docker_node: Node 78 port 20078 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.058782Z  WARN ThreadId(01) docker_node: Node 79 port 20079 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.060642Z  WARN ThreadId(01) docker_node: Node 80 port 20080 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.062581Z  WARN ThreadId(01) docker_node: Node 81 port 20081 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.064490Z  WARN ThreadId(01) docker_node: Node 82 port 20082 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.066250Z  WARN ThreadId(01) docker_node: Node 83 port 20083 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.067942Z  WARN ThreadId(01) docker_node: Node 84 port 20084 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.069737Z  WARN ThreadId(01) docker_node: Node 85 port 20085 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.071410Z  WARN ThreadId(01) docker_node: Node 86 port 20086 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.073404Z  WARN ThreadId(01) docker_node: Node 87 port 20087 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.075617Z  WARN ThreadId(01) docker_node: Node 88 port 20088 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.077604Z  WARN ThreadId(01) docker_node: Node 89 port 20089 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.079497Z  WARN ThreadId(01) docker_node: Node 90 port 20090 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.081347Z  WARN ThreadId(01) docker_node: Node 91 port 20091 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.083235Z  WARN ThreadId(01) docker_node: Node 92 port 20092 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.085086Z  WARN ThreadId(01) docker_node: Node 93 port 20093 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.086742Z  WARN ThreadId(01) docker_node: Node 94 port 20094 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.088375Z  WARN ThreadId(01) docker_node: Node 95 port 20095 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.090130Z  WARN ThreadId(01) docker_node: Node 96 port 20096 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.091961Z  WARN ThreadId(01) docker_node: Node 97 port 20097 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.093666Z  WARN ThreadId(01) docker_node: Node 98 port 20098 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:18.095353Z  WARN ThreadId(01) docker_node: Node 99 port 20099 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T05:07:22.909137Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T05:07:27.909210Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T05:07:32.909241Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T05:07:37.909149Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T05:07:42.882646Z  WARN ThreadId(09) hotstuff_runner::pompe: 🧹 [Cleanup] Node 0 cleared 1900 orphaned ordering1 states
+2025-11-08T05:07:45.455288Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Detected transaction backlog: submit rate (5.0) > confirm rate (0.0)
+2025-11-08T05:08:09.077866Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 69 timed out; latency may accumulate
+2025-11-08T05:08:12.079930Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 70 timed out; latency may accumulate
+2025-11-08T05:08:12.884973Z  WARN ThreadId(07) hotstuff_runner::pompe: 🧹 [Cleanup] Node 0 cleared 8100 orphaned ordering1 states
+2025-11-08T05:08:15.081997Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 71 timed out; latency may accumulate

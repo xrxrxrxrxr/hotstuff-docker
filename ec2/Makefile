@@ -28,6 +28,7 @@ ping:
 
 init:
 	@bash init-ec2.sh
+	@$(MAKE) pull
 
 deploy:
 	@/opt/homebrew/bin/bash deploy-ec2.sh
@@ -57,6 +58,7 @@ pull:
 	@echo "Image pull complete"
 
 start: 
+	@$(MAKE) hosts-clean
 	@echo "Starting the experiment..."
 	@status=0; pids=""; \
 	for node in $(NODES); do \

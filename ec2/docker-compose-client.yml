@@ -17,6 +17,7 @@ services:
       - TEST_DURATION=${TEST_DURATION}
       - RUST_LOG=${RUST_LOG}
       - CLIENT_ORDERING_MODE=${CLIENT_ORDERING_MODE}
+      - CLIENT_TOTAL_TX=10000
     volumes:
       - ./logs:/logs
       - ./logs:/log

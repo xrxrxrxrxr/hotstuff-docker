@@ -1,0 +1,902 @@
+2025-11-07T04:13:02.313619Z  WARN ThreadId(01) hotstuff_runner::telemetry: Prometheus metrics exporter started ✅ listen_addr=0.0.0.0:9900
+2025-11-07T04:13:02.316412Z  WARN ThreadId(01) hotstuff_runner::telemetry: ✅ wrote smrol.node_up=1 (boot) node_id=0
+2025-11-07T04:13:22.529100Z  WARN ThreadId(01) hotstuff_runner::tcp_node: Node 0 view timeout set to 3000 ms
+2025-11-07T04:13:22.539345Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 1: Connection refused (os error 111)
+2025-11-07T04:13:22.541294Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 2: Connection refused (os error 111)
+2025-11-07T04:13:22.543026Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 3: Connection refused (os error 111)
+2025-11-07T04:13:22.544917Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 4: Connection refused (os error 111)
+2025-11-07T04:13:22.547967Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 5: Connection refused (os error 111)
+2025-11-07T04:13:22.549571Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 6: Connection refused (os error 111)
+2025-11-07T04:13:22.551293Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 7: Connection refused (os error 111)
+2025-11-07T04:13:22.552963Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 8: Connection refused (os error 111)
+2025-11-07T04:13:22.553470Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: SMROL_MEDIAN_INFLIGHT=24, SMROL_ORDER_FINALIZE_INFLIGHT=4, SMROL_FINAL_SIGN_INFLIGHT=4, SMROL_FINAL_VERIFY_INFLIGHT=24
+2025-11-07T04:13:22.553526Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: [Sequencing] Node 0 multi-signature verification disabled: false
+2025-11-07T04:13:22.554071Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 9: Connection refused (os error 111)
+2025-11-07T04:13:22.554333Z  WARN ThreadId(07) hotstuff_runner::smrol::sequencing: [Sequencing] Node 0 final verify dispatcher started
+2025-11-07T04:13:22.555362Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 10: Connection refused (os error 111)
+2025-11-07T04:13:22.556641Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 11: Connection refused (os error 111)
+2025-11-07T04:13:22.558388Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 12: Connection refused (os error 111)
+2025-11-07T04:13:22.560434Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 13: Connection refused (os error 111)
+2025-11-07T04:13:22.561689Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 14: Connection refused (os error 111)
+2025-11-07T04:13:22.563251Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 15: Connection refused (os error 111)
+2025-11-07T04:13:22.564977Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 16: Connection refused (os error 111)
+2025-11-07T04:13:22.566631Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 17: Connection refused (os error 111)
+2025-11-07T04:13:22.568206Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 19: Connection refused (os error 111)
+2025-11-07T04:13:22.570204Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 20: Connection refused (os error 111)
+2025-11-07T04:13:22.571442Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 21: Connection refused (os error 111)
+2025-11-07T04:13:22.573207Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 24: Connection refused (os error 111)
+2025-11-07T04:13:22.573970Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 28: Connection refused (os error 111)
+2025-11-07T04:13:22.574231Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 29: Connection refused (os error 111)
+2025-11-07T04:13:22.576758Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 30: Connection refused (os error 111)
+2025-11-07T04:13:22.576941Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 31: Connection refused (os error 111)
+2025-11-07T04:13:22.577292Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 33: Connection refused (os error 111)
+2025-11-07T04:13:22.577480Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 34: Connection refused (os error 111)
+2025-11-07T04:13:22.579743Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 35: Connection refused (os error 111)
+2025-11-07T04:13:22.579908Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 36: Connection refused (os error 111)
+2025-11-07T04:13:22.580099Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 37: Connection refused (os error 111)
+2025-11-07T04:13:22.581410Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 38: Connection refused (os error 111)
+2025-11-07T04:13:22.582448Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 39: Connection refused (os error 111)
+2025-11-07T04:13:22.583674Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 40: Connection refused (os error 111)
+2025-11-07T04:13:22.585282Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 41: Connection refused (os error 111)
+2025-11-07T04:13:22.587199Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 42: Connection refused (os error 111)
+2025-11-07T04:13:22.589274Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 43: Connection refused (os error 111)
+2025-11-07T04:13:22.590938Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 44: Connection refused (os error 111)
+2025-11-07T04:13:22.592180Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 45: Connection refused (os error 111)
+2025-11-07T04:13:22.592399Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 46: Connection refused (os error 111)
+2025-11-07T04:13:22.592622Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 47: Connection refused (os error 111)
+2025-11-07T04:13:22.592852Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 48: Connection refused (os error 111)
+2025-11-07T04:13:22.593035Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 49: Connection refused (os error 111)
+2025-11-07T04:13:22.593258Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 50: Connection refused (os error 111)
+2025-11-07T04:13:22.593438Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 51: Connection refused (os error 111)
+2025-11-07T04:13:22.593651Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 52: Connection refused (os error 111)
+2025-11-07T04:13:22.593821Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 53: Connection refused (os error 111)
+2025-11-07T04:13:22.595310Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 54: Connection refused (os error 111)
+2025-11-07T04:13:22.595547Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 55: Connection refused (os error 111)
+2025-11-07T04:13:22.595783Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 56: Connection refused (os error 111)
+2025-11-07T04:13:22.595969Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 57: Connection refused (os error 111)
+2025-11-07T04:13:22.596288Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 59: Connection refused (os error 111)
+2025-11-07T04:13:27.554695Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:13:27.557507Z  WARN ThreadId(01) docker_node: Node 0 port 20000 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.559256Z  WARN ThreadId(01) docker_node: Node 1 port 20001 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.560939Z  WARN ThreadId(01) docker_node: Node 2 port 20002 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.562627Z  WARN ThreadId(01) docker_node: Node 3 port 20003 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.564223Z  WARN ThreadId(01) docker_node: Node 4 port 20004 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.565994Z  WARN ThreadId(01) docker_node: Node 5 port 20005 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.567711Z  WARN ThreadId(01) docker_node: Node 6 port 20006 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.569457Z  WARN ThreadId(01) docker_node: Node 7 port 20007 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.571171Z  WARN ThreadId(01) docker_node: Node 8 port 20008 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.572748Z  WARN ThreadId(01) docker_node: Node 9 port 20009 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.574331Z  WARN ThreadId(01) docker_node: Node 10 port 20010 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.576020Z  WARN ThreadId(01) docker_node: Node 11 port 20011 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.577686Z  WARN ThreadId(01) docker_node: Node 12 port 20012 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.583495Z  WARN ThreadId(01) docker_node: Node 13 port 20013 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.586318Z  WARN ThreadId(01) docker_node: Node 14 port 20014 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.588118Z  WARN ThreadId(01) docker_node: Node 15 port 20015 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.589783Z  WARN ThreadId(01) docker_node: Node 16 port 20016 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.591545Z  WARN ThreadId(01) docker_node: Node 17 port 20017 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.597169Z  WARN ThreadId(01) docker_node: Node 18 port 20018 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.598920Z  WARN ThreadId(01) docker_node: Node 19 port 20019 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.601074Z  WARN ThreadId(01) docker_node: Node 20 port 20020 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.602879Z  WARN ThreadId(01) docker_node: Node 21 port 20021 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.604581Z  WARN ThreadId(01) docker_node: Node 22 port 20022 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.606413Z  WARN ThreadId(01) docker_node: Node 23 port 20023 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.608018Z  WARN ThreadId(01) docker_node: Node 24 port 20024 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.609672Z  WARN ThreadId(01) docker_node: Node 25 port 20025 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.611298Z  WARN ThreadId(01) docker_node: Node 26 port 20026 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.613081Z  WARN ThreadId(01) docker_node: Node 27 port 20027 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.614718Z  WARN ThreadId(01) docker_node: Node 28 port 20028 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.622981Z  WARN ThreadId(01) docker_node: Node 29 port 20029 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.625325Z  WARN ThreadId(01) docker_node: Node 30 port 20030 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.627296Z  WARN ThreadId(01) docker_node: Node 31 port 20031 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.629157Z  WARN ThreadId(01) docker_node: Node 32 port 20032 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.630936Z  WARN ThreadId(01) docker_node: Node 33 port 20033 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.632713Z  WARN ThreadId(01) docker_node: Node 34 port 20034 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.634513Z  WARN ThreadId(01) docker_node: Node 35 port 20035 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.636505Z  WARN ThreadId(01) docker_node: Node 36 port 20036 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.638213Z  WARN ThreadId(01) docker_node: Node 37 port 20037 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.639809Z  WARN ThreadId(01) docker_node: Node 38 port 20038 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.641467Z  WARN ThreadId(01) docker_node: Node 39 port 20039 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.643293Z  WARN ThreadId(01) docker_node: Node 40 port 20040 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.645115Z  WARN ThreadId(01) docker_node: Node 41 port 20041 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.646692Z  WARN ThreadId(01) docker_node: Node 42 port 20042 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.648507Z  WARN ThreadId(01) docker_node: Node 43 port 20043 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.650040Z  WARN ThreadId(01) docker_node: Node 44 port 20044 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.651660Z  WARN ThreadId(01) docker_node: Node 45 port 20045 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.653451Z  WARN ThreadId(01) docker_node: Node 46 port 20046 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.655070Z  WARN ThreadId(01) docker_node: Node 47 port 20047 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.656856Z  WARN ThreadId(01) docker_node: Node 48 port 20048 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.658612Z  WARN ThreadId(01) docker_node: Node 49 port 20049 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.660274Z  WARN ThreadId(01) docker_node: Node 50 port 20050 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.662019Z  WARN ThreadId(01) docker_node: Node 51 port 20051 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.663720Z  WARN ThreadId(01) docker_node: Node 52 port 20052 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.665428Z  WARN ThreadId(01) docker_node: Node 53 port 20053 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.667360Z  WARN ThreadId(01) docker_node: Node 54 port 20054 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.669144Z  WARN ThreadId(01) docker_node: Node 55 port 20055 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.671082Z  WARN ThreadId(01) docker_node: Node 56 port 20056 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.672740Z  WARN ThreadId(01) docker_node: Node 57 port 20057 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.674466Z  WARN ThreadId(01) docker_node: Node 58 port 20058 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:27.676007Z  WARN ThreadId(01) docker_node: Node 59 port 20059 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T04:13:32.555005Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:13:37.555621Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:13:42.554878Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:13:46.990341Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 27 slow write: 5.080881ms
+2025-11-07T04:13:47.215273Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 48 slow write: 5.235305ms
+2025-11-07T04:13:47.215399Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 59 slow write: 6.336664ms
+2025-11-07T04:13:47.355174Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 23 slow write: 5.026511ms
+2025-11-07T04:13:47.355272Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 46 slow write: 8.812299ms
+2025-11-07T04:13:47.356151Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 16 slow write: 7.108589ms
+2025-11-07T04:13:47.362686Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 50 slow write: 9.907689ms
+2025-11-07T04:13:47.364257Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 53 slow write: 9.250887ms
+2025-11-07T04:13:47.364409Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 45 slow write: 9.989111ms
+2025-11-07T04:13:47.364547Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 33 slow write: 10.287736ms
+2025-11-07T04:13:47.364799Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 30 slow write: 11.06689ms
+2025-11-07T04:13:47.365262Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 37 slow write: 12.288333ms
+2025-11-07T04:13:47.555498Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:13:47.784932Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 14 slow write: 5.599671ms
+2025-11-07T04:13:47.785078Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 4 slow write: 6.323554ms
+2025-11-07T04:13:47.785913Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 52 slow write: 7.683339ms
+2025-11-07T04:13:47.786058Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 53 slow write: 8.033435ms
+2025-11-07T04:13:47.787611Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 41 slow write: 5.005981ms
+2025-11-07T04:13:47.787649Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 19 slow write: 5.440428ms
+2025-11-07T04:13:47.787687Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 38 slow write: 5.758494ms
+2025-11-07T04:13:47.787729Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 36 slow write: 6.054029ms
+2025-11-07T04:13:47.788658Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 6.852664ms
+2025-11-07T04:13:47.788712Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 57 slow write: 7.131159ms
+2025-11-07T04:13:47.788753Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 11 slow write: 7.353722ms
+2025-11-07T04:13:47.788792Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 37 slow write: 7.597907ms
+2025-11-07T04:13:47.788843Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 31 slow write: 7.846672ms
+2025-11-07T04:13:47.788918Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 34 slow write: 8.30849ms
+2025-11-07T04:13:47.788989Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 29 slow write: 8.600176ms
+2025-11-07T04:13:47.789080Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 43 slow write: 8.915291ms
+2025-11-07T04:13:47.789171Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 46 slow write: 9.202116ms
+2025-11-07T04:13:47.789246Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 22 slow write: 9.453281ms
+2025-11-07T04:13:47.789373Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 35 slow write: 9.99492ms
+2025-11-07T04:13:47.789461Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 30 slow write: 10.374467ms
+2025-11-07T04:13:48.014907Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 44 slow write: 5.697613ms
+2025-11-07T04:13:48.014970Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 34 slow write: 5.982538ms
+2025-11-07T04:13:48.015071Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 39 slow write: 6.282003ms
+2025-11-07T04:13:48.384498Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 52 slow write: 5.244855ms
+2025-11-07T04:13:48.390294Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 13 slow write: 7.415644ms
+2025-11-07T04:13:48.390605Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 46 slow write: 5.768624ms
+2025-11-07T04:13:48.390640Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 55 slow write: 5.977359ms
+2025-11-07T04:13:48.390665Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 35 slow write: 6.175782ms
+2025-11-07T04:13:48.390694Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 37 slow write: 6.388725ms
+2025-11-07T04:13:48.390786Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 20 slow write: 7.036707ms
+2025-11-07T04:13:48.390830Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 40 slow write: 7.624148ms
+2025-11-07T04:13:48.390875Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 8 slow write: 7.843112ms
+2025-11-07T04:13:48.604777Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 21 slow write: 7.914574ms
+2025-11-07T04:13:48.604981Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 9 slow write: 8.503224ms
+2025-11-07T04:13:48.605060Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 40 slow write: 8.84576ms
+2025-11-07T04:13:48.605131Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 9.104524ms
+2025-11-07T04:13:48.605206Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 7 slow write: 9.37939ms
+2025-11-07T04:13:48.842093Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 43 slow write: 5.620002ms
+2025-11-07T04:13:48.844170Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 6.536038ms
+2025-11-07T04:13:48.844218Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 39 slow write: 8.991692ms
+2025-11-07T04:13:48.844285Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 52 slow write: 6.916825ms
+2025-11-07T04:13:48.844470Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 56 slow write: 7.367433ms
+2025-11-07T04:13:48.844591Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 7 slow write: 10.165724ms
+2025-11-07T04:13:48.844623Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 37 slow write: 7.776031ms
+2025-11-07T04:13:48.845050Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 13 slow write: 8.386772ms
+2025-11-07T04:13:48.845383Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 45 slow write: 7.906573ms
+2025-11-07T04:13:48.845508Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 50 slow write: 8.373292ms
+2025-11-07T04:13:48.845561Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 46 slow write: 8.862561ms
+2025-11-07T04:13:49.021249Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 23 slow write: 7.049928ms
+2025-11-07T04:13:49.023669Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 57 slow write: 9.178346ms
+2025-11-07T04:13:49.250701Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 40 slow write: 5.00183ms
+2025-11-07T04:13:49.250789Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 11 slow write: 5.481969ms
+2025-11-07T04:13:49.250879Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 12 slow write: 5.836296ms
+2025-11-07T04:13:49.251054Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 39 slow write: 6.377205ms
+2025-11-07T04:13:49.256505Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 5 slow write: 5.822765ms
+2025-11-07T04:13:49.257455Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 56 slow write: 7.206231ms
+2025-11-07T04:13:49.257606Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 36 slow write: 5.617461ms
+2025-11-07T04:13:49.257690Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 45 slow write: 6.10745ms
+2025-11-07T04:13:49.258180Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 50 slow write: 7.310943ms
+2025-11-07T04:13:49.258260Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 34 slow write: 7.047087ms
+2025-11-07T04:13:49.258346Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 17 slow write: 7.75244ms
+2025-11-07T04:13:49.609047Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 46 slow write: 6.458377ms
+2025-11-07T04:13:49.617286Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 22 slow write: 13.430873ms
+2025-11-07T04:13:49.617562Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 30 slow write: 13.950722ms
+2025-11-07T04:13:49.617715Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 12 slow write: 14.38977ms
+2025-11-07T04:13:49.788225Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 26 slow write: 5.574431ms
+2025-11-07T04:13:49.788889Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 23 slow write: 5.829785ms
+2025-11-07T04:13:50.011615Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 35 slow write: 5.437808ms
+2025-11-07T04:13:50.011764Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 27 slow write: 5.836876ms
+2025-11-07T04:13:50.013618Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 38 slow write: 8.143008ms
+2025-11-07T04:13:50.013753Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 8.527724ms
+2025-11-07T04:13:50.013834Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 8.863381ms
+2025-11-07T04:13:50.014001Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 47 slow write: 9.303458ms
+2025-11-07T04:13:50.014086Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 57 slow write: 9.611854ms
+2025-11-07T04:13:50.014183Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 50 slow write: 9.95107ms
+2025-11-07T04:13:50.014257Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 20 slow write: 10.607831ms
+2025-11-07T04:13:50.014405Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 25 slow write: 11.137882ms
+2025-11-07T04:13:50.210441Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 4 slow write: 5.50383ms
+2025-11-07T04:13:50.210502Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 22 slow write: 5.987009ms
+2025-11-07T04:13:50.210551Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 8 slow write: 6.422046ms
+2025-11-07T04:13:50.210761Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 9 slow write: 7.398094ms
+2025-11-07T04:13:50.575568Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 51 slow write: 5.55161ms
+2025-11-07T04:13:50.590689Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 48 slow write: 5.022281ms
+2025-11-07T04:13:50.593778Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 41 slow write: 7.333383ms
+2025-11-07T04:13:50.601669Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 59 slow write: 6.716111ms
+2025-11-07T04:13:50.603167Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 38 slow write: 15.002021ms
+2025-11-07T04:13:50.788212Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 27 slow write: 5.015251ms
+2025-11-07T04:13:51.231197Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 14 slow write: 5.883216ms
+2025-11-07T04:13:51.237614Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 23 slow write: 6.434296ms
+2025-11-07T04:13:51.239311Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 30 slow write: 5.216264ms
+2025-11-07T04:13:51.239405Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 42 slow write: 5.850836ms
+2025-11-07T04:13:51.239467Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 40 slow write: 6.252593ms
+2025-11-07T04:13:51.239536Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 17 slow write: 6.805053ms
+2025-11-07T04:13:51.239608Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 52 slow write: 7.404703ms
+2025-11-07T04:13:51.239720Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 48 slow write: 7.669198ms
+2025-11-07T04:13:51.239868Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 10 slow write: 8.204568ms
+2025-11-07T04:13:51.815873Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 51 slow write: 5.351997ms
+2025-11-07T04:13:52.192701Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 13 slow write: 7.521816ms
+2025-11-07T04:13:52.195840Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 52 slow write: 9.476852ms
+2025-11-07T04:13:52.197601Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 59 slow write: 9.599643ms
+2025-11-07T04:13:52.197655Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 39 slow write: 9.895159ms
+2025-11-07T04:13:52.197695Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 43 slow write: 10.281346ms
+2025-11-07T04:13:52.428828Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 10 slow write: 5.52513ms
+2025-11-07T04:13:52.429833Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 24 slow write: 9.168166ms
+2025-11-07T04:13:52.432060Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 11 slow write: 8.142137ms
+2025-11-07T04:13:52.432145Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 5 slow write: 8.369391ms
+2025-11-07T04:13:52.432847Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 35 slow write: 5.54515ms
+2025-11-07T04:13:52.433031Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 39 slow write: 6.027549ms
+2025-11-07T04:13:52.433063Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 7 slow write: 9.37777ms
+2025-11-07T04:13:52.433208Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 13 slow write: 6.822983ms
+2025-11-07T04:13:52.433219Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 37 slow write: 10.47659ms
+2025-11-07T04:13:52.433307Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 19 slow write: 8.745678ms
+2025-11-07T04:13:52.433486Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 43 slow write: 10.882667ms
+2025-11-07T04:13:52.433550Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 27 slow write: 9.534193ms
+2025-11-07T04:13:52.433612Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 29 slow write: 11.176962ms
+2025-11-07T04:13:52.433628Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 16 slow write: 10.106683ms
+2025-11-07T04:13:52.433683Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 32 slow write: 10.409408ms
+2025-11-07T04:13:52.433765Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 47 slow write: 11.708351ms
+2025-11-07T04:13:52.433780Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 8 slow write: 10.672513ms
+2025-11-07T04:13:52.433851Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 53 slow write: 12.18514ms
+2025-11-07T04:13:52.433894Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 17 slow write: 13.049066ms
+2025-11-07T04:13:52.555798Z  WARN ThreadId(04) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:13:52.602245Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 5.313446ms
+2025-11-07T04:13:52.602370Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 5.852356ms
+2025-11-07T04:13:52.602427Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 30 slow write: 6.188272ms
+2025-11-07T04:13:52.602547Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 7 slow write: 6.141931ms
+2025-11-07T04:13:52.602986Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 47 slow write: 5.317886ms
+2025-11-07T04:13:52.766211Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 49 slow write: 5.305506ms
+2025-11-07T04:13:53.431759Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 6.09016ms
+2025-11-07T04:13:53.439231Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 21 slow write: 5.57579ms
+2025-11-07T04:13:53.443147Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 18 slow write: 5.229514ms
+2025-11-07T04:13:53.443245Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 23 slow write: 7.496456ms
+2025-11-07T04:13:53.443386Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 37 slow write: 7.772ms
+2025-11-07T04:13:53.443577Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 25 slow write: 8.358831ms
+2025-11-07T04:13:53.443686Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 15 slow write: 8.073286ms
+2025-11-07T04:13:53.443757Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 33 slow write: 6.084339ms
+2025-11-07T04:13:53.443843Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 36 slow write: 6.337235ms
+2025-11-07T04:13:53.443991Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 12 slow write: 7.610618ms
+2025-11-07T04:13:53.444100Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 30 slow write: 8.024236ms
+2025-11-07T04:13:53.444207Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 5 slow write: 8.356451ms
+2025-11-07T04:13:53.444276Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 7 slow write: 8.85864ms
+2025-11-07T04:13:53.444296Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 56 slow write: 10.457449ms
+2025-11-07T04:13:53.444404Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 27 slow write: 9.687575ms
+2025-11-07T04:13:53.444486Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 11 slow write: 10.48648ms
+2025-11-07T04:13:53.648005Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 7 slow write: 6.290894ms
+2025-11-07T04:13:53.648104Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 34 slow write: 7.099929ms
+2025-11-07T04:13:53.648189Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 25 slow write: 7.473806ms
+2025-11-07T04:13:54.136237Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 52 slow write: 8.502933ms
+2025-11-07T04:13:54.296127Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 34 slow write: 6.321915ms
+2025-11-07T04:13:54.296289Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 28 slow write: 6.797933ms
+2025-11-07T04:13:54.296589Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 53 slow write: 6.422026ms
+2025-11-07T04:13:54.297505Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 36 slow write: 6.61176ms
+2025-11-07T04:13:54.297570Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 49 slow write: 7.235ms
+2025-11-07T04:13:54.297655Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 19 slow write: 6.864184ms
+2025-11-07T04:13:54.522221Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 35 slow write: 5.621142ms
+2025-11-07T04:13:54.522364Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 18 slow write: 5.524679ms
+2025-11-07T04:13:54.523098Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 19 slow write: 5.487159ms
+2025-11-07T04:13:54.523169Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 38 slow write: 6.875104ms
+2025-11-07T04:13:54.523362Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 53 slow write: 7.392233ms
+2025-11-07T04:13:54.528241Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 39 slow write: 8.230499ms
+2025-11-07T04:13:54.528578Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 33 slow write: 9.150516ms
+2025-11-07T04:13:54.528610Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 21 slow write: 14.827818ms
+2025-11-07T04:13:54.528652Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 13 slow write: 9.528272ms
+2025-11-07T04:13:54.528716Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 55 slow write: 9.882279ms
+2025-11-07T04:13:54.528788Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 30 slow write: 10.151864ms
+2025-11-07T04:13:54.528814Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 49 slow write: 9.074314ms
+2025-11-07T04:13:54.528883Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 8 slow write: 9.433311ms
+2025-11-07T04:13:54.528977Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 56 slow write: 9.810577ms
+2025-11-07T04:13:54.529755Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 9 slow write: 10.819016ms
+2025-11-07T04:13:54.529843Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 11.431097ms
+2025-11-07T04:13:54.529909Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 12 slow write: 11.731092ms
+2025-11-07T04:13:54.529992Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 12.003557ms
+2025-11-07T04:13:54.530086Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 15 slow write: 12.308622ms
+2025-11-07T04:13:54.530259Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 10 slow write: 12.839772ms
+2025-11-07T04:13:54.530394Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 28 slow write: 13.334441ms
+2025-11-07T04:13:54.532271Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 59 slow write: 12.637079ms
+2025-11-07T04:13:54.707250Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 37 slow write: 6.10497ms
+2025-11-07T04:13:54.890051Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 15 slow write: 13.173278ms
+2025-11-07T04:13:54.890145Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 14 slow write: 13.85897ms
+2025-11-07T04:13:54.890208Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 5 slow write: 14.155176ms
+2025-11-07T04:13:54.890476Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 59 slow write: 7.459125ms
+2025-11-07T04:13:54.890591Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 37 slow write: 8.034325ms
+2025-11-07T04:13:55.508091Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 5.251265ms
+2025-11-07T04:13:55.508147Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 22 slow write: 5.486959ms
+2025-11-07T04:13:55.508180Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 34 slow write: 5.747804ms
+2025-11-07T04:13:55.510020Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 52 slow write: 8.398791ms
+2025-11-07T04:13:55.510137Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 24 slow write: 5.251666ms
+2025-11-07T04:13:55.510184Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 21 slow write: 5.474539ms
+2025-11-07T04:13:55.510239Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 28 slow write: 5.694353ms
+2025-11-07T04:13:55.510301Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 19 slow write: 5.931558ms
+2025-11-07T04:13:55.510372Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 51 slow write: 6.186162ms
+2025-11-07T04:13:55.510454Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 53 slow write: 6.545708ms
+2025-11-07T04:13:55.510494Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 55 slow write: 6.774413ms
+2025-11-07T04:13:55.510533Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 4 slow write: 8.466143ms
+2025-11-07T04:13:55.708674Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 15 slow write: 6.483448ms
+2025-11-07T04:13:56.337799Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 58 slow write: 7.704679ms
+2025-11-07T04:13:56.337901Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 39 slow write: 8.038365ms
+2025-11-07T04:13:56.756090Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 19 slow write: 9.338349ms
+2025-11-07T04:13:56.759262Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 17 slow write: 5.278666ms
+2025-11-07T04:13:56.759447Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 51 slow write: 5.630952ms
+2025-11-07T04:13:56.759574Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 35 slow write: 6.037909ms
+2025-11-07T04:13:56.759765Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 31 slow write: 6.445377ms
+2025-11-07T04:13:56.759893Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 14 slow write: 7.629078ms
+2025-11-07T04:13:56.760000Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 18 slow write: 7.934693ms
+2025-11-07T04:13:56.760137Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 38 slow write: 8.788489ms
+2025-11-07T04:13:56.760309Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 4 slow write: 9.246618ms
+2025-11-07T04:13:56.760618Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 43 slow write: 9.793997ms
+2025-11-07T04:13:56.760711Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 37 slow write: 13.061956ms
+2025-11-07T04:13:56.760763Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 23 slow write: 11.454857ms
+2025-11-07T04:13:56.760829Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 16 slow write: 11.690631ms
+2025-11-07T04:13:56.760892Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 40 slow write: 12.838022ms
+2025-11-07T04:13:56.761500Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 26 slow write: 14.505962ms
+2025-11-07T04:13:56.761722Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 21 slow write: 14.269058ms
+2025-11-07T04:13:56.978800Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 54 slow write: 6.777013ms
+2025-11-07T04:13:56.978888Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 24 slow write: 7.394724ms
+2025-11-07T04:13:57.168804Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 16 slow write: 7.445495ms
+2025-11-07T04:13:57.168932Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 49 slow write: 8.024175ms
+2025-11-07T04:13:57.168992Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 25 slow write: 8.436313ms
+2025-11-07T04:13:57.172807Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 8 slow write: 11.496668ms
+2025-11-07T04:13:57.555635Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:13:57.582515Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 43 slow write: 5.183734ms
+2025-11-07T04:13:57.590506Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 27 slow write: 6.02338ms
+2025-11-07T04:13:57.590665Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 40 slow write: 6.434846ms
+2025-11-07T04:13:57.592741Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 39 slow write: 6.982626ms
+2025-11-07T04:13:57.592830Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 15 slow write: 8.078146ms
+2025-11-07T04:13:57.594055Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 56 slow write: 8.975963ms
+2025-11-07T04:13:57.594108Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 30 slow write: 9.509292ms
+2025-11-07T04:13:57.823526Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 17 slow write: 5.217654ms
+2025-11-07T04:13:57.823609Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 8 slow write: 5.506949ms
+2025-11-07T04:13:57.823646Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 29 slow write: 5.896136ms
+2025-11-07T04:13:57.823688Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 39 slow write: 6.122861ms
+2025-11-07T04:13:57.823742Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 16 slow write: 6.416916ms
+2025-11-07T04:13:57.823808Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 7.402854ms
+2025-11-07T04:13:57.823866Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 26 slow write: 7.73114ms
+2025-11-07T04:13:57.823930Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 40 slow write: 8.081636ms
+2025-11-07T04:13:57.823990Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 38 slow write: 8.350531ms
+2025-11-07T04:13:57.824047Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 25 slow write: 8.606765ms
+2025-11-07T04:13:57.824103Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 28 slow write: 8.904431ms
+2025-11-07T04:13:57.825097Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 11 slow write: 8.791089ms
+2025-11-07T04:13:57.826221Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 53 slow write: 7.402834ms
+2025-11-07T04:13:57.826265Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 33 slow write: 5.190943ms
+2025-11-07T04:13:57.826314Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 52 slow write: 7.331302ms
+2025-11-07T04:13:58.042322Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 51 slow write: 6.09762ms
+2025-11-07T04:13:58.044482Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 45 slow write: 5.835516ms
+2025-11-07T04:13:58.044624Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 16 slow write: 8.081066ms
+2025-11-07T04:13:58.190780Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 22 slow write: 7.417834ms
+2025-11-07T04:13:58.190963Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 7.775081ms
+2025-11-07T04:13:58.191078Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 13 slow write: 8.088416ms
+2025-11-07T04:13:58.192552Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 7 slow write: 5.301895ms
+2025-11-07T04:13:58.192613Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 12 slow write: 5.574991ms
+2025-11-07T04:13:58.192674Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 6 slow write: 5.872596ms
+2025-11-07T04:13:58.192771Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 42 slow write: 6.272574ms
+2025-11-07T04:13:58.385031Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 31 slow write: 5.332447ms
+2025-11-07T04:13:58.776891Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 11 slow write: 5.161704ms
+2025-11-07T04:13:58.781989Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 5.00122ms
+2025-11-07T04:13:59.436584Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 51 slow write: 7.875673ms
+2025-11-07T04:13:59.675267Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 20 slow write: 6.63733ms
+2025-11-07T04:13:59.677656Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 43 slow write: 9.35419ms
+2025-11-07T04:13:59.677813Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 7 slow write: 9.791987ms
+2025-11-07T04:13:59.681020Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 15 slow write: 7.508586ms
+2025-11-07T04:13:59.681066Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 28 slow write: 8.170858ms
+2025-11-07T04:13:59.681102Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 8.439893ms
+2025-11-07T04:13:59.682467Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 33 slow write: 9.644694ms
+2025-11-07T04:13:59.682622Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 34 slow write: 8.225658ms
+2025-11-07T04:13:59.682682Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 47 slow write: 8.506604ms
+2025-11-07T04:13:59.682771Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 10 slow write: 8.761449ms
+2025-11-07T04:13:59.682827Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 18 slow write: 8.983712ms
+2025-11-07T04:13:59.682868Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 26 slow write: 9.206427ms
+2025-11-07T04:13:59.789016Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 55 slow write: 5.326486ms
+2025-11-07T04:13:59.820813Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 41 slow write: 9.324088ms
+2025-11-07T04:13:59.826391Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 26 slow write: 5.040261ms
+2025-11-07T04:14:00.038826Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 8 slow write: 7.137949ms
+2025-11-07T04:14:00.040441Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 10 slow write: 7.20394ms
+2025-11-07T04:14:00.040493Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 42 slow write: 7.926813ms
+2025-11-07T04:14:00.040737Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 48 slow write: 8.533365ms
+2025-11-07T04:14:00.253754Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 57 slow write: 6.102751ms
+2025-11-07T04:14:00.417745Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 30 slow write: 5.51359ms
+2025-11-07T04:14:00.417831Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 5.990689ms
+2025-11-07T04:14:00.417913Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 54 slow write: 6.258383ms
+2025-11-07T04:14:00.418006Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 58 slow write: 6.59627ms
+2025-11-07T04:14:00.636504Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 21 slow write: 5.653192ms
+2025-11-07T04:14:00.648247Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 36 slow write: 5.134703ms
+2025-11-07T04:14:00.650173Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 39 slow write: 5.321656ms
+2025-11-07T04:14:00.651548Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 35 slow write: 5.089412ms
+2025-11-07T04:14:00.651673Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 6 slow write: 5.5732ms
+2025-11-07T04:14:00.651734Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 59 slow write: 5.819516ms
+2025-11-07T04:14:00.651847Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 42 slow write: 6.209043ms
+2025-11-07T04:14:00.651941Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 48 slow write: 6.455977ms
+2025-11-07T04:14:00.652020Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 18 slow write: 6.723682ms
+2025-11-07T04:14:00.652096Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 46 slow write: 7.074318ms
+2025-11-07T04:14:00.665481Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 49 slow write: 5.287146ms
+2025-11-07T04:14:00.665584Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 31 slow write: 5.182104ms
+2025-11-07T04:14:00.665649Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 8 slow write: 5.679453ms
+2025-11-07T04:14:00.665746Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 20 slow write: 6.547858ms
+2025-11-07T04:14:00.850140Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 7 slow write: 8.787508ms
+2025-11-07T04:14:00.851898Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 23 slow write: 8.350871ms
+2025-11-07T04:14:00.851992Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 12 slow write: 8.777539ms
+2025-11-07T04:14:00.852070Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 16 slow write: 10.036522ms
+2025-11-07T04:14:00.852187Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 33 slow write: 10.575822ms
+2025-11-07T04:14:01.066592Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 6.313914ms
+2025-11-07T04:14:01.072335Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 50 slow write: 5.138273ms
+2025-11-07T04:14:01.072557Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 29 slow write: 8.731188ms
+2025-11-07T04:14:01.073186Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 11 slow write: 6.640191ms
+2025-11-07T04:14:01.073335Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 23 slow write: 7.058257ms
+2025-11-07T04:14:01.073421Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 7 slow write: 7.71758ms
+2025-11-07T04:14:01.073524Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 5 slow write: 8.021054ms
+2025-11-07T04:14:01.080057Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 55 slow write: 9.697766ms
+2025-11-07T04:14:01.080589Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 20 slow write: 8.371111ms
+2025-11-07T04:14:01.080747Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 30 slow write: 10.143213ms
+2025-11-07T04:14:01.427009Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 11 slow write: 5.022021ms
+2025-11-07T04:14:01.427060Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 35 slow write: 5.291345ms
+2025-11-07T04:14:01.427085Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 12 slow write: 5.827546ms
+2025-11-07T04:14:01.427112Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 52 slow write: 6.09685ms
+2025-11-07T04:14:01.427169Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 47 slow write: 6.562248ms
+2025-11-07T04:14:01.427963Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 53 slow write: 5.411118ms
+2025-11-07T04:14:01.429673Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 5 slow write: 10.461539ms
+2025-11-07T04:14:01.433700Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 11.64495ms
+2025-11-07T04:14:02.490545Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 32 slow write: 5.370717ms
+2025-11-07T04:14:02.491862Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 15 slow write: 6.529258ms
+2025-11-07T04:14:02.491929Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 14 slow write: 5.923157ms
+2025-11-07T04:14:02.491931Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 40 slow write: 6.10931ms
+2025-11-07T04:14:02.491990Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 34 slow write: 6.342324ms
+2025-11-07T04:14:02.555378Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:14:02.879907Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 44 slow write: 6.458757ms
+2025-11-07T04:14:02.880263Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 35 slow write: 5.912717ms
+2025-11-07T04:14:02.880394Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 54 slow write: 6.680641ms
+2025-11-07T04:14:03.490703Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 39 slow write: 8.653037ms
+2025-11-07T04:14:03.490826Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 43 slow write: 8.985142ms
+2025-11-07T04:14:03.493004Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 54 slow write: 6.429926ms
+2025-11-07T04:14:03.493058Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 12 slow write: 6.734901ms
+2025-11-07T04:14:03.493649Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 48 slow write: 15.409368ms
+2025-11-07T04:14:03.493790Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 32 slow write: 15.766945ms
+2025-11-07T04:14:03.677387Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 30 slow write: 5.595092ms
+2025-11-07T04:14:03.678312Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 12 slow write: 6.263644ms
+2025-11-07T04:14:03.678768Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 31 slow write: 7.682349ms
+2025-11-07T04:14:03.678989Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 42 slow write: 8.246359ms
+2025-11-07T04:14:03.679087Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 27 slow write: 8.692507ms
+2025-11-07T04:14:03.679341Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 46 slow write: 9.37816ms
+2025-11-07T04:14:03.679432Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 13 slow write: 9.703576ms
+2025-11-07T04:14:03.679654Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 36 slow write: 7.478845ms
+2025-11-07T04:14:03.679699Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 24 slow write: 7.762101ms
+2025-11-07T04:14:03.679713Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 5 slow write: 10.431758ms
+2025-11-07T04:14:03.679872Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 15 slow write: 10.790635ms
+2025-11-07T04:14:03.679931Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 4 slow write: 11.07656ms
+2025-11-07T04:14:03.680027Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 20 slow write: 11.368726ms
+2025-11-07T04:14:04.648480Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 24 slow write: 12.552277ms
+2025-11-07T04:14:04.648627Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 45 slow write: 13.332241ms
+2025-11-07T04:14:04.648706Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 13.872711ms
+2025-11-07T04:14:05.085628Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 43 slow write: 5.060232ms
+2025-11-07T04:14:05.297269Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 17 slow write: 7.469404ms
+2025-11-07T04:14:05.297425Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 39 slow write: 7.944214ms
+2025-11-07T04:14:05.495886Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 45 slow write: 7.074358ms
+2025-11-07T04:14:05.496405Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 29 slow write: 8.553195ms
+2025-11-07T04:14:05.842396Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 55 slow write: 5.107763ms
+2025-11-07T04:14:06.322654Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 4 slow write: 5.872756ms
+2025-11-07T04:14:06.333238Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 34 slow write: 9.125966ms
+2025-11-07T04:14:06.334378Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 46 slow write: 6.020678ms
+2025-11-07T04:14:06.335222Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 40 slow write: 14.235218ms
+2025-11-07T04:14:06.336033Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 13 slow write: 7.731789ms
+2025-11-07T04:14:06.336194Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 51 slow write: 8.170358ms
+2025-11-07T04:14:06.336316Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 35 slow write: 8.698577ms
+2025-11-07T04:14:06.336448Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 16 slow write: 9.142846ms
+2025-11-07T04:14:06.336564Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 52 slow write: 9.562303ms
+2025-11-07T04:14:06.336657Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 41 slow write: 14.724727ms
+2025-11-07T04:14:06.336768Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 58 slow write: 15.007881ms
+2025-11-07T04:14:06.336886Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 22 slow write: 15.356358ms
+2025-11-07T04:14:06.337235Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 19 slow write: 7.804201ms
+2025-11-07T04:14:06.337388Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 30 slow write: 7.435945ms
+2025-11-07T04:14:06.337434Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 31 slow write: 7.674259ms
+2025-11-07T04:14:06.337489Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 29 slow write: 11.790834ms
+2025-11-07T04:14:06.337558Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 20 slow write: 8.874341ms
+2025-11-07T04:14:06.337619Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 12 slow write: 9.157525ms
+2025-11-07T04:14:06.337682Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 50 slow write: 12.283782ms
+2025-11-07T04:14:06.337807Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 5 slow write: 12.71032ms
+2025-11-07T04:14:07.176979Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 8.140127ms
+2025-11-07T04:14:07.177085Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 11 slow write: 8.470584ms
+2025-11-07T04:14:07.177152Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 25 slow write: 8.734038ms
+2025-11-07T04:14:07.177222Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 18 slow write: 11.262734ms
+2025-11-07T04:14:07.177293Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 9 slow write: 11.878786ms
+2025-11-07T04:14:07.180810Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 45 slow write: 10.455379ms
+2025-11-07T04:14:07.185032Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 44 slow write: 10.764694ms
+2025-11-07T04:14:07.185101Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 40 slow write: 9.993101ms
+2025-11-07T04:14:07.372489Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 30 slow write: 5.963798ms
+2025-11-07T04:14:07.373027Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 32 slow write: 5.955428ms
+2025-11-07T04:14:07.373094Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 20 slow write: 6.218212ms
+2025-11-07T04:14:07.373102Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 6.412705ms
+2025-11-07T04:14:07.555870Z  WARN ThreadId(07) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T04:14:07.555890Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:14:07.617266Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 5 slow write: 5.218852ms
+2025-11-07T04:14:07.789907Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 53 slow write: 6.803261ms
+2025-11-07T04:14:07.798373Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 11 slow write: 10.606809ms
+2025-11-07T04:14:07.798428Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 6 slow write: 12.365699ms
+2025-11-07T04:14:07.798498Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 20 slow write: 13.599231ms
+2025-11-07T04:14:07.798587Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 22 slow write: 13.957758ms
+2025-11-07T04:14:07.798731Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 33 slow write: 14.296334ms
+2025-11-07T04:14:07.798825Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 26 slow write: 14.786173ms
+2025-11-07T04:14:07.798907Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 50 slow write: 15.070258ms
+2025-11-07T04:14:07.799118Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 56 slow write: 15.686938ms
+2025-11-07T04:14:07.951482Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 54 slow write: 9.394707ms
+2025-11-07T04:14:07.956825Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 31 slow write: 5.370565ms
+2025-11-07T04:14:07.956912Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 14 slow write: 5.738342ms
+2025-11-07T04:14:07.957003Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 17 slow write: 6.068908ms
+2025-11-07T04:14:07.957072Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 42 slow write: 6.366224ms
+2025-11-07T04:14:07.957161Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 24 slow write: 6.684729ms
+2025-11-07T04:14:07.957226Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 6 slow write: 9.700692ms
+2025-11-07T04:14:07.957302Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 53 slow write: 10.007728ms
+2025-11-07T04:14:07.957419Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 18 slow write: 10.72148ms
+2025-11-07T04:14:07.957493Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 37 slow write: 11.169308ms
+2025-11-07T04:14:07.957603Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 33 slow write: 11.511544ms
+2025-11-07T04:14:07.957678Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 13 slow write: 11.749148ms
+2025-11-07T04:14:07.957758Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 34 slow write: 12.143126ms
+2025-11-07T04:14:07.957843Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 25 slow write: 12.528512ms
+2025-11-07T04:14:07.957913Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 50 slow write: 12.787287ms
+2025-11-07T04:14:07.958014Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 19 slow write: 13.172754ms
+2025-11-07T04:14:07.958123Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 57 slow write: 13.453949ms
+2025-11-07T04:14:07.958246Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 10 slow write: 13.773155ms
+2025-11-07T04:14:07.958333Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 26 slow write: 14.133561ms
+2025-11-07T04:14:07.958442Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 7 slow write: 14.421856ms
+2025-11-07T04:14:07.958530Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 22 slow write: 14.768613ms
+2025-11-07T04:14:07.958682Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 40 slow write: 15.094338ms
+2025-11-07T04:14:07.958767Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 38 slow write: 15.479085ms
+2025-11-07T04:14:07.960225Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 30 slow write: 5.030649ms
+2025-11-07T04:14:07.960308Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 27 slow write: 5.295344ms
+2025-11-07T04:14:07.960471Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 4 slow write: 6.532776ms
+2025-11-07T04:14:07.960536Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 11 slow write: 6.830911ms
+2025-11-07T04:14:07.960648Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 7.205268ms
+2025-11-07T04:14:07.960781Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 39 slow write: 8.480191ms
+2025-11-07T04:14:07.960921Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 46 slow write: 8.829837ms
+2025-11-07T04:14:07.961180Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 29 slow write: 9.274625ms
+2025-11-07T04:14:08.736080Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 40 slow write: 5.199802ms
+2025-11-07T04:14:08.743917Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 37 slow write: 5.08265ms
+2025-11-07T04:14:08.744020Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 51 slow write: 5.61253ms
+2025-11-07T04:14:08.744067Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 14 slow write: 6.16116ms
+2025-11-07T04:14:09.315129Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 9 slow write: 5.05973ms
+2025-11-07T04:14:09.438648Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 13 slow write: 5.963776ms
+2025-11-07T04:14:09.438711Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 10 slow write: 6.327842ms
+2025-11-07T04:14:09.438773Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 23 slow write: 7.378611ms
+2025-11-07T04:14:09.439962Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 34 slow write: 8.658524ms
+2025-11-07T04:14:09.439988Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 17 slow write: 8.927878ms
+2025-11-07T04:14:09.723681Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 14 slow write: 11.356982ms
+2025-11-07T04:14:10.276038Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 10 slow write: 6.517586ms
+2025-11-07T04:14:10.289241Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 5 slow write: 6.496605ms
+2025-11-07T04:14:10.291525Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 22 slow write: 8.44074ms
+2025-11-07T04:14:10.291568Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 47 slow write: 8.670574ms
+2025-11-07T04:14:10.459895Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 39 slow write: 5.933855ms
+2025-11-07T04:14:10.618363Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 46 slow write: 5.355755ms
+2025-11-07T04:14:10.627697Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 43 slow write: 14.509078ms
+2025-11-07T04:14:10.631176Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 9.827295ms
+2025-11-07T04:14:11.223005Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 26 slow write: 5.184692ms
+2025-11-07T04:14:11.420045Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 6 slow write: 7.150337ms
+2025-11-07T04:14:11.425509Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 20 slow write: 6.440305ms
+2025-11-07T04:14:11.425623Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 26 slow write: 6.75514ms
+2025-11-07T04:14:11.425701Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 56 slow write: 7.115366ms
+2025-11-07T04:14:11.425803Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 30 slow write: 7.429532ms
+2025-11-07T04:14:11.425913Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 39 slow write: 11.163009ms
+2025-11-07T04:14:11.426020Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 49 slow write: 11.480014ms
+2025-11-07T04:14:11.426184Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 45 slow write: 12.092175ms
+2025-11-07T04:14:11.426291Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 12.36918ms
+2025-11-07T04:14:11.426434Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 47 slow write: 12.731036ms
+2025-11-07T04:14:11.427904Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 5 slow write: 14.557279ms
+2025-11-07T04:14:11.431362Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 40 slow write: 7.112136ms
+2025-11-07T04:14:12.033842Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 11 slow write: 5.915395ms
+2025-11-07T04:14:12.035465Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 20 slow write: 5.316344ms
+2025-11-07T04:14:12.035558Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 45 slow write: 5.524188ms
+2025-11-07T04:14:12.035652Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 16 slow write: 5.856344ms
+2025-11-07T04:14:12.035697Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 23 slow write: 7.105756ms
+2025-11-07T04:14:12.035753Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 22 slow write: 7.469232ms
+2025-11-07T04:14:12.035842Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 7.705177ms
+2025-11-07T04:14:12.214892Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 26 slow write: 5.020319ms
+2025-11-07T04:14:12.214962Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 44 slow write: 5.382745ms
+2025-11-07T04:14:12.215010Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 27 slow write: 5.662341ms
+2025-11-07T04:14:12.215059Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 8 slow write: 5.884225ms
+2025-11-07T04:14:12.215101Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 4 slow write: 6.228501ms
+2025-11-07T04:14:12.445573Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 8 slow write: 5.751112ms
+2025-11-07T04:14:12.555232Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T04:14:12.555257Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:14:12.854754Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 48 slow write: 8.829307ms
+2025-11-07T04:14:12.854930Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 51 slow write: 9.654082ms
+2025-11-07T04:14:12.855040Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 14 slow write: 10.68802ms
+2025-11-07T04:14:12.857939Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 22 slow write: 13.563902ms
+2025-11-07T04:14:12.858053Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 31 slow write: 5.007649ms
+2025-11-07T04:14:12.858072Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 36 slow write: 11.127347ms
+2025-11-07T04:14:12.858075Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 27 slow write: 10.911404ms
+2025-11-07T04:14:12.858105Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 46 slow write: 11.846071ms
+2025-11-07T04:14:12.858109Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 20 slow write: 5.268133ms
+2025-11-07T04:14:12.858136Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 33 slow write: 12.3261ms
+2025-11-07T04:14:12.858200Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 9 slow write: 12.717807ms
+2025-11-07T04:14:12.858231Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 26 slow write: 12.95466ms
+2025-11-07T04:14:12.858233Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 8 slow write: 5.696831ms
+2025-11-07T04:14:12.858275Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 44 slow write: 6.17621ms
+2025-11-07T04:14:12.858301Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 15 slow write: 6.486346ms
+2025-11-07T04:14:12.858323Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 10.173751ms
+2025-11-07T04:14:13.661045Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 46 slow write: 7.555074ms
+2025-11-07T04:14:13.661715Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 20 slow write: 6.721449ms
+2025-11-07T04:14:13.661767Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 21 slow write: 7.224268ms
+2025-11-07T04:14:13.662084Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 35 slow write: 9.5292ms
+2025-11-07T04:14:13.662136Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 28 slow write: 9.162363ms
+2025-11-07T04:14:13.662202Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 6 slow write: 9.463658ms
+2025-11-07T04:14:13.662278Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 54 slow write: 9.876066ms
+2025-11-07T04:14:13.662342Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 10.1627ms
+2025-11-07T04:14:14.492541Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 42 slow write: 5.041869ms
+2025-11-07T04:14:14.492799Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 8 slow write: 6.000736ms
+2025-11-07T04:14:14.492878Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 26 slow write: 6.409244ms
+2025-11-07T04:14:14.495151Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 6.77171ms
+2025-11-07T04:14:14.497420Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 23 slow write: 8.794557ms
+2025-11-07T04:14:14.497708Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 41 slow write: 9.380177ms
+2025-11-07T04:14:14.694604Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 10.376514ms
+2025-11-07T04:14:14.694920Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 31 slow write: 5.161132ms
+2025-11-07T04:14:14.694936Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 38 slow write: 5.369326ms
+2025-11-07T04:14:14.880925Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 6.13772ms
+2025-11-07T04:14:14.885578Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 35 slow write: 5.10898ms
+2025-11-07T04:14:14.885801Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 52 slow write: 5.684822ms
+2025-11-07T04:14:14.886048Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 23 slow write: 7.145017ms
+2025-11-07T04:14:14.886736Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 12 slow write: 11.443614ms
+2025-11-07T04:14:14.886897Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 10 slow write: 11.78232ms
+2025-11-07T04:14:14.888519Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 50 slow write: 5.840384ms
+2025-11-07T04:14:15.113487Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 4 slow write: 5.393396ms
+2025-11-07T04:14:15.565508Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 28 slow write: 5.64466ms
+2025-11-07T04:14:15.565785Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 49 slow write: 6.645888ms
+2025-11-07T04:14:15.567566Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 43 slow write: 7.178738ms
+2025-11-07T04:14:15.567607Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 32 slow write: 7.528294ms
+2025-11-07T04:14:15.740614Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 52 slow write: 5.145381ms
+2025-11-07T04:14:15.740719Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 35 slow write: 7.87477ms
+2025-11-07T04:14:15.740862Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 22 slow write: 8.217496ms
+2025-11-07T04:14:15.741017Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 12 slow write: 8.671824ms
+2025-11-07T04:14:15.745393Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 33 slow write: 6.973804ms
+2025-11-07T04:14:15.745976Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 25 slow write: 5.62649ms
+2025-11-07T04:14:15.746003Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 9 slow write: 6.236831ms
+2025-11-07T04:14:15.746024Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 18 slow write: 6.399394ms
+2025-11-07T04:14:15.746058Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 47 slow write: 6.619638ms
+2025-11-07T04:14:15.746082Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 46 slow write: 6.967034ms
+2025-11-07T04:14:15.746110Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 19 slow write: 8.003223ms
+2025-11-07T04:14:15.746138Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 24 slow write: 8.292627ms
+2025-11-07T04:14:15.931378Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 39 slow write: 7.89042ms
+2025-11-07T04:14:15.931923Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 49 slow write: 6.558626ms
+2025-11-07T04:14:15.932907Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 53 slow write: 8.187736ms
+2025-11-07T04:14:15.946282Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 18 slow write: 20.599397ms
+2025-11-07T04:14:16.627274Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 34 slow write: 6.764591ms
+2025-11-07T04:14:16.630203Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 47 slow write: 9.669242ms
+2025-11-07T04:14:16.631170Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 24 slow write: 5.0696ms
+2025-11-07T04:14:16.631228Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 30 slow write: 8.563522ms
+2025-11-07T04:14:16.631263Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 16 slow write: 8.928949ms
+2025-11-07T04:14:16.631300Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 53 slow write: 9.167514ms
+2025-11-07T04:14:16.631401Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 52 slow write: 9.837615ms
+2025-11-07T04:14:16.631484Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 37 slow write: 10.217112ms
+2025-11-07T04:14:16.631577Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 17 slow write: 10.765981ms
+2025-11-07T04:14:16.631875Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 5 slow write: 8.008702ms
+2025-11-07T04:14:16.631882Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 31 slow write: 8.275888ms
+2025-11-07T04:14:16.631905Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 51 slow write: 6.110119ms
+2025-11-07T04:14:16.631921Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 42 slow write: 9.038511ms
+2025-11-07T04:14:17.019644Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 19 slow write: 9.465238ms
+2025-11-07T04:14:17.220694Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 29 slow write: 7.266059ms
+2025-11-07T04:14:17.220958Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 43 slow write: 7.728218ms
+2025-11-07T04:14:17.221216Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 13 slow write: 5.084471ms
+2025-11-07T04:14:17.221274Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 42 slow write: 5.386736ms
+2025-11-07T04:14:17.221326Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 24 slow write: 5.647661ms
+2025-11-07T04:14:17.221413Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 5.998606ms
+2025-11-07T04:14:17.221485Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 5 slow write: 6.358853ms
+2025-11-07T04:14:17.221546Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 6.633908ms
+2025-11-07T04:14:17.222058Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 57 slow write: 7.064736ms
+2025-11-07T04:14:17.222141Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 56 slow write: 8.46375ms
+2025-11-07T04:14:17.222359Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 7 slow write: 8.906419ms
+2025-11-07T04:14:17.368890Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 55 slow write: 5.211083ms
+2025-11-07T04:14:17.375971Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 55 slow write: 6.697259ms
+2025-11-07T04:14:17.377504Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 40 slow write: 5.340725ms
+2025-11-07T04:14:17.377618Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 27 slow write: 5.896105ms
+2025-11-07T04:14:17.377677Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 39 slow write: 6.627467ms
+2025-11-07T04:14:17.377754Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 6.901213ms
+2025-11-07T04:14:17.377835Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 35 slow write: 8.106774ms
+2025-11-07T04:14:17.377968Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 52 slow write: 8.498402ms
+2025-11-07T04:14:17.393133Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 19 slow write: 8.588023ms
+2025-11-07T04:14:17.393362Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 49 slow write: 7.557694ms
+2025-11-07T04:14:17.393434Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 37 slow write: 7.82815ms
+2025-11-07T04:14:17.393491Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 6 slow write: 8.102034ms
+2025-11-07T04:14:17.393551Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 13 slow write: 8.364459ms
+2025-11-07T04:14:17.393615Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 16 slow write: 8.651284ms
+2025-11-07T04:14:17.393685Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 9 slow write: 8.957389ms
+2025-11-07T04:14:17.555004Z  WARN ThreadId(04) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T04:14:17.555031Z  WARN ThreadId(04) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:14:17.777777Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 52 slow write: 9.603451ms
+2025-11-07T04:14:17.777931Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 29 slow write: 10.907334ms
+2025-11-07T04:14:17.786163Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 36 slow write: 14.220813ms
+2025-11-07T04:14:17.788033Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 44 slow write: 5.410136ms
+2025-11-07T04:14:17.788111Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 16 slow write: 5.64274ms
+2025-11-07T04:14:17.788199Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 31 slow write: 6.049008ms
+2025-11-07T04:14:17.788277Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 10 slow write: 6.293292ms
+2025-11-07T04:14:17.788346Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 6.551087ms
+2025-11-07T04:14:17.788435Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 4 slow write: 6.917373ms
+2025-11-07T04:14:17.788522Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 22 slow write: 11.565926ms
+2025-11-07T04:14:17.788601Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 24 slow write: 11.8369ms
+2025-11-07T04:14:17.788669Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 43 slow write: 13.884436ms
+2025-11-07T04:14:17.788882Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 5 slow write: 16.569604ms
+2025-11-07T04:14:17.788944Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 58 slow write: 16.82851ms
+2025-11-07T04:14:17.789771Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 46 slow write: 5.104061ms
+2025-11-07T04:14:17.789845Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 19 slow write: 5.508608ms
+2025-11-07T04:14:17.993854Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 17 slow write: 6.889883ms
+2025-11-07T04:14:17.994866Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 14 slow write: 6.230251ms
+2025-11-07T04:14:17.998265Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 4 slow write: 7.770048ms
+2025-11-07T04:14:17.998420Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 21 slow write: 8.689644ms
+2025-11-07T04:14:17.998539Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 26 slow write: 10.655409ms
+2025-11-07T04:14:17.998624Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 27 slow write: 11.22131ms
+2025-11-07T04:14:17.999346Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 16 slow write: 11.26441ms
+2025-11-07T04:14:17.999534Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 11 slow write: 11.660227ms
+2025-11-07T04:14:17.999922Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 9 slow write: 12.215797ms
+2025-11-07T04:14:18.000064Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 12.761327ms
+2025-11-07T04:14:18.000160Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 19 slow write: 13.034462ms
+2025-11-07T04:14:18.000284Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 33 slow write: 13.412079ms
+2025-11-07T04:14:18.000378Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 5 slow write: 13.719454ms
+2025-11-07T04:14:18.000526Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 13 slow write: 14.300425ms
+2025-11-07T04:14:18.000534Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 23 slow write: 9.571ms
+2025-11-07T04:14:18.000664Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 31 slow write: 10.862543ms
+2025-11-07T04:14:18.000667Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 8 slow write: 14.691131ms
+2025-11-07T04:14:18.000767Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 32 slow write: 14.949866ms
+2025-11-07T04:14:18.000902Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 15 slow write: 11.414583ms
+2025-11-07T04:14:18.000944Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 57 slow write: 15.248261ms
+2025-11-07T04:14:18.001105Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 39 slow write: 16.448853ms
+2025-11-07T04:14:18.001237Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 29 slow write: 16.792068ms
+2025-11-07T04:14:18.002210Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 13.389139ms
+2025-11-07T04:14:18.002364Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 47 slow write: 13.353097ms
+2025-11-07T04:14:18.003129Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 36 slow write: 11.907212ms
+2025-11-07T04:14:18.760953Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 52 slow write: 7.589335ms
+2025-11-07T04:14:18.761182Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 53 slow write: 8.294068ms
+2025-11-07T04:14:18.762471Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 46 slow write: 9.889716ms
+2025-11-07T04:14:18.765061Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 23 slow write: 5.244843ms
+2025-11-07T04:14:18.765122Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 34 slow write: 5.505118ms
+2025-11-07T04:14:18.765192Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 11 slow write: 9.56928ms
+2025-11-07T04:14:18.765261Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 59 slow write: 10.055958ms
+2025-11-07T04:14:18.765299Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 32 slow write: 10.293653ms
+2025-11-07T04:14:18.765345Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 47 slow write: 10.574948ms
+2025-11-07T04:14:18.765477Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 10.885853ms
+2025-11-07T04:14:18.766129Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 10 slow write: 11.669968ms
+2025-11-07T04:14:18.766377Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 58 slow write: 12.198248ms
+2025-11-07T04:14:18.770266Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 15 slow write: 12.671596ms
+2025-11-07T04:14:18.949412Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 34 slow write: 5.09673ms
+2025-11-07T04:14:18.955579Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 36 slow write: 11.902571ms
+2025-11-07T04:14:18.956886Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 19 slow write: 5.002079ms
+2025-11-07T04:14:18.958502Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 9 slow write: 6.145299ms
+2025-11-07T04:14:19.533448Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 16 slow write: 5.347015ms
+2025-11-07T04:14:19.736762Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 45 slow write: 8.344049ms
+2025-11-07T04:14:19.741397Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 33 slow write: 9.204214ms
+2025-11-07T04:14:19.742069Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 22 slow write: 7.420042ms
+2025-11-07T04:14:19.742185Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 29 slow write: 7.774838ms
+2025-11-07T04:14:19.742388Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 14 slow write: 8.158815ms
+2025-11-07T04:14:19.742466Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 8 slow write: 8.595643ms
+2025-11-07T04:14:19.742472Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 46 slow write: 9.211704ms
+2025-11-07T04:14:19.742558Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 58 slow write: 9.970537ms
+2025-11-07T04:14:19.742601Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 54 slow write: 9.105072ms
+2025-11-07T04:14:19.908661Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 5.63245ms
+2025-11-07T04:14:19.911313Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 19 slow write: 7.640956ms
+2025-11-07T04:14:19.911391Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 31 slow write: 7.935921ms
+2025-11-07T04:14:19.911425Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 20 slow write: 8.215686ms
+2025-11-07T04:14:20.080515Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 38 slow write: 5.355165ms
+2025-11-07T04:14:20.080577Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 35 slow write: 5.641621ms
+2025-11-07T04:14:20.080644Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 17 slow write: 5.913925ms
+2025-11-07T04:14:20.080692Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 21 slow write: 6.415224ms
+2025-11-07T04:14:20.080752Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 55 slow write: 6.623948ms
+2025-11-07T04:14:20.080828Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 53 slow write: 6.885932ms
+2025-11-07T04:14:20.080902Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 50 slow write: 7.373281ms
+2025-11-07T04:14:20.271160Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 33 slow write: 5.06328ms
+2025-11-07T04:14:20.271695Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 44 slow write: 5.05195ms
+2025-11-07T04:14:20.271759Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 41 slow write: 5.309864ms
+2025-11-07T04:14:22.555551Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T04:14:22.555580Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:14:27.556103Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T04:14:27.556127Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:14:32.555457Z  WARN ThreadId(02) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T04:14:32.555486Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:14:37.554775Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T04:14:37.554802Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:14:42.555331Z  WARN ThreadId(02) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T04:14:42.555372Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:14:47.555030Z  WARN ThreadId(07) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T04:14:47.555056Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:14:52.555327Z  WARN ThreadId(03) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T04:14:52.555379Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:14:57.555696Z  WARN ThreadId(08) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T04:14:57.555729Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:15:02.555477Z  WARN ThreadId(07) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T04:15:02.555504Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:15:07.555240Z  WARN ThreadId(02) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T04:15:07.555265Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:15:12.555452Z  WARN ThreadId(03) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T04:15:12.555478Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:15:17.555605Z  WARN ThreadId(02) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T04:15:17.555631Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:15:22.556690Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T04:15:22.556720Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:15:27.554985Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T04:15:27.555013Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:15:32.555080Z  WARN ThreadId(03) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T04:15:32.555104Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:15:37.555391Z  WARN ThreadId(02) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T04:15:37.555421Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:15:42.557043Z  WARN ThreadId(07) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T04:15:42.557069Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:15:47.556093Z  WARN ThreadId(08) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T04:15:47.556142Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:15:52.555324Z  WARN ThreadId(02) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T04:15:52.555423Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:15:57.555708Z  WARN ThreadId(02) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T04:15:57.555737Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:16:02.554838Z  WARN ThreadId(02) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T04:16:02.554865Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:16:07.555875Z  WARN ThreadId(08) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T04:16:07.555905Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T04:16:10.324250Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 6 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-07T04:16:10.416275Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3197): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.417121Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3202): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.417924Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3185): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.418695Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3208): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.420078Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3183): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.420842Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3189): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.549677Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 14 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-07T04:16:10.550426Z  WARN ThreadId(09) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 14 slot 3182): Failed to send VOTE: Connection failed 172.31.74.124:21014: Connection refused (os error 111)
+2025-11-07T04:16:10.551142Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 14 slot 3184): Failed to send VOTE: Connection failed 172.31.74.124:21014: Connection refused (os error 111)
+2025-11-07T04:16:10.551928Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 14 slot 3186): Failed to send VOTE: Connection failed 172.31.74.124:21014: Connection refused (os error 111)
+2025-11-07T04:16:10.552658Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 14 slot 3183): Failed to send VOTE: Connection failed 172.31.74.124:21014: Connection refused (os error 111)
+2025-11-07T04:16:10.553275Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 14 slot 3190): Failed to send VOTE: Connection failed 172.31.74.124:21014: Connection refused (os error 111)
+2025-11-07T04:16:10.652698Z  WARN ThreadId(09) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3184): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.653648Z  WARN ThreadId(09) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3186): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.654625Z  WARN ThreadId(09) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3187): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.655462Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3190): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.656303Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3192): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.658563Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3191): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.659367Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3194): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.659993Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3195): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.660640Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3188): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.797460Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3198): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.798220Z  WARN ThreadId(09) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3239): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.798910Z  WARN ThreadId(02) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3201): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.799689Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3200): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.800427Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3199): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.801721Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3236): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.802624Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3237): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.803294Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3205): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.808881Z  WARN ThreadId(09) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3238): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.843910Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 27 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-07T04:16:10.844745Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 27 slot 3199): Failed to send VOTE: Connection failed 172.31.75.97:21027: Connection refused (os error 111)
+2025-11-07T04:16:10.907200Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3240): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.908054Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3203): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.908829Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3204): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.909797Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3206): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.910544Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 6 slot 3210): Failed to send VOTE: Connection failed 172.31.72.113:21006: Connection refused (os error 111)
+2025-11-07T04:16:10.929634Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 27 slot 3200): Failed to send VOTE: Connection failed 172.31.75.97:21027: Connection refused (os error 111)
+2025-11-07T04:16:10.930435Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 27 slot 3202): Failed to send VOTE: Connection failed 172.31.75.97:21027: Connection refused (os error 111)
+2025-11-07T04:16:10.931161Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 27 slot 3194): Failed to send VOTE: Connection failed 172.31.75.97:21027: Connection refused (os error 111)
+2025-11-07T04:16:10.931930Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 27 slot 3203): Failed to send VOTE: Connection failed 172.31.75.97:21027: Connection refused (os error 111)
+2025-11-07T04:16:10.937673Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 16 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-07T04:16:10.941548Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 3 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-07T04:16:10.942308Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 3 slot 3185): Failed to send VOTE: Connection failed 172.31.64.102:21003: Connection refused (os error 111)
+2025-11-07T04:16:10.943088Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 3 slot 3205): Failed to send VOTE: Connection failed 172.31.64.102:21003: Connection refused (os error 111)
+2025-11-07T04:16:10.945230Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 3 slot 3202): Failed to send VOTE: Connection failed 172.31.64.102:21003: Connection refused (os error 111)
+2025-11-07T04:16:10.946036Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 3 slot 3204): Failed to send VOTE: Connection failed 172.31.64.102:21003: Connection refused (os error 111)
+2025-11-07T04:16:10.946806Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 3 slot 3186): Failed to send VOTE: Connection failed 172.31.64.102:21003: Connection refused (os error 111)
+2025-11-07T04:16:10.947714Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 3 slot 3188): Failed to send VOTE: Connection failed 172.31.64.102:21003: Connection refused (os error 111)
+2025-11-07T04:16:10.948538Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 3 slot 3187): Failed to send VOTE: Connection failed 172.31.64.102:21003: Connection refused (os error 111)
+2025-11-07T04:16:10.949429Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 3 slot 3193): Failed to send VOTE: Connection failed 172.31.64.102:21003: Connection refused (os error 111)
+2025-11-07T04:16:10.950193Z  WARN ThreadId(09) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 3 slot 3190): Failed to send VOTE: Connection failed 172.31.64.102:21003: Connection refused (os error 111)
+2025-11-07T04:16:10.951049Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 3 slot 3191): Failed to send VOTE: Connection failed 172.31.64.102:21003: Connection refused (os error 111)
+2025-11-07T04:16:10.951993Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 3 slot 3198): Failed to send VOTE: Connection failed 172.31.64.102:21003: Connection refused (os error 111)
+2025-11-07T04:16:10.952828Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 3 slot 3194): Failed to send VOTE: Connection failed 172.31.64.102:21003: Connection refused (os error 111)
+2025-11-07T04:16:10.953598Z  WARN ThreadId(09) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 3 slot 3196): Failed to send VOTE: Connection failed 172.31.64.102:21003: Connection refused (os error 111)
+2025-11-07T04:16:10.954381Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 3 slot 3192): Failed to send VOTE: Connection failed 172.31.64.102:21003: Connection refused (os error 111)
+2025-11-07T04:16:10.955424Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 3 slot 3197): Failed to send VOTE: Connection failed 172.31.64.102:21003: Connection refused (os error 111)
+2025-11-07T04:16:10.956284Z  WARN ThreadId(09) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 3 slot 3195): Failed to send VOTE: Connection failed 172.31.64.102:21003: Connection refused (os error 111)
+2025-11-07T04:16:10.957096Z  WARN ThreadId(09) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 3 slot 3199): Failed to send VOTE: Connection failed 172.31.64.102:21003: Connection refused (os error 111)
+2025-11-07T04:16:10.958087Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 3 slot 3201): Failed to send VOTE: Connection failed 172.31.64.102:21003: Connection refused (os error 111)
+2025-11-07T04:16:10.958881Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 3 slot 3236): Failed to send VOTE: Connection failed 172.31.64.102:21003: Connection refused (os error 111)

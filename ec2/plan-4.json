@@ -1,0 +1,28 @@
+{
+  "regions": [
+    {
+      "region": "us-east-1",
+      "profile": "default",
+      "count": 1,
+      "include_client": true
+    },
+    {
+      "region": "eu-central-1",
+      "profile": "default",
+      "count": 1,
+      "include_client": false
+    },
+    {
+      "region": "ca-central-1",
+      "profile": "default",
+      "count": 1,
+      "include_client": false
+    },
+    {
+      "region": "sa-east-1",
+      "profile": "default",
+      "count": 1,
+      "include_client": false
+    }
+  ]
+}

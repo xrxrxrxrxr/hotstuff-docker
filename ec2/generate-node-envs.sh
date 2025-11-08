@@ -1,8 +1,18 @@
 #!/usr/bin/env bash
 # generate-node-envs.sh
-# Generate ec2/envs/node{X}.env files in bulk (NODE_HOSTS uses private IPs)
+# Generate ec2/envs/node{X}.env files in bulk.
+# By default NODE_HOSTS uses private IPs; set NODE_IP_SOURCE=public for cross-region tests.
 
 set -euo pipefail
+
+IP_SOURCE_INPUT="${NODE_IP_SOURCE:-}"
+NODE_IP_SOURCE="${IP_SOURCE_INPUT:-private}"
+if [[ "$NODE_IP_SOURCE" != "private" && "$NODE_IP_SOURCE" != "public" ]]; then
+  echo "NODE_IP_SOURCE must be either 'private' or 'public'" >&2
+  exit 1
+fi
+NODE_IP_SOURCE_WAS_DEFAULT=true
+[[ -n "$IP_SOURCE_INPUT" ]] && NODE_IP_SOURCE_WAS_DEFAULT=false
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HOSTS_FILE="$ROOT_DIR/hosts.txt"
@@ -16,8 +26,20 @@ fi
 # Determine node count: prefer nodeX-private entries, otherwise use nodeX entries
 NODE_COUNT_INPUT="${1:-}"
 if [[ -z "$NODE_COUNT_INPUT" ]]; then
-  NODE_COUNT=$(grep -E 'node[0-9]+-private$' "$HOSTS_FILE" | wc -l | tr -d ' ')
-  if (( NODE_COUNT == 0 )); then
+  if [[ "$NODE_IP_SOURCE" == "private" ]]; then
+    NODE_COUNT=$(grep -E 'node[0-9]+-private$' "$HOSTS_FILE" | wc -l | tr -d ' ')
+    if (( NODE_COUNT == 0 )); then
+      if $NODE_IP_SOURCE_WAS_DEFAULT; then
+        echo "Warning: no 'nodeX-private' entries found; switching to NODE_IP_SOURCE=public" >&2
+        NODE_IP_SOURCE="public"
+      else
+        echo "Error: NODE_IP_SOURCE=private but hosts.txt has no 'nodeX-private' entries" >&2
+        exit 1
+      fi
+    fi
+  fi
+
+  if [[ "$NODE_IP_SOURCE" == "public" ]]; then
     NODE_COUNT=$(grep -E 'node[0-9]+$' "$HOSTS_FILE" | wc -l | tr -d ' ')
   fi
 else
@@ -26,6 +48,11 @@ else
     exit 1
   fi
   NODE_COUNT="$NODE_COUNT_INPUT"
+fi
+
+if (( NODE_COUNT == 0 )); then
+  echo "No node entries found in hosts.txt" >&2
+  exit 1
 fi
 
 declare -A NODE_IPS_PRIV   # nodeX -> private IP
@@ -48,30 +75,36 @@ while read -r ip name; do
   fi
 done < "$HOSTS_FILE"
 
-# If there are no private entries, fall back to public entries to build NODE_HOSTS (not recommended but works)
-if (( ${#NODE_IPS_PRIV[@]} == 0 )); then
-  echo "Warning: no 'nodeX-private' entries found; falling back to public IPs for NODE_HOSTS" >&2
+# Decide which IP set to use (private for intra-region, public for cross-region)
+declare -A NODE_IPS_SELECTED
+
+if [[ "$NODE_IP_SOURCE" == "public" ]]; then
   for (( i = 0; i < NODE_COUNT; ++i )); do
     if [[ -z "${NODE_IPS_PUB[$i]:-}" ]]; then
-      echo "hosts.txt is missing an IP for node${i} (neither node${i} nor node${i}-private exists)" >&2
+      echo "hosts.txt is missing a public IP for node${i}" >&2
       exit 1
     fi
-    NODE_IPS_PRIV[$i]="${NODE_IPS_PUB[$i]}"
+    NODE_IPS_SELECTED[$i]="${NODE_IPS_PUB[$i]}"
   done
 else
-  # When private entries exist, ensure 0..NODE_COUNT-1 are all present
+  # Default to private IPs; enforce presence for every node
+  if (( ${#NODE_IPS_PRIV[@]} == 0 )); then
+    echo "hosts.txt is missing 'nodeX-private' entries" >&2
+    exit 1
+  fi
   for (( i = 0; i < NODE_COUNT; ++i )); do
     if [[ -z "${NODE_IPS_PRIV[$i]:-}" ]]; then
       echo "hosts.txt is missing a private IP for node${i}-private" >&2
       exit 1
     fi
+    NODE_IPS_SELECTED[$i]="${NODE_IPS_PRIV[$i]}"
   done
 fi
 
-# Build NODE_HOSTS using private IPs
+# Build NODE_HOSTS using the selected IP family
 NODE_HOSTS=""
 for (( i = 0; i < NODE_COUNT; ++i )); do
-  entry="node${i}:${NODE_IPS_PRIV[$i]}"
+  entry="node${i}:${NODE_IPS_SELECTED[$i]}"
   if [[ -z "$NODE_HOSTS" ]]; then
     NODE_HOSTS="$entry"
   else
@@ -98,12 +131,11 @@ client_env_file="$ENVS_DIR/client.env"
 cat > "$client_env_file" <<EOF
 CLIENT_ID=client
 CLIENT_MODE=load_test
-CLIENT_ORDERING_MODE=smrol
-
+CLIENT_ORDERING_MODE=pompe
 NODE_LEAST_ID=0
 NODE_NUM=${NODE_COUNT}
 NODE_HOSTS=${NODE_HOSTS}
-TARGET_TPS=10
+TARGET_TPS=500
 TEST_DURATION=180
 POMPE_ENABLE=true
 POMPE_BATCH_SIZE=1
@@ -114,4 +146,4 @@ RUST_LOG=warn
 EOF
 echo "Generated ${client_env_file}"
 
-echo "Generated ${NODE_COUNT} node configuration files (NODE_HOSTS uses private IPs)."
+echo "Generated ${NODE_COUNT} node configuration files (NODE_HOSTS uses ${NODE_IP_SOURCE} IPs)."

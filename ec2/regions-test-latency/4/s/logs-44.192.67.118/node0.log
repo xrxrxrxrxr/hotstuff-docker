@@ -1,0 +1,654 @@
+2025-11-08T11:35:56.217657Z  WARN ThreadId(01) docker_node: metrics exporter disabled by SMROL_DISABLE_METRICS
+2025-11-08T11:36:16.428828Z  WARN ThreadId(01) hotstuff_runner::tcp_node: Node 0 view timeout set to 3000 ms
+2025-11-08T11:36:16.435596Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: SMROL_MEDIAN_INFLIGHT=24, SMROL_ORDER_FINALIZE_INFLIGHT=4, SMROL_FINAL_SIGN_INFLIGHT=4, SMROL_FINAL_VERIFY_INFLIGHT=24
+2025-11-08T11:36:16.435667Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: [Sequencing] Node 0 multi-signature verification disabled: false
+2025-11-08T11:36:16.436846Z  WARN ThreadId(03) hotstuff_runner::smrol::sequencing: [Sequencing] Node 0 final verify dispatcher started
+2025-11-08T11:36:16.526351Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 0 failed to connect to node 1: Connection refused (os error 111)
+2025-11-08T11:36:16.652908Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 0 failed to connect to node 3: Connection refused (os error 111)
+2025-11-08T11:36:19.430782Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 0 timed out; latency may accumulate
+2025-11-08T11:36:21.436498Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:36:21.439722Z  WARN ThreadId(01) docker_node: Node 0 port 20000 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T11:36:21.442527Z  WARN ThreadId(01) docker_node: Node 1 port 20001 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T11:36:21.444319Z  WARN ThreadId(01) docker_node: Node 2 port 20002 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T11:36:21.446144Z  WARN ThreadId(01) docker_node: Node 3 port 20003 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T11:36:23.286019Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 5 timed out; latency may accumulate
+2025-11-08T11:36:23.398662Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[72, 149, 56, 229, 83, 110, 104, 222, 240, 225, 243, 132, 72, 172, 44, 145, 45, 123, 223, 52, 67, 15, 222, 112, 102, 209, 181, 148, 110, 98, 234, 178] view=2 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=true (exists=true) | cond3(view>locked || extends)=false (pc.view=2, locked.view=3, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[169, 188, 20, 129, 74, 5, 230, 103, 169, 181, 125, 59, 86, 170, 189, 187, 251, 142, 192, 121, 221, 186, 52, 51, 150, 128, 144, 120, 154, 255, 240, 115] highest_pc.view=4 locked.block=[106, 169, 220, 159, 222, 34, 81, 194, 61, 113, 19, 31, 94, 67, 162, 9, 150, 251, 239, 75, 164, 99, 8, 0, 86, 115, 131, 140, 231, 44, 185, 137] locked.view=3    
+2025-11-08T11:36:23.398717Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[217, 228, 61, 55, 109, 215, 137, 99, 88, 234, 235, 12, 117, 101, 243, 30, 110, 242, 104, 68, 24, 32, 40, 140, 173, 182, 101, 166, 233, 59, 36, 242] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[72, 149, 56, 229, 83, 110, 104, 222, 240, 225, 243, 132, 72, 172, 44, 145, 45, 123, 223, 52, 67, 15, 222, 112, 102, 209, 181, 148, 110, 98, 234, 178] justify.view=2 | highest_pc.block=[169, 188, 20, 129, 74, 5, 230, 103, 169, 181, 125, 59, 86, 170, 189, 187, 251, 142, 192, 121, 221, 186, 52, 51, 150, 128, 144, 120, 154, 255, 240, 115] highest_pc.view=4 | locked.block=[106, 169, 220, 159, 222, 34, 81, 194, 61, 113, 19, 31, 94, 67, 162, 9, 150, 251, 239, 75, 164, 99, 8, 0, 86, 115, 131, 140, 231, 44, 185, 137] locked.view=3    
+2025-11-08T11:36:26.286157Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 6 timed out; latency may accumulate
+2025-11-08T11:36:26.436588Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:36:31.436797Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:36:32.778962Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 15 timed out; latency may accumulate
+2025-11-08T11:36:36.436588Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:36:40.261874Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(137) far exceeds block count (34); potential sync issue    
+2025-11-08T11:36:40.505750Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(141) far exceeds block count (35); potential sync issue    
+2025-11-08T11:36:40.749270Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(145) far exceeds block count (36); potential sync issue    
+2025-11-08T11:36:40.993252Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(149) far exceeds block count (37); potential sync issue    
+2025-11-08T11:36:41.236789Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(153) far exceeds block count (38); potential sync issue    
+2025-11-08T11:36:41.436551Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:36:41.480759Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(157) far exceeds block count (39); potential sync issue    
+2025-11-08T11:36:41.725209Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(161) far exceeds block count (40); potential sync issue    
+2025-11-08T11:36:41.969667Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(165) far exceeds block count (41); potential sync issue    
+2025-11-08T11:36:42.216609Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(169) far exceeds block count (42); potential sync issue    
+2025-11-08T11:36:42.352609Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 89.092877ms
+2025-11-08T11:36:42.463964Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(173) far exceeds block count (43); potential sync issue    
+2025-11-08T11:36:42.716904Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(177) far exceeds block count (44); potential sync issue    
+2025-11-08T11:36:42.969777Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(181) far exceeds block count (45); potential sync issue    
+2025-11-08T11:36:43.216320Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(185) far exceeds block count (46); potential sync issue    
+2025-11-08T11:36:43.464119Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(189) far exceeds block count (47); potential sync issue    
+2025-11-08T11:36:43.712617Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(193) far exceeds block count (48); potential sync issue    
+2025-11-08T11:36:43.960384Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(197) far exceeds block count (49); potential sync issue    
+2025-11-08T11:36:44.217690Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(201) far exceeds block count (50); potential sync issue    
+2025-11-08T11:36:44.466573Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(205) far exceeds block count (51); potential sync issue    
+2025-11-08T11:36:44.715065Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(209) far exceeds block count (52); potential sync issue    
+2025-11-08T11:36:44.971654Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(213) far exceeds block count (53); potential sync issue    
+2025-11-08T11:36:45.221254Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(217) far exceeds block count (54); potential sync issue    
+2025-11-08T11:36:45.471650Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(221) far exceeds block count (55); potential sync issue    
+2025-11-08T11:36:45.720291Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(225) far exceeds block count (56); potential sync issue    
+2025-11-08T11:36:45.968853Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(229) far exceeds block count (57); potential sync issue    
+2025-11-08T11:36:46.216992Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(233) far exceeds block count (58); potential sync issue    
+2025-11-08T11:36:46.436736Z  WARN ThreadId(03) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T11:36:46.436771Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:36:46.466002Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(237) far exceeds block count (59); potential sync issue    
+2025-11-08T11:36:46.718657Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(241) far exceeds block count (60); potential sync issue    
+2025-11-08T11:36:46.965951Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(245) far exceeds block count (61); potential sync issue    
+2025-11-08T11:36:47.215561Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(249) far exceeds block count (62); potential sync issue    
+2025-11-08T11:36:47.461883Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(253) far exceeds block count (63); potential sync issue    
+2025-11-08T11:36:47.710653Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(257) far exceeds block count (64); potential sync issue    
+2025-11-08T11:36:47.959143Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(261) far exceeds block count (65); potential sync issue    
+2025-11-08T11:36:48.214475Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(265) far exceeds block count (66); potential sync issue    
+2025-11-08T11:36:48.466614Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(269) far exceeds block count (67); potential sync issue    
+2025-11-08T11:36:48.714889Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(273) far exceeds block count (68); potential sync issue    
+2025-11-08T11:36:48.965832Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(277) far exceeds block count (69); potential sync issue    
+2025-11-08T11:36:49.215862Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(281) far exceeds block count (70); potential sync issue    
+2025-11-08T11:36:49.464302Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(285) far exceeds block count (71); potential sync issue    
+2025-11-08T11:36:49.714911Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(289) far exceeds block count (72); potential sync issue    
+2025-11-08T11:36:49.966027Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(293) far exceeds block count (73); potential sync issue    
+2025-11-08T11:36:50.217813Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(297) far exceeds block count (74); potential sync issue    
+2025-11-08T11:36:50.468281Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(301) far exceeds block count (75); potential sync issue    
+2025-11-08T11:36:50.718195Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(305) far exceeds block count (76); potential sync issue    
+2025-11-08T11:36:50.973516Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(309) far exceeds block count (77); potential sync issue    
+2025-11-08T11:36:51.229497Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(313) far exceeds block count (78); potential sync issue    
+2025-11-08T11:36:51.436305Z  WARN ThreadId(03) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T11:36:51.436333Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:36:51.486486Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(317) far exceeds block count (79); potential sync issue    
+2025-11-08T11:36:51.735113Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(321) far exceeds block count (80); potential sync issue    
+2025-11-08T11:36:51.983523Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(325) far exceeds block count (81); potential sync issue    
+2025-11-08T11:36:52.241246Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(329) far exceeds block count (82); potential sync issue    
+2025-11-08T11:36:52.496996Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(333) far exceeds block count (83); potential sync issue    
+2025-11-08T11:36:52.750771Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(337) far exceeds block count (84); potential sync issue    
+2025-11-08T11:36:53.001544Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(341) far exceeds block count (85); potential sync issue    
+2025-11-08T11:36:53.255607Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(345) far exceeds block count (86); potential sync issue    
+2025-11-08T11:36:53.509009Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(349) far exceeds block count (87); potential sync issue    
+2025-11-08T11:36:53.759291Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(353) far exceeds block count (88); potential sync issue    
+2025-11-08T11:36:54.011985Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(357) far exceeds block count (89); potential sync issue    
+2025-11-08T11:36:54.270828Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(361) far exceeds block count (90); potential sync issue    
+2025-11-08T11:36:54.524425Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(365) far exceeds block count (91); potential sync issue    
+2025-11-08T11:36:54.778522Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(369) far exceeds block count (92); potential sync issue    
+2025-11-08T11:36:55.029151Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(373) far exceeds block count (93); potential sync issue    
+2025-11-08T11:36:55.282790Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(377) far exceeds block count (94); potential sync issue    
+2025-11-08T11:36:55.537506Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(381) far exceeds block count (95); potential sync issue    
+2025-11-08T11:36:55.788507Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(385) far exceeds block count (96); potential sync issue    
+2025-11-08T11:36:56.045142Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(389) far exceeds block count (97); potential sync issue    
+2025-11-08T11:36:56.323750Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(393) far exceeds block count (98); potential sync issue    
+2025-11-08T11:36:56.437089Z  WARN ThreadId(02) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T11:36:56.437116Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:36:56.582051Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(397) far exceeds block count (99); potential sync issue    
+2025-11-08T11:36:56.846054Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(401) far exceeds block count (100); potential sync issue    
+2025-11-08T11:36:57.108576Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(405) far exceeds block count (101); potential sync issue    
+2025-11-08T11:36:57.368360Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(409) far exceeds block count (102); potential sync issue    
+2025-11-08T11:36:57.624728Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(413) far exceeds block count (103); potential sync issue    
+2025-11-08T11:36:57.882349Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(417) far exceeds block count (104); potential sync issue    
+2025-11-08T11:36:58.138479Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(421) far exceeds block count (105); potential sync issue    
+2025-11-08T11:36:58.394517Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(425) far exceeds block count (106); potential sync issue    
+2025-11-08T11:36:58.653555Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(429) far exceeds block count (107); potential sync issue    
+2025-11-08T11:36:58.921163Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(433) far exceeds block count (108); potential sync issue    
+2025-11-08T11:36:59.180926Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(437) far exceeds block count (109); potential sync issue    
+2025-11-08T11:36:59.440080Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(441) far exceeds block count (110); potential sync issue    
+2025-11-08T11:36:59.697205Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(445) far exceeds block count (111); potential sync issue    
+2025-11-08T11:36:59.955913Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(449) far exceeds block count (112); potential sync issue    
+2025-11-08T11:37:00.212148Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(453) far exceeds block count (113); potential sync issue    
+2025-11-08T11:37:00.469176Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(457) far exceeds block count (114); potential sync issue    
+2025-11-08T11:37:00.730769Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(461) far exceeds block count (115); potential sync issue    
+2025-11-08T11:37:00.982608Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(465) far exceeds block count (116); potential sync issue    
+2025-11-08T11:37:01.244397Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(469) far exceeds block count (117); potential sync issue    
+2025-11-08T11:37:01.436456Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T11:37:01.436481Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:37:01.508446Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(473) far exceeds block count (118); potential sync issue    
+2025-11-08T11:37:01.769032Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(477) far exceeds block count (119); potential sync issue    
+2025-11-08T11:37:02.031186Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(481) far exceeds block count (120); potential sync issue    
+2025-11-08T11:37:02.282343Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(485) far exceeds block count (121); potential sync issue    
+2025-11-08T11:37:02.540049Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(489) far exceeds block count (122); potential sync issue    
+2025-11-08T11:37:02.791833Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(493) far exceeds block count (123); potential sync issue    
+2025-11-08T11:37:03.049937Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(497) far exceeds block count (124); potential sync issue    
+2025-11-08T11:37:03.306581Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(501) far exceeds block count (125); potential sync issue    
+2025-11-08T11:37:03.561158Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(505) far exceeds block count (126); potential sync issue    
+2025-11-08T11:37:03.815758Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(509) far exceeds block count (127); potential sync issue    
+2025-11-08T11:37:04.069495Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(513) far exceeds block count (128); potential sync issue    
+2025-11-08T11:37:04.320775Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(517) far exceeds block count (129); potential sync issue    
+2025-11-08T11:37:04.572525Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(521) far exceeds block count (130); potential sync issue    
+2025-11-08T11:37:04.826554Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(525) far exceeds block count (131); potential sync issue    
+2025-11-08T11:37:05.082037Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(529) far exceeds block count (132); potential sync issue    
+2025-11-08T11:37:05.341836Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(533) far exceeds block count (133); potential sync issue    
+2025-11-08T11:37:05.599634Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(537) far exceeds block count (134); potential sync issue    
+2025-11-08T11:37:05.856252Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(541) far exceeds block count (135); potential sync issue    
+2025-11-08T11:37:06.107467Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(545) far exceeds block count (136); potential sync issue    
+2025-11-08T11:37:06.361148Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(549) far exceeds block count (137); potential sync issue    
+2025-11-08T11:37:06.436444Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T11:37:06.436462Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:37:06.612072Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(553) far exceeds block count (138); potential sync issue    
+2025-11-08T11:37:06.866359Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(557) far exceeds block count (139); potential sync issue    
+2025-11-08T11:37:07.122149Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(561) far exceeds block count (140); potential sync issue    
+2025-11-08T11:37:07.372879Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(565) far exceeds block count (141); potential sync issue    
+2025-11-08T11:37:07.625714Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(569) far exceeds block count (142); potential sync issue    
+2025-11-08T11:37:07.881745Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(573) far exceeds block count (143); potential sync issue    
+2025-11-08T11:37:08.139599Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(577) far exceeds block count (144); potential sync issue    
+2025-11-08T11:37:08.396099Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(581) far exceeds block count (145); potential sync issue    
+2025-11-08T11:37:08.651536Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(585) far exceeds block count (146); potential sync issue    
+2025-11-08T11:37:08.904041Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(589) far exceeds block count (147); potential sync issue    
+2025-11-08T11:37:09.156439Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(593) far exceeds block count (148); potential sync issue    
+2025-11-08T11:37:09.408474Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(597) far exceeds block count (149); potential sync issue    
+2025-11-08T11:37:09.664389Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(601) far exceeds block count (150); potential sync issue    
+2025-11-08T11:37:09.918373Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(605) far exceeds block count (151); potential sync issue    
+2025-11-08T11:37:10.171607Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(609) far exceeds block count (152); potential sync issue    
+2025-11-08T11:37:10.418459Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(613) far exceeds block count (153); potential sync issue    
+2025-11-08T11:37:10.669879Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(617) far exceeds block count (154); potential sync issue    
+2025-11-08T11:37:10.922125Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(621) far exceeds block count (155); potential sync issue    
+2025-11-08T11:37:11.174013Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(625) far exceeds block count (156); potential sync issue    
+2025-11-08T11:37:11.426808Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(629) far exceeds block count (157); potential sync issue    
+2025-11-08T11:37:11.437189Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T11:37:11.437209Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:37:11.677444Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(633) far exceeds block count (158); potential sync issue    
+2025-11-08T11:37:11.931107Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(637) far exceeds block count (159); potential sync issue    
+2025-11-08T11:37:12.183959Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(641) far exceeds block count (160); potential sync issue    
+2025-11-08T11:37:12.432113Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(645) far exceeds block count (161); potential sync issue    
+2025-11-08T11:37:12.679762Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(649) far exceeds block count (162); potential sync issue    
+2025-11-08T11:37:12.931472Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(653) far exceeds block count (163); potential sync issue    
+2025-11-08T11:37:13.182963Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(657) far exceeds block count (164); potential sync issue    
+2025-11-08T11:37:13.433658Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(661) far exceeds block count (165); potential sync issue    
+2025-11-08T11:37:13.688119Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(665) far exceeds block count (166); potential sync issue    
+2025-11-08T11:37:13.940077Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(669) far exceeds block count (167); potential sync issue    
+2025-11-08T11:37:14.191526Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(673) far exceeds block count (168); potential sync issue    
+2025-11-08T11:37:14.442569Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(677) far exceeds block count (169); potential sync issue    
+2025-11-08T11:37:14.695414Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(681) far exceeds block count (170); potential sync issue    
+2025-11-08T11:37:14.949754Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(685) far exceeds block count (171); potential sync issue    
+2025-11-08T11:37:15.202470Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(689) far exceeds block count (172); potential sync issue    
+2025-11-08T11:37:15.455954Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(693) far exceeds block count (173); potential sync issue    
+2025-11-08T11:37:15.706189Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(697) far exceeds block count (174); potential sync issue    
+2025-11-08T11:37:15.960242Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(701) far exceeds block count (175); potential sync issue    
+2025-11-08T11:37:16.216474Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(705) far exceeds block count (176); potential sync issue    
+2025-11-08T11:37:16.436808Z  WARN ThreadId(03) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T11:37:16.436826Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:37:16.473716Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(709) far exceeds block count (177); potential sync issue    
+2025-11-08T11:37:16.724192Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(713) far exceeds block count (178); potential sync issue    
+2025-11-08T11:37:16.977181Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(717) far exceeds block count (179); potential sync issue    
+2025-11-08T11:37:17.228456Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(721) far exceeds block count (180); potential sync issue    
+2025-11-08T11:37:17.480363Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(725) far exceeds block count (181); potential sync issue    
+2025-11-08T11:37:17.730718Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(729) far exceeds block count (182); potential sync issue    
+2025-11-08T11:37:17.981565Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(733) far exceeds block count (183); potential sync issue    
+2025-11-08T11:37:18.235573Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(737) far exceeds block count (184); potential sync issue    
+2025-11-08T11:37:18.485591Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(741) far exceeds block count (185); potential sync issue    
+2025-11-08T11:37:18.734639Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(745) far exceeds block count (186); potential sync issue    
+2025-11-08T11:37:18.986233Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(749) far exceeds block count (187); potential sync issue    
+2025-11-08T11:37:19.238025Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(753) far exceeds block count (188); potential sync issue    
+2025-11-08T11:37:19.488738Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(757) far exceeds block count (189); potential sync issue    
+2025-11-08T11:37:19.740969Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(761) far exceeds block count (190); potential sync issue    
+2025-11-08T11:37:19.989386Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(765) far exceeds block count (191); potential sync issue    
+2025-11-08T11:37:20.240246Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(769) far exceeds block count (192); potential sync issue    
+2025-11-08T11:37:20.487235Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(773) far exceeds block count (193); potential sync issue    
+2025-11-08T11:37:20.738104Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(777) far exceeds block count (194); potential sync issue    
+2025-11-08T11:37:20.991483Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(781) far exceeds block count (195); potential sync issue    
+2025-11-08T11:37:21.242870Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(785) far exceeds block count (196); potential sync issue    
+2025-11-08T11:37:21.436309Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T11:37:21.436335Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:37:21.491743Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(789) far exceeds block count (197); potential sync issue    
+2025-11-08T11:37:21.739396Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(793) far exceeds block count (198); potential sync issue    
+2025-11-08T11:37:21.989515Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(797) far exceeds block count (199); potential sync issue    
+2025-11-08T11:37:22.238809Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(801) far exceeds block count (200); potential sync issue    
+2025-11-08T11:37:22.487835Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(805) far exceeds block count (201); potential sync issue    
+2025-11-08T11:37:22.740274Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(809) far exceeds block count (202); potential sync issue    
+2025-11-08T11:37:22.990262Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(813) far exceeds block count (203); potential sync issue    
+2025-11-08T11:37:23.238420Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(817) far exceeds block count (204); potential sync issue    
+2025-11-08T11:37:23.485969Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(821) far exceeds block count (205); potential sync issue    
+2025-11-08T11:37:23.735958Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(825) far exceeds block count (206); potential sync issue    
+2025-11-08T11:37:23.985072Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(829) far exceeds block count (207); potential sync issue    
+2025-11-08T11:37:24.237646Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(833) far exceeds block count (208); potential sync issue    
+2025-11-08T11:37:24.488086Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(837) far exceeds block count (209); potential sync issue    
+2025-11-08T11:37:24.736595Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(841) far exceeds block count (210); potential sync issue    
+2025-11-08T11:37:24.985850Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(845) far exceeds block count (211); potential sync issue    
+2025-11-08T11:37:25.234040Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(849) far exceeds block count (212); potential sync issue    
+2025-11-08T11:37:25.486628Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(853) far exceeds block count (213); potential sync issue    
+2025-11-08T11:37:25.736266Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(857) far exceeds block count (214); potential sync issue    
+2025-11-08T11:37:25.986390Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(861) far exceeds block count (215); potential sync issue    
+2025-11-08T11:37:26.240623Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(865) far exceeds block count (216); potential sync issue    
+2025-11-08T11:37:26.436345Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T11:37:26.436372Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:37:26.489646Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(869) far exceeds block count (217); potential sync issue    
+2025-11-08T11:37:26.737144Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(873) far exceeds block count (218); potential sync issue    
+2025-11-08T11:37:26.990437Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(877) far exceeds block count (219); potential sync issue    
+2025-11-08T11:37:27.240052Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(881) far exceeds block count (220); potential sync issue    
+2025-11-08T11:37:27.493594Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(885) far exceeds block count (221); potential sync issue    
+2025-11-08T11:37:27.745309Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(889) far exceeds block count (222); potential sync issue    
+2025-11-08T11:37:27.996580Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(893) far exceeds block count (223); potential sync issue    
+2025-11-08T11:37:28.248453Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(897) far exceeds block count (224); potential sync issue    
+2025-11-08T11:37:28.499985Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(901) far exceeds block count (225); potential sync issue    
+2025-11-08T11:37:28.749276Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(905) far exceeds block count (226); potential sync issue    
+2025-11-08T11:37:29.000510Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(909) far exceeds block count (227); potential sync issue    
+2025-11-08T11:37:29.253746Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(913) far exceeds block count (228); potential sync issue    
+2025-11-08T11:37:29.507299Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(917) far exceeds block count (229); potential sync issue    
+2025-11-08T11:37:29.759193Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(921) far exceeds block count (230); potential sync issue    
+2025-11-08T11:37:30.009362Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(925) far exceeds block count (231); potential sync issue    
+2025-11-08T11:37:30.258812Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(929) far exceeds block count (232); potential sync issue    
+2025-11-08T11:37:30.511036Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(933) far exceeds block count (233); potential sync issue    
+2025-11-08T11:37:30.763615Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(937) far exceeds block count (234); potential sync issue    
+2025-11-08T11:37:31.019562Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(941) far exceeds block count (235); potential sync issue    
+2025-11-08T11:37:31.270024Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(945) far exceeds block count (236); potential sync issue    
+2025-11-08T11:37:31.437333Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T11:37:31.437352Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:37:31.522466Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(949) far exceeds block count (237); potential sync issue    
+2025-11-08T11:37:31.770910Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(953) far exceeds block count (238); potential sync issue    
+2025-11-08T11:37:32.021713Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(957) far exceeds block count (239); potential sync issue    
+2025-11-08T11:37:32.273690Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(961) far exceeds block count (240); potential sync issue    
+2025-11-08T11:37:32.523472Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(965) far exceeds block count (241); potential sync issue    
+2025-11-08T11:37:32.774448Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(969) far exceeds block count (242); potential sync issue    
+2025-11-08T11:37:33.025041Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(973) far exceeds block count (243); potential sync issue    
+2025-11-08T11:37:33.276930Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(977) far exceeds block count (244); potential sync issue    
+2025-11-08T11:37:33.530848Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(981) far exceeds block count (245); potential sync issue    
+2025-11-08T11:37:33.781751Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(985) far exceeds block count (246); potential sync issue    
+2025-11-08T11:37:34.035936Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(989) far exceeds block count (247); potential sync issue    
+2025-11-08T11:37:34.287146Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(993) far exceeds block count (248); potential sync issue    
+2025-11-08T11:37:34.539104Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(997) far exceeds block count (249); potential sync issue    
+2025-11-08T11:37:34.789374Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1001) far exceeds block count (250); potential sync issue    
+2025-11-08T11:37:35.043501Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1005) far exceeds block count (251); potential sync issue    
+2025-11-08T11:37:35.296097Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1009) far exceeds block count (252); potential sync issue    
+2025-11-08T11:37:35.548625Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1013) far exceeds block count (253); potential sync issue    
+2025-11-08T11:37:35.801703Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1017) far exceeds block count (254); potential sync issue    
+2025-11-08T11:37:36.053941Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1021) far exceeds block count (255); potential sync issue    
+2025-11-08T11:37:36.306153Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1025) far exceeds block count (256); potential sync issue    
+2025-11-08T11:37:36.437013Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T11:37:36.437032Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:37:36.558629Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1029) far exceeds block count (257); potential sync issue    
+2025-11-08T11:37:36.809820Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1033) far exceeds block count (258); potential sync issue    
+2025-11-08T11:37:37.061762Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1037) far exceeds block count (259); potential sync issue    
+2025-11-08T11:37:37.314064Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1041) far exceeds block count (260); potential sync issue    
+2025-11-08T11:37:37.567526Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1045) far exceeds block count (261); potential sync issue    
+2025-11-08T11:37:37.817939Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1049) far exceeds block count (262); potential sync issue    
+2025-11-08T11:37:38.072593Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1053) far exceeds block count (263); potential sync issue    
+2025-11-08T11:37:38.325108Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1057) far exceeds block count (264); potential sync issue    
+2025-11-08T11:37:38.572513Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1061) far exceeds block count (265); potential sync issue    
+2025-11-08T11:37:38.822912Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1065) far exceeds block count (266); potential sync issue    
+2025-11-08T11:37:39.073146Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1069) far exceeds block count (267); potential sync issue    
+2025-11-08T11:37:39.326221Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1073) far exceeds block count (268); potential sync issue    
+2025-11-08T11:37:39.577139Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1077) far exceeds block count (269); potential sync issue    
+2025-11-08T11:37:39.824290Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1081) far exceeds block count (270); potential sync issue    
+2025-11-08T11:37:40.074885Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1085) far exceeds block count (271); potential sync issue    
+2025-11-08T11:37:40.324796Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1089) far exceeds block count (272); potential sync issue    
+2025-11-08T11:37:40.576181Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1093) far exceeds block count (273); potential sync issue    
+2025-11-08T11:37:40.827338Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1097) far exceeds block count (274); potential sync issue    
+2025-11-08T11:37:41.077709Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1101) far exceeds block count (275); potential sync issue    
+2025-11-08T11:37:41.327701Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1105) far exceeds block count (276); potential sync issue    
+2025-11-08T11:37:41.436936Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T11:37:41.436961Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:37:41.575947Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1109) far exceeds block count (277); potential sync issue    
+2025-11-08T11:37:41.830791Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1113) far exceeds block count (278); potential sync issue    
+2025-11-08T11:37:42.083644Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1117) far exceeds block count (279); potential sync issue    
+2025-11-08T11:37:42.335669Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1121) far exceeds block count (280); potential sync issue    
+2025-11-08T11:37:42.587519Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1125) far exceeds block count (281); potential sync issue    
+2025-11-08T11:37:42.838887Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1129) far exceeds block count (282); potential sync issue    
+2025-11-08T11:37:43.087277Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1133) far exceeds block count (283); potential sync issue    
+2025-11-08T11:37:43.339714Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1137) far exceeds block count (284); potential sync issue    
+2025-11-08T11:37:43.591257Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1141) far exceeds block count (285); potential sync issue    
+2025-11-08T11:37:43.840690Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1145) far exceeds block count (286); potential sync issue    
+2025-11-08T11:37:44.088488Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1149) far exceeds block count (287); potential sync issue    
+2025-11-08T11:37:44.338843Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1153) far exceeds block count (288); potential sync issue    
+2025-11-08T11:37:44.589925Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1157) far exceeds block count (289); potential sync issue    
+2025-11-08T11:37:44.838473Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1161) far exceeds block count (290); potential sync issue    
+2025-11-08T11:37:45.090263Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1165) far exceeds block count (291); potential sync issue    
+2025-11-08T11:37:45.339793Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1169) far exceeds block count (292); potential sync issue    
+2025-11-08T11:37:45.588478Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1173) far exceeds block count (293); potential sync issue    
+2025-11-08T11:37:45.838147Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1177) far exceeds block count (294); potential sync issue    
+2025-11-08T11:37:46.085785Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1181) far exceeds block count (295); potential sync issue    
+2025-11-08T11:37:46.338160Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1185) far exceeds block count (296); potential sync issue    
+2025-11-08T11:37:46.436818Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T11:37:46.436846Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:37:46.583277Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1189) far exceeds block count (297); potential sync issue    
+2025-11-08T11:37:46.835446Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1193) far exceeds block count (298); potential sync issue    
+2025-11-08T11:37:47.088748Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1197) far exceeds block count (299); potential sync issue    
+2025-11-08T11:37:47.340657Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1201) far exceeds block count (300); potential sync issue    
+2025-11-08T11:37:47.587975Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1205) far exceeds block count (301); potential sync issue    
+2025-11-08T11:37:47.836367Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1209) far exceeds block count (302); potential sync issue    
+2025-11-08T11:37:48.088856Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1213) far exceeds block count (303); potential sync issue    
+2025-11-08T11:37:48.339135Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1217) far exceeds block count (304); potential sync issue    
+2025-11-08T11:37:48.590253Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1221) far exceeds block count (305); potential sync issue    
+2025-11-08T11:37:48.839035Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1225) far exceeds block count (306); potential sync issue    
+2025-11-08T11:37:49.089188Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1229) far exceeds block count (307); potential sync issue    
+2025-11-08T11:37:49.340345Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1233) far exceeds block count (308); potential sync issue    
+2025-11-08T11:37:49.590386Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1237) far exceeds block count (309); potential sync issue    
+2025-11-08T11:37:49.841009Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1241) far exceeds block count (310); potential sync issue    
+2025-11-08T11:37:50.092053Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1245) far exceeds block count (311); potential sync issue    
+2025-11-08T11:37:50.342583Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1249) far exceeds block count (312); potential sync issue    
+2025-11-08T11:37:50.592252Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1253) far exceeds block count (313); potential sync issue    
+2025-11-08T11:37:50.840563Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1257) far exceeds block count (314); potential sync issue    
+2025-11-08T11:37:51.090697Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1261) far exceeds block count (315); potential sync issue    
+2025-11-08T11:37:51.342278Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1265) far exceeds block count (316); potential sync issue    
+2025-11-08T11:37:51.437197Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T11:37:51.437219Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:37:51.593578Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1269) far exceeds block count (317); potential sync issue    
+2025-11-08T11:37:51.844462Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1273) far exceeds block count (318); potential sync issue    
+2025-11-08T11:37:52.096240Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1277) far exceeds block count (319); potential sync issue    
+2025-11-08T11:37:52.345416Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1281) far exceeds block count (320); potential sync issue    
+2025-11-08T11:37:52.597140Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1285) far exceeds block count (321); potential sync issue    
+2025-11-08T11:37:52.847892Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1289) far exceeds block count (322); potential sync issue    
+2025-11-08T11:37:53.096324Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1293) far exceeds block count (323); potential sync issue    
+2025-11-08T11:37:53.347330Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1297) far exceeds block count (324); potential sync issue    
+2025-11-08T11:37:53.596375Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1301) far exceeds block count (325); potential sync issue    
+2025-11-08T11:37:53.843032Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1305) far exceeds block count (326); potential sync issue    
+2025-11-08T11:37:54.093359Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1309) far exceeds block count (327); potential sync issue    
+2025-11-08T11:37:54.345509Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1313) far exceeds block count (328); potential sync issue    
+2025-11-08T11:37:54.594348Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1317) far exceeds block count (329); potential sync issue    
+2025-11-08T11:37:54.844114Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1321) far exceeds block count (330); potential sync issue    
+2025-11-08T11:37:55.092047Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1325) far exceeds block count (331); potential sync issue    
+2025-11-08T11:37:55.341242Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1329) far exceeds block count (332); potential sync issue    
+2025-11-08T11:37:55.589331Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1333) far exceeds block count (333); potential sync issue    
+2025-11-08T11:37:55.841299Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1337) far exceeds block count (334); potential sync issue    
+2025-11-08T11:37:56.093639Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1341) far exceeds block count (335); potential sync issue    
+2025-11-08T11:37:56.340766Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1345) far exceeds block count (336); potential sync issue    
+2025-11-08T11:37:56.436944Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T11:37:56.436968Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:37:56.593695Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1349) far exceeds block count (337); potential sync issue    
+2025-11-08T11:37:56.844689Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1353) far exceeds block count (338); potential sync issue    
+2025-11-08T11:37:57.093881Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1357) far exceeds block count (339); potential sync issue    
+2025-11-08T11:37:57.342510Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1361) far exceeds block count (340); potential sync issue    
+2025-11-08T11:37:57.591494Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1365) far exceeds block count (341); potential sync issue    
+2025-11-08T11:37:57.840904Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1369) far exceeds block count (342); potential sync issue    
+2025-11-08T11:37:58.086378Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1373) far exceeds block count (343); potential sync issue    
+2025-11-08T11:37:58.336932Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1377) far exceeds block count (344); potential sync issue    
+2025-11-08T11:37:58.586860Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1381) far exceeds block count (345); potential sync issue    
+2025-11-08T11:37:58.834296Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1385) far exceeds block count (346); potential sync issue    
+2025-11-08T11:37:59.087707Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1389) far exceeds block count (347); potential sync issue    
+2025-11-08T11:37:59.336769Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1393) far exceeds block count (348); potential sync issue    
+2025-11-08T11:37:59.583234Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1397) far exceeds block count (349); potential sync issue    
+2025-11-08T11:37:59.833100Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1401) far exceeds block count (350); potential sync issue    
+2025-11-08T11:38:00.080685Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1405) far exceeds block count (351); potential sync issue    
+2025-11-08T11:38:00.330897Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1409) far exceeds block count (352); potential sync issue    
+2025-11-08T11:38:00.581444Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1413) far exceeds block count (353); potential sync issue    
+2025-11-08T11:38:00.832428Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1417) far exceeds block count (354); potential sync issue    
+2025-11-08T11:38:01.083469Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1421) far exceeds block count (355); potential sync issue    
+2025-11-08T11:38:01.332984Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1425) far exceeds block count (356); potential sync issue    
+2025-11-08T11:38:01.436388Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T11:38:01.436412Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:38:01.583596Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1429) far exceeds block count (357); potential sync issue    
+2025-11-08T11:38:01.832041Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1433) far exceeds block count (358); potential sync issue    
+2025-11-08T11:38:02.077957Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1437) far exceeds block count (359); potential sync issue    
+2025-11-08T11:38:02.323692Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1441) far exceeds block count (360); potential sync issue    
+2025-11-08T11:38:02.571757Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1445) far exceeds block count (361); potential sync issue    
+2025-11-08T11:38:02.823804Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1449) far exceeds block count (362); potential sync issue    
+2025-11-08T11:38:03.071330Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1453) far exceeds block count (363); potential sync issue    
+2025-11-08T11:38:03.321716Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1457) far exceeds block count (364); potential sync issue    
+2025-11-08T11:38:03.569646Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1461) far exceeds block count (365); potential sync issue    
+2025-11-08T11:38:03.819709Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1465) far exceeds block count (366); potential sync issue    
+2025-11-08T11:38:04.066512Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1469) far exceeds block count (367); potential sync issue    
+2025-11-08T11:38:04.313076Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1473) far exceeds block count (368); potential sync issue    
+2025-11-08T11:38:04.562898Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1477) far exceeds block count (369); potential sync issue    
+2025-11-08T11:38:04.812180Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1481) far exceeds block count (370); potential sync issue    
+2025-11-08T11:38:05.063337Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1485) far exceeds block count (371); potential sync issue    
+2025-11-08T11:38:05.313486Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1489) far exceeds block count (372); potential sync issue    
+2025-11-08T11:38:05.561710Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1493) far exceeds block count (373); potential sync issue    
+2025-11-08T11:38:05.812289Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1497) far exceeds block count (374); potential sync issue    
+2025-11-08T11:38:06.066572Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1501) far exceeds block count (375); potential sync issue    
+2025-11-08T11:38:06.314136Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1505) far exceeds block count (376); potential sync issue    
+2025-11-08T11:38:06.436932Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T11:38:06.436956Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:38:06.567153Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1509) far exceeds block count (377); potential sync issue    
+2025-11-08T11:38:06.818352Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1513) far exceeds block count (378); potential sync issue    
+2025-11-08T11:38:07.068484Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1517) far exceeds block count (379); potential sync issue    
+2025-11-08T11:38:07.315611Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1521) far exceeds block count (380); potential sync issue    
+2025-11-08T11:38:07.564171Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1525) far exceeds block count (381); potential sync issue    
+2025-11-08T11:38:07.815695Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1529) far exceeds block count (382); potential sync issue    
+2025-11-08T11:38:08.067754Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1533) far exceeds block count (383); potential sync issue    
+2025-11-08T11:38:08.321118Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1537) far exceeds block count (384); potential sync issue    
+2025-11-08T11:38:08.573560Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1541) far exceeds block count (385); potential sync issue    
+2025-11-08T11:38:08.825791Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1545) far exceeds block count (386); potential sync issue    
+2025-11-08T11:38:09.078240Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1549) far exceeds block count (387); potential sync issue    
+2025-11-08T11:38:09.331096Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1553) far exceeds block count (388); potential sync issue    
+2025-11-08T11:38:09.584800Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1557) far exceeds block count (389); potential sync issue    
+2025-11-08T11:38:09.836410Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1561) far exceeds block count (390); potential sync issue    
+2025-11-08T11:38:10.088046Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1565) far exceeds block count (391); potential sync issue    
+2025-11-08T11:38:10.340886Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1569) far exceeds block count (392); potential sync issue    
+2025-11-08T11:38:10.593279Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1573) far exceeds block count (393); potential sync issue    
+2025-11-08T11:38:10.841845Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1577) far exceeds block count (394); potential sync issue    
+2025-11-08T11:38:11.094768Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1581) far exceeds block count (395); potential sync issue    
+2025-11-08T11:38:11.346610Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1585) far exceeds block count (396); potential sync issue    
+2025-11-08T11:38:11.437303Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T11:38:11.437336Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:38:11.600339Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1589) far exceeds block count (397); potential sync issue    
+2025-11-08T11:38:11.850564Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1593) far exceeds block count (398); potential sync issue    
+2025-11-08T11:38:12.101725Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1597) far exceeds block count (399); potential sync issue    
+2025-11-08T11:38:12.352822Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1601) far exceeds block count (400); potential sync issue    
+2025-11-08T11:38:12.604955Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1605) far exceeds block count (401); potential sync issue    
+2025-11-08T11:38:12.856135Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1609) far exceeds block count (402); potential sync issue    
+2025-11-08T11:38:13.102826Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1613) far exceeds block count (403); potential sync issue    
+2025-11-08T11:38:13.351507Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1617) far exceeds block count (404); potential sync issue    
+2025-11-08T11:38:13.600550Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1621) far exceeds block count (405); potential sync issue    
+2025-11-08T11:38:13.852813Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1625) far exceeds block count (406); potential sync issue    
+2025-11-08T11:38:14.107556Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1629) far exceeds block count (407); potential sync issue    
+2025-11-08T11:38:14.359418Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1633) far exceeds block count (408); potential sync issue    
+2025-11-08T11:38:14.611149Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1637) far exceeds block count (409); potential sync issue    
+2025-11-08T11:38:14.868724Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1641) far exceeds block count (410); potential sync issue    
+2025-11-08T11:38:15.120151Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1645) far exceeds block count (411); potential sync issue    
+2025-11-08T11:38:15.367643Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1649) far exceeds block count (412); potential sync issue    
+2025-11-08T11:38:15.623477Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1653) far exceeds block count (413); potential sync issue    
+2025-11-08T11:38:15.874885Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1657) far exceeds block count (414); potential sync issue    
+2025-11-08T11:38:16.120630Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1661) far exceeds block count (415); potential sync issue    
+2025-11-08T11:38:16.372477Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1665) far exceeds block count (416); potential sync issue    
+2025-11-08T11:38:16.436812Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T11:38:16.436842Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:38:16.626357Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1669) far exceeds block count (417); potential sync issue    
+2025-11-08T11:38:16.879545Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1673) far exceeds block count (418); potential sync issue    
+2025-11-08T11:38:17.129183Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1677) far exceeds block count (419); potential sync issue    
+2025-11-08T11:38:17.379284Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1681) far exceeds block count (420); potential sync issue    
+2025-11-08T11:38:17.635536Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1685) far exceeds block count (421); potential sync issue    
+2025-11-08T11:38:17.886381Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1689) far exceeds block count (422); potential sync issue    
+2025-11-08T11:38:18.138599Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1693) far exceeds block count (423); potential sync issue    
+2025-11-08T11:38:18.390536Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1697) far exceeds block count (424); potential sync issue    
+2025-11-08T11:38:18.644733Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1701) far exceeds block count (425); potential sync issue    
+2025-11-08T11:38:18.894705Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1705) far exceeds block count (426); potential sync issue    
+2025-11-08T11:38:19.147605Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1709) far exceeds block count (427); potential sync issue    
+2025-11-08T11:38:19.399054Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1713) far exceeds block count (428); potential sync issue    
+2025-11-08T11:38:19.653814Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1717) far exceeds block count (429); potential sync issue    
+2025-11-08T11:38:19.909081Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1721) far exceeds block count (430); potential sync issue    
+2025-11-08T11:38:20.164272Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1725) far exceeds block count (431); potential sync issue    
+2025-11-08T11:38:20.413150Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1729) far exceeds block count (432); potential sync issue    
+2025-11-08T11:38:20.666511Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1733) far exceeds block count (433); potential sync issue    
+2025-11-08T11:38:20.918624Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1737) far exceeds block count (434); potential sync issue    
+2025-11-08T11:38:21.174999Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1741) far exceeds block count (435); potential sync issue    
+2025-11-08T11:38:21.429382Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1745) far exceeds block count (436); potential sync issue    
+2025-11-08T11:38:21.436557Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T11:38:21.436576Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:38:21.682879Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1749) far exceeds block count (437); potential sync issue    
+2025-11-08T11:38:21.935587Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1753) far exceeds block count (438); potential sync issue    
+2025-11-08T11:38:22.186185Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1757) far exceeds block count (439); potential sync issue    
+2025-11-08T11:38:22.441429Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1761) far exceeds block count (440); potential sync issue    
+2025-11-08T11:38:22.690246Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1765) far exceeds block count (441); potential sync issue    
+2025-11-08T11:38:22.941785Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1769) far exceeds block count (442); potential sync issue    
+2025-11-08T11:38:23.191512Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1773) far exceeds block count (443); potential sync issue    
+2025-11-08T11:38:23.443759Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1777) far exceeds block count (444); potential sync issue    
+2025-11-08T11:38:23.694864Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1781) far exceeds block count (445); potential sync issue    
+2025-11-08T11:38:23.947463Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1785) far exceeds block count (446); potential sync issue    
+2025-11-08T11:38:24.198185Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1789) far exceeds block count (447); potential sync issue    
+2025-11-08T11:38:24.450567Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1793) far exceeds block count (448); potential sync issue    
+2025-11-08T11:38:24.703098Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1797) far exceeds block count (449); potential sync issue    
+2025-11-08T11:38:24.953833Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1801) far exceeds block count (450); potential sync issue    
+2025-11-08T11:38:25.205218Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1805) far exceeds block count (451); potential sync issue    
+2025-11-08T11:38:25.456859Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1809) far exceeds block count (452); potential sync issue    
+2025-11-08T11:38:25.708149Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1813) far exceeds block count (453); potential sync issue    
+2025-11-08T11:38:25.956019Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1817) far exceeds block count (454); potential sync issue    
+2025-11-08T11:38:26.208724Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1821) far exceeds block count (455); potential sync issue    
+2025-11-08T11:38:26.436407Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T11:38:26.436432Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:38:26.462133Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1825) far exceeds block count (456); potential sync issue    
+2025-11-08T11:38:26.710011Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1829) far exceeds block count (457); potential sync issue    
+2025-11-08T11:38:26.960457Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1833) far exceeds block count (458); potential sync issue    
+2025-11-08T11:38:27.210898Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1837) far exceeds block count (459); potential sync issue    
+2025-11-08T11:38:27.460117Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1841) far exceeds block count (460); potential sync issue    
+2025-11-08T11:38:27.706898Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1845) far exceeds block count (461); potential sync issue    
+2025-11-08T11:38:27.960425Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1849) far exceeds block count (462); potential sync issue    
+2025-11-08T11:38:28.210803Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1853) far exceeds block count (463); potential sync issue    
+2025-11-08T11:38:28.461578Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1857) far exceeds block count (464); potential sync issue    
+2025-11-08T11:38:28.715666Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1861) far exceeds block count (465); potential sync issue    
+2025-11-08T11:38:28.967795Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1865) far exceeds block count (466); potential sync issue    
+2025-11-08T11:38:29.220278Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1869) far exceeds block count (467); potential sync issue    
+2025-11-08T11:38:29.470645Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1873) far exceeds block count (468); potential sync issue    
+2025-11-08T11:38:29.724094Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1877) far exceeds block count (469); potential sync issue    
+2025-11-08T11:38:29.973837Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1881) far exceeds block count (470); potential sync issue    
+2025-11-08T11:38:30.227401Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1885) far exceeds block count (471); potential sync issue    
+2025-11-08T11:38:30.477417Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1889) far exceeds block count (472); potential sync issue    
+2025-11-08T11:38:30.725443Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1893) far exceeds block count (473); potential sync issue    
+2025-11-08T11:38:30.977197Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1897) far exceeds block count (474); potential sync issue    
+2025-11-08T11:38:31.227847Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1901) far exceeds block count (475); potential sync issue    
+2025-11-08T11:38:31.437189Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T11:38:31.437217Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:38:31.476779Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1905) far exceeds block count (476); potential sync issue    
+2025-11-08T11:38:31.726528Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1909) far exceeds block count (477); potential sync issue    
+2025-11-08T11:38:31.976642Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1913) far exceeds block count (478); potential sync issue    
+2025-11-08T11:38:32.229326Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1917) far exceeds block count (479); potential sync issue    
+2025-11-08T11:38:32.480417Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1921) far exceeds block count (480); potential sync issue    
+2025-11-08T11:38:32.731584Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1925) far exceeds block count (481); potential sync issue    
+2025-11-08T11:38:32.980020Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1929) far exceeds block count (482); potential sync issue    
+2025-11-08T11:38:33.232344Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1933) far exceeds block count (483); potential sync issue    
+2025-11-08T11:38:33.483233Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1937) far exceeds block count (484); potential sync issue    
+2025-11-08T11:38:33.738054Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1941) far exceeds block count (485); potential sync issue    
+2025-11-08T11:38:33.987666Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1945) far exceeds block count (486); potential sync issue    
+2025-11-08T11:38:34.238103Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1949) far exceeds block count (487); potential sync issue    
+2025-11-08T11:38:34.495486Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1953) far exceeds block count (488); potential sync issue    
+2025-11-08T11:38:34.748194Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1957) far exceeds block count (489); potential sync issue    
+2025-11-08T11:38:35.002743Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1961) far exceeds block count (490); potential sync issue    
+2025-11-08T11:38:35.259222Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1965) far exceeds block count (491); potential sync issue    
+2025-11-08T11:38:35.510637Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1969) far exceeds block count (492); potential sync issue    
+2025-11-08T11:38:35.765661Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1973) far exceeds block count (493); potential sync issue    
+2025-11-08T11:38:36.014852Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1977) far exceeds block count (494); potential sync issue    
+2025-11-08T11:38:36.265134Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1981) far exceeds block count (495); potential sync issue    
+2025-11-08T11:38:36.436656Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T11:38:36.436689Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:38:36.519335Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1985) far exceeds block count (496); potential sync issue    
+2025-11-08T11:38:36.772596Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1989) far exceeds block count (497); potential sync issue    
+2025-11-08T11:38:37.024808Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1993) far exceeds block count (498); potential sync issue    
+2025-11-08T11:38:37.275932Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1997) far exceeds block count (499); potential sync issue    
+2025-11-08T11:38:37.530794Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2001) far exceeds block count (500); potential sync issue    
+2025-11-08T11:38:37.781355Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2005) far exceeds block count (501); potential sync issue    
+2025-11-08T11:38:38.037663Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2009) far exceeds block count (502); potential sync issue    
+2025-11-08T11:38:38.288473Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2013) far exceeds block count (503); potential sync issue    
+2025-11-08T11:38:38.540691Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2017) far exceeds block count (504); potential sync issue    
+2025-11-08T11:38:38.795775Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2021) far exceeds block count (505); potential sync issue    
+2025-11-08T11:38:39.050128Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2025) far exceeds block count (506); potential sync issue    
+2025-11-08T11:38:39.301972Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2029) far exceeds block count (507); potential sync issue    
+2025-11-08T11:38:39.561178Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2033) far exceeds block count (508); potential sync issue    
+2025-11-08T11:38:39.809161Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2037) far exceeds block count (509); potential sync issue    
+2025-11-08T11:38:40.063777Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2041) far exceeds block count (510); potential sync issue    
+2025-11-08T11:38:40.317061Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2045) far exceeds block count (511); potential sync issue    
+2025-11-08T11:38:40.566754Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2049) far exceeds block count (512); potential sync issue    
+2025-11-08T11:38:40.819015Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2053) far exceeds block count (513); potential sync issue    
+2025-11-08T11:38:41.067406Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2057) far exceeds block count (514); potential sync issue    
+2025-11-08T11:38:41.320625Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2061) far exceeds block count (515); potential sync issue    
+2025-11-08T11:38:41.437188Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T11:38:41.437211Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:38:41.577170Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2065) far exceeds block count (516); potential sync issue    
+2025-11-08T11:38:41.826081Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2069) far exceeds block count (517); potential sync issue    
+2025-11-08T11:38:42.078875Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2073) far exceeds block count (518); potential sync issue    
+2025-11-08T11:38:42.330984Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2077) far exceeds block count (519); potential sync issue    
+2025-11-08T11:38:42.584499Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2081) far exceeds block count (520); potential sync issue    
+2025-11-08T11:38:42.837950Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2085) far exceeds block count (521); potential sync issue    
+2025-11-08T11:38:43.092845Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2089) far exceeds block count (522); potential sync issue    
+2025-11-08T11:38:43.348661Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2093) far exceeds block count (523); potential sync issue    
+2025-11-08T11:38:43.604989Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2097) far exceeds block count (524); potential sync issue    
+2025-11-08T11:38:43.859925Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2101) far exceeds block count (525); potential sync issue    
+2025-11-08T11:38:44.112898Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2105) far exceeds block count (526); potential sync issue    
+2025-11-08T11:38:44.364714Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2109) far exceeds block count (527); potential sync issue    
+2025-11-08T11:38:44.621241Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2113) far exceeds block count (528); potential sync issue    
+2025-11-08T11:38:44.871341Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2117) far exceeds block count (529); potential sync issue    
+2025-11-08T11:38:45.125378Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2121) far exceeds block count (530); potential sync issue    
+2025-11-08T11:38:45.383080Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2125) far exceeds block count (531); potential sync issue    
+2025-11-08T11:38:45.631294Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2129) far exceeds block count (532); potential sync issue    
+2025-11-08T11:38:45.884339Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2133) far exceeds block count (533); potential sync issue    
+2025-11-08T11:38:46.142934Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2137) far exceeds block count (534); potential sync issue    
+2025-11-08T11:38:46.395058Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2141) far exceeds block count (535); potential sync issue    
+2025-11-08T11:38:46.436958Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T11:38:46.436991Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:38:46.644880Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2145) far exceeds block count (536); potential sync issue    
+2025-11-08T11:38:46.895441Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2149) far exceeds block count (537); potential sync issue    
+2025-11-08T11:38:47.150516Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2153) far exceeds block count (538); potential sync issue    
+2025-11-08T11:38:47.408078Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2157) far exceeds block count (539); potential sync issue    
+2025-11-08T11:38:47.656948Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2161) far exceeds block count (540); potential sync issue    
+2025-11-08T11:38:47.909989Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2165) far exceeds block count (541); potential sync issue    
+2025-11-08T11:38:48.159739Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2169) far exceeds block count (542); potential sync issue    
+2025-11-08T11:38:48.413060Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2173) far exceeds block count (543); potential sync issue    
+2025-11-08T11:38:48.669264Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2177) far exceeds block count (544); potential sync issue    
+2025-11-08T11:38:48.915974Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2181) far exceeds block count (545); potential sync issue    
+2025-11-08T11:38:49.171833Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2185) far exceeds block count (546); potential sync issue    
+2025-11-08T11:38:49.426286Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2189) far exceeds block count (547); potential sync issue    
+2025-11-08T11:38:49.677046Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2193) far exceeds block count (548); potential sync issue    
+2025-11-08T11:38:49.926153Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2197) far exceeds block count (549); potential sync issue    
+2025-11-08T11:38:50.177940Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2201) far exceeds block count (550); potential sync issue    
+2025-11-08T11:38:50.433479Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2205) far exceeds block count (551); potential sync issue    
+2025-11-08T11:38:50.689003Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2209) far exceeds block count (552); potential sync issue    
+2025-11-08T11:38:50.942828Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2213) far exceeds block count (553); potential sync issue    
+2025-11-08T11:38:51.195460Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2217) far exceeds block count (554); potential sync issue    
+2025-11-08T11:38:51.437042Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T11:38:51.437065Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:38:51.447891Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2221) far exceeds block count (555); potential sync issue    
+2025-11-08T11:38:51.701961Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2225) far exceeds block count (556); potential sync issue    
+2025-11-08T11:38:51.952408Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2229) far exceeds block count (557); potential sync issue    
+2025-11-08T11:38:52.205920Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2233) far exceeds block count (558); potential sync issue    
+2025-11-08T11:38:52.463892Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2237) far exceeds block count (559); potential sync issue    
+2025-11-08T11:38:52.716197Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2241) far exceeds block count (560); potential sync issue    
+2025-11-08T11:38:52.973745Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2245) far exceeds block count (561); potential sync issue    
+2025-11-08T11:38:53.223618Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2249) far exceeds block count (562); potential sync issue    
+2025-11-08T11:38:53.477211Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2253) far exceeds block count (563); potential sync issue    
+2025-11-08T11:38:53.736367Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2257) far exceeds block count (564); potential sync issue    
+2025-11-08T11:38:53.989947Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2261) far exceeds block count (565); potential sync issue    
+2025-11-08T11:38:54.238657Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2265) far exceeds block count (566); potential sync issue    
+2025-11-08T11:38:54.496338Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2269) far exceeds block count (567); potential sync issue    
+2025-11-08T11:38:54.748911Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2273) far exceeds block count (568); potential sync issue    
+2025-11-08T11:38:55.004128Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2277) far exceeds block count (569); potential sync issue    
+2025-11-08T11:38:55.256715Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2281) far exceeds block count (570); potential sync issue    
+2025-11-08T11:38:55.506597Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2285) far exceeds block count (571); potential sync issue    
+2025-11-08T11:38:55.761075Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2289) far exceeds block count (572); potential sync issue    
+2025-11-08T11:38:56.015014Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2293) far exceeds block count (573); potential sync issue    
+2025-11-08T11:38:56.266173Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2297) far exceeds block count (574); potential sync issue    
+2025-11-08T11:38:56.437255Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T11:38:56.437281Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:38:56.522490Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2301) far exceeds block count (575); potential sync issue    
+2025-11-08T11:38:56.783657Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2305) far exceeds block count (576); potential sync issue    
+2025-11-08T11:38:57.039532Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2309) far exceeds block count (577); potential sync issue    
+2025-11-08T11:38:57.298718Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2313) far exceeds block count (578); potential sync issue    
+2025-11-08T11:38:57.548583Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2317) far exceeds block count (579); potential sync issue    
+2025-11-08T11:38:57.800129Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2321) far exceeds block count (580); potential sync issue    
+2025-11-08T11:38:58.052755Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2325) far exceeds block count (581); potential sync issue    
+2025-11-08T11:38:58.302867Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2329) far exceeds block count (582); potential sync issue    
+2025-11-08T11:38:58.551787Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2333) far exceeds block count (583); potential sync issue    
+2025-11-08T11:38:58.806900Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2337) far exceeds block count (584); potential sync issue    
+2025-11-08T11:38:59.059406Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2341) far exceeds block count (585); potential sync issue    
+2025-11-08T11:38:59.310480Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2345) far exceeds block count (586); potential sync issue    
+2025-11-08T11:38:59.561809Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2349) far exceeds block count (587); potential sync issue    
+2025-11-08T11:38:59.814471Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2353) far exceeds block count (588); potential sync issue    
+2025-11-08T11:39:00.070974Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2357) far exceeds block count (589); potential sync issue    
+2025-11-08T11:39:00.326212Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2361) far exceeds block count (590); potential sync issue    
+2025-11-08T11:39:00.581999Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2365) far exceeds block count (591); potential sync issue    
+2025-11-08T11:39:00.837082Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2369) far exceeds block count (592); potential sync issue    
+2025-11-08T11:39:01.094785Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2373) far exceeds block count (593); potential sync issue    
+2025-11-08T11:39:01.353103Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2377) far exceeds block count (594); potential sync issue    
+2025-11-08T11:39:01.437322Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T11:39:01.437346Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T11:39:01.606870Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2381) far exceeds block count (595); potential sync issue    
+2025-11-08T11:39:01.860412Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2385) far exceeds block count (596); potential sync issue    
+2025-11-08T11:39:02.112879Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2389) far exceeds block count (597); potential sync issue    
+2025-11-08T11:39:02.363944Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2393) far exceeds block count (598); potential sync issue    
+2025-11-08T11:39:02.615112Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2397) far exceeds block count (599); potential sync issue    
+2025-11-08T11:39:02.870281Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2401) far exceeds block count (600); potential sync issue    
+2025-11-08T11:39:03.127233Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2405) far exceeds block count (601); potential sync issue    
+2025-11-08T11:39:03.379099Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2409) far exceeds block count (602); potential sync issue    
+2025-11-08T11:39:03.632155Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2413) far exceeds block count (603); potential sync issue    
+2025-11-08T11:39:03.887320Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2417) far exceeds block count (604); potential sync issue    
+2025-11-08T11:39:04.139061Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2421) far exceeds block count (605); potential sync issue    
+2025-11-08T11:39:04.393774Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2425) far exceeds block count (606); potential sync issue    
+2025-11-08T11:39:04.649881Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2429) far exceeds block count (607); potential sync issue    
+2025-11-08T11:39:04.905302Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2433) far exceeds block count (608); potential sync issue    

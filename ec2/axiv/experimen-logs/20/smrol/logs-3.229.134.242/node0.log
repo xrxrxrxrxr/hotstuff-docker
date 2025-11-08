@@ -1,0 +1,297 @@
+2025-11-07T02:30:00.751108Z  WARN ThreadId(01) hotstuff_runner::telemetry: Prometheus metrics exporter started ✅ listen_addr=0.0.0.0:9900
+2025-11-07T02:30:00.751154Z  WARN ThreadId(01) hotstuff_runner::telemetry: ✅ wrote smrol.node_up=1 (boot) node_id=0
+2025-11-07T02:30:20.954736Z  WARN ThreadId(01) hotstuff_runner::tcp_node: Node 0 view timeout set to 3000 ms
+2025-11-07T02:30:20.957614Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 4: Connection refused (os error 111)
+2025-11-07T02:30:20.957854Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 0 failed to connect to node 5: Connection refused (os error 111)
+2025-11-07T02:30:20.958080Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 0 failed to connect to node 6: Connection refused (os error 111)
+2025-11-07T02:30:20.958297Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 0 failed to connect to node 7: Connection refused (os error 111)
+2025-11-07T02:30:20.958533Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 0 failed to connect to node 8: Connection refused (os error 111)
+2025-11-07T02:30:20.958934Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 0 failed to connect to node 10: Connection refused (os error 111)
+2025-11-07T02:30:20.959126Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 0 failed to connect to node 11: Connection refused (os error 111)
+2025-11-07T02:30:20.959310Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 0 failed to connect to node 12: Connection refused (os error 111)
+2025-11-07T02:30:20.959525Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 0 failed to connect to node 13: Connection refused (os error 111)
+2025-11-07T02:30:20.959877Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 0 failed to connect to node 15: Connection refused (os error 111)
+2025-11-07T02:30:20.960082Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 0 failed to connect to node 16: Connection refused (os error 111)
+2025-11-07T02:30:20.960296Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 0 failed to connect to node 17: Connection refused (os error 111)
+2025-11-07T02:30:20.960494Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 0 failed to connect to node 18: Connection refused (os error 111)
+2025-11-07T02:30:20.960704Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 0 failed to connect to node 19: Connection refused (os error 111)
+2025-11-07T02:30:20.960916Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 0 failed to connect to node 20: Connection refused (os error 111)
+2025-11-07T02:30:20.963227Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: SMROL_MEDIAN_INFLIGHT=24, SMROL_ORDER_FINALIZE_INFLIGHT=4, SMROL_FINAL_SIGN_INFLIGHT=4, SMROL_FINAL_VERIFY_INFLIGHT=24
+2025-11-07T02:30:20.963287Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: [Sequencing] Node 0 multi-signature verification disabled: false
+2025-11-07T02:30:20.963360Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [Sequencing] Node 0 final verify dispatcher started
+2025-11-07T02:30:20.964519Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:30:25.965110Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:30:25.966689Z  WARN ThreadId(01) docker_node: Node 0 port 20000 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:30:25.968485Z  WARN ThreadId(01) docker_node: Node 1 port 20001 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:30:25.970478Z  WARN ThreadId(01) docker_node: Node 2 port 20002 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:30:25.972381Z  WARN ThreadId(01) docker_node: Node 3 port 20003 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:30:25.974467Z  WARN ThreadId(01) docker_node: Node 4 port 20004 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:30:25.976416Z  WARN ThreadId(01) docker_node: Node 5 port 20005 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:30:25.978160Z  WARN ThreadId(01) docker_node: Node 6 port 20006 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:30:25.980002Z  WARN ThreadId(01) docker_node: Node 7 port 20007 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:30:25.981879Z  WARN ThreadId(01) docker_node: Node 8 port 20008 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:30:25.983622Z  WARN ThreadId(01) docker_node: Node 9 port 20009 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:30:25.985530Z  WARN ThreadId(01) docker_node: Node 10 port 20010 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:30:25.987429Z  WARN ThreadId(01) docker_node: Node 11 port 20011 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:30:25.989486Z  WARN ThreadId(01) docker_node: Node 12 port 20012 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:30:25.993814Z  WARN ThreadId(01) docker_node: Node 13 port 20013 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:30:25.995687Z  WARN ThreadId(01) docker_node: Node 14 port 20014 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:30:25.997654Z  WARN ThreadId(01) docker_node: Node 15 port 20015 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:30:25.999587Z  WARN ThreadId(01) docker_node: Node 16 port 20016 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:30:26.001979Z  WARN ThreadId(01) docker_node: Node 17 port 20017 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:30:26.004041Z  WARN ThreadId(01) docker_node: Node 18 port 20018 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:30:26.005904Z  WARN ThreadId(01) docker_node: Node 19 port 20019 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:30:26.007717Z  WARN ThreadId(01) docker_node: Node 20 port 20020 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-07T02:30:30.964921Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:30:35.965160Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:30:40.965372Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:30:45.965343Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:30:50.964872Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:30:52.424991Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 7.095376ms
+2025-11-07T02:30:55.965346Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:31:00.964707Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:31:05.964825Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:31:05.964846Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:31:10.964563Z  WARN ThreadId(08) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:31:10.965112Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:31:15.964654Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:31:15.964677Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:31:17.565018Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 16 slow write: 5.858214ms
+2025-11-07T02:31:21.026589Z  WARN ThreadId(07) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:31:21.026619Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:31:25.964700Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:31:25.964724Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:31:30.441857Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 16 slow write: 5.274788ms
+2025-11-07T02:31:30.967374Z  WARN ThreadId(08) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:31:30.967394Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:31:35.964708Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:31:35.964749Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:31:37.981922Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 14 slow write: 6.0816ms
+2025-11-07T02:31:40.965446Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:31:40.965467Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:31:45.964693Z  WARN ThreadId(02) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:31:45.964723Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:31:50.965632Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:31:50.965662Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:31:52.171620Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 14 slow write: 5.549015ms
+2025-11-07T02:31:55.964882Z  WARN ThreadId(03) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:31:55.964922Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:32:00.964505Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:32:00.964530Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:32:05.964738Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:32:05.964767Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:32:10.964925Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:32:10.964952Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:32:15.965134Z  WARN ThreadId(03) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:32:15.965161Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:32:19.240926Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 14 slow write: 6.243293ms
+2025-11-07T02:32:20.965152Z  WARN ThreadId(04) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:32:20.965180Z  WARN ThreadId(04) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:32:25.964658Z  WARN ThreadId(08) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:32:25.964681Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:32:30.965183Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:32:30.965292Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:32:35.965267Z  WARN ThreadId(08) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:32:35.965325Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:32:40.964904Z  WARN ThreadId(03) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:32:40.964924Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:32:45.964750Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:32:45.964772Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:32:50.965002Z  WARN ThreadId(03) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:32:50.965032Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:32:55.965032Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:32:55.965061Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:33:00.964884Z  WARN ThreadId(04) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:33:00.964922Z  WARN ThreadId(04) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:33:05.964572Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-07T02:33:05.964606Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-07T02:33:08.345500Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 19 failed: Failed to write length: Connection reset by peer (os error 104)
+2025-11-07T02:33:08.345599Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 7 failed: Failed to write length: Connection reset by peer (os error 104)
+2025-11-07T02:33:08.349240Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 2 failed: Failed to write length: Connection reset by peer (os error 104)
+2025-11-07T02:33:08.359356Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 16 failed: Failed to write length: Connection reset by peer (os error 104)
+2025-11-07T02:33:08.359867Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 9080): Failed to send VOTE: Connection failed 172.31.65.104:21002: Connection refused (os error 111)
+2025-11-07T02:33:08.361597Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 9073): Failed to send VOTE: Connection failed 172.31.65.104:21002: Connection refused (os error 111)
+2025-11-07T02:33:08.362328Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 9083): Failed to send VOTE: Connection failed 172.31.65.104:21002: Connection refused (os error 111)
+2025-11-07T02:33:08.362439Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 5 failed: Failed to write length: Connection reset by peer (os error 104)
+2025-11-07T02:33:08.363472Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 9084): Failed to send VOTE: Connection failed 172.31.65.104:21002: Connection refused (os error 111)
+2025-11-07T02:33:08.366385Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 9076): Failed to send VOTE: Connection failed 172.31.65.104:21002: Connection refused (os error 111)
+2025-11-07T02:33:08.367654Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 9079): Failed to send VOTE: Connection failed 172.31.65.104:21002: Connection refused (os error 111)
+2025-11-07T02:33:08.369036Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 9086): Failed to send VOTE: Connection failed 172.31.65.104:21002: Connection refused (os error 111)
+2025-11-07T02:33:08.370975Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 9081): Failed to send VOTE: Connection failed 172.31.65.104:21002: Connection refused (os error 111)
+2025-11-07T02:33:08.372332Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 9077): Failed to send VOTE: Connection failed 172.31.65.104:21002: Connection refused (os error 111)
+2025-11-07T02:33:08.373196Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 14 failed: Failed to write length: Connection reset by peer (os error 104)
+2025-11-07T02:33:08.373380Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 17 failed: Failed to write length: Connection reset by peer (os error 104)
+2025-11-07T02:33:08.373432Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 4 failed: Failed to write length: Connection reset by peer (os error 104)
+2025-11-07T02:33:08.373837Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 9078): Failed to send VOTE: Connection failed 172.31.65.104:21002: Connection refused (os error 111)
+2025-11-07T02:33:08.375343Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 9082): Failed to send VOTE: Connection failed 172.31.65.104:21002: Connection refused (os error 111)
+2025-11-07T02:33:08.376829Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 9087): Failed to send VOTE: Connection failed 172.31.65.104:21002: Connection refused (os error 111)
+2025-11-07T02:33:08.378290Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 9085): Failed to send VOTE: Connection failed 172.31.65.104:21002: Connection refused (os error 111)
+2025-11-07T02:33:08.379122Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 9088): Failed to send VOTE: Connection failed 172.31.65.104:21002: Connection refused (os error 111)
+2025-11-07T02:33:08.380494Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 9089): Failed to send VOTE: Connection failed 172.31.65.104:21002: Connection refused (os error 111)
+2025-11-07T02:33:08.381285Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 9092): Failed to send VOTE: Connection failed 172.31.65.104:21002: Connection refused (os error 111)
+2025-11-07T02:33:08.381916Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 11 failed: Failed to write length: Connection reset by peer (os error 104)
+2025-11-07T02:33:08.384996Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 11 slot 9082): Failed to send VOTE: Connection failed 172.31.73.120:21011: Connection refused (os error 111)
+2025-11-07T02:33:08.386499Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 11 slot 9079): Failed to send VOTE: Connection failed 172.31.73.120:21011: Connection refused (os error 111)
+2025-11-07T02:33:08.387921Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 11 slot 9080): Failed to send VOTE: Connection failed 172.31.73.120:21011: Connection refused (os error 111)
+2025-11-07T02:33:08.389309Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 11 slot 9081): Failed to send VOTE: Connection failed 172.31.73.120:21011: Connection refused (os error 111)
+2025-11-07T02:33:08.390835Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 11 slot 9075): Failed to send VOTE: Connection failed 172.31.73.120:21011: Connection refused (os error 111)
+2025-11-07T02:33:08.392492Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 11 slot 9087): Failed to send VOTE: Connection failed 172.31.73.120:21011: Connection refused (os error 111)
+2025-11-07T02:33:08.394183Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 11 slot 9083): Failed to send VOTE: Connection failed 172.31.73.120:21011: Connection refused (os error 111)
+2025-11-07T02:33:08.395550Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 11 slot 9092): Failed to send VOTE: Connection failed 172.31.73.120:21011: Connection refused (os error 111)
+2025-11-07T02:33:08.397490Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 11 slot 9084): Failed to send VOTE: Connection failed 172.31.73.120:21011: Connection refused (os error 111)
+2025-11-07T02:33:08.399024Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 11 slot 9074): Failed to send VOTE: Connection failed 172.31.73.120:21011: Connection refused (os error 111)
+2025-11-07T02:33:08.400184Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 11 slot 9076): Failed to send VOTE: Connection failed 172.31.73.120:21011: Connection refused (os error 111)
+2025-11-07T02:33:08.400775Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 11 slot 9078): Failed to send VOTE: Connection failed 172.31.73.120:21011: Connection refused (os error 111)
+2025-11-07T02:33:08.406334Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 5 slot 9092): Failed to send VOTE: Connection failed 172.31.68.114:21005: Connection refused (os error 111)
+2025-11-07T02:33:08.407176Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 5 slot 9085): Failed to send VOTE: Connection failed 172.31.68.114:21005: Connection refused (os error 111)
+2025-11-07T02:33:08.407985Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 9090): Failed to send VOTE: Connection failed 172.31.65.104:21002: Connection refused (os error 111)
+2025-11-07T02:33:08.409367Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 4 slot 9083): Failed to send VOTE: Connection failed 172.31.70.119:21004: Connection refused (os error 111)
+2025-11-07T02:33:08.410116Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 14 slot 9090): Failed to send VOTE: Connection failed 172.31.74.124:21014: Connection refused (os error 111)
+2025-11-07T02:33:08.410916Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 16 slot 9092): Failed to send VOTE: Connection failed 172.31.69.175:21016: Connection refused (os error 111)
+2025-11-07T02:33:08.412416Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 5 slot 9093): Failed to send VOTE: Connection failed 172.31.68.114:21005: Connection refused (os error 111)
+2025-11-07T02:33:08.417344Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 9091): Failed to send VOTE: Connection failed 172.31.65.104:21002: Connection refused (os error 111)
+2025-11-07T02:33:08.418290Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 4 slot 9084): Failed to send VOTE: Connection failed 172.31.70.119:21004: Connection refused (os error 111)
+2025-11-07T02:33:08.419301Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 4 slot 9090): Failed to send VOTE: Connection failed 172.31.70.119:21004: Connection refused (os error 111)
+2025-11-07T02:33:08.420100Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 4 slot 9087): Failed to send VOTE: Connection failed 172.31.70.119:21004: Connection refused (os error 111)
+2025-11-07T02:33:08.420896Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 4 slot 9091): Failed to send VOTE: Connection failed 172.31.70.119:21004: Connection refused (os error 111)
+2025-11-07T02:33:08.421707Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 4 slot 9088): Failed to send VOTE: Connection failed 172.31.70.119:21004: Connection refused (os error 111)
+2025-11-07T02:33:08.423832Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 5 slot 9090): Failed to send VOTE: Connection failed 172.31.68.114:21005: Connection refused (os error 111)
+2025-11-07T02:33:08.426175Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 8 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-07T02:33:08.426843Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 8 slot 9092): Failed to send VOTE: Connection failed 172.31.78.124:21008: Connection refused (os error 111)
+2025-11-07T02:33:08.428241Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 16 slot 9089): Failed to send VOTE: Connection failed 172.31.69.175:21016: Connection refused (os error 111)
+2025-11-07T02:33:08.430304Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 17 slot 9091): Failed to send VOTE: Connection failed 172.31.74.173:21017: Connection refused (os error 111)
+2025-11-07T02:33:08.431087Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 17 slot 9092): Failed to send VOTE: Connection failed 172.31.74.173:21017: Connection refused (os error 111)
+2025-11-07T02:33:08.432476Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 4 slot 9092): Failed to send VOTE: Connection failed 172.31.70.119:21004: Connection refused (os error 111)
+2025-11-07T02:33:08.434984Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 11 slot 9085): Failed to send VOTE: Connection failed 172.31.73.120:21011: Connection refused (os error 111)
+2025-11-07T02:33:08.435856Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 7 slot 9076): Failed to send VOTE: Connection failed 172.31.75.111:21007: Connection refused (os error 111)
+2025-11-07T02:33:08.436598Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 7 slot 9079): Failed to send VOTE: Connection failed 172.31.75.111:21007: Connection refused (os error 111)
+2025-11-07T02:33:08.437352Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 7 slot 9080): Failed to send VOTE: Connection failed 172.31.75.111:21007: Connection refused (os error 111)
+2025-11-07T02:33:08.438258Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 7 slot 9085): Failed to send VOTE: Connection failed 172.31.75.111:21007: Connection refused (os error 111)
+2025-11-07T02:33:08.439040Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 7 slot 9089): Failed to send VOTE: Connection failed 172.31.75.111:21007: Connection refused (os error 111)
+2025-11-07T02:33:08.439667Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 14 slot 9091): Failed to send VOTE: Connection failed 172.31.74.124:21014: Connection refused (os error 111)
+2025-11-07T02:33:08.440420Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 14 slot 9092): Failed to send VOTE: Connection failed 172.31.74.124:21014: Connection refused (os error 111)
+2025-11-07T02:33:08.441312Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 17 slot 9093): Failed to send VOTE: Connection failed 172.31.74.173:21017: Connection refused (os error 111)
+2025-11-07T02:33:08.442072Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 7 slot 9086): Failed to send VOTE: Connection failed 172.31.75.111:21007: Connection refused (os error 111)
+2025-11-07T02:33:08.444317Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 11 slot 9086): Failed to send VOTE: Connection failed 172.31.73.120:21011: Connection refused (os error 111)
+2025-11-07T02:33:08.445843Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 8 slot 9093): Failed to send VOTE: Connection failed 172.31.78.124:21008: Connection refused (os error 111)
+2025-11-07T02:33:08.449256Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 4 slot 9089): Failed to send VOTE: Connection failed 172.31.70.119:21004: Connection refused (os error 111)
+2025-11-07T02:33:08.454649Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 4 slot 9093): Failed to send VOTE: Connection failed 172.31.70.119:21004: Connection refused (os error 111)
+2025-11-07T02:33:08.455416Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 14 slot 9093): Failed to send VOTE: Connection failed 172.31.74.124:21014: Connection refused (os error 111)
+2025-11-07T02:33:08.458126Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 11 slot 9088): Failed to send VOTE: Connection failed 172.31.73.120:21011: Connection refused (os error 111)
+2025-11-07T02:33:08.459207Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 11 slot 9091): Failed to send VOTE: Connection failed 172.31.73.120:21011: Connection refused (os error 111)
+2025-11-07T02:33:08.460538Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 7 slot 9088): Failed to send VOTE: Connection failed 172.31.75.111:21007: Connection refused (os error 111)
+2025-11-07T02:33:08.461168Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 9093): Failed to send VOTE: Connection failed 172.31.65.104:21002: Connection refused (os error 111)
+2025-11-07T02:33:08.461956Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 11 slot 9093): Failed to send VOTE: Connection failed 172.31.73.120:21011: Connection refused (os error 111)
+2025-11-07T02:33:08.462749Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 11 slot 9089): Failed to send VOTE: Connection failed 172.31.73.120:21011: Connection refused (os error 111)
+2025-11-07T02:33:08.463524Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 7 slot 9090): Failed to send VOTE: Connection failed 172.31.75.111:21007: Connection refused (os error 111)
+2025-11-07T02:33:08.464577Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 11 slot 9090): Failed to send VOTE: Connection failed 172.31.73.120:21011: Connection refused (os error 111)
+2025-11-07T02:33:08.465327Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 7 slot 9092): Failed to send VOTE: Connection failed 172.31.75.111:21007: Connection refused (os error 111)
+2025-11-07T02:33:08.466431Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 17 slot 9090): Failed to send VOTE: Connection failed 172.31.74.173:21017: Connection refused (os error 111)
+2025-11-07T02:33:08.469840Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 8 slot 9094): Failed to send VOTE: Connection failed 172.31.78.124:21008: Connection refused (os error 111)
+2025-11-07T02:33:08.470624Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 8 slot 9096): Failed to send VOTE: Connection failed 172.31.78.124:21008: Connection refused (os error 111)
+2025-11-07T02:33:08.471608Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 8 slot 9095): Failed to send VOTE: Connection failed 172.31.78.124:21008: Connection refused (os error 111)
+2025-11-07T02:33:08.472395Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 9094): Failed to send VOTE: Connection failed 172.31.65.104:21002: Connection refused (os error 111)
+2025-11-07T02:33:08.473235Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 7 slot 9094): Failed to send VOTE: Connection failed 172.31.75.111:21007: Connection refused (os error 111)
+2025-11-07T02:33:08.474123Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 7 slot 9095): Failed to send VOTE: Connection failed 172.31.75.111:21007: Connection refused (os error 111)
+2025-11-07T02:33:08.474968Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 7 slot 9097): Failed to send VOTE: Connection failed 172.31.75.111:21007: Connection refused (os error 111)
+2025-11-07T02:33:08.475730Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 19 slot 9094): Failed to send VOTE: Connection failed 172.31.79.167:21019: Connection refused (os error 111)
+2025-11-07T02:33:08.476463Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 14 slot 9094): Failed to send VOTE: Connection failed 172.31.74.124:21014: Connection refused (os error 111)
+2025-11-07T02:33:08.477206Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 14 slot 9095): Failed to send VOTE: Connection failed 172.31.74.124:21014: Connection refused (os error 111)
+2025-11-07T02:33:08.478481Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 4 slot 9094): Failed to send VOTE: Connection failed 172.31.70.119:21004: Connection refused (os error 111)
+2025-11-07T02:33:08.481415Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 5 slot 9094): Failed to send VOTE: Connection failed 172.31.68.114:21005: Connection refused (os error 111)
+2025-11-07T02:33:08.482176Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 5 slot 9095): Failed to send VOTE: Connection failed 172.31.68.114:21005: Connection refused (os error 111)
+2025-11-07T02:33:08.482922Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 5 slot 9096): Failed to send VOTE: Connection failed 172.31.68.114:21005: Connection refused (os error 111)
+2025-11-07T02:33:08.483693Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 11 slot 9094): Failed to send VOTE: Connection failed 172.31.73.120:21011: Connection refused (os error 111)
+2025-11-07T02:33:08.484467Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 17 slot 9094): Failed to send VOTE: Connection failed 172.31.74.173:21017: Connection refused (os error 111)
+2025-11-07T02:33:08.487287Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 16 slot 9094): Failed to send VOTE: Connection failed 172.31.69.175:21016: Connection refused (os error 111)
+2025-11-07T02:33:08.497611Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 20 failed: Failed to write length: Connection reset by peer (os error 104)
+2025-11-07T02:33:08.498242Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 20 slot 9097): Failed to send VOTE: Connection failed 172.31.74.143:21020: Connection refused (os error 111)
+2025-11-07T02:33:08.499057Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 20 slot 9099): Failed to send VOTE: Connection failed 172.31.74.143:21020: Connection refused (os error 111)
+2025-11-07T02:33:08.499860Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 17 slot 9097): Failed to send VOTE: Connection failed 172.31.74.173:21017: Connection refused (os error 111)
+2025-11-07T02:33:08.500482Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 17 slot 9100): Failed to send VOTE: Connection failed 172.31.74.173:21017: Connection refused (os error 111)
+2025-11-07T02:33:08.501368Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 17 slot 9103): Failed to send VOTE: Connection failed 172.31.74.173:21017: Connection refused (os error 111)
+2025-11-07T02:33:08.502156Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 17 slot 9106): Failed to send VOTE: Connection failed 172.31.74.173:21017: Connection refused (os error 111)
+2025-11-07T02:33:08.503121Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 17 slot 9098): Failed to send VOTE: Connection failed 172.31.74.173:21017: Connection refused (os error 111)
+2025-11-07T02:33:08.503914Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 17 slot 9099): Failed to send VOTE: Connection failed 172.31.74.173:21017: Connection refused (os error 111)
+2025-11-07T02:33:08.504668Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 17 slot 9107): Failed to send VOTE: Connection failed 172.31.74.173:21017: Connection refused (os error 111)
+2025-11-07T02:33:08.505343Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 17 slot 9108): Failed to send VOTE: Connection failed 172.31.74.173:21017: Connection refused (os error 111)
+2025-11-07T02:33:08.506121Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 16 slot 9095): Failed to send VOTE: Connection failed 172.31.69.175:21016: Connection refused (os error 111)
+2025-11-07T02:33:08.506846Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 16 slot 9097): Failed to send VOTE: Connection failed 172.31.69.175:21016: Connection refused (os error 111)
+2025-11-07T02:33:08.507587Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 16 slot 9099): Failed to send VOTE: Connection failed 172.31.69.175:21016: Connection refused (os error 111)
+2025-11-07T02:33:08.508473Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 16 slot 9098): Failed to send VOTE: Connection failed 172.31.69.175:21016: Connection refused (os error 111)
+2025-11-07T02:33:08.509267Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 16 slot 9100): Failed to send VOTE: Connection failed 172.31.69.175:21016: Connection refused (os error 111)
+2025-11-07T02:33:08.509913Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 16 slot 9102): Failed to send VOTE: Connection failed 172.31.69.175:21016: Connection refused (os error 111)
+2025-11-07T02:33:08.510519Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 7 slot 9099): Failed to send VOTE: Connection failed 172.31.75.111:21007: Connection refused (os error 111)
+2025-11-07T02:33:08.511150Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 7 slot 9103): Failed to send VOTE: Connection failed 172.31.75.111:21007: Connection refused (os error 111)
+2025-11-07T02:33:08.511880Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 7 slot 9096): Failed to send VOTE: Connection failed 172.31.75.111:21007: Connection refused (os error 111)
+2025-11-07T02:33:08.512623Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 7 slot 9104): Failed to send VOTE: Connection failed 172.31.75.111:21007: Connection refused (os error 111)
+2025-11-07T02:33:08.519664Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 11 slot 9098): Failed to send VOTE: Connection failed 172.31.73.120:21011: Connection refused (os error 111)
+2025-11-07T02:33:08.520443Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 11 slot 9100): Failed to send VOTE: Connection failed 172.31.73.120:21011: Connection refused (os error 111)
+2025-11-07T02:33:08.521181Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 11 slot 9096): Failed to send VOTE: Connection failed 172.31.73.120:21011: Connection refused (os error 111)
+2025-11-07T02:33:08.521998Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 11 slot 9097): Failed to send VOTE: Connection failed 172.31.73.120:21011: Connection refused (os error 111)
+2025-11-07T02:33:08.522771Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 11 slot 9102): Failed to send VOTE: Connection failed 172.31.73.120:21011: Connection refused (os error 111)
+2025-11-07T02:33:08.523573Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 11 slot 9095): Failed to send VOTE: Connection failed 172.31.73.120:21011: Connection refused (os error 111)
+2025-11-07T02:33:08.524398Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 11 slot 9099): Failed to send VOTE: Connection failed 172.31.73.120:21011: Connection refused (os error 111)
+2025-11-07T02:33:08.525275Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 9101): Failed to send VOTE: Connection failed 172.31.65.104:21002: Connection refused (os error 111)
+2025-11-07T02:33:08.526138Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 9102): Failed to send VOTE: Connection failed 172.31.65.104:21002: Connection refused (os error 111)
+2025-11-07T02:33:08.527031Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 2 slot 9097): Failed to send VOTE: Connection failed 172.31.65.104:21002: Connection refused (os error 111)
+2025-11-07T02:33:08.527880Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 5 slot 9097): Failed to send VOTE: Connection failed 172.31.68.114:21005: Connection refused (os error 111)
+2025-11-07T02:33:08.528765Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 5 slot 9098): Failed to send VOTE: Connection failed 172.31.68.114:21005: Connection refused (os error 111)
+2025-11-07T02:33:08.529554Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 5 slot 9099): Failed to send VOTE: Connection failed 172.31.68.114:21005: Connection refused (os error 111)
+2025-11-07T02:33:08.530993Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 5 slot 9100): Failed to send VOTE: Connection failed 172.31.68.114:21005: Connection refused (os error 111)
+2025-11-07T02:33:08.531940Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 5 slot 9102): Failed to send VOTE: Connection failed 172.31.68.114:21005: Connection refused (os error 111)
+2025-11-07T02:33:08.532652Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 5 slot 9104): Failed to send VOTE: Connection failed 172.31.68.114:21005: Connection refused (os error 111)
+2025-11-07T02:33:08.533269Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 14 slot 9097): Failed to send VOTE: Connection failed 172.31.74.124:21014: Connection refused (os error 111)
+2025-11-07T02:33:08.533965Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 14 slot 9104): Failed to send VOTE: Connection failed 172.31.74.124:21014: Connection refused (os error 111)
+2025-11-07T02:33:08.534682Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 14 slot 9100): Failed to send VOTE: Connection failed 172.31.74.124:21014: Connection refused (os error 111)
+2025-11-07T02:33:08.535581Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 14 slot 9105): Failed to send VOTE: Connection failed 172.31.74.124:21014: Connection refused (os error 111)
+2025-11-07T02:33:08.536362Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 14 slot 9101): Failed to send VOTE: Connection failed 172.31.74.124:21014: Connection refused (os error 111)
+2025-11-07T02:33:08.537119Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 14 slot 9108): Failed to send VOTE: Connection failed 172.31.74.124:21014: Connection refused (os error 111)
+2025-11-07T02:33:08.537824Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 14 slot 9096): Failed to send VOTE: Connection failed 172.31.74.124:21014: Connection refused (os error 111)
+2025-11-07T02:33:08.538495Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 14 slot 9103): Failed to send VOTE: Connection failed 172.31.74.124:21014: Connection refused (os error 111)
+2025-11-07T02:33:08.539195Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 14 slot 9098): Failed to send VOTE: Connection failed 172.31.74.124:21014: Connection refused (os error 111)
+2025-11-07T02:33:08.539965Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 14 slot 9106): Failed to send VOTE: Connection failed 172.31.74.124:21014: Connection refused (os error 111)
+2025-11-07T02:33:08.540994Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 14 slot 9107): Failed to send VOTE: Connection failed 172.31.74.124:21014: Connection refused (os error 111)
+2025-11-07T02:33:08.546941Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 17 slot 9109): Failed to send VOTE: Connection failed 172.31.74.173:21017: Connection refused (os error 111)
+2025-11-07T02:33:08.554119Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 19 slot 9097): Failed to send VOTE: Connection failed 172.31.79.167:21019: Connection refused (os error 111)
+2025-11-07T02:33:08.554875Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 19 slot 9101): Failed to send VOTE: Connection failed 172.31.79.167:21019: Connection refused (os error 111)
+2025-11-07T02:33:08.555672Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 19 slot 9096): Failed to send VOTE: Connection failed 172.31.79.167:21019: Connection refused (os error 111)
+2025-11-07T02:33:08.556529Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 19 slot 9099): Failed to send VOTE: Connection failed 172.31.79.167:21019: Connection refused (os error 111)
+2025-11-07T02:33:08.557169Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 19 slot 9098): Failed to send VOTE: Connection failed 172.31.79.167:21019: Connection refused (os error 111)
+2025-11-07T02:33:08.557802Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 8 slot 9103): Failed to send VOTE: Connection failed 172.31.78.124:21008: Connection refused (os error 111)
+2025-11-07T02:33:08.558543Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 8 slot 9098): Failed to send VOTE: Connection failed 172.31.78.124:21008: Connection refused (os error 111)
+2025-11-07T02:33:08.559351Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 8 slot 9101): Failed to send VOTE: Connection failed 172.31.78.124:21008: Connection refused (os error 111)
+2025-11-07T02:33:08.560137Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 8 slot 9102): Failed to send VOTE: Connection failed 172.31.78.124:21008: Connection refused (os error 111)
+2025-11-07T02:33:08.565868Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 20 slot 9102): Failed to send VOTE: Connection failed 172.31.74.143:21020: Connection refused (os error 111)
+2025-11-07T02:33:08.566623Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 7 slot 9101): Failed to send VOTE: Connection failed 172.31.75.111:21007: Connection refused (os error 111)
+2025-11-07T02:33:08.567387Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 7 slot 9098): Failed to send VOTE: Connection failed 172.31.75.111:21007: Connection refused (os error 111)
+2025-11-07T02:33:08.568162Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 7 slot 9108): Failed to send VOTE: Connection failed 172.31.75.111:21007: Connection refused (os error 111)
+2025-11-07T02:33:08.568980Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 7 slot 9100): Failed to send VOTE: Connection failed 172.31.75.111:21007: Connection refused (os error 111)
+2025-11-07T02:33:08.569739Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 7 slot 9105): Failed to send VOTE: Connection failed 172.31.75.111:21007: Connection refused (os error 111)
+2025-11-07T02:33:08.570489Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 7 slot 9109): Failed to send VOTE: Connection failed 172.31.75.111:21007: Connection refused (os error 111)
+2025-11-07T02:33:08.571281Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 7 slot 9110): Failed to send VOTE: Connection failed 172.31.75.111:21007: Connection refused (os error 111)
+2025-11-07T02:33:08.572177Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 7 slot 9102): Failed to send VOTE: Connection failed 172.31.75.111:21007: Connection refused (os error 111)
+2025-11-07T02:33:08.573063Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 5 slot 9101): Failed to send VOTE: Connection failed 172.31.68.114:21005: Connection refused (os error 111)
+2025-11-07T02:33:08.573886Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 5 slot 9105): Failed to send VOTE: Connection failed 172.31.68.114:21005: Connection refused (os error 111)
+2025-11-07T02:33:08.574646Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 5 slot 9103): Failed to send VOTE: Connection failed 172.31.68.114:21005: Connection refused (os error 111)
+2025-11-07T02:33:08.575416Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 5 slot 9109): Failed to send VOTE: Connection failed 172.31.68.114:21005: Connection refused (os error 111)
+2025-11-07T02:33:08.576216Z  WARN ThreadId(05) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 5 slot 9111): Failed to send VOTE: Connection failed 172.31.68.114:21005: Connection refused (os error 111)
+2025-11-07T02:33:08.577055Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 5 slot 9106): Failed to send VOTE: Connection failed 172.31.68.114:21005: Connection refused (os error 111)
+2025-11-07T02:33:08.577871Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 5 slot 9107): Failed to send VOTE: Connection failed 172.31.68.114:21005: Connection refused (os error 111)
+2025-11-07T02:33:08.578515Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 5 slot 9108): Failed to send VOTE: Connection failed 172.31.68.114:21005: Connection refused (os error 111)
+2025-11-07T02:33:08.579206Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 20 slot 9106): Failed to send VOTE: Connection failed 172.31.74.143:21020: Connection refused (os error 111)
+2025-11-07T02:33:08.580140Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 20 slot 9101): Failed to send VOTE: Connection failed 172.31.74.143:21020: Connection refused (os error 111)
+2025-11-07T02:33:08.580959Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 20 slot 9098): Failed to send VOTE: Connection failed 172.31.74.143:21020: Connection refused (os error 111)
+2025-11-07T02:33:08.581859Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 20 slot 9103): Failed to send VOTE: Connection failed 172.31.74.143:21020: Connection refused (os error 111)
+2025-11-07T02:33:08.582655Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 20 slot 9108): Failed to send VOTE: Connection failed 172.31.74.143:21020: Connection refused (os error 111)
+2025-11-07T02:33:08.583439Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 20 slot 9105): Failed to send VOTE: Connection failed 172.31.74.143:21020: Connection refused (os error 111)
+2025-11-07T02:33:08.584162Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 20 slot 9107): Failed to send VOTE: Connection failed 172.31.74.143:21020: Connection refused (os error 111)
+2025-11-07T02:33:08.584932Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 20 slot 9109): Failed to send VOTE: Connection failed 172.31.74.143:21020: Connection refused (os error 111)
+2025-11-07T02:33:08.586701Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 20 slot 9104): Failed to send VOTE: Connection failed 172.31.74.143:21020: Connection refused (os error 111)
+2025-11-07T02:33:08.587527Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 19 slot 9095): Failed to send VOTE: Connection failed 172.31.79.167:21019: Connection refused (os error 111)
+2025-11-07T02:33:08.588330Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 19 slot 9105): Failed to send VOTE: Connection failed 172.31.79.167:21019: Connection refused (os error 111)
+2025-11-07T02:33:08.589650Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 19 slot 9102): Failed to send VOTE: Connection failed 172.31.79.167:21019: Connection refused (os error 111)
+2025-11-07T02:33:08.590467Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 19 slot 9109): Failed to send VOTE: Connection failed 172.31.79.167:21019: Connection refused (os error 111)
+2025-11-07T02:33:08.593521Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 7 slot 9106): Failed to send VOTE: Connection failed 172.31.75.111:21007: Connection refused (os error 111)
+2025-11-07T02:33:08.594363Z  WARN ThreadId(04) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 7 slot 9107): Failed to send VOTE: Connection failed 172.31.75.111:21007: Connection refused (os error 111)
+2025-11-07T02:33:08.595153Z  WARN ThreadId(08) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 7 slot 9112): Failed to send VOTE: Connection failed 172.31.75.111:21007: Connection refused (os error 111)

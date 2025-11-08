@@ -1,0 +1,182 @@
+2025-11-08T04:36:32.717285Z  WARN ThreadId(01) hotstuff_runner::telemetry: Prometheus metrics exporter started ✅ listen_addr=0.0.0.0:9900
+2025-11-08T04:36:32.717331Z  WARN ThreadId(01) hotstuff_runner::telemetry: ✅ wrote smrol.node_up=1 (boot) node_id=0
+2025-11-08T04:36:52.920826Z  WARN ThreadId(01) hotstuff_runner::tcp_node: Node 0 view timeout set to 3000 ms
+2025-11-08T04:36:52.923406Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 0 failed to connect to node 1: Connection refused (os error 111)
+2025-11-08T04:36:52.923700Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 0 failed to connect to node 2: Connection refused (os error 111)
+2025-11-08T04:36:52.923931Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 0 failed to connect to node 3: Connection refused (os error 111)
+2025-11-08T04:36:52.924260Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 4: Connection refused (os error 111)
+2025-11-08T04:36:52.924536Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 5: Connection refused (os error 111)
+2025-11-08T04:36:52.924776Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 6: Connection refused (os error 111)
+2025-11-08T04:36:52.925064Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 7: Connection refused (os error 111)
+2025-11-08T04:36:52.925313Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 8: Connection refused (os error 111)
+2025-11-08T04:36:52.925585Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 9: Connection refused (os error 111)
+2025-11-08T04:36:52.925848Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 10: Connection refused (os error 111)
+2025-11-08T04:36:52.926145Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 11: Connection refused (os error 111)
+2025-11-08T04:36:52.926378Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 12: Connection refused (os error 111)
+2025-11-08T04:36:52.926610Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 13: Connection refused (os error 111)
+2025-11-08T04:36:52.926889Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 14: Connection refused (os error 111)
+2025-11-08T04:36:52.927126Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 15: Connection refused (os error 111)
+2025-11-08T04:36:52.927397Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 16: Connection refused (os error 111)
+2025-11-08T04:36:52.927637Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 17: Connection refused (os error 111)
+2025-11-08T04:36:52.927867Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 18: Connection refused (os error 111)
+2025-11-08T04:36:52.928083Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 19: Connection refused (os error 111)
+2025-11-08T04:36:52.928333Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 20: Connection refused (os error 111)
+2025-11-08T04:36:52.928561Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 21: Connection refused (os error 111)
+2025-11-08T04:36:52.928834Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 22: Connection refused (os error 111)
+2025-11-08T04:36:52.929066Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 23: Connection refused (os error 111)
+2025-11-08T04:36:52.929332Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 24: Connection refused (os error 111)
+2025-11-08T04:36:52.929584Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 25: Connection refused (os error 111)
+2025-11-08T04:36:52.929834Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 26: Connection refused (os error 111)
+2025-11-08T04:36:52.930079Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 27: Connection refused (os error 111)
+2025-11-08T04:36:52.930287Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 28: Connection refused (os error 111)
+2025-11-08T04:36:52.930563Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 29: Connection refused (os error 111)
+2025-11-08T04:36:52.931753Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: SMROL_MEDIAN_INFLIGHT=24, SMROL_ORDER_FINALIZE_INFLIGHT=4, SMROL_FINAL_SIGN_INFLIGHT=4, SMROL_FINAL_VERIFY_INFLIGHT=24
+2025-11-08T04:36:52.931803Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: [Sequencing] Node 0 multi-signature verification disabled: false
+2025-11-08T04:36:52.931891Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [Sequencing] Node 0 final verify dispatcher started
+2025-11-08T04:36:55.922861Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 0 timed out; latency may accumulate
+2025-11-08T04:36:57.935505Z  WARN ThreadId(01) docker_node: Node 0 port 20000 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.937382Z  WARN ThreadId(01) docker_node: Node 1 port 20001 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.939223Z  WARN ThreadId(01) docker_node: Node 2 port 20002 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.941083Z  WARN ThreadId(01) docker_node: Node 3 port 20003 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.942737Z  WARN ThreadId(01) docker_node: Node 4 port 20004 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.944501Z  WARN ThreadId(01) docker_node: Node 5 port 20005 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.946059Z  WARN ThreadId(01) docker_node: Node 6 port 20006 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.947770Z  WARN ThreadId(01) docker_node: Node 7 port 20007 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.949586Z  WARN ThreadId(01) docker_node: Node 8 port 20008 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.951586Z  WARN ThreadId(01) docker_node: Node 9 port 20009 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.953288Z  WARN ThreadId(01) docker_node: Node 10 port 20010 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.955008Z  WARN ThreadId(01) docker_node: Node 11 port 20011 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.956625Z  WARN ThreadId(01) docker_node: Node 12 port 20012 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.958159Z  WARN ThreadId(01) docker_node: Node 13 port 20013 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.962958Z  WARN ThreadId(01) docker_node: Node 14 port 20014 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.964731Z  WARN ThreadId(01) docker_node: Node 15 port 20015 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.967483Z  WARN ThreadId(01) docker_node: Node 16 port 20016 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.969208Z  WARN ThreadId(01) docker_node: Node 17 port 20017 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.971023Z  WARN ThreadId(01) docker_node: Node 18 port 20018 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.972944Z  WARN ThreadId(01) docker_node: Node 19 port 20019 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.977754Z  WARN ThreadId(01) docker_node: Node 20 port 20020 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.979432Z  WARN ThreadId(01) docker_node: Node 21 port 20021 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.981259Z  WARN ThreadId(01) docker_node: Node 22 port 20022 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.982967Z  WARN ThreadId(01) docker_node: Node 23 port 20023 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.984588Z  WARN ThreadId(01) docker_node: Node 24 port 20024 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.986541Z  WARN ThreadId(01) docker_node: Node 25 port 20025 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.988155Z  WARN ThreadId(01) docker_node: Node 26 port 20026 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.989818Z  WARN ThreadId(01) docker_node: Node 27 port 20027 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.991447Z  WARN ThreadId(01) docker_node: Node 28 port 20028 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:36:57.993311Z  WARN ThreadId(01) docker_node: Node 29 port 20029 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T04:37:03.578656Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(108) far exceeds block count (3); potential sync issue    
+2025-11-08T04:37:05.680274Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(138) far exceeds block count (4); potential sync issue    
+2025-11-08T04:37:07.766847Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(168) far exceeds block count (5); potential sync issue    
+2025-11-08T04:37:09.846522Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(198) far exceeds block count (6); potential sync issue    
+2025-11-08T04:37:11.928113Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(228) far exceeds block count (7); potential sync issue    
+2025-11-08T04:37:14.008488Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(258) far exceeds block count (8); potential sync issue    
+2025-11-08T04:37:16.090430Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(288) far exceeds block count (9); potential sync issue    
+2025-11-08T04:37:18.179006Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(318) far exceeds block count (10); potential sync issue    
+2025-11-08T04:37:20.099545Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Detected transaction backlog: submit rate (23.4) > confirm rate (0.0)
+2025-11-08T04:37:20.346022Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(348) far exceeds block count (11); potential sync issue    
+2025-11-08T04:37:20.920801Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Detected transaction backlog: submit rate (13.9) > confirm rate (0.0)
+2025-11-08T04:37:21.722681Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Detected transaction backlog: submit rate (14.4) > confirm rate (0.0)
+2025-11-08T04:37:22.491275Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Detected transaction backlog: submit rate (14.7) > confirm rate (0.0)
+2025-11-08T04:37:22.711516Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(378) far exceeds block count (12); potential sync issue    
+2025-11-08T04:37:22.924943Z  WARN ThreadId(06) hotstuff_runner::pompe: 🧹 [Cleanup] Node 0 cleared 1350 orphaned ordering1 states
+2025-11-08T04:37:22.932844Z  WARN ThreadId(02) docker_node: Overall processing delay detected:
+2025-11-08T04:37:22.932859Z  WARN ThreadId(02) docker_node:    - Both queues are relatively empty but TPS is low: submission(14.6) vs confirmation(0.0)
+2025-11-08T04:37:22.932865Z  WARN ThreadId(02) docker_node:    - Possible cause: Network delay, long block packing intervals, or high validation overhead
+2025-11-08T04:37:23.239773Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Detected transaction backlog: submit rate (14.1) > confirm rate (0.0)
+2025-11-08T04:37:24.995176Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(408) far exceeds block count (13); potential sync issue    
+2025-11-08T04:37:27.396317Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(438) far exceeds block count (14); potential sync issue    
+2025-11-08T04:37:27.933110Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T04:37:29.805933Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(468) far exceeds block count (15); potential sync issue    
+2025-11-08T04:37:32.171598Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(498) far exceeds block count (16); potential sync issue    
+2025-11-08T04:37:32.932798Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T04:37:34.571431Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(528) far exceeds block count (17); potential sync issue    
+2025-11-08T04:37:36.937060Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(558) far exceeds block count (18); potential sync issue    
+2025-11-08T04:37:37.932873Z  WARN ThreadId(02) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T04:37:39.296800Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(588) far exceeds block count (19); potential sync issue    
+2025-11-08T04:37:41.682060Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(618) far exceeds block count (20); potential sync issue    
+2025-11-08T04:37:42.932943Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T04:37:43.955692Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(648) far exceeds block count (21); potential sync issue    
+2025-11-08T04:37:46.091728Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(678) far exceeds block count (22); potential sync issue    
+2025-11-08T04:37:47.933242Z  WARN ThreadId(08) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T04:37:48.230161Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(708) far exceeds block count (23); potential sync issue    
+2025-11-08T04:37:50.364170Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(738) far exceeds block count (24); potential sync issue    
+2025-11-08T04:37:52.483964Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(768) far exceeds block count (25); potential sync issue    
+2025-11-08T04:37:52.926678Z  WARN ThreadId(08) hotstuff_runner::pompe: 🧹 [Cleanup] Node 0 cleared 8730 orphaned ordering1 states
+2025-11-08T04:37:52.932812Z  WARN ThreadId(08) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T04:37:54.568437Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(798) far exceeds block count (26); potential sync issue    
+2025-11-08T04:37:56.626751Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(828) far exceeds block count (27); potential sync issue    
+2025-11-08T04:37:57.932953Z  WARN ThreadId(08) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T04:37:58.732568Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(858) far exceeds block count (28); potential sync issue    
+2025-11-08T04:38:00.803726Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(888) far exceeds block count (29); potential sync issue    
+2025-11-08T04:38:02.845046Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(918) far exceeds block count (30); potential sync issue    
+2025-11-08T04:38:02.933420Z  WARN ThreadId(08) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T04:38:04.908050Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(948) far exceeds block count (31); potential sync issue    
+2025-11-08T04:38:06.970415Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(978) far exceeds block count (32); potential sync issue    
+2025-11-08T04:38:07.933130Z  WARN ThreadId(08) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T04:38:08.994606Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1008) far exceeds block count (33); potential sync issue    
+2025-11-08T04:38:11.081078Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1038) far exceeds block count (34); potential sync issue    
+2025-11-08T04:38:12.932753Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T04:38:13.159016Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1068) far exceeds block count (35); potential sync issue    
+2025-11-08T04:38:15.248669Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1098) far exceeds block count (36); potential sync issue    
+2025-11-08T04:38:17.293623Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1128) far exceeds block count (37); potential sync issue    
+2025-11-08T04:38:17.932718Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T04:38:19.319616Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1158) far exceeds block count (38); potential sync issue    
+2025-11-08T04:38:21.373850Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1188) far exceeds block count (39); potential sync issue    
+2025-11-08T04:38:22.932741Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T04:38:23.414399Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1218) far exceeds block count (40); potential sync issue    
+2025-11-08T04:38:25.470772Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1248) far exceeds block count (41); potential sync issue    
+2025-11-08T04:38:27.488357Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1278) far exceeds block count (42); potential sync issue    
+2025-11-08T04:38:27.932704Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T04:38:29.572083Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1308) far exceeds block count (43); potential sync issue    
+2025-11-08T04:38:31.593118Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1338) far exceeds block count (44); potential sync issue    
+2025-11-08T04:38:32.932890Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T04:38:33.682739Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1368) far exceeds block count (45); potential sync issue    
+2025-11-08T04:38:35.728360Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1398) far exceeds block count (46); potential sync issue    
+2025-11-08T04:38:37.809267Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1428) far exceeds block count (47); potential sync issue    
+2025-11-08T04:38:37.932863Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T04:38:39.862005Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1458) far exceeds block count (48); potential sync issue    
+2025-11-08T04:38:41.852278Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1488) far exceeds block count (49); potential sync issue    
+2025-11-08T04:38:42.933246Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T04:38:43.868135Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1518) far exceeds block count (50); potential sync issue    
+2025-11-08T04:38:45.875099Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1548) far exceeds block count (51); potential sync issue    
+2025-11-08T04:38:47.891984Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1578) far exceeds block count (52); potential sync issue    
+2025-11-08T04:38:47.933161Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T04:38:49.920318Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1608) far exceeds block count (53); potential sync issue    
+2025-11-08T04:38:51.952286Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1638) far exceeds block count (54); potential sync issue    
+2025-11-08T04:38:52.933082Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T04:38:53.927407Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1668) far exceeds block count (55); potential sync issue    
+2025-11-08T04:38:55.937075Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1698) far exceeds block count (56); potential sync issue    
+2025-11-08T04:38:57.866385Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1728) far exceeds block count (57); potential sync issue    
+2025-11-08T04:38:57.933189Z  WARN ThreadId(08) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T04:38:59.882888Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1758) far exceeds block count (58); potential sync issue    
+2025-11-08T04:39:01.896362Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1788) far exceeds block count (59); potential sync issue    
+2025-11-08T04:39:02.933109Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T04:39:03.870769Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1818) far exceeds block count (60); potential sync issue    
+2025-11-08T04:39:05.875155Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1848) far exceeds block count (61); potential sync issue    
+2025-11-08T04:39:07.820799Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1878) far exceeds block count (62); potential sync issue    
+2025-11-08T04:39:07.933566Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T04:39:09.756546Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1908) far exceeds block count (63); potential sync issue    
+2025-11-08T04:39:11.649793Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1938) far exceeds block count (64); potential sync issue    
+2025-11-08T04:39:12.933641Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T04:39:13.568289Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1968) far exceeds block count (65); potential sync issue    
+2025-11-08T04:39:15.415612Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(1998) far exceeds block count (66); potential sync issue    
+2025-11-08T04:39:17.386551Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2028) far exceeds block count (67); potential sync issue    
+2025-11-08T04:39:17.933222Z  WARN ThreadId(08) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T04:39:19.340840Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2058) far exceeds block count (68); potential sync issue    
+2025-11-08T04:39:21.227748Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2088) far exceeds block count (69); potential sync issue    
+2025-11-08T04:39:22.932999Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T04:39:23.192301Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2118) far exceeds block count (70); potential sync issue    
+2025-11-08T04:39:25.161756Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2148) far exceeds block count (71); potential sync issue    
+2025-11-08T04:39:27.129052Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2178) far exceeds block count (72); potential sync issue    
+2025-11-08T04:39:27.933338Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T04:39:29.180919Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2208) far exceeds block count (73); potential sync issue    
+2025-11-08T04:39:31.129423Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2238) far exceeds block count (74); potential sync issue    
+2025-11-08T04:39:32.933552Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T04:39:33.171291Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2268) far exceeds block count (75); potential sync issue    
+2025-11-08T04:39:35.255219Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2298) far exceeds block count (76); potential sync issue    
+2025-11-08T04:39:37.198277Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2328) far exceeds block count (77); potential sync issue    
+2025-11-08T04:39:37.933055Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T04:39:39.178857Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2358) far exceeds block count (78); potential sync issue    
+2025-11-08T04:39:41.194270Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2388) far exceeds block count (79); potential sync issue    
+2025-11-08T04:39:42.932678Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-08T04:39:43.187359Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(2418) far exceeds block count (80); potential sync issue    
