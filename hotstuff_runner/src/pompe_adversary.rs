@@ -1,19 +1,22 @@
 // hotstuff_runner/src/pompe.rs
 //! Fully lock-free Pompe BFT implementation with crossbeam lock-free queues
 
+use crate::flood_limiter::FloodLimiter;
 use crate::pompe_network::PompeNetwork;
 use crossbeam::queue::SegQueue;
 use dashmap::DashMap;
 use ed25519_dalek::SigningKey;
+use hex;
 use hotstuff_rs::types::crypto_primitives::VerifyingKey;
 use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
+use sha2::Sha256;
 use std::collections::{BTreeMap, HashMap, VecDeque};
 use std::net::SocketAddr;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, OnceLock, RwLock};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use tokio::sync::mpsc;
+use tokio::sync::mpsc::error::TrySendError;
 use tracing::{debug, error, info, warn};
 // Switch Pompe internal queues to tokio::mpsc (async, non-blocking)
 use crate::event::SystemEvent;
@@ -26,6 +29,7 @@ use crate::pompe::{
     PompeMessage,
     PompeTransaction,
 };
+use crate::tx_utils::{equivalent_tx_count, synthetic_tx_ids};
 #[derive(Debug)]
 pub struct PompeAppStateAdversary {
     batch_received: DashMap<String, usize>,
@@ -119,13 +123,52 @@ pub struct PompeManager {
     // Dedicated broadcast channel (Tokio mpsc) to avoid blocking the runtime
     broadcast_tx: async_mpsc::Sender<PompeMessage>,
     broadcast_rx: Arc<tokio::sync::Mutex<Option<async_mpsc::Receiver<PompeMessage>>>>,
+    broadcast_limiter: Arc<FloodLimiter>,
 
     pub network: Option<Arc<crate::pompe_network::PompeNetwork>>,
     lockfree_adapter: Option<Arc<LockFreeHotStuffAdapter>>,
     event_tx: tokio::sync::broadcast::Sender<SystemEvent>,
+    signing_key: Arc<SigningKey>,
+    verifying_keys: Arc<HashMap<usize, VerifyingKey>>,
 }
 
 impl PompeManager {
+    fn attack_only_mode() -> bool {
+        static FLAG: OnceLock<bool> = OnceLock::new();
+        *FLAG.get_or_init(|| {
+            std::env::var("POMPE_ATTACK_ONLY")
+                .map(|v| {
+                    matches!(
+                        v.trim().to_ascii_lowercase().as_str(),
+                        "1" | "true" | "yes" | "on"
+                    )
+                })
+                .unwrap_or(true)
+        })
+    }
+
+    pub fn attack_only_enabled() -> bool {
+        Self::attack_only_mode()
+    }
+
+    fn build_attack_broadcast_limiter(config: &PompeConfig) -> FloodLimiter {
+        if !Self::attack_only_mode() {
+            return FloodLimiter::unlimited("pompe-broadcast");
+        }
+
+        fn env_f64(key: &str) -> Option<f64> {
+            std::env::var(key).ok()?.trim().parse::<f64>().ok()
+        }
+
+        let default_rate = (config.queue_capacity.max(1) as f64) * 2.0;
+        let default_burst = config.queue_capacity.max(1) as f64;
+
+        let rate = env_f64("POMPE_ATTACK_BROADCAST_RATE").unwrap_or(default_rate);
+        let burst = env_f64("POMPE_ATTACK_BROADCAST_BURST").unwrap_or(default_burst);
+
+        FloodLimiter::new("pompe-broadcast", rate, burst)
+    }
+
     pub fn get_network(&self) -> Option<&Arc<crate::pompe_network::PompeNetwork>> {
         self.network.as_ref()
     }
@@ -177,6 +220,8 @@ impl PompeManager {
         config: PompeConfig,
         _network: impl hotstuff_rs::networking::network::Network + Clone + Send + 'static,
         event_tx: tokio::sync::broadcast::Sender<SystemEvent>,
+        signing_key: SigningKey,
+        verifying_keys: HashMap<usize, VerifyingKey>,
     ) -> Self {
         let node_num = all_node_ids.len();
         let nfaulty = (node_num - 1) / 3;
@@ -193,6 +238,9 @@ impl PompeManager {
         let (broadcast_tx, broadcast_rx) = async_mpsc::channel(config.queue_capacity);
 
         let network = Arc::new(PompeNetwork::new(node_id, all_node_ids.clone()));
+        let signing_key = Arc::new(signing_key);
+        let verifying_keys = Arc::new(verifying_keys);
+        let broadcast_limiter = Arc::new(Self::build_attack_broadcast_limiter(&config));
 
         Self {
             node_id,
@@ -210,9 +258,12 @@ impl PompeManager {
             general_rx: Arc::new(tokio::sync::Mutex::new(general_rx)),
             broadcast_tx,
             broadcast_rx: Arc::new(tokio::sync::Mutex::new(Some(broadcast_rx))),
+            broadcast_limiter,
             network: Some(network),
             lockfree_adapter: None,
             event_tx,
+            signing_key,
+            verifying_keys,
         }
     }
 
@@ -233,6 +284,12 @@ impl PompeManager {
         info!("  - fault tolerance f: {}", self.nfaulty);
         info!("  - total nodes: {}", self.nfaulty * 3 + 1);
         info!("  - required responses (2f+1): {}", 2 * self.nfaulty + 1);
+        info!("  - verifying key entries: {}", self.verifying_keys.len());
+        let signing_preview = hex::encode(&self.signing_key.to_bytes()[..4]);
+        info!(
+            "  - signing key configured (preview: {}...)",
+            signing_preview
+        );
 
         if let Some(ref network) = self.network {
             info!("  - network peers: {:?}", network.peer_node_ids);
@@ -255,6 +312,12 @@ impl PompeManager {
         if let Some(transaction) =
             PompeTransaction::from_raw_string(raw_tx, format!("client_{}", self.node_id))
         {
+            if Self::attack_only_mode() {
+                let tx_hash = transaction.hash();
+                self.exec_ordering1(tx_hash, transaction).await?;
+                return Ok(());
+            }
+
             let tx_hash = transaction.hash();
 
             debug!(
@@ -265,44 +328,45 @@ impl PompeManager {
                 transaction.id
             );
 
-            self.state
-                .transaction_store
-                .insert(tx_hash.clone(), transaction.clone());
+            // self.state
+            //     .transaction_store
+            //     .insert(tx_hash.clone(), transaction.clone());
 
-            let current_count = self
-                .state
-                .batch_received
-                .entry(tx_hash.clone())
-                .and_modify(|count| *count += 1)
-                .or_insert(1)
-                .clone();
+            // let current_count = self
+            //     .state
+            //     .batch_received
+            //     .entry(tx_hash.clone())
+            //     .and_modify(|count| *count += 1)
+            //     .or_insert(1)
+            //     .clone();
 
-            debug!(
-                "[ordering1] node {} batch count: {} -> {}/{}",
-                self.node_id,
-                &tx_hash[0..8],
-                current_count,
-                self.config.batch_size
-            );
+            // debug!(
+            //     "[ordering1] node {} batch count: {} -> {}/{}",
+            //     self.node_id,
+            //     &tx_hash[0..8],
+            //     current_count,
+            //     self.config.batch_size
+            // );
 
-            if current_count == self.config.batch_size {
-                self.state
-                    .transaction_initiators
-                    .insert(tx_hash.clone(), self.node_id);
-                debug!(
-                    "[initiator] node {} marked as initiator for tx {}",
-                    self.node_id,
-                    &tx_hash[0..8]
-                );
+            self.exec_ordering1(tx_hash, transaction).await?;
+            // if current_count == self.config.batch_size {
+            //     self.state
+            //         .transaction_initiators
+            //         .insert(tx_hash.clone(), self.node_id);
+            //     debug!(
+            //         "[initiator] node {} marked as initiator for tx {}",
+            //         self.node_id,
+            //         &tx_hash[0..8]
+            //     );
 
-                // Fix: invoke the correct method
-                self.exec_ordering1(tx_hash, transaction).await?;
-            } else {
-                debug!(
-                    "[ordering1] node {} detected another initiator for this transaction",
-                    self.node_id
-                );
-            }
+            //     // Fix: invoke the correct method
+            //     self.exec_ordering1(tx_hash, transaction).await?;
+            // } else {
+            //     debug!(
+            //         "[ordering1] node {} detected another initiator for this transaction",
+            //         self.node_id
+            //     );
+            // }
         }
 
         Ok(())
@@ -313,15 +377,18 @@ impl PompeManager {
         tx_hash: String,
         transaction: PompeTransaction,
     ) -> Result<(), String> {
-        debug!(
-            "[ordering1-exec] node {} starting ordering1 for {}",
-            self.node_id,
-            &tx_hash[0..8]
-        );
+        let attack_only = Self::attack_only_mode();
+        if !attack_only {
+            debug!(
+                "[ordering1-exec] node {} starting ordering1 for {}",
+                self.node_id,
+                &tx_hash[0..8]
+            );
+        }
 
         let broadcast_start = std::time::Instant::now();
 
-        if let Some(ref network) = self.network {
+        if self.network.is_some() {
             let request = PompeMessage::Ordering1Request {
                 tx_hash: tx_hash.clone(),
                 transaction: transaction.clone(),
@@ -330,18 +397,39 @@ impl PompeManager {
             };
 
             // Use the dedicated broadcast channel (bounded, backpressure-aware)
-            if let Err(e) = self.broadcast_tx.send(request).await {
+            if attack_only {
+                if let Err(e) = self.enqueue_attack_broadcast(request) {
+                    warn!("[ordering1-exec] attack broadcast send failed: {}", e);
+                }
+            } else if let Err(e) = self.broadcast_tx.send(request).await {
                 warn!("[ordering1-exec] broadcast queue full or closed: {}", e);
             }
 
-            let broadcast_duration = broadcast_start.elapsed();
-            debug!(
-                "[ordering1-exec] node {} broadcast duration: {:?}",
-                self.node_id, broadcast_duration
-            );
+            if !attack_only {
+                let broadcast_duration = broadcast_start.elapsed();
+                debug!(
+                    "[ordering1-exec] node {} broadcast duration: {:?}",
+                    self.node_id, broadcast_duration
+                );
+            }
         }
 
         Ok(())
+    }
+
+    fn enqueue_attack_broadcast(&self, request: PompeMessage) -> Result<(), String> {
+        if !self.broadcast_limiter.allow(1.0) {
+            return Ok(());
+        }
+
+        match self.broadcast_tx.try_send(request) {
+            Ok(()) => Ok(()),
+            Err(TrySendError::Full(_msg)) => {
+                self.broadcast_limiter.note_drop();
+                Ok(())
+            }
+            Err(TrySendError::Closed(_msg)) => Err("Pompe broadcast channel closed".to_string()),
+        }
     }
 
     pub async fn start_network_message_loop(&self) -> Result<(), String> {
@@ -365,11 +453,19 @@ impl PompeManager {
                 network.spawn(async move {
                     info!("Starting dedicated broadcast worker");
                     while let Some(msg) = rx.recv().await {
-                        if let Err(e) = net.broadcast(msg).await {
+                        if let Err(e) = net.broadcast_skip_self(msg).await {
                             error!("Dedicated broadcast failed: {}", e);
                         }
                     }
                 });
+            }
+
+            if Self::attack_only_mode() {
+                info!(
+                    "Node {} attack-only: inbound Pompe message loop disabled",
+                    self.node_id
+                );
+                return Ok(());
             }
 
             // Listen for HotStuff view start events to compute the current leader (supports rotating leader mode)
@@ -409,14 +505,14 @@ impl PompeManager {
                 let mut total_messages = 0;
                 let mut ordering1_count = 0;
                 let mut ordering2_count = 0;
-                
+
                 loop {
                     if let Some((sender_id, message)) = network_clone.recv().await {
                         debug!("[receiver] node {} received message from node {}", node_id, sender_id);
                         total_messages += 1;
 
                         match &message {
-                            PompeMessage::Ordering1Request { .. } | 
+                            PompeMessage::Ordering1Request { .. } |
                             PompeMessage::Ordering1Response { .. } => {
                                 ordering1_count += 1;
                                 debug!(
@@ -433,7 +529,7 @@ impl PompeManager {
                                 }
                             }
 
-                            PompeMessage::Ordering2Request { .. } | 
+                            PompeMessage::Ordering2Request { .. } |
                             PompeMessage::Ordering2Response { .. } => {
                                 ordering2_count += 1;
                                 debug!(
@@ -459,6 +555,14 @@ impl PompeManager {
                     }
                 }
             });
+
+            if Self::attack_only_mode() {
+                info!(
+                    "Node {} attack-only: skipping ordering/general processors and cleanup",
+                    self.node_id
+                );
+                return Ok(());
+            }
 
             self.start_ordering1_processor().await;
             self.start_ordering2_processor().await;
@@ -503,6 +607,13 @@ impl PompeManager {
     }
 
     async fn start_ordering1_processor(&self) {
+        if Self::attack_only_mode() {
+            info!(
+                "Node {} attack-only: skipping ordering1 processor",
+                self.node_id
+            );
+            return;
+        }
         let ordering1_rx = Arc::clone(&self.ordering1_rx);
         let state = Arc::clone(&self.state);
         let network = self.network.clone();
@@ -574,6 +685,13 @@ impl PompeManager {
     }
 
     async fn start_ordering2_processor(&self) {
+        if Self::attack_only_mode() {
+            info!(
+                "Node {} attack-only: skipping ordering2 processor",
+                self.node_id
+            );
+            return;
+        }
         let ordering2_rx = Arc::clone(&self.ordering2_rx);
         let state = Arc::clone(&self.state);
         let network = self.network.clone();
@@ -624,6 +742,13 @@ impl PompeManager {
     }
 
     async fn start_general_processor(&self) {
+        if Self::attack_only_mode() {
+            info!(
+                "Node {} attack-only: skipping general message processor",
+                self.node_id
+            );
+            return;
+        }
         let general_rx = Arc::clone(&self.general_rx);
         let lockfree_adapter = self.lockfree_adapter.clone();
         let node_id = self.node_id;
@@ -682,12 +807,12 @@ impl PompeManager {
         let should_respond = if state.ordering1_responses.contains_key(&tx_hash) {
             false
         } else {
-            state.transaction_store.insert(tx_hash.clone(), transaction);
+            // state.transaction_store.insert(tx_hash.clone(), transaction);
             // warn!("[ordering1-first] node {} recorded new transaction: hash {}", node_id, &tx_hash[0..8]);
-            state
-                .ordering1_responses
-                .insert(tx_hash.clone(), Vec::new());
-            state.ordering1_count.insert(tx_hash.clone(), 0);
+            // state
+            //     .ordering1_responses
+            //     .insert(tx_hash.clone(), Vec::new());
+            // state.ordering1_count.insert(tx_hash.clone(), 0);
             true
         };
 
@@ -737,6 +862,10 @@ impl PompeManager {
         );
         // });
 
+        if Self::attack_only_mode() {
+            return;
+        }
+
         let total_duration = processing_start.elapsed();
         if total_duration > tokio::time::Duration::from_millis(5) {
             debug!(
@@ -765,6 +894,10 @@ impl PompeManager {
         _signature_bytes: Vec<u8>,
     ) {
         let processing_start = std::time::Instant::now();
+
+        if Self::attack_only_mode() {
+            return;
+        }
 
         if node_id != initiator_node_id {
             return;
@@ -951,12 +1084,13 @@ impl PompeManager {
             );
         }
 
-        // if tx_id % 10 == 0 {
-        let _ = event_tx.send(SystemEvent::PompeOrdering1Completed { tx_id });
-        debug!(
-            "[pompe] node {} emitted ordering1 completion event: tx_id={}",
-            node_id, tx_id
-        );
+        if !Self::attack_only_mode() {
+            let _ = event_tx.send(SystemEvent::PompeOrdering1Completed { tx_id });
+            debug!(
+                "[pompe] node {} emitted ordering1 completion event: tx_id={}",
+                node_id, tx_id
+            );
+        }
         // }
 
         let response = PompeMessage::Ordering2Response {
@@ -1071,11 +1205,17 @@ impl PompeManager {
                     node_id, old_stable_point, latest_ts
                 );
 
-                let txs: Vec<String> = commit_set
-                    .iter()
-                    .take(cut_idx)
-                    .map(|(tx, timestamp)| tx.to_hotstuff_format(*timestamp))
-                    .collect();
+                let mut txs: Vec<String> = Vec::new();
+                for (tx, timestamp) in commit_set.iter().take(cut_idx) {
+                    let mut synthetic_ids =
+                        synthetic_tx_ids(tx.id, equivalent_tx_count(tx.serialized_size_bytes()));
+                    if synthetic_ids.is_empty() {
+                        synthetic_ids.push(tx.id);
+                    }
+                    for synthetic_id in &synthetic_ids {
+                        txs.push(tx.to_hotstuff_format_with_id(*timestamp, *synthetic_id));
+                    }
+                }
 
                 // Remove already emitted entries
                 commit_set.drain(0..cut_idx);
@@ -1155,6 +1295,9 @@ impl PompeManager {
         network: Option<Arc<crate::pompe_network::PompeNetwork>>,
         is_leader: Arc<AtomicBool>,
     ) {
+        if Self::attack_only_mode() {
+            return;
+        }
         if !is_leader.load(Ordering::SeqCst) {
             return;
         }
@@ -1183,10 +1326,17 @@ impl PompeManager {
                 commit_set.len()
             );
         }
-        let txs: Vec<String> = commit_set
-            .iter()
-            .map(|(tx, ts)| tx.to_hotstuff_format(*ts))
-            .collect();
+        let mut txs: Vec<String> = Vec::new();
+        for (tx, ts) in commit_set.iter() {
+            let mut synthetic_ids =
+                synthetic_tx_ids(tx.id, equivalent_tx_count(tx.serialized_size_bytes()));
+            if synthetic_ids.is_empty() {
+                synthetic_ids.push(tx.id);
+            }
+            for synthetic_id in &synthetic_ids {
+                txs.push(tx.to_hotstuff_format_with_id(*ts, *synthetic_id));
+            }
+        }
         commit_set.clear();
         drop(commit_set);
         *state.consensus_ready.write().unwrap() = false;
@@ -1253,9 +1403,12 @@ impl PompeManager {
             general_rx: Arc::clone(&self.general_rx),
             broadcast_tx: self.broadcast_tx.clone(),
             broadcast_rx: Arc::clone(&self.broadcast_rx),
+            broadcast_limiter: Arc::clone(&self.broadcast_limiter),
             network: self.network.as_ref().map(|n| Arc::clone(n)),
             lockfree_adapter: self.lockfree_adapter.clone(),
             event_tx: self.event_tx.clone(),
+            signing_key: Arc::clone(&self.signing_key),
+            verifying_keys: Arc::clone(&self.verifying_keys),
         }
     }
 }

@@ -2,6 +2,7 @@
 pub mod affinity;
 pub mod app;
 pub mod event;
+pub mod flood_limiter;
 pub mod kv_store;
 pub mod pompe;
 pub mod pompe_adversary;
@@ -10,6 +11,7 @@ pub mod stats;
 pub mod tcp_node;
 pub mod telemetry;
 pub mod tokio_network;
+pub mod tx_utils;
 pub mod utils;
 
 pub mod smrol;

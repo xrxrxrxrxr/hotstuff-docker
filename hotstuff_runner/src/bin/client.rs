@@ -1,8 +1,10 @@
 // Optimized client node with separated state architecture
 // hotstuff_runner/src/bin/client.rs
 
+use bincode;
 use ed25519_dalek::SigningKey;
 use hotstuff_runner::affinity::build_tokio_runtime;
+use hotstuff_runner::tx_utils::original_tx_id_from_synthetic;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use sha2::digest::consts::U328;
@@ -118,25 +120,25 @@ impl LatencyTracker {
         }
     }
 
-    pub fn record_send_time(&mut self, tx_id: u64) {
-        self.send_timestamps.insert(tx_id, Instant::now());
+    pub fn record_send_time(&mut self, tx: &TestTransaction) {
+        self.send_timestamps.insert(tx.id, Instant::now());
     }
 
     // Support batch processing of ordering responses
     pub fn handle_ordering_response(&mut self, tx_ids: Vec<u64>) {
         for tx_id in tx_ids {
-            // Record only the first occurrence
-            if self.ordering_recorded.contains(&tx_id) {
+            let base_id = original_tx_id_from_synthetic(tx_id);
+
+            if self.ordering_recorded.contains(&base_id) {
                 continue;
             }
-            if let Some(send_time) = self.send_timestamps.get(&tx_id) {
+
+            if let Some(send_time) = self.send_timestamps.get(&base_id) {
                 let latency = send_time.elapsed().as_micros();
                 let latency_ms = latency as f64 / 1000.0;
                 self.ordering_latencies.push(latency);
-                self.ordering_recorded.insert(tx_id);
-                // if tx_id % 1000 == 0 {
-                info!("[latency] tx {} ordering delay: {} ms", tx_id, latency_ms);
-                // }
+                self.ordering_recorded.insert(base_id);
+                info!("[latency] tx {} ordering delay: {} ms", base_id, latency_ms);
             }
         }
     }
@@ -144,33 +146,40 @@ impl LatencyTracker {
     pub fn handle_pushed_to_hotstuff(&mut self, tx_ids: Vec<u64>) {
         let now = Instant::now();
         for tx_id in tx_ids {
-            self.pushed_timestamps.entry(tx_id).or_insert(now);
+            let base_id = original_tx_id_from_synthetic(tx_id);
+            self.pushed_timestamps.entry(base_id).or_insert(now);
         }
     }
 
     // Support batch processing of consensus responses
     pub fn handle_consensus_response(&mut self, tx_ids: Vec<u64>) {
         for tx_id in tx_ids {
-            if self.consensus_recorded.contains(&tx_id) {
+            let base_id = original_tx_id_from_synthetic(tx_id);
+
+            if self.consensus_recorded.contains(&base_id) {
                 continue;
             }
-            if let Some(send_time) = self.send_timestamps.remove(&tx_id) {
+
+            if let Some(send_time) = self.send_timestamps.remove(&base_id) {
                 let latency = send_time.elapsed().as_micros();
                 let latency_ms = latency as f64 / 1000.0;
                 self.consensus_latencies.push(latency);
-                self.consensus_recorded.insert(tx_id);
-                if tx_id % 1000 == 0 {
-                    info!("[latency] tx {} consensus delay: {} ms", tx_id, latency_ms);
+                self.consensus_recorded.insert(base_id);
+                if base_id % 1000 == 0 {
+                    info!(
+                        "[latency] tx {} consensus delay: {} ms",
+                        base_id, latency_ms
+                    );
                 }
             }
-            if let Some(pushed_time) = self.pushed_timestamps.remove(&tx_id) {
+            if let Some(pushed_time) = self.pushed_timestamps.remove(&base_id) {
                 let latency = pushed_time.elapsed().as_micros();
                 self.pushed_to_consensus_latencies.push(latency);
                 let latency_ms = latency as f64 / 1000.0;
-                if tx_id % 1000 == 0 {
+                if base_id % 1000 == 0 {
                     info!(
                         "[latency] tx {} pushed2hotstuff->consensus delay: {} ms",
-                        tx_id, latency_ms
+                        base_id, latency_ms
                     );
                 }
             }
@@ -458,6 +467,18 @@ impl ClientNode {
         self.connections.len()
     }
 
+    fn record_transaction_sizes(&mut self, transactions: &[TestTransaction]) {
+        for tx in transactions {
+            match bincode::serialized_size(tx) {
+                Ok(bytes) => self.stats.record_tx_size(bytes as u64),
+                Err(err) => warn!(
+                    "[client] failed to measure transaction {} size: {}",
+                    tx.id, err
+                ),
+            }
+        }
+    }
+
     pub async fn run_load_test(
         &mut self,
         config: LoadTestConfig,
@@ -473,8 +494,34 @@ impl ClientNode {
         // Tuning hook: reduce send rate to probe latency
         let is_latency = false;
 
+        let mut is_batch = false;
         // let mut batch_size = std::cmp::max(100, config.target_tps / 5);
-        let mut batch_size = config.target_tps / (5 * node_num as u32);
+        let mut batch_size = match env::var("CLIENT_BATCH_SIZE") {
+            Ok(raw) => match raw.trim().parse::<u32>() {
+                Ok(value) if value > 0 => {
+                    info!(
+                        "[load-test] overriding batch size via CLIENT_BATCH_SIZE={}",
+                        value
+                    );
+                    is_batch = true;
+                    value
+                }
+                Ok(_) => {
+                    warn!(
+                        "[load-test] CLIENT_BATCH_SIZE must be greater than zero; falling back to formula"
+                    );
+                    config.target_tps / (5 * node_num as u32)
+                }
+                Err(err) => {
+                    warn!(
+                        "[load-test] failed to parse CLIENT_BATCH_SIZE='{}': {}; using formula",
+                        raw, err
+                    );
+                    config.target_tps / (5 * node_num as u32)
+                }
+            },
+            Err(_) => config.target_tps / (5 * node_num as u32),
+        };
         // let mut batch_size=1;
         if batch_size == 0 {
             batch_size = 1;
@@ -494,19 +541,41 @@ impl ClientNode {
         let mut batch_counter = 0;
         let mut rng = rand::thread_rng();
 
-        let bar=10000;
+        let max_transactions = env::var("CLIENT_TOTAL_TX")
+            .ok()
+            .and_then(|raw| match raw.trim().parse::<usize>() {
+                Ok(value) if value > 0 => Some(value),
+                Ok(_) => {
+                    warn!(
+                        "[load-test] CLIENT_TOTAL_TX must be greater than zero; falling back to 10000"
+                    );
+                    None
+                }
+                Err(err) => {
+                    warn!(
+                        "[load-test] failed to parse CLIENT_TOTAL_TX='{}': {}; falling back to 10000",
+                        raw, err
+                    );
+                    None
+                }
+            })
+            .unwrap_or(10000);
 
-        while total_sent < bar {
+        while total_sent < max_transactions {
             for node_offset in 0..node_num {
                 let node_id = node_least_id + node_offset;
-                let transactions = self.tx_generator.generate_batch(batch_size as usize);
+                let transactions: Vec<TestTransaction> = if is_batch {
+                    vec![self.tx_generator.generate_batched_tx(batch_size as usize)]
+                } else {
+                    self.tx_generator.generate_batch(batch_size as usize)
+                };
+                self.record_transaction_sizes(&transactions);
 
                 // Notify latency tracker before sending
-                let tx_ids: Vec<u64> = transactions.iter().map(|tx| tx.id).collect();
                 {
                     let mut tracker = latency_tracker.lock().await;
-                    for tx_id in &tx_ids {
-                        tracker.record_send_time(*tx_id);
+                    for tx in &transactions {
+                        tracker.record_send_time(tx);
                     }
                 }
 
@@ -542,6 +611,13 @@ impl ClientNode {
             let jitter_window_ms = std::cmp::max(1, base_ms / 5);
             let jitter_offset_ms = rng.gen_range(-jitter_window_ms, jitter_window_ms + 1);
             let sleep_ms = std::cmp::max(1, base_ms + jitter_offset_ms) as u64;
+
+            if total_sent >= max_transactions {
+                info!(
+                    "[load-test] completed; total transactions sent: {}",
+                    total_sent
+                );
+            }
             tokio::time::sleep(Duration::from_millis(sleep_ms)).await;
             // Debug hook: send one transaction every 120 seconds
             // tokio::time::sleep(Duration::from_millis(100)).await;
@@ -568,14 +644,14 @@ impl ClientNode {
         loop {
             let batch_size = 5;
             let transactions = self.tx_generator.generate_batch(batch_size);
+            self.record_transaction_sizes(&transactions);
             let target_node = (tx_counter / batch_size) % node_num + node_least_id;
 
             // Notify latency tracker before sending
-            let tx_ids: Vec<u64> = transactions.iter().map(|tx| tx.id).collect();
             {
                 let mut tracker = latency_tracker.lock().await;
-                for tx_id in &tx_ids {
-                    tracker.record_send_time(*tx_id);
+                for tx in &transactions {
+                    tracker.record_send_time(tx);
                 }
             }
 
@@ -637,7 +713,62 @@ impl TransactionGenerator {
         }
     }
 
+    pub fn generate_batched_tx(&mut self, count: usize) -> TestTransaction {
+        let mut tx = self.generate_transaction();
+        let repeat = count.max(1);
+
+        tx.from = tx.from.repeat(repeat);
+        tx.to = tx.to.repeat(repeat);
+        // tx.amount = Self::repeat_numeric_field(tx.amount, repeat);
+        // tx.timestamp = Self::repeat_numeric_field(tx.timestamp, repeat);
+        // tx.nonce = Self::repeat_numeric_field(tx.nonce, repeat);
+
+        tx
+    }
+
+    fn repeat_numeric_field(value: u64, repeat: usize) -> u64 {
+        let repeated = value.to_string().repeat(repeat);
+        match repeated.parse::<u128>() {
+            Ok(parsed) => parsed.min(u64::MAX as u128) as u64,
+            Err(err) => {
+                warn!(
+                    "[client] failed to scale numeric field '{}': {} -- using u64::MAX",
+                    repeated, err
+                );
+                u64::MAX
+            }
+        }
+    }
     pub fn generate_transaction(&mut self) -> TestTransaction {
+        let mut rng = rand::thread_rng();
+
+        let from_idx = rng.gen_range(0, self.accounts.len());
+        let mut to_idx = rng.gen_range(0, self.accounts.len());
+        while to_idx == from_idx {
+            to_idx = rng.gen_range(0, self.accounts.len());
+        }
+
+        let from = self.accounts[from_idx].clone();
+        let to = self.accounts[to_idx].clone();
+        let amount = rng.gen_range(1, 100000);
+
+        self.current_tx_id += 1;
+        self.current_nonce += 1;
+
+        TestTransaction {
+            id: self.current_tx_id,
+            from,
+            to,
+            amount,
+            timestamp: std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_secs(),
+            nonce: self.current_nonce,
+        }
+    }
+
+    pub fn generate_void_transaction(&mut self) -> TestTransaction {
         let mut rng = rand::thread_rng();
 
         let from_idx = rng.gen_range(0, self.accounts.len());
@@ -677,6 +808,8 @@ pub struct ClientStats {
     pub total_confirmed: u64,
     pub total_failed: u64,
     pub start_time: Option<Instant>,
+    pub total_tx_bytes: u64,
+    pub total_tx_generated: u64,
 }
 
 impl ClientStats {
@@ -695,6 +828,11 @@ impl ClientStats {
         self.total_failed += count;
     }
 
+    pub fn record_tx_size(&mut self, bytes: u64) {
+        self.total_tx_bytes += bytes;
+        self.total_tx_generated += 1;
+    }
+
     pub fn calculate_tps(&self) -> f64 {
         if let Some(start_time) = self.start_time {
             let elapsed = start_time.elapsed().as_secs_f64();
@@ -703,6 +841,14 @@ impl ClientStats {
             }
         }
         0.0
+    }
+
+    pub fn average_tx_size(&self) -> f64 {
+        if self.total_tx_generated == 0 {
+            0.0
+        } else {
+            self.total_tx_bytes as f64 / self.total_tx_generated as f64
+        }
     }
 
     pub fn log_summary(&self) {
@@ -714,8 +860,13 @@ impl ClientStats {
         };
 
         info!(
-            "[client-stats] sent: {}, confirmed: {}, failed: {}, TPS: {:.2}, success rate: {:.1}%",
-            self.total_sent, self.total_confirmed, self.total_failed, tps, success_rate
+            "[client-stats] sent: {}, confirmed: {}, failed: {}, TPS: {:.2}, success rate: {:.1}%, avg tx bytes: {:.1}",
+            self.total_sent,
+            self.total_confirmed,
+            self.total_failed,
+            tps,
+            success_rate,
+            self.average_tx_size()
         );
     }
 }
@@ -1141,9 +1292,17 @@ async fn async_main() -> Result<(), Box<dyn std::error::Error>> {
             info!("[client] load test complete; awaiting response processing...");
             tokio::time::sleep(Duration::from_secs(30)).await;
 
-            // Request the final report
-            let _ = cmd_tx.send(ClientCommand::PrintStats);
-            tokio::time::sleep(Duration::from_secs(2)).await;
+            info!("[client] entering post-load-test latency reporting; press Ctrl+C to exit");
+            loop {
+                if let Err(err) = cmd_tx.send(ClientCommand::PrintStats) {
+                    warn!(
+                        "[client] failed to request latency report (channel closed): {}",
+                        err
+                    );
+                    break;
+                }
+                tokio::time::sleep(Duration::from_secs(30)).await;
+            }
         }
         _ => {
             client_core

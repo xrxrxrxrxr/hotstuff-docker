@@ -7,13 +7,18 @@ COUNT=""
 PLAN_FILE=""
 DRY_RUN=false
 INCLUDE_CLIENT=true
+NODE_INSTANCE_TYPE="${NODE_INSTANCE_TYPE:-c6a.2xlarge}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REGIONS_FILE_PATH="$SCRIPT_DIR/regions.txt"
 
-TOTAL_CLIENTS=0
-TOTAL_NON_CLIENTS=0
-TOTAL_REGION_ACTIONS=0
+SUMMARY_FILE=$(mktemp)
+START_PIDS=()
+
+cleanup_summary() {
+  rm -f "$SUMMARY_FILE"
+}
+trap cleanup_summary EXIT
 
 export AWS_PAGER=""
 
@@ -69,17 +74,30 @@ write_regions_file() {
   echo "✓ Updated regions file: $REGIONS_FILE_PATH (${regions[*]})"
 }
 
-record_region_totals() {
-  local clients="$1"
-  local non_clients="$2"
-  TOTAL_CLIENTS=$((TOTAL_CLIENTS + clients))
-  TOTAL_NON_CLIENTS=$((TOTAL_NON_CLIENTS + non_clients))
-  TOTAL_REGION_ACTIONS=$((TOTAL_REGION_ACTIONS + 1))
-}
-
 print_summary() {
-  local total_instances=$((TOTAL_CLIENTS + TOTAL_NON_CLIENTS))
-  if (( TOTAL_REGION_ACTIONS == 0 )); then
+  if [[ ! -s "$SUMMARY_FILE" ]]; then
+    if $DRY_RUN; then
+      echo "Dry run summary: nothing to start"
+    else
+      echo "Summary: nothing started"
+    fi
+    return
+  fi
+
+  local total_clients=0
+  local total_non_clients=0
+  local region_count=0
+
+  while IFS=$'\t' read -r region_label mode clients non_clients; do
+    [[ -z "$region_label" ]] && continue
+    total_clients=$((total_clients + clients))
+    total_non_clients=$((total_non_clients + non_clients))
+    region_count=$((region_count + 1))
+  done < "$SUMMARY_FILE"
+
+  local total_instances=$((total_clients + total_non_clients))
+
+  if (( region_count == 0 )); then
     if $DRY_RUN; then
       echo "Dry run summary: nothing to start"
     else
@@ -89,10 +107,21 @@ print_summary() {
   fi
 
   if $DRY_RUN; then
-    echo "Dry run summary: would start ${total_instances} instance(s) across ${TOTAL_REGION_ACTIONS} region(s) (clients: ${TOTAL_CLIENTS}, non-clients: ${TOTAL_NON_CLIENTS})."
+    echo "Dry run summary: would start ${total_instances} instance(s) across ${region_count} region(s) (clients: ${total_clients}, non-clients: ${total_non_clients})."
   else
-    echo "Summary: started ${total_instances} instance(s) across ${TOTAL_REGION_ACTIONS} region(s) (clients: ${TOTAL_CLIENTS}, non-clients: ${TOTAL_NON_CLIENTS})."
+    echo "Summary: started ${total_instances} instance(s) across ${region_count} region(s) (clients: ${total_clients}, non-clients: ${total_non_clients})."
   fi
+}
+
+wait_for_jobs() {
+  local status=0
+  for pid in "${START_PIDS[@]}"; do
+    if ! wait "$pid"; then
+      status=1
+    fi
+  done
+  START_PIDS=()
+  return $status
 }
 
 start_region_instances() {
@@ -100,6 +129,7 @@ start_region_instances() {
   local profile="$2"
   local count_input="$3"
   local include_client="$(normalize_bool "${4:-true}")"
+  local instance_filter="$NODE_INSTANCE_TYPE"
 
   local aws_cmd=(aws)
   [[ -n "$region" ]] && aws_cmd+=(--region "$region")
@@ -107,7 +137,7 @@ start_region_instances() {
 
   mapfile -t lines < <("${aws_cmd[@]}" ec2 describe-instances \
     --filters "Name=instance-state-name,Values=stopped" \
-    --query "Reservations[].Instances[].{Id:InstanceId,Name:Tags[?Key=='Name']|[0].Value}" \
+    --query "Reservations[].Instances[].{Id:InstanceId,Name:Tags[?Key=='Name']|[0].Value,Type:InstanceType}" \
     --output text)
 
   declare -a pool_ids=()
@@ -115,11 +145,14 @@ start_region_instances() {
 
   for line in "${lines[@]}"; do
     [[ -z "$line" || "$line" == "None" ]] && continue
-    local id name
-    read -r id name _ <<<"$line"
+    local id name type
+    read -r id name type <<<"$line"
     if [[ "$name" == "client" ]]; then
       client_id="$id"
     else
+      if [[ -n "$instance_filter" && "$type" != "$instance_filter" ]]; then
+        continue
+      fi
       pool_ids+=("$id")
     fi
   done
@@ -165,17 +198,19 @@ start_region_instances() {
     return
   fi
 
+  local region_label=${region:-default}
+
   if $DRY_RUN; then
-    echo "✨ Dry run [${region:-default}]: would start ${total_count} instance(s) (clients: ${client_count}, non-clients: ${non_client_count}):"
+    echo "✨ Dry run [${region_label}]: would start ${total_count} instance(s) (clients: ${client_count}, non-clients: ${non_client_count}):"
     printf '  %s\n' "${final_ids[@]}"
-    record_region_totals "$client_count" "$non_client_count"
+    printf "%s\tdry\t%d\t%d\n" "$region_label" "$client_count" "$non_client_count" >> "$SUMMARY_FILE"
     return
   fi
 
   "${aws_cmd[@]}" ec2 start-instances --instance-ids "${final_ids[@]}"
-  echo "Started instances in ${region:-default} (${total_count} total, clients: ${client_count}, non-clients: ${non_client_count}):"
+  echo "Started instances in ${region_label} (${total_count} total, clients: ${client_count}, non-clients: ${non_client_count}):"
   printf '  %s\n' "${final_ids[@]}"
-  record_region_totals "$client_count" "$non_client_count"
+  printf "%s\tlive\t%d\t%d\n" "$region_label" "$client_count" "$non_client_count" >> "$SUMMARY_FILE"
 }
 
 run_plan() {
@@ -228,16 +263,28 @@ run_plan() {
       include_client="$INCLUDE_CLIENT"
     fi
 
-    start_region_instances "$region" "$profile" "$count" "$include_client"
+    start_region_instances "$region" "$profile" "$count" "$include_client" &
+    START_PIDS+=("$!")
   done <<<"$entries"
 
   return 0
 }
 
 if run_plan; then
+  if ! wait_for_jobs; then
+    echo "One or more regions failed to start instances"
+    exit 1
+  fi
   print_summary
   exit 0
 fi
 
-start_region_instances "$REGION" "$PROFILE" "$COUNT" "$INCLUDE_CLIENT"
+start_region_instances "$REGION" "$PROFILE" "$COUNT" "$INCLUDE_CLIENT" &
+START_PIDS+=("$!")
+
+if ! wait_for_jobs; then
+  echo "Failed to start instances"
+  exit 1
+fi
+
 print_summary

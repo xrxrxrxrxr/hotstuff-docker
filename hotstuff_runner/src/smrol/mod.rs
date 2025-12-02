@@ -5,6 +5,7 @@ pub mod finalization;
 pub mod manager;
 pub mod message;
 // pub mod smrol_network;
+pub mod manager_adversary;
 pub mod network;
 pub mod pnfifo;
 pub mod sequencing;

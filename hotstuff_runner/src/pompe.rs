@@ -2,8 +2,10 @@
 //! Fully lock-free Pompe BFT implementation - supports crossbeam lock-free queues
 
 use crate::pompe_network::PompeNetwork;
+use crate::tx_utils::{equivalent_tx_count, synthetic_tx_ids};
+use bincode;
 use crossbeam::queue::SegQueue;
-use dashmap::DashMap;
+use dashmap::{DashMap, DashSet};
 use ed25519_dalek::{Signature as Ed25519Signature, Signer, SigningKey, VerifyingKey};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -110,10 +112,22 @@ impl PompeTransaction {
     }
 
     pub fn to_hotstuff_format(&self, ordering_timestamp: u64) -> String {
+        self.to_hotstuff_format_with_id(ordering_timestamp, self.id)
+    }
+
+    pub fn to_hotstuff_format_with_id(&self, ordering_timestamp: u64, tx_id: u64) -> String {
+        let from = "Alice".to_string();
+        let to = "Bob".to_string();
         format!(
             "pompe:{}:{}:{}->{}:{}",
-            ordering_timestamp, self.id, self.from, self.to, self.amount
+            ordering_timestamp, tx_id, from, to, self.amount
         )
+    }
+
+    pub fn serialized_size_bytes(&self) -> usize {
+        bincode::serialized_size(self)
+            .map(|size| size as usize)
+            .unwrap_or(0)
     }
 }
 
@@ -288,6 +302,12 @@ impl LockFreeHotStuffAdapter {
                 items_count
             );
         }
+    }
+
+    pub fn set_filters(&mut self, confirmed: Arc<DashSet<u64>>, in_flight: Arc<DashSet<u64>>) {
+        let _ = confirmed;
+        let _ = in_flight;
+        debug!("📦 [Lock-free Adapter] Received HotStuff filter handles (currently unused)");
     }
 }
 
@@ -732,6 +752,9 @@ impl PompeManager {
                             initiator_node_id,
                         } => {
                             let tx_id = transaction.id;
+                            // if tx_id>20000{
+                            //     warn!("🚨 [Ordering1] Node {} received suspiciously high tx_id: {}", node_id, tx_id);
+                            // }
                             debug!("Received Ordering1 request: {}, hash = {}", tx_id, tx_hash);
                             if let Some(ref net) = network {
                                 Self::handle_ordering1_request_lockfree(
@@ -878,17 +901,29 @@ impl PompeManager {
     ) {
         let processing_start = std::time::Instant::now();
 
+        if transaction.id > 100000 {
+            let payload_bytes = bincode::serialized_size(&transaction)
+                .map(|sz| sz as usize)
+                .unwrap_or(0);
+            warn!(
+                "🚨 [Ordering1] Node {} processing suspiciously high tx_id: {} (payload={} bytes)",
+                node_id, transaction.id, payload_bytes
+            );
+        }
         debug!(
-            "🎯 [handle_ordering1_request] Node {} handling request: tx_id={}, hash={}",
+            "🎯 [handle_ordering1_request] Node {} handling request: tx_id={}, hash={}, initiator={}",
             node_id,
             transaction.id,
-            &tx_hash[0..8]
+            &tx_hash[0..8],
+            initiator_node_id
         );
 
         let should_respond = if state.ordering1_responses.contains_key(&tx_hash) {
             false
         } else {
-            state.transaction_store.insert(tx_hash.clone(), transaction);
+            state
+                .transaction_store
+                .insert(tx_hash.clone(), transaction.clone());
             // warn!("⚠️ [First Ordering1] Node {} recorded new transaction: hash = {}", node_id, &tx_hash[0..8]);
             state
                 .ordering1_responses
@@ -941,6 +976,12 @@ impl PompeManager {
             .await
         {
             error!("❌ [handle_ordering1_request] Async send failed: {}", e);
+        }
+        if transaction.id > 100000 {
+            warn!(
+                "🚨 [Ordering1] Node {} sent response for high tx_id: {}",
+                node_id, transaction.id
+            );
         }
         info!(
             "📤 [handle_ordering1_request] Node {} sent Ordering1 response to Node {}: hash = {}",
@@ -1280,18 +1321,18 @@ impl PompeManager {
         let config_clone = config.clone();
         let network_clone_for_flush = Arc::clone(network);
         // Immediately try an output check (periodic flusher as fallback) only if this node is the current view leader
-        if is_leader.load(Ordering::SeqCst) {
-            Self::check_and_output_to_hotstuff_lockfree(
-                node_id,
-                &state_clone,
-                &lockfree_adapter_clone,
-                &config_clone,
-                &network_clone_for_flush,
-                is_leader.clone(),
-                event_tx,
-            )
-            .await;
-        }
+        // if is_leader.load(Ordering::SeqCst) {
+        Self::check_and_output_to_hotstuff_lockfree(
+            node_id,
+            &state_clone,
+            &lockfree_adapter_clone,
+            &config_clone,
+            &network_clone_for_flush,
+            is_leader.clone(),
+            event_tx,
+        )
+        .await;
+        // }
     }
 
     async fn check_and_output_to_hotstuff_lockfree(
@@ -1304,9 +1345,9 @@ impl PompeManager {
         event_tx: &tokio::sync::broadcast::Sender<SystemEvent>,
     ) {
         // Return immediately if this node is not the leader
-        if !is_leader.load(Ordering::SeqCst) {
-            return;
-        }
+        // if !is_leader.load(Ordering::SeqCst) {
+        //     return;
+        // }
         let check_start = std::time::Instant::now();
 
         let commit_set_len = {
@@ -1380,10 +1421,18 @@ impl PompeManager {
                     node_id, old_stable_point, latest_ts
                 );
 
-                let mut txs = Vec::with_capacity(cut_idx);
+                let mut txs = Vec::new();
                 for (tx, timestamp) in commit_set.iter().take(cut_idx) {
-                    ordered_tx_ids.push(tx.id);
-                    txs.push(tx.to_hotstuff_format(*timestamp));
+                    let payload_len = tx.serialized_size_bytes();
+                    let equiv_count = equivalent_tx_count(payload_len);
+                    let mut synthetic_ids = synthetic_tx_ids(tx.id, equiv_count);
+                    if synthetic_ids.is_empty() {
+                        synthetic_ids.push(tx.id);
+                    }
+                    for synthetic_id in &synthetic_ids {
+                        txs.push(tx.to_hotstuff_format_with_id(*timestamp, *synthetic_id));
+                    }
+                    ordered_tx_ids.extend(synthetic_ids);
                 }
 
                 // Remove already output entries
@@ -1476,9 +1525,9 @@ impl PompeManager {
         is_leader: Arc<AtomicBool>,
         event_tx: &tokio::sync::broadcast::Sender<SystemEvent>,
     ) {
-        if !is_leader.load(Ordering::SeqCst) {
-            return;
-        }
+        // if !is_leader.load(Ordering::SeqCst) {
+        //     return;
+        // }
         let now_us = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap()
@@ -1504,11 +1553,19 @@ impl PompeManager {
                 commit_set.len()
             );
         }
-        let txs: Vec<String> = commit_set
-            .iter()
-            .map(|(tx, ts)| tx.to_hotstuff_format(*ts))
-            .collect();
-        let tx_ids: Vec<u64> = commit_set.iter().map(|(tx, _)| tx.id).collect();
+        let mut txs: Vec<String> = Vec::new();
+        let mut tx_ids: Vec<u64> = Vec::new();
+        for (tx, ts) in commit_set.iter() {
+            let payload_len = tx.serialized_size_bytes();
+            let mut synthetic_ids = synthetic_tx_ids(tx.id, equivalent_tx_count(payload_len));
+            if synthetic_ids.is_empty() {
+                synthetic_ids.push(tx.id);
+            }
+            for synthetic_id in &synthetic_ids {
+                txs.push(tx.to_hotstuff_format_with_id(*ts, *synthetic_id));
+            }
+            tx_ids.extend(synthetic_ids);
+        }
         commit_set.clear();
         drop(commit_set);
         *state.consensus_ready.write().unwrap() = false;
@@ -1517,7 +1574,7 @@ impl PompeManager {
         if let Some(ref adapter) = lockfree_adapter {
             let count = txs.len();
             adapter.push_batch(txs.clone());
-            info!(
+            warn!(
                 "⚡ [Timed Output] Node {} flushed {} transactions",
                 node_id, count
             );

@@ -2,6 +2,7 @@
 //! Completely lock-free event-driven Docker node implementation
 
 use crossbeam::queue::SegQueue;
+use dashmap::DashSet;
 use ed25519_dalek::SigningKey;
 use hotstuff_rs::types::{
     crypto_primitives::VerifyingKey,
@@ -22,9 +23,10 @@ use hotstuff_runner::{
     tcp_node::Node,
     telemetry,
     tokio_network::{TokioNetwork, TokioNetworkConfig},
+    tx_utils::{original_tx_id_from_synthetic, parse_transaction_id},
 };
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::env;
 use std::fs;
 use std::fs::{create_dir_all, File};
@@ -34,6 +36,31 @@ use std::sync::Arc;
 use std::sync::OnceLock;
 use std::time::Duration;
 use std::time::Instant;
+
+const CLIENT_MAX_MESSAGE_BYTES: usize = 12 * 1024 * 1024; // cap client payloads below HotStuff's 10MB network limit
+const MAX_RESPONSE_IDS: usize = 1024;
+
+fn limit_response_ids(tx_ids: Vec<u64>) -> (Vec<u64>, bool, usize, usize) {
+    let mut base_ids = Vec::new();
+    let mut unique_bases = HashSet::new();
+    let mut truncated = false;
+    let mut synthetic_total = 0;
+
+    for id in tx_ids {
+        synthetic_total += 1;
+        let base_id = original_tx_id_from_synthetic(id);
+        if unique_bases.insert(base_id) {
+            if base_ids.len() < MAX_RESPONSE_IDS {
+                base_ids.push(base_id);
+            } else {
+                truncated = true;
+            }
+        }
+    }
+
+    let base_total = unique_bases.len();
+    (base_ids, truncated, base_total, synthetic_total)
+}
 
 static HOST_MAP: OnceLock<HashMap<String, String>> = OnceLock::new();
 
@@ -138,24 +165,46 @@ impl LockFreeStats {
 pub struct RegularTransactionProcessor {
     direct_queue: Arc<SegQueue<String>>,
     size_counter: AtomicUsize,
+    confirmed_txs: Arc<DashSet<u64>>,
+    in_flight_txs: Arc<DashSet<u64>>,
 }
 
 impl RegularTransactionProcessor {
-    fn new(hotstuff_queue: Arc<SegQueue<String>>) -> Self {
+    fn new(
+        hotstuff_queue: Arc<SegQueue<String>>,
+        confirmed_txs: Arc<DashSet<u64>>,
+        in_flight_txs: Arc<DashSet<u64>>,
+    ) -> Self {
         Self {
             direct_queue: hotstuff_queue,
             size_counter: AtomicUsize::new(0),
+            confirmed_txs,
+            in_flight_txs,
         }
     }
 
     fn push_transaction(&self, transaction: String) {
         let tx_clone = transaction.clone();
+        if let Some(tx_id) = parse_transaction_id(&tx_clone) {
+            if self.confirmed_txs.contains(&tx_id) {
+                debug!("Tx {} already confirmed, dropping", tx_id);
+                return;
+            }
+            // if !self.in_flight_txs.insert(tx_id) {
+            //     debug!("Tx {} already in-flight, skipping", tx_id);
+            //     return;
+            // }
+        }
         self.direct_queue.push(transaction);
         self.size_counter.fetch_add(1, Ordering::Relaxed);
         info!("Tx {} pushed to HotStuff queue.", tx_clone);
         // Limit queue size to prevent memory issues
         if self.get_queue_size() > 100000 {
-            let _ = self.direct_queue.pop(); // Remove oldest transaction
+            if let Some(evicted) = self.direct_queue.pop() {
+                if let Some(tx_id) = parse_transaction_id(&evicted) {
+                    self.in_flight_txs.remove(&tx_id);
+                }
+            }
         }
     }
 
@@ -361,18 +410,28 @@ async fn handle_lockfree_client_connection(
                     })
                 }
                 SystemEvent::SmrolOrderingCompleted { tx_ids } => {
-                    response_count += tx_ids.len();
+                    let (limited_ids, truncated, base_total, synthetic_total) =
+                        limit_response_ids(tx_ids);
+                    response_count += base_total;
                     serde_json::json!({
                         "message_type": "smrol_ordering_response",
-                        "tx_ids": tx_ids,
+                        "tx_ids": limited_ids,
+                        "tx_count": base_total,
+                        "synthetic_count": synthetic_total,
+                        "truncated": truncated,
                         "node_id": node_id
                     })
                 }
                 SystemEvent::PushedToHotStuff { tx_ids } => {
-                    response_count += tx_ids.len();
+                    let (limited_ids, truncated, base_total, synthetic_total) =
+                        limit_response_ids(tx_ids);
+                    response_count += base_total;
                     serde_json::json!({
                         "message_type": "pushed2hotstuff",
-                        "tx_ids": tx_ids,
+                        "tx_ids": limited_ids,
+                        "tx_count": base_total,
+                        "synthetic_count": synthetic_total,
+                        "truncated": truncated,
                         "node_id": node_id
                     })
                 }
@@ -380,14 +439,23 @@ async fn handle_lockfree_client_connection(
                     block_height,
                     tx_ids,
                 } => {
+                    let (limited_ids, truncated, base_total, synthetic_total) =
+                        limit_response_ids(tx_ids);
                     debug!(
-                        "[Event received] Node {} HotStuffCommitted: block_height={}, tx_ids={:?}",
-                        node_id, block_height, tx_ids
+                        "[Event received] Node {} HotStuffCommitted: block_height={}, tx_count={}, synthetic_count={}, truncated={}",
+                        node_id,
+                        block_height,
+                        base_total,
+                        synthetic_total,
+                        truncated
                     );
-                    response_count += tx_ids.len();
+                    response_count += base_total;
                     serde_json::json!({
                         "message_type": "consensus_response",
-                        "tx_ids": tx_ids,
+                        "tx_ids": limited_ids,
+                        "tx_count": base_total,
+                        "synthetic_count": synthetic_total,
+                        "truncated": truncated,
                         "node_id": node_id
                     })
                 }
@@ -436,7 +504,7 @@ async fn handle_lockfree_client_connection(
             Ok(_) => {
                 let message_length = u32::from_be_bytes(length_buf) as usize;
 
-                if message_length > 1024 * 1024 {
+                if message_length > CLIENT_MAX_MESSAGE_BYTES {
                     warn!(
                         "Node {} message too large: {}, disconnecting",
                         node_id, message_length
@@ -524,6 +592,7 @@ async fn handle_lockfree_client_connection(
                                         tx_string, e
                                     );
                                 } else {
+                                    node_stats.record_submitted();
                                     debug!(
                                         "[Lock-free] Node {} SMROL transaction dispatched: {}",
                                         node_id, tx_string
@@ -614,6 +683,8 @@ async fn start_lockfree_performance_monitor(
     node_stats: Arc<PerformanceStats>,
     pompe_manager: Option<Arc<PompeManager>>,
     lockfree_stats: Arc<LockFreeStats>,
+    confirmed_txs: Arc<DashSet<u64>>,
+    in_flight_txs: Arc<DashSet<u64>>,
 ) {
     info!("[Lock-free] Node {} performance monitor started", node_id);
 
@@ -779,6 +850,12 @@ async fn start_lockfree_performance_monitor(
                               submission_tps, consensus_tps, pompe_tps);
                     }
 
+                    SystemEvent::HotStuffCommitted { tx_ids, .. } => {
+                        for tx_id in tx_ids {
+                            confirmed_txs.insert(tx_id);
+                            in_flight_txs.remove(&tx_id);
+                        }
+                    }
                     _ => {
                         // Handle other event types
                     }
@@ -903,7 +980,13 @@ async fn async_main() -> Result<(), String> {
 
     // Use the lock-free transaction queue from Node for regular transactions
     let shared_tx_queue = Arc::new(SegQueue::new());
-    let regular_tx_processor = Arc::new(RegularTransactionProcessor::new(shared_tx_queue.clone()));
+    let confirmed_txs = Arc::new(DashSet::new());
+    let in_flight_txs = Arc::new(DashSet::new());
+    let regular_tx_processor = Arc::new(RegularTransactionProcessor::new(
+        shared_tx_queue.clone(),
+        confirmed_txs.clone(),
+        in_flight_txs.clone(),
+    ));
 
     // Performance stats
     let node_stats = Arc::new(PerformanceStats::new());
@@ -956,6 +1039,8 @@ async fn async_main() -> Result<(), String> {
         shared_tx_queue.clone(),
         node_stats.clone(),
         event_for_response_tx.clone(), /* 🎯 */
+        confirmed_txs.clone(),
+        in_flight_txs.clone(),
     );
 
     // Add monitoring for regular transaction queue size (similar to second code)
@@ -988,6 +1073,7 @@ async fn async_main() -> Result<(), String> {
         // Use connected mode lock-free adapter
         let mut lockfree_adapter = LockFreeHotStuffAdapter::new();
         lockfree_adapter.connect_to_queue(shared_tx_queue.clone());
+        lockfree_adapter.set_filters(confirmed_txs.clone(), in_flight_txs.clone());
         let lockfree_adapter = Arc::new(lockfree_adapter);
         pompe.set_lockfree_adapter(Arc::clone(&lockfree_adapter));
 
@@ -1035,6 +1121,7 @@ async fn async_main() -> Result<(), String> {
     // Wire SMROL output directly into the shared HotStuff queue
     let smrol_adapter = Arc::new(SmrolHotStuffAdapter::new());
     smrol_adapter.connect_to_queue(shared_tx_queue.clone());
+    smrol_adapter.set_filters(confirmed_txs.clone(), in_flight_txs.clone());
     smrol_manager
         .set_hotstuff_adapter(Arc::clone(&smrol_adapter))
         .await;
@@ -1069,12 +1156,16 @@ async fn async_main() -> Result<(), String> {
     });
 
     let lockfree_stats_clone = Arc::clone(&lockfree_stats);
+    let confirmed_txs_clone = Arc::clone(&confirmed_txs);
+    let in_flight_txs_clone = Arc::clone(&in_flight_txs);
     tokio::spawn(start_lockfree_performance_monitor(
         node_id,
         event_rx,
         node_stats.clone(),
         pompe_manager_clone,
         lockfree_stats_clone,
+        confirmed_txs_clone,
+        in_flight_txs_clone,
     ));
 
     tokio::time::sleep(Duration::from_secs(5)).await;

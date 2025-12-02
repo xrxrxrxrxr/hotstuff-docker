@@ -1,4 +1,5 @@
 use crate::event::SystemEvent;
+use crate::flood_limiter::FloodLimiter;
 use crate::smrol::{
     adapter::SmrolHotStuffAdapter,
     consensus::{Consensus, TransactionEntry},
@@ -6,10 +7,11 @@ use crate::smrol::{
     finalization::OutputFinalization,
     message::{SmrolMessage, SmrolTransaction},
     network::SmrolTcpNetwork,
-    pnfifo::{FinalMsg, PnfifoBc, ProposalMsg, VoteMsg},
+    pnfifo::{FinalMsg, PnfifoBc, ProposalMsg, SlotReadyListener, VoteMsg},
     sequencing::TransactionSequencing,
     ModuleMessage,
 };
+use crate::tx_utils::{equivalent_tx_count, synthetic_tx_ids};
 use ed25519_dalek::{SigningKey, VerifyingKey};
 use hex;
 use std::collections::HashMap;
@@ -19,7 +21,9 @@ use std::sync::{
     Arc, OnceLock,
 };
 use std::time::Duration;
-use tokio::sync::{broadcast, mpsc as async_mpsc, Mutex as AsyncMutex, RwLock};
+use tokio::sync::{
+    broadcast, mpsc as async_mpsc, mpsc::error::TrySendError, Mutex as AsyncMutex, RwLock,
+};
 use tokio::time::interval;
 use tracing::{debug, error, info, warn};
 
@@ -59,7 +63,8 @@ pub struct SmrolManager {
 
     pub signing_key: SigningKey,
     pub verifying_keys: HashMap<usize, VerifyingKey>,
-    broadcast_tx: async_mpsc::UnboundedSender<SmrolTransaction>,
+    broadcast_tx: async_mpsc::Sender<SmrolTransaction>,
+    broadcast_limiter: Arc<FloodLimiter>,
     pnfifo_proposal_tx: async_mpsc::UnboundedSender<(usize, ProposalMsg)>,
     pnfifo_vote_tx: async_mpsc::UnboundedSender<(usize, VoteMsg)>,
     pnfifo_final_tx: async_mpsc::UnboundedSender<(usize, FinalMsg)>,
@@ -82,6 +87,50 @@ pub struct SmrolManager {
 }
 
 impl SmrolManager {
+    fn attack_only_mode() -> bool {
+        static FLAG: OnceLock<bool> = OnceLock::new();
+        *FLAG.get_or_init(|| {
+            std::env::var("SMROL_ATTACK_ONLY")
+                .map(|v| {
+                    matches!(
+                        v.trim().to_ascii_lowercase().as_str(),
+                        "1" | "true" | "yes" | "on"
+                    )
+                })
+                .unwrap_or(false)
+        })
+    }
+
+    fn broadcast_queue_capacity() -> usize {
+        static CAP: OnceLock<usize> = OnceLock::new();
+        *CAP.get_or_init(|| {
+            std::env::var("SMROL_BROADCAST_QUEUE_CAP")
+                .ok()
+                .and_then(|v| v.parse::<usize>().ok())
+                .map(|cap| cap.max(64))
+                .unwrap_or(4096)
+        })
+    }
+
+    fn build_broadcast_limiter() -> FloodLimiter {
+        if !Self::attack_only_mode() {
+            return FloodLimiter::unlimited("smrol-broadcast");
+        }
+
+        fn env_f64(key: &str) -> Option<f64> {
+            std::env::var(key).ok()?.trim().parse::<f64>().ok()
+        }
+
+        let queue_cap = Self::broadcast_queue_capacity().max(1) as f64;
+        let default_rate = queue_cap * 2.0;
+        let default_burst = queue_cap;
+
+        let rate = env_f64("SMROL_ATTACK_BROADCAST_RATE").unwrap_or(default_rate);
+        let burst = env_f64("SMROL_ATTACK_BROADCAST_BURST").unwrap_or(default_burst);
+
+        FloodLimiter::new("smrol-broadcast", rate, burst)
+    }
+
     pub async fn new(
         node_id: usize,
         config: SmrolConfig,
@@ -149,6 +198,7 @@ impl SmrolManager {
             n,
             config.f,
             config.pnfifo_threshold,
+            // 2*n/3+1,
             Arc::clone(&network),
             Arc::clone(&pnfifo),
             Arc::clone(&multisig_ctx),
@@ -156,6 +206,7 @@ impl SmrolManager {
             verifying_keys.clone(),
             Arc::clone(&finalization),
             sequenced_entry_tx,
+            true,
         );
 
         let consensus = Consensus::new(
@@ -171,6 +222,10 @@ impl SmrolManager {
 
         let sequencing_arc = Arc::new(sequencing);
         sequencing_arc.start_processing();
+        let slot_listener: Arc<dyn SlotReadyListener> = sequencing_arc.clone();
+        pnfifo
+            .set_slot_ready_listener(Arc::downgrade(&slot_listener))
+            .map_err(|e| format!("failed to register slot ready listener: {}", e))?;
         let sequencing_request_tx = sequencing_arc.request_sender();
         let sequencing_response_tx = sequencing_arc.response_sender();
         let sequencing_order_tx = sequencing_arc.order_sender();
@@ -185,8 +240,11 @@ impl SmrolManager {
         let consensus_arc = Arc::new(RwLock::new(consensus));
 
         let broadcast_workers = Self::smrol_broadcast_worker_count();
-        let (broadcast_tx, broadcast_rx_raw) = async_mpsc::unbounded_channel::<SmrolTransaction>();
+        let broadcast_capacity = Self::broadcast_queue_capacity();
+        let (broadcast_tx, broadcast_rx_raw) =
+            async_mpsc::channel::<SmrolTransaction>(broadcast_capacity);
         let broadcast_rx = Arc::new(AsyncMutex::new(broadcast_rx_raw));
+        let broadcast_limiter = Arc::new(Self::build_broadcast_limiter());
 
         for worker_id in 0..broadcast_workers {
             let sequencing_for_worker = Arc::clone(&sequencing_arc);
@@ -245,6 +303,7 @@ impl SmrolManager {
             signing_key,
             verifying_keys,
             broadcast_tx,
+            broadcast_limiter,
             pnfifo_proposal_tx,
             pnfifo_vote_tx,
             pnfifo_final_tx,
@@ -289,13 +348,33 @@ impl SmrolManager {
             transaction.id, transaction.from, transaction.to, transaction.amount
         );
 
-        if let Err(e) = self.broadcast_tx.send(transaction) {
-            return Err(format!("SMROL broadcast queue send failed: {}", e));
+        if Self::attack_only_mode() {
+            return self.enqueue_attack_broadcast(transaction);
         }
+
+        self.broadcast_tx
+            .send(transaction)
+            .await
+            .map_err(|e| format!("SMROL broadcast queue send failed: {}", e))?;
 
         // // tokio::task::yield_now().await;
 
         Ok(())
+    }
+
+    fn enqueue_attack_broadcast(&self, transaction: SmrolTransaction) -> Result<(), String> {
+        if !self.broadcast_limiter.allow(1.0) {
+            return Ok(());
+        }
+
+        match self.broadcast_tx.try_send(transaction) {
+            Ok(()) => Ok(()),
+            Err(TrySendError::Full(_msg)) => {
+                self.broadcast_limiter.note_drop();
+                Ok(())
+            }
+            Err(TrySendError::Closed(_msg)) => Err("SMROL broadcast channel closed".to_string()),
+        }
     }
 
     fn spawn_processors(self: &Arc<Self>) {
@@ -711,30 +790,58 @@ impl SmrolManager {
             }
         }
 
-        let hotstuff_string =
-            if let Ok(tx) = bincode::deserialize::<SmrolTransaction>(&entry.payload) {
-                tx.to_hotstuff_format(entry.s_tx)
+        let (transactions_for_hotstuff, pushed_tx_ids) = if let Ok(tx) =
+            bincode::deserialize::<SmrolTransaction>(&entry.payload)
+        {
+            let payload_len = entry.payload.len();
+            let equiv_count = equivalent_tx_count(payload_len);
+            let synthetic_ids = synthetic_tx_ids(tx.id, equiv_count);
+            let payloads: Vec<String> = if synthetic_ids.is_empty() {
+                vec![tx.to_hotstuff_format(entry.s_tx)]
             } else {
-                format!(
-                    "{}:{}",
-                    entry.s_tx,
-                    hex::encode(&entry.vc_tx[..std::cmp::min(8, entry.vc_tx.len())])
-                )
+                synthetic_ids
+                    .iter()
+                    .map(|synthetic_id| tx.to_hotstuff_format_with_id(entry.s_tx, *synthetic_id))
+                    .collect()
             };
+            let ids = if synthetic_ids.is_empty() {
+                vec![tx.id]
+            } else {
+                synthetic_ids
+            };
+            (payloads, ids)
+        } else {
+            let fallback = format!(
+                "{}:{}",
+                entry.s_tx,
+                hex::encode(&entry.vc_tx[..std::cmp::min(8, entry.vc_tx.len())])
+            );
+            let ids = tx_id_opt.into_iter().collect::<Vec<_>>();
+            (vec![fallback], ids)
+        };
+
+        debug!(
+            "⚠️ [SMROL] Node {} prepared {} HotStuff tx items for slot {} epoch {}",
+            self.node_id,
+            transactions_for_hotstuff.len(),
+            entry_meta.1,
+            epoch
+        );
 
         if let Some(adapter) = self.hotstuff_adapter.get() {
-            adapter.output_to_hotstuff(vec![hotstuff_string.clone()], epoch);
+            let pushed_count = transactions_for_hotstuff.len();
+            adapter.output_to_hotstuff(transactions_for_hotstuff, epoch);
             info!(
-                "🚀 [SMROL→HotStuff] Node {} delivered tx for slot {} epoch {}",
-                self.node_id, entry_meta.1, epoch
+                "🚀 [SMROL→HotStuff] Node {} delivered {} tx items for slot {} epoch {}",
+                self.node_id, pushed_count, entry_meta.1, epoch
             );
-            if let Some(tx_id) = tx_id_opt {
+            if !pushed_tx_ids.is_empty() {
                 if let Err(e) = self.event_tx.send(SystemEvent::PushedToHotStuff {
-                    tx_ids: vec![tx_id],
+                    tx_ids: pushed_tx_ids.clone(),
                 }) {
                     warn!(
-                        "⚠️ [SMROL] Node {} failed to emit pushed-to-hotstuff for tx {}: {}",
-                        self.node_id, tx_id, e
+                        "⚠️ [SMROL] Node {} failed to emit pushed-to-hotstuff for {:?}: {}",
+                        self.node_id, pushed_tx_ids, e
                     );
                 }
             }

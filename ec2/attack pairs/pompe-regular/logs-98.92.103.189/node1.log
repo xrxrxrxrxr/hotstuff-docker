@@ -1,0 +1,408 @@
+2025-11-13T08:03:42.877755Z  WARN ThreadId(01) docker_node: metrics exporter disabled by SMROL_DISABLE_METRICS
+2025-11-13T08:04:03.081226Z  WARN ThreadId(01) hotstuff_runner::tcp_node: Node 1 view timeout set to 4000 ms
+2025-11-13T08:04:03.083763Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 1 failed to connect to node 0: Connection refused (os error 111)
+2025-11-13T08:04:03.084134Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 1 failed to connect to node 2: Connection refused (os error 111)
+2025-11-13T08:04:03.084503Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 1 failed to connect to node 3: Connection refused (os error 111)
+2025-11-13T08:04:03.084916Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 1 failed to connect to node 4: Connection refused (os error 111)
+2025-11-13T08:04:03.092064Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: SMROL_MEDIAN_INFLIGHT=24, SMROL_ORDER_FINALIZE_INFLIGHT=4, SMROL_FINAL_SIGN_INFLIGHT=4, SMROL_FINAL_VERIFY_INFLIGHT=24
+2025-11-13T08:04:03.092115Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: [Sequencing] Node 1 multi-signature verification disabled: false
+2025-11-13T08:04:03.092191Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [Sequencing] Node 1 final verify dispatcher started
+2025-11-13T08:04:07.083196Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 0 timed out; latency may accumulate
+2025-11-13T08:04:08.093549Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-13T08:04:08.096845Z  WARN ThreadId(01) docker_node: Node 0 port 20000 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.098619Z  WARN ThreadId(01) docker_node: Node 1 port 20001 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.100200Z  WARN ThreadId(01) docker_node: Node 2 port 20002 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.101927Z  WARN ThreadId(01) docker_node: Node 3 port 20003 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.103789Z  WARN ThreadId(01) docker_node: Node 4 port 20004 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.105635Z  WARN ThreadId(01) docker_node: Node 5 port 20005 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.107452Z  WARN ThreadId(01) docker_node: Node 6 port 20006 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.109293Z  WARN ThreadId(01) docker_node: Node 7 port 20007 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.111121Z  WARN ThreadId(01) docker_node: Node 8 port 20008 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.112797Z  WARN ThreadId(01) docker_node: Node 9 port 20009 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.114509Z  WARN ThreadId(01) docker_node: Node 10 port 20010 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.116304Z  WARN ThreadId(01) docker_node: Node 11 port 20011 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.118011Z  WARN ThreadId(01) docker_node: Node 12 port 20012 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.119741Z  WARN ThreadId(01) docker_node: Node 13 port 20013 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.121317Z  WARN ThreadId(01) docker_node: Node 14 port 20014 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.123228Z  WARN ThreadId(01) docker_node: Node 15 port 20015 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.124908Z  WARN ThreadId(01) docker_node: Node 16 port 20016 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.126796Z  WARN ThreadId(01) docker_node: Node 17 port 20017 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.128421Z  WARN ThreadId(01) docker_node: Node 18 port 20018 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.130334Z  WARN ThreadId(01) docker_node: Node 19 port 20019 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.131864Z  WARN ThreadId(01) docker_node: Node 20 port 20020 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.133445Z  WARN ThreadId(01) docker_node: Node 21 port 20021 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.135117Z  WARN ThreadId(01) docker_node: Node 22 port 20022 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.136928Z  WARN ThreadId(01) docker_node: Node 23 port 20023 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.138588Z  WARN ThreadId(01) docker_node: Node 24 port 20024 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.140341Z  WARN ThreadId(01) docker_node: Node 25 port 20025 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.142045Z  WARN ThreadId(01) docker_node: Node 26 port 20026 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.143792Z  WARN ThreadId(01) docker_node: Node 27 port 20027 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.145596Z  WARN ThreadId(01) docker_node: Node 28 port 20028 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:08.147307Z  WARN ThreadId(01) docker_node: Node 29 port 20029 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:04:10.454234Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-13T08:04:13.093208Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-13T08:04:18.093349Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-13T08:04:19.787517Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-13T08:04:23.092831Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-13T08:04:25.309192Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-13T08:04:28.093321Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-13T08:04:30.841000Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-13T08:04:30.841017Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 view(106) far exceeds block count (3); potential sync issue    
+2025-11-13T08:04:33.093389Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-13T08:04:36.382135Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-13T08:04:36.382159Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 view(136) far exceeds block count (4); potential sync issue    
+2025-11-13T08:04:38.092839Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-13T08:04:40.711455Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 260 transactions
+2025-11-13T08:04:41.212742Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 306 transactions
+2025-11-13T08:04:41.713773Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 192 transactions
+2025-11-13T08:04:42.139460Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 980, attempting up to 980 transactions this block    
+2025-11-13T08:04:42.139783Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 view(166) far exceeds block count (5); potential sync issue    
+2025-11-13T08:04:42.215543Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 178 transactions
+2025-11-13T08:04:42.716408Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 420 transactions
+2025-11-13T08:04:43.217107Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 592 transactions
+2025-11-13T08:04:43.718417Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 214 transactions
+2025-11-13T08:04:44.219091Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 252 transactions
+2025-11-13T08:04:44.720515Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 318 transactions
+2025-11-13T08:04:45.221058Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 250 transactions
+2025-11-13T08:04:45.721682Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 270 transactions
+2025-11-13T08:04:46.223526Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 252 transactions
+2025-11-13T08:04:46.724024Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 298 transactions
+2025-11-13T08:04:47.225138Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 452 transactions
+2025-11-13T08:04:47.726803Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 418 transactions
+2025-11-13T08:04:48.092786Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-13T08:04:48.148287Z  WARN ThreadId(09) docker_node: Node 1 Regular transaction queue backlog: 5808 transactions
+2025-11-13T08:04:48.226897Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 406 transactions
+2025-11-13T08:04:48.728159Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 248 transactions
+2025-11-13T08:04:49.229103Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 360 transactions
+2025-11-13T08:04:49.730687Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 416 transactions
+2025-11-13T08:04:50.231826Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 454 transactions
+2025-11-13T08:04:50.733618Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 294 transactions
+2025-11-13T08:04:51.234852Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 464 transactions
+2025-11-13T08:04:51.735541Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 354 transactions
+2025-11-13T08:04:52.236289Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 282 transactions
+2025-11-13T08:04:52.737694Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 300 transactions
+2025-11-13T08:04:53.092833Z  WARN ThreadId(02) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-13T08:04:53.148026Z  WARN ThreadId(05) docker_node: Node 1 Regular transaction queue backlog: 10304 transactions
+2025-11-13T08:04:53.238921Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 304 transactions
+2025-11-13T08:04:53.740359Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 420 transactions
+2025-11-13T08:04:54.241505Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 440 transactions
+2025-11-13T08:04:54.742072Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 386 transactions
+2025-11-13T08:04:55.243518Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 430 transactions
+2025-11-13T08:04:55.744074Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 480 transactions
+2025-11-13T08:04:56.245168Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 312 transactions
+2025-11-13T08:04:56.745890Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 256 transactions
+2025-11-13T08:04:57.247805Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 358 transactions
+2025-11-13T08:04:57.749050Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 442 transactions
+2025-11-13T08:04:58.092966Z  WARN ThreadId(08) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-13T08:04:58.147536Z  WARN ThreadId(05) docker_node: Node 1 Regular transaction queue backlog: 14856 transactions
+2025-11-13T08:04:58.250100Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 466 transactions
+2025-11-13T08:04:58.751780Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 338 transactions
+2025-11-13T08:04:59.252877Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 448 transactions
+2025-11-13T08:04:59.753157Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 486 transactions
+2025-11-13T08:05:00.254379Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 326 transactions
+2025-11-13T08:05:00.755697Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 334 transactions
+2025-11-13T08:05:01.256367Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 424 transactions
+2025-11-13T08:05:01.757615Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 410 transactions
+2025-11-13T08:05:02.258762Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 374 transactions
+2025-11-13T08:05:02.759539Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 386 transactions
+2025-11-13T08:05:03.086221Z  WARN ThreadId(02) hotstuff_runner::pompe: 🧹 [Cleanup] Node 1 cleared 10320 orphaned ordering1 states
+2025-11-13T08:05:03.092739Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-13T08:05:03.147932Z  WARN ThreadId(06) docker_node: Node 1 Regular transaction queue backlog: 19244 transactions
+2025-11-13T08:05:03.260025Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 392 transactions
+2025-11-13T08:05:03.761277Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 470 transactions
+2025-11-13T08:05:04.262065Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 480 transactions
+2025-11-13T08:05:04.763596Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 484 transactions
+2025-11-13T08:05:05.264518Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 278 transactions
+2025-11-13T08:05:05.765537Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 428 transactions
+2025-11-13T08:05:06.266523Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 276 transactions
+2025-11-13T08:05:06.767416Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 434 transactions
+2025-11-13T08:05:06.894886Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 192 timed out; latency may accumulate
+2025-11-13T08:05:07.268132Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 442 transactions
+2025-11-13T08:05:07.768986Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 292 transactions
+2025-11-13T08:05:08.093604Z  WARN ThreadId(08) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-13T08:05:08.147836Z  WARN ThreadId(06) docker_node: Node 1 Regular transaction queue backlog: 23626 transactions
+2025-11-13T08:05:08.270385Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 444 transactions
+2025-11-13T08:05:08.771899Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 414 transactions
+2025-11-13T08:05:09.273728Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 330 transactions
+2025-11-13T08:05:09.774606Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 454 transactions
+2025-11-13T08:05:10.275660Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 308 transactions
+2025-11-13T08:05:10.776073Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 414 transactions
+2025-11-13T08:05:10.895561Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 193 timed out; latency may accumulate
+2025-11-13T08:05:11.277179Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 420 transactions
+2025-11-13T08:05:11.778418Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 454 transactions
+2025-11-13T08:05:12.278870Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 432 transactions
+2025-11-13T08:05:12.780334Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 328 transactions
+2025-11-13T08:05:13.093131Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-13T08:05:13.147570Z  WARN ThreadId(08) docker_node: Node 1 Regular transaction queue backlog: 27996 transactions
+2025-11-13T08:05:13.281771Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 280 transactions
+2025-11-13T08:05:13.783929Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 380 transactions
+2025-11-13T08:05:14.285660Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 310 transactions
+2025-11-13T08:05:14.750547Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 29408, attempting up to 29408 transactions this block    
+2025-11-13T08:05:14.764339Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 view(196) far exceeds block count (6); potential sync issue    
+2025-11-13T08:05:14.787072Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 344 transactions
+2025-11-13T08:05:15.288325Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 374 transactions
+2025-11-13T08:05:15.789637Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 436 transactions
+2025-11-13T08:05:16.290120Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 378 transactions
+2025-11-13T08:05:16.791683Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 358 transactions
+2025-11-13T08:05:17.291992Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 452 transactions
+2025-11-13T08:05:17.793194Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 378 transactions
+2025-11-13T08:05:18.093024Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-13T08:05:18.148103Z  WARN ThreadId(09) docker_node: Node 1 Regular transaction queue backlog: 3228 transactions
+2025-11-13T08:05:18.294444Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 498 transactions
+2025-11-13T08:05:18.795427Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 462 transactions
+2025-11-13T08:05:19.296621Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 450 transactions
+2025-11-13T08:05:19.797669Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 338 transactions
+2025-11-13T08:05:19.988005Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 198 timed out; latency may accumulate
+2025-11-13T08:05:20.297961Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 510 transactions
+2025-11-13T08:05:20.799023Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 450 transactions
+2025-11-13T08:05:21.300356Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 396 transactions
+2025-11-13T08:05:21.801219Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 450 transactions
+2025-11-13T08:05:22.302020Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 262 transactions
+2025-11-13T08:05:22.803308Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 404 transactions
+2025-11-13T08:05:23.093288Z  WARN ThreadId(08) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-13T08:05:23.148487Z  WARN ThreadId(06) docker_node: Node 1 Regular transaction queue backlog: 7728 transactions
+2025-11-13T08:05:23.304941Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 426 transactions
+2025-11-13T08:05:23.805834Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 438 transactions
+2025-11-13T08:05:23.988812Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 199 timed out; latency may accumulate
+2025-11-13T08:05:24.307231Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 310 transactions
+2025-11-13T08:05:24.808059Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 470 transactions
+2025-11-13T08:05:25.167405Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[251, 37, 248, 248, 100, 107, 133, 124, 56, 136, 206, 193, 29, 89, 106, 57, 227, 3, 141, 92, 221, 254, 170, 17, 191, 241, 216, 141, 102, 239, 92, 113] view=180 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=true (exists=true) | cond3(view>locked || extends)=false (pc.view=180, locked.view=196, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[138, 200, 170, 37, 190, 157, 74, 51, 177, 50, 67, 143, 160, 7, 242, 80, 250, 45, 92, 141, 228, 7, 39, 140, 38, 196, 209, 229, 3, 2, 200, 255] highest_pc.view=197 locked.block=[214, 159, 115, 247, 245, 98, 89, 47, 181, 211, 91, 107, 150, 252, 124, 157, 220, 189, 195, 152, 126, 206, 194, 46, 150, 134, 255, 90, 224, 138, 27, 184] locked.view=196    
+2025-11-13T08:05:25.167442Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[133, 74, 202, 213, 111, 230, 98, 158, 111, 100, 227, 252, 103, 112, 179, 67, 53, 228, 46, 9, 56, 244, 94, 127, 222, 197, 91, 6, 138, 137, 142, 199] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[251, 37, 248, 248, 100, 107, 133, 124, 56, 136, 206, 193, 29, 89, 106, 57, 227, 3, 141, 92, 221, 254, 170, 17, 191, 241, 216, 141, 102, 239, 92, 113] justify.view=180 | highest_pc.block=[138, 200, 170, 37, 190, 157, 74, 51, 177, 50, 67, 143, 160, 7, 242, 80, 250, 45, 92, 141, 228, 7, 39, 140, 38, 196, 209, 229, 3, 2, 200, 255] highest_pc.view=197 | locked.block=[214, 159, 115, 247, 245, 98, 89, 47, 181, 211, 91, 107, 150, 252, 124, 157, 220, 189, 195, 152, 126, 206, 194, 46, 150, 134, 255, 90, 224, 138, 27, 184] locked.view=196    
+2025-11-13T08:05:25.309015Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 462 transactions
+2025-11-13T08:05:25.810090Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 444 transactions
+2025-11-13T08:05:26.311741Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 300 transactions
+2025-11-13T08:05:26.813791Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 420 transactions
+2025-11-13T08:05:27.314069Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 492 transactions
+2025-11-13T08:05:27.815153Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 474 transactions
+2025-11-13T08:05:27.989764Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 200 timed out; latency may accumulate
+2025-11-13T08:05:28.093283Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-13T08:05:28.148215Z  WARN ThreadId(05) docker_node: Node 1 Regular transaction queue backlog: 12192 transactions
+2025-11-13T08:05:28.315827Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 272 transactions
+2025-11-13T08:05:28.817131Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 322 transactions
+2025-11-13T08:05:29.318264Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 392 transactions
+2025-11-13T08:05:29.819267Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 402 transactions
+2025-11-13T08:05:30.319976Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 384 transactions
+2025-11-13T08:05:30.821789Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 418 transactions
+2025-11-13T08:05:31.322949Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 448 transactions
+2025-11-13T08:05:31.823349Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 482 transactions
+2025-11-13T08:05:32.324565Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 496 transactions
+2025-11-13T08:05:32.825591Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 450 transactions
+2025-11-13T08:05:33.086398Z  WARN ThreadId(08) hotstuff_runner::pompe: 🧹 [Cleanup] Node 1 cleared 13359 orphaned ordering1 states
+2025-11-13T08:05:33.092873Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-13T08:05:33.148361Z  WARN ThreadId(05) docker_node: Node 1 Regular transaction queue backlog: 16496 transactions
+2025-11-13T08:05:33.210075Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 202 timed out; latency may accumulate
+2025-11-13T08:05:33.327037Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 444 transactions
+2025-11-13T08:05:33.827912Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 284 transactions
+2025-11-13T08:05:34.226549Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[233, 75, 223, 234, 146, 216, 125, 179, 100, 105, 223, 71, 75, 164, 84, 109, 96, 193, 115, 58, 91, 52, 82, 243, 66, 122, 219, 241, 245, 17, 123, 179] view=185 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=true (exists=true) | cond3(view>locked || extends)=false (pc.view=185, locked.view=197, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[69, 80, 42, 182, 90, 48, 85, 87, 181, 75, 31, 61, 236, 210, 203, 45, 140, 98, 200, 232, 230, 247, 240, 252, 250, 100, 245, 120, 185, 46, 25, 162] highest_pc.view=201 locked.block=[138, 200, 170, 37, 190, 157, 74, 51, 177, 50, 67, 143, 160, 7, 242, 80, 250, 45, 92, 141, 228, 7, 39, 140, 38, 196, 209, 229, 3, 2, 200, 255] locked.view=197    
+2025-11-13T08:05:34.226597Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[86, 24, 98, 139, 68, 252, 97, 69, 168, 40, 157, 146, 186, 125, 120, 130, 181, 124, 152, 25, 49, 62, 253, 109, 11, 22, 247, 46, 40, 188, 24, 239] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[233, 75, 223, 234, 146, 216, 125, 179, 100, 105, 223, 71, 75, 164, 84, 109, 96, 193, 115, 58, 91, 52, 82, 243, 66, 122, 219, 241, 245, 17, 123, 179] justify.view=185 | highest_pc.block=[69, 80, 42, 182, 90, 48, 85, 87, 181, 75, 31, 61, 236, 210, 203, 45, 140, 98, 200, 232, 230, 247, 240, 252, 250, 100, 245, 120, 185, 46, 25, 162] highest_pc.view=201 | locked.block=[138, 200, 170, 37, 190, 157, 74, 51, 177, 50, 67, 143, 160, 7, 242, 80, 250, 45, 92, 141, 228, 7, 39, 140, 38, 196, 209, 229, 3, 2, 200, 255] locked.view=197    
+2025-11-13T08:05:34.329092Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 430 transactions
+2025-11-13T08:05:34.829969Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 348 transactions
+2025-11-13T08:05:35.330940Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 312 transactions
+2025-11-13T08:05:35.832403Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 434 transactions
+2025-11-13T08:05:36.333293Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 426 transactions
+2025-11-13T08:05:36.834457Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 450 transactions
+2025-11-13T08:05:37.210784Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 203 timed out; latency may accumulate
+2025-11-13T08:05:37.335132Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 368 transactions
+2025-11-13T08:05:37.836503Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 502 transactions
+2025-11-13T08:05:38.092801Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-13T08:05:38.147641Z  WARN ThreadId(06) docker_node: Node 1 Regular transaction queue backlog: 20934 transactions
+2025-11-13T08:05:38.337443Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 316 transactions
+2025-11-13T08:05:38.838727Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 330 transactions
+2025-11-13T08:05:39.340092Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 342 transactions
+2025-11-13T08:05:39.841262Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 420 transactions
+2025-11-13T08:05:40.342467Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 338 transactions
+2025-11-13T08:05:40.843192Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 382 transactions
+2025-11-13T08:05:41.344779Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 280 transactions
+2025-11-13T08:05:41.846149Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 268 transactions
+2025-11-13T08:05:42.347457Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 348 transactions
+2025-11-13T08:05:42.847953Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 468 transactions
+2025-11-13T08:05:43.092685Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-13T08:05:43.147910Z  WARN ThreadId(08) docker_node: Node 1 Regular transaction queue backlog: 25512 transactions
+2025-11-13T08:05:43.349239Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 450 transactions
+2025-11-13T08:05:43.850541Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 336 transactions
+2025-11-13T08:05:44.350728Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 324 transactions
+2025-11-13T08:05:44.852487Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 342 transactions
+2025-11-13T08:05:45.353625Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 244 transactions
+2025-11-13T08:05:45.854308Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 398 transactions
+2025-11-13T08:05:46.355371Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 444 transactions
+2025-11-13T08:05:46.856060Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 408 transactions
+2025-11-13T08:05:47.357669Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 408 transactions
+2025-11-13T08:05:47.858345Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 450 transactions
+2025-11-13T08:05:48.092652Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-13T08:05:48.148610Z  WARN ThreadId(09) docker_node: Node 1 Regular transaction queue backlog: 29856 transactions
+2025-11-13T08:05:48.359870Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 420 transactions
+2025-11-13T08:05:48.859958Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 302 transactions
+2025-11-13T08:05:49.361406Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 306 transactions
+2025-11-13T08:05:49.862855Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 438 transactions
+2025-11-13T08:05:50.363144Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 438 transactions
+2025-11-13T08:05:50.864164Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 438 transactions
+2025-11-13T08:05:51.032113Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 209 timed out; latency may accumulate
+2025-11-13T08:05:51.365367Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 348 transactions
+2025-11-13T08:05:51.866557Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 250 transactions
+2025-11-13T08:05:52.367778Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 314 transactions
+2025-11-13T08:05:52.868029Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 392 transactions
+2025-11-13T08:05:53.093077Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-13T08:05:53.148207Z  WARN ThreadId(05) docker_node: Node 1 Regular transaction queue backlog: 34152 transactions
+2025-11-13T08:05:53.369713Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 276 transactions
+2025-11-13T08:05:53.870526Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 406 transactions
+2025-11-13T08:05:54.371129Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 494 transactions
+2025-11-13T08:05:54.872508Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 420 transactions
+2025-11-13T08:05:55.032769Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 210 timed out; latency may accumulate
+2025-11-13T08:05:55.373813Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 480 transactions
+2025-11-13T08:05:55.874346Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 312 transactions
+2025-11-13T08:05:56.375051Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 328 transactions
+2025-11-13T08:05:56.876519Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 464 transactions
+2025-11-13T08:05:57.377223Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 450 transactions
+2025-11-13T08:05:57.877757Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 334 transactions
+2025-11-13T08:05:58.092616Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-13T08:05:58.147832Z  WARN ThreadId(05) docker_node: Node 1 Regular transaction queue backlog: 38704 transactions
+2025-11-13T08:05:58.379020Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 418 transactions
+2025-11-13T08:05:58.880497Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 322 transactions
+2025-11-13T08:05:59.381204Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 276 transactions
+2025-11-13T08:05:59.881963Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 504 transactions
+2025-11-13T08:06:00.383918Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 412 transactions
+2025-11-13T08:06:00.885130Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 434 transactions
+2025-11-13T08:06:01.385791Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 386 transactions
+2025-11-13T08:06:01.887346Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 378 transactions
+2025-11-13T08:06:01.929212Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 213 timed out; latency may accumulate
+2025-11-13T08:06:02.387788Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 264 transactions
+2025-11-13T08:06:02.889671Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 240 transactions
+2025-11-13T08:06:03.087041Z  WARN ThreadId(08) hotstuff_runner::pompe: 🧹 [Cleanup] Node 1 cleared 13020 orphaned ordering1 states
+2025-11-13T08:06:03.093023Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-13T08:06:03.148468Z  WARN ThreadId(08) docker_node: Node 1 Regular transaction queue backlog: 42632 transactions
+2025-11-13T08:06:03.390564Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 222 transactions
+2025-11-13T08:06:03.891482Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 232 transactions
+2025-11-13T08:06:04.392429Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 268 transactions
+2025-11-13T08:06:04.893570Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 374 transactions
+2025-11-13T08:06:05.393945Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 324 transactions
+2025-11-13T08:06:05.895706Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 456 transactions
+2025-11-13T08:06:06.395918Z  WARN ThreadId(08) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 256 transactions
+2025-11-13T08:06:06.411227Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 214 timed out; latency may accumulate
+2025-11-13T08:06:06.897690Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 452 transactions
+2025-11-13T08:06:07.398156Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 402 transactions
+2025-11-13T08:06:07.899650Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 336 transactions
+2025-11-13T08:06:08.093370Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-13T08:06:08.148207Z  WARN ThreadId(05) docker_node: Node 1 Regular transaction queue backlog: 46694 transactions
+2025-11-13T08:06:08.400631Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 366 transactions
+2025-11-13T08:06:08.901429Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 432 transactions
+2025-11-13T08:06:09.402474Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 438 transactions
+2025-11-13T08:06:09.903236Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 402 transactions
+2025-11-13T08:06:10.403852Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 306 transactions
+2025-11-13T08:06:10.905046Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 366 transactions
+2025-11-13T08:06:11.406268Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 444 transactions
+2025-11-13T08:06:11.907110Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 338 transactions
+2025-11-13T08:06:12.408661Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 348 transactions
+2025-11-13T08:06:12.909142Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 426 transactions
+2025-11-13T08:06:13.092625Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-13T08:06:13.147911Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 51110 transactions
+2025-11-13T08:06:13.410087Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 432 transactions
+2025-11-13T08:06:13.911795Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 456 transactions
+2025-11-13T08:06:14.412786Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 432 transactions
+2025-11-13T08:06:14.913047Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 504 transactions
+2025-11-13T08:06:15.414217Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 468 transactions
+2025-11-13T08:06:15.914959Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 472 transactions
+2025-11-13T08:06:16.416416Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 452 transactions
+2025-11-13T08:06:16.917596Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 450 transactions
+2025-11-13T08:06:17.418689Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 444 transactions
+2025-11-13T08:06:17.919336Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 310 transactions
+2025-11-13T08:06:18.092975Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-13T08:06:18.148051Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 55686 transactions
+2025-11-13T08:06:18.420298Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 444 transactions
+2025-11-13T08:06:18.921763Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 286 transactions
+2025-11-13T08:06:19.423286Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 440 transactions
+2025-11-13T08:06:19.924290Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 456 transactions
+2025-11-13T08:06:20.425584Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 396 transactions
+2025-11-13T08:06:20.927045Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 504 transactions
+2025-11-13T08:06:21.427973Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 318 transactions
+2025-11-13T08:06:21.929562Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 456 transactions
+2025-11-13T08:06:22.430214Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 350 transactions
+2025-11-13T08:06:22.931110Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 238 transactions
+2025-11-13T08:06:23.001824Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 221 timed out; latency may accumulate
+2025-11-13T08:06:23.093162Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-13T08:06:23.148087Z  WARN ThreadId(05) docker_node: Node 1 Regular transaction queue backlog: 60138 transactions
+2025-11-13T08:06:23.316152Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[187, 52, 31, 17, 77, 98, 142, 30, 173, 67, 93, 41, 249, 20, 181, 84, 13, 169, 78, 91, 130, 2, 102, 132, 248, 112, 138, 169, 193, 201, 226, 34] view=215 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=true (exists=true) | cond3(view>locked || extends)=false (pc.view=215, locked.view=218, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[182, 184, 250, 168, 125, 37, 249, 174, 166, 187, 227, 191, 83, 167, 25, 116, 234, 4, 167, 199, 92, 123, 68, 100, 28, 162, 50, 167, 154, 163, 163, 212] highest_pc.view=219 locked.block=[126, 209, 141, 231, 51, 85, 22, 213, 81, 14, 11, 2, 25, 159, 134, 119, 85, 70, 19, 124, 27, 66, 122, 97, 51, 52, 242, 161, 205, 47, 1, 122] locked.view=218    
+2025-11-13T08:06:23.316204Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[51, 200, 73, 64, 26, 82, 255, 223, 237, 99, 131, 29, 208, 190, 214, 81, 143, 68, 12, 139, 146, 7, 242, 92, 167, 190, 143, 151, 126, 93, 230, 79] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[187, 52, 31, 17, 77, 98, 142, 30, 173, 67, 93, 41, 249, 20, 181, 84, 13, 169, 78, 91, 130, 2, 102, 132, 248, 112, 138, 169, 193, 201, 226, 34] justify.view=215 | highest_pc.block=[182, 184, 250, 168, 125, 37, 249, 174, 166, 187, 227, 191, 83, 167, 25, 116, 234, 4, 167, 199, 92, 123, 68, 100, 28, 162, 50, 167, 154, 163, 163, 212] highest_pc.view=219 | locked.block=[126, 209, 141, 231, 51, 85, 22, 213, 81, 14, 11, 2, 25, 159, 134, 119, 85, 70, 19, 124, 27, 66, 122, 97, 51, 52, 242, 161, 205, 47, 1, 122] locked.view=218    
+2025-11-13T08:06:23.432742Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 398 transactions
+2025-11-13T08:06:23.933600Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 422 transactions
+2025-11-13T08:06:24.434006Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 256 transactions
+2025-11-13T08:06:24.935679Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 334 transactions
+2025-11-13T08:06:25.436079Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 458 transactions
+2025-11-13T08:06:25.937492Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 456 transactions
+2025-11-13T08:06:26.438186Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 450 transactions
+2025-11-13T08:06:26.939591Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 384 transactions
+2025-11-13T08:06:27.440496Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 438 transactions
+2025-11-13T08:06:27.941190Z  WARN ThreadId(05) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 346 transactions
+2025-11-13T08:06:28.093617Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-13T08:06:28.147811Z  WARN ThreadId(09) docker_node: Node 1 Regular transaction queue backlog: 64518 transactions
+2025-11-13T08:06:28.442379Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 440 transactions
+2025-11-13T08:06:28.505238Z  WARN ThreadId(22) hotstuff_runner::pompe_network: [Pompe] 1 -> 16 writer task send failed: Failed to write length: Broken pipe (os error 32)
+2025-11-13T08:06:28.505356Z  WARN ThreadId(22) hotstuff_runner::pompe_network: [Pompe] 1 -> 17 writer task send failed: Failed to write length: Broken pipe (os error 32)
+2025-11-13T08:06:28.505397Z  WARN ThreadId(22) hotstuff_runner::pompe_network: [Pompe] 1 -> 18 writer task send failed: Failed to write length: Connection reset by peer (os error 104)
+2025-11-13T08:06:28.703595Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 18: Connection refused (os error 111)
+2025-11-13T08:06:28.704071Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 17: Connection refused (os error 111)
+2025-11-13T08:06:28.704125Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 1 failed to connect to node 16: Connection refused (os error 111)
+2025-11-13T08:06:28.704159Z  WARN ThreadId(22) hotstuff_runner::pompe_network: Node 1 Pompe broadcast partially failed: ["Node 16: Connection failed: Connection refused (os error 111)", "Node 17: Connection failed: Connection refused (os error 111)", "Node 18: Connection failed: Connection refused (os error 111)"]
+2025-11-13T08:06:28.900172Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 1 failed to connect to node 16: Connection refused (os error 111)
+2025-11-13T08:06:28.901425Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 1 failed to connect to node 17: Connection refused (os error 111)
+2025-11-13T08:06:28.904497Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 1 failed to connect to node 18: Connection refused (os error 111)
+2025-11-13T08:06:28.904524Z  WARN ThreadId(22) hotstuff_runner::pompe_network: Node 1 Pompe broadcast partially failed: ["Node 16: Connection failed: Connection refused (os error 111)", "Node 17: Connection failed: Connection refused (os error 111)", "Node 18: Connection failed: Connection refused (os error 111)"]
+2025-11-13T08:06:28.943344Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 186 transactions
+2025-11-13T08:06:29.102256Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 1 failed to connect to node 16: Connection refused (os error 111)
+2025-11-13T08:06:29.103928Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 18: Connection refused (os error 111)
+2025-11-13T08:06:29.104440Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 1 failed to connect to node 17: Connection refused (os error 111)
+2025-11-13T08:06:29.104467Z  WARN ThreadId(22) hotstuff_runner::pompe_network: Node 1 Pompe broadcast partially failed: ["Node 16: Connection failed: Connection refused (os error 111)", "Node 17: Connection failed: Connection refused (os error 111)", "Node 18: Connection failed: Connection refused (os error 111)"]
+2025-11-13T08:06:29.302631Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 17: Connection refused (os error 111)
+2025-11-13T08:06:29.303995Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 16: Connection refused (os error 111)
+2025-11-13T08:06:29.304350Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 1 failed to connect to node 18: Connection refused (os error 111)
+2025-11-13T08:06:29.304371Z  WARN ThreadId(22) hotstuff_runner::pompe_network: Node 1 Pompe broadcast partially failed: ["Node 16: Connection failed: Connection refused (os error 111)", "Node 17: Connection failed: Connection refused (os error 111)", "Node 18: Connection failed: Connection refused (os error 111)"]
+2025-11-13T08:06:29.444000Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 26 transactions
+2025-11-13T08:06:29.502185Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 18: Connection refused (os error 111)
+2025-11-13T08:06:29.502250Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 1 failed to connect to node 16: Connection refused (os error 111)
+2025-11-13T08:06:29.502315Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 1 failed to connect to node 17: Connection refused (os error 111)
+2025-11-13T08:06:29.502333Z  WARN ThreadId(22) hotstuff_runner::pompe_network: Node 1 Pompe broadcast partially failed: ["Node 16: Connection failed: Connection refused (os error 111)", "Node 17: Connection failed: Connection refused (os error 111)", "Node 18: Connection failed: Connection refused (os error 111)"]
+2025-11-13T08:06:29.502869Z  WARN ThreadId(22) hotstuff_runner::pompe_network: [Pompe] 1 -> 13 writer task send failed: Failed to write length: Broken pipe (os error 32)
+2025-11-13T08:06:29.701990Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 16: Connection refused (os error 111)
+2025-11-13T08:06:29.702711Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 17: Connection refused (os error 111)
+2025-11-13T08:06:29.703145Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 18: Connection refused (os error 111)
+2025-11-13T08:06:29.703170Z  WARN ThreadId(23) hotstuff_runner::pompe_network: Node 1 Pompe broadcast partially failed: ["Node 16: Connection failed: Connection refused (os error 111)", "Node 17: Connection failed: Connection refused (os error 111)", "Node 18: Connection failed: Connection refused (os error 111)"]
+2025-11-13T08:06:29.703456Z  WARN ThreadId(22) hotstuff_runner::pompe_network: [Pompe] 1 -> 14 writer task send failed: Failed to write length: Broken pipe (os error 32)
+2025-11-13T08:06:29.703528Z  WARN ThreadId(22) hotstuff_runner::pompe_network: [Pompe] 1 -> 15 writer task send failed: Failed to write length: Broken pipe (os error 32)
+2025-11-13T08:06:29.899161Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 1 failed to connect to node 17: Connection refused (os error 111)
+2025-11-13T08:06:29.901422Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 1 failed to connect to node 16: Connection refused (os error 111)
+2025-11-13T08:06:29.903616Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 1 failed to connect to node 18: Connection refused (os error 111)
+2025-11-13T08:06:29.914955Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 13: Connection refused (os error 111)
+2025-11-13T08:06:29.914998Z  WARN ThreadId(23) hotstuff_runner::pompe_network: Node 1 Pompe broadcast partially failed: ["Node 13: Connection failed: Connection refused (os error 111)", "Node 16: Connection failed: Connection refused (os error 111)", "Node 17: Connection failed: Connection refused (os error 111)", "Node 18: Connection failed: Connection refused (os error 111)"]
+2025-11-13T08:06:29.944656Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 44 transactions
+2025-11-13T08:06:30.110652Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 1 failed to connect to node 18: Connection refused (os error 111)
+2025-11-13T08:06:30.112372Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 1 failed to connect to node 16: Connection refused (os error 111)
+2025-11-13T08:06:30.113186Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 1 failed to connect to node 17: Connection refused (os error 111)
+2025-11-13T08:06:30.125307Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 15: Connection refused (os error 111)
+2025-11-13T08:06:30.126329Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 13: Connection refused (os error 111)
+2025-11-13T08:06:30.127470Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 14: Connection refused (os error 111)
+2025-11-13T08:06:30.127532Z  WARN ThreadId(23) hotstuff_runner::pompe_network: Node 1 Pompe broadcast partially failed: ["Node 13: Connection failed: Connection refused (os error 111)", "Node 14: Connection failed: Connection refused (os error 111)", "Node 15: Connection failed: Connection refused (os error 111)", "Node 16: Connection failed: Connection refused (os error 111)", "Node 17: Connection failed: Connection refused (os error 111)", "Node 18: Connection failed: Connection refused (os error 111)"]
+2025-11-13T08:06:30.127916Z  WARN ThreadId(23) hotstuff_runner::pompe_network: [Pompe] 1 -> 6 writer task send failed: Failed to write length: Broken pipe (os error 32)
+2025-11-13T08:06:30.127958Z  WARN ThreadId(22) hotstuff_runner::pompe_network: [Pompe] 1 -> 19 writer task send failed: Failed to write length: Broken pipe (os error 32)
+2025-11-13T08:06:30.127997Z  WARN ThreadId(22) hotstuff_runner::pompe_network: [Pompe] 1 -> 20 writer task send failed: Failed to write length: Broken pipe (os error 32)
+2025-11-13T08:06:30.323728Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 18: Connection refused (os error 111)
+2025-11-13T08:06:30.323974Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 17: Connection refused (os error 111)
+2025-11-13T08:06:30.327588Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 16: Connection refused (os error 111)
+2025-11-13T08:06:30.338425Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 14: Connection refused (os error 111)
+2025-11-13T08:06:30.338437Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 1 failed to connect to node 13: Connection refused (os error 111)
+2025-11-13T08:06:30.341920Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 15: Connection refused (os error 111)
+2025-11-13T08:06:30.341951Z  WARN ThreadId(23) hotstuff_runner::pompe_network: Node 1 Pompe broadcast partially failed: ["Node 13: Connection failed: Connection refused (os error 111)", "Node 14: Connection failed: Connection refused (os error 111)", "Node 15: Connection failed: Connection refused (os error 111)", "Node 16: Connection failed: Connection refused (os error 111)", "Node 17: Connection failed: Connection refused (os error 111)", "Node 18: Connection failed: Connection refused (os error 111)"]
+2025-11-13T08:06:30.342243Z  WARN ThreadId(22) hotstuff_runner::pompe_network: [Pompe] 1 -> 7 writer task send failed: Failed to write length: Broken pipe (os error 32)
+2025-11-13T08:06:30.342298Z  WARN ThreadId(22) hotstuff_runner::pompe_network: [Pompe] 1 -> 8 writer task send failed: Failed to write length: Broken pipe (os error 32)
+2025-11-13T08:06:30.342330Z  WARN ThreadId(22) hotstuff_runner::pompe_network: [Pompe] 1 -> 9 writer task send failed: Failed to write length: Broken pipe (os error 32)
+2025-11-13T08:06:30.342354Z  WARN ThreadId(22) hotstuff_runner::pompe_network: [Pompe] 1 -> 10 writer task send failed: Failed to write length: Broken pipe (os error 32)
+2025-11-13T08:06:30.342381Z  WARN ThreadId(22) hotstuff_runner::pompe_network: [Pompe] 1 -> 11 writer task send failed: Failed to write length: Broken pipe (os error 32)
+2025-11-13T08:06:30.342411Z  WARN ThreadId(22) hotstuff_runner::pompe_network: [Pompe] 1 -> 12 writer task send failed: Failed to write length: Broken pipe (os error 32)
+2025-11-13T08:06:30.342535Z  WARN ThreadId(22) hotstuff_runner::pompe_network: [Pompe] 1 -> 5 writer task send failed: Failed to write length: Broken pipe (os error 32)
+2025-11-13T08:06:30.409190Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 6: Connection refused (os error 111)
+2025-11-13T08:06:30.446148Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 1 flushed 46 transactions
+2025-11-13T08:06:30.489930Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 19: Connection refused (os error 111)
+2025-11-13T08:06:30.491201Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 20: Connection refused (os error 111)
+2025-11-13T08:06:30.540366Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 18: Connection refused (os error 111)
+2025-11-13T08:06:30.542379Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 16: Connection refused (os error 111)
+2025-11-13T08:06:30.543765Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 17: Connection refused (os error 111)
+2025-11-13T08:06:30.550676Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 15: Connection refused (os error 111)
+2025-11-13T08:06:30.553784Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 14: Connection refused (os error 111)

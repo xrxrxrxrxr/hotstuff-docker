@@ -1,4 +1,5 @@
 use crossbeam::queue::SegQueue;
+use dashmap::DashSet;
 use std::sync::{Arc, OnceLock};
 use tracing::{debug, warn};
 
@@ -43,5 +44,11 @@ impl SmrolHotStuffAdapter {
                 transactions.len()
             );
         }
+    }
+
+    pub fn set_filters(&self, confirmed: Arc<DashSet<u64>>, in_flight: Arc<DashSet<u64>>) {
+        let _ = confirmed;
+        let _ = in_flight;
+        debug!("🧪 [SMROL Adapter] Received HotStuff filter handles (currently unused)");
     }
 }

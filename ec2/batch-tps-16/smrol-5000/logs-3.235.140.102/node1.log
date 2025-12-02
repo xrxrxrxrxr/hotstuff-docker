@@ -1,0 +1,136 @@
+2025-11-14T02:35:40.016677Z  WARN ThreadId(01) docker_node: metrics exporter disabled by SMROL_DISABLE_METRICS
+2025-11-14T02:36:00.232762Z  WARN ThreadId(01) hotstuff_runner::tcp_node: Node 1 view timeout set to 3000 ms
+2025-11-14T02:36:00.243706Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: SMROL_MEDIAN_INFLIGHT=24, SMROL_ORDER_FINALIZE_INFLIGHT=4, SMROL_FINAL_SIGN_INFLIGHT=4, SMROL_FINAL_VERIFY_INFLIGHT=24
+2025-11-14T02:36:00.243777Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: [Sequencing] Node 1 multi-signature verification disabled: false
+2025-11-14T02:36:00.243902Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: [Sequencing] Node 1 final verify dispatcher started
+2025-11-14T02:36:00.245002Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-14T02:36:01.560835Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 14: Connection refused (os error 111)
+2025-11-14T02:36:04.703816Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:36:05.244453Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-14T02:36:05.247554Z  WARN ThreadId(01) docker_node: Node 0 port 20000 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-14T02:36:05.249507Z  WARN ThreadId(01) docker_node: Node 1 port 20001 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-14T02:36:05.251333Z  WARN ThreadId(01) docker_node: Node 2 port 20002 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-14T02:36:05.253135Z  WARN ThreadId(01) docker_node: Node 3 port 20003 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-14T02:36:05.255372Z  WARN ThreadId(01) docker_node: Node 4 port 20004 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-14T02:36:05.257382Z  WARN ThreadId(01) docker_node: Node 5 port 20005 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-14T02:36:05.259229Z  WARN ThreadId(01) docker_node: Node 6 port 20006 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-14T02:36:05.260979Z  WARN ThreadId(01) docker_node: Node 7 port 20007 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-14T02:36:05.262626Z  WARN ThreadId(01) docker_node: Node 8 port 20008 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-14T02:36:05.264385Z  WARN ThreadId(01) docker_node: Node 9 port 20009 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-14T02:36:05.266232Z  WARN ThreadId(01) docker_node: Node 10 port 20010 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-14T02:36:05.267932Z  WARN ThreadId(01) docker_node: Node 11 port 20011 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-14T02:36:05.269754Z  WARN ThreadId(01) docker_node: Node 12 port 20012 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-14T02:36:05.271595Z  WARN ThreadId(01) docker_node: Node 13 port 20013 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-14T02:36:05.273446Z  WARN ThreadId(01) docker_node: Node 14 port 20014 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-14T02:36:05.275332Z  WARN ThreadId(01) docker_node: Node 15 port 20015 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-14T02:36:07.203018Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:36:09.744103Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:36:10.244419Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-14T02:36:12.249116Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:36:14.746439Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:36:15.245072Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-14T02:36:17.241304Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:36:19.739987Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:36:20.245206Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-14T02:36:22.230508Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:36:22.230526Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 view(119) far exceeds block count (7); potential sync issue    
+2025-11-14T02:36:24.721910Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:36:24.721928Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 view(135) far exceeds block count (8); potential sync issue    
+2025-11-14T02:36:25.244753Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-14T02:36:27.220323Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:36:27.220341Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 view(151) far exceeds block count (9); potential sync issue    
+2025-11-14T02:36:27.512152Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Detected transaction backlog: submit rate (4.7) > confirm rate (0.0)
+2025-11-14T02:36:27.609069Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 1 -> 3 slow write: 33.319605ms
+2025-11-14T02:36:27.609093Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 1 -> 2 slow write: 33.284744ms
+2025-11-14T02:36:27.632919Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 1 -> 11 slow write: 37.657265ms
+2025-11-14T02:36:27.633108Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 1 -> 10 slow write: 34.970764ms
+2025-11-14T02:36:27.853188Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 1 -> 4 slow write: 114.611315ms
+2025-11-14T02:36:27.854313Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 1 -> 5 slow write: 115.761191ms
+2025-11-14T02:36:27.874547Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 1 -> 7 slow write: 18.550661ms
+2025-11-14T02:36:27.929033Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 1 -> 6 slow write: 201.884204ms
+2025-11-14T02:36:28.130004Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 1 -> 12 slow write: 47.587466ms
+2025-11-14T02:36:28.330441Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 1 -> 13 slow write: 39.616331ms
+2025-11-14T02:36:30.244311Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-14T02:36:30.276424Z  WARN ThreadId(07) docker_node: Node 1 Regular transaction queue backlog: 91214 transactions
+2025-11-14T02:36:35.245001Z  WARN ThreadId(08) docker_node: HotStuff processing bottleneck detected:
+2025-11-14T02:36:35.245031Z  WARN ThreadId(08) docker_node:    - HotStuff queue backlog: 91214 transactions
+2025-11-14T02:36:35.245054Z  WARN ThreadId(08) docker_node:    - Confirmation TPS (0.0) much lower than submission TPS (0.9)
+2025-11-14T02:36:35.245060Z  WARN ThreadId(08) docker_node:    - Possible cause: HotStuff consensus network delay or block size limitation
+2025-11-14T02:36:35.245071Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-14T02:36:35.277182Z  WARN ThreadId(08) docker_node: Node 1 Regular transaction queue backlog: 91214 transactions
+2025-11-14T02:36:40.244768Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-14T02:36:40.276909Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 91214 transactions
+2025-11-14T02:36:41.747532Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[64, 26, 114, 66, 245, 222, 10, 49, 36, 159, 57, 127, 243, 77, 30, 26, 61, 133, 132, 27, 147, 106, 13, 43, 187, 221, 139, 146, 242, 235, 160, 2] view=158 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=true (exists=true) | cond3(view>locked || extends)=false (pc.view=158, locked.view=159, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[163, 97, 85, 15, 77, 176, 154, 126, 23, 88, 119, 76, 98, 112, 145, 130, 83, 115, 222, 213, 18, 109, 219, 114, 34, 8, 221, 105, 181, 91, 20, 90] highest_pc.view=160 locked.block=[48, 113, 169, 238, 190, 219, 195, 123, 165, 58, 242, 82, 93, 47, 21, 5, 32, 76, 44, 251, 51, 124, 1, 36, 157, 116, 31, 154, 51, 197, 215, 74] locked.view=159    
+2025-11-14T02:36:41.747569Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[68, 57, 187, 65, 253, 93, 50, 28, 239, 227, 222, 232, 102, 78, 150, 94, 207, 85, 242, 34, 143, 136, 180, 37, 95, 187, 152, 175, 154, 245, 64, 100] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[64, 26, 114, 66, 245, 222, 10, 49, 36, 159, 57, 127, 243, 77, 30, 26, 61, 133, 132, 27, 147, 106, 13, 43, 187, 221, 139, 146, 242, 235, 160, 2] justify.view=158 | highest_pc.block=[163, 97, 85, 15, 77, 176, 154, 126, 23, 88, 119, 76, 98, 112, 145, 130, 83, 115, 222, 213, 18, 109, 219, 114, 34, 8, 221, 105, 181, 91, 20, 90] highest_pc.view=160 | locked.block=[48, 113, 169, 238, 190, 219, 195, 123, 165, 58, 242, 82, 93, 47, 21, 5, 32, 76, 44, 251, 51, 124, 1, 36, 157, 116, 31, 154, 51, 197, 215, 74] locked.view=159    
+2025-11-14T02:36:44.346559Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 162 timed out; latency may accumulate
+2025-11-14T02:36:45.245149Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-14T02:36:45.277278Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 91214 transactions
+2025-11-14T02:36:47.347032Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 163 timed out; latency may accumulate
+2025-11-14T02:36:50.244431Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-14T02:36:50.276648Z  WARN ThreadId(02) docker_node: Node 1 Regular transaction queue backlog: 91214 transactions
+2025-11-14T02:36:52.973091Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[147, 227, 171, 112, 216, 180, 62, 206, 92, 34, 145, 151, 248, 124, 238, 220, 181, 14, 239, 165, 239, 144, 55, 248, 70, 171, 116, 96, 161, 96, 63, 43] view=151 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=true (exists=true) | cond3(view>locked || extends)=false (pc.view=151, locked.view=160, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[9, 39, 192, 167, 176, 169, 156, 136, 169, 75, 170, 114, 226, 11, 32, 182, 119, 39, 121, 37, 82, 241, 246, 47, 137, 42, 99, 31, 92, 159, 167, 135] highest_pc.view=164 locked.block=[163, 97, 85, 15, 77, 176, 154, 126, 23, 88, 119, 76, 98, 112, 145, 130, 83, 115, 222, 213, 18, 109, 219, 114, 34, 8, 221, 105, 181, 91, 20, 90] locked.view=160    
+2025-11-14T02:36:52.973153Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[45, 17, 139, 170, 108, 149, 244, 32, 169, 3, 222, 9, 102, 88, 226, 54, 60, 72, 184, 203, 76, 160, 224, 34, 2, 109, 101, 93, 169, 185, 13, 7] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[147, 227, 171, 112, 216, 180, 62, 206, 92, 34, 145, 151, 248, 124, 238, 220, 181, 14, 239, 165, 239, 144, 55, 248, 70, 171, 116, 96, 161, 96, 63, 43] justify.view=151 | highest_pc.block=[9, 39, 192, 167, 176, 169, 156, 136, 169, 75, 170, 114, 226, 11, 32, 182, 119, 39, 121, 37, 82, 241, 246, 47, 137, 42, 99, 31, 92, 159, 167, 135] highest_pc.view=164 | locked.block=[163, 97, 85, 15, 77, 176, 154, 126, 23, 88, 119, 76, 98, 112, 145, 130, 83, 115, 222, 213, 18, 109, 219, 114, 34, 8, 221, 105, 181, 91, 20, 90] locked.view=160    
+2025-11-14T02:36:54.291135Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 91214, attempting up to 91214 transactions this block    
+2025-11-14T02:36:54.317218Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 view(167) far exceeds block count (10); potential sync issue    
+2025-11-14T02:36:55.245308Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-14T02:36:57.291225Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 167 timed out; latency may accumulate
+2025-11-14T02:37:00.244570Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-14T02:37:01.818279Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 171 timed out; latency may accumulate
+2025-11-14T02:37:02.609554Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[64, 26, 114, 66, 245, 222, 10, 49, 36, 159, 57, 127, 243, 77, 30, 26, 61, 133, 132, 27, 147, 106, 13, 43, 187, 221, 139, 146, 242, 235, 160, 2] view=158 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=true (exists=true) | cond3(view>locked || extends)=false (pc.view=158, locked.view=169, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[75, 27, 96, 168, 153, 42, 176, 243, 154, 29, 11, 11, 63, 168, 186, 74, 80, 131, 109, 92, 1, 198, 148, 247, 74, 97, 55, 97, 255, 243, 122, 114] highest_pc.view=170 locked.block=[246, 55, 126, 40, 44, 64, 115, 208, 5, 146, 36, 241, 89, 146, 72, 158, 26, 234, 19, 58, 197, 98, 44, 81, 206, 210, 204, 133, 155, 11, 13, 228] locked.view=169    
+2025-11-14T02:37:02.609585Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[197, 53, 161, 101, 248, 254, 83, 135, 126, 177, 123, 198, 134, 247, 207, 150, 174, 234, 149, 66, 141, 96, 254, 253, 223, 115, 140, 251, 164, 35, 30, 229] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[64, 26, 114, 66, 245, 222, 10, 49, 36, 159, 57, 127, 243, 77, 30, 26, 61, 133, 132, 27, 147, 106, 13, 43, 187, 221, 139, 146, 242, 235, 160, 2] justify.view=158 | highest_pc.block=[75, 27, 96, 168, 153, 42, 176, 243, 154, 29, 11, 11, 63, 168, 186, 74, 80, 131, 109, 92, 1, 198, 148, 247, 74, 97, 55, 97, 255, 243, 122, 114] highest_pc.view=170 | locked.block=[246, 55, 126, 40, 44, 64, 115, 208, 5, 146, 36, 241, 89, 146, 72, 158, 26, 234, 19, 58, 197, 98, 44, 81, 206, 210, 204, 133, 155, 11, 13, 228] locked.view=169    
+2025-11-14T02:37:04.818795Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 172 timed out; latency may accumulate
+2025-11-14T02:37:05.244403Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-14T02:37:08.710605Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 177 timed out; latency may accumulate
+2025-11-14T02:37:10.244856Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-14T02:37:13.688395Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:37:13.688430Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 view(183) far exceeds block count (11); potential sync issue    
+2025-11-14T02:37:15.245274Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-14T02:37:17.481824Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 187 timed out; latency may accumulate
+2025-11-14T02:37:20.244931Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-14T02:37:20.394861Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:37:20.394881Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 view(199) far exceeds block count (12); potential sync issue    
+2025-11-14T02:37:23.935631Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:37:23.935655Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 view(215) far exceeds block count (13); potential sync issue    
+2025-11-14T02:37:25.244539Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-14T02:37:27.071938Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:37:27.071956Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 view(231) far exceeds block count (14); potential sync issue    
+2025-11-14T02:37:30.245021Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-14T02:37:30.294217Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:37:30.294235Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 view(247) far exceeds block count (15); potential sync issue    
+2025-11-14T02:37:33.412140Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:37:33.412163Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 view(263) far exceeds block count (16); potential sync issue    
+2025-11-14T02:37:35.245121Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-14T02:37:36.563154Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:37:36.563174Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 view(279) far exceeds block count (17); potential sync issue    
+2025-11-14T02:37:39.795965Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:37:39.795986Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 view(295) far exceeds block count (18); potential sync issue    
+2025-11-14T02:37:40.245302Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-14T02:37:42.883717Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:37:42.883736Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 view(311) far exceeds block count (19); potential sync issue    
+2025-11-14T02:37:45.244934Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-14T02:37:46.079471Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:37:46.079492Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 view(327) far exceeds block count (20); potential sync issue    
+2025-11-14T02:37:49.282863Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:37:49.282888Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 view(343) far exceeds block count (21); potential sync issue    
+2025-11-14T02:37:50.245296Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-14T02:37:52.603406Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:37:52.603448Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 view(359) far exceeds block count (22); potential sync issue    
+2025-11-14T02:37:55.245009Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-14T02:37:55.968924Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:37:55.968944Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 view(375) far exceeds block count (23); potential sync issue    
+2025-11-14T02:37:59.422169Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:37:59.422198Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 view(391) far exceeds block count (24); potential sync issue    
+2025-11-14T02:38:00.244324Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-14T02:38:02.793283Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:38:02.793307Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 view(407) far exceeds block count (25); potential sync issue    
+2025-11-14T02:38:05.244968Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-14T02:38:06.045394Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:38:06.045415Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 view(423) far exceeds block count (26); potential sync issue    
+2025-11-14T02:38:09.337157Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:38:09.337185Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 view(439) far exceeds block count (27); potential sync issue    
+2025-11-14T02:38:10.244526Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-14T02:38:12.557683Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:38:12.557700Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 view(455) far exceeds block count (28); potential sync issue    
+2025-11-14T02:38:15.245249Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-14T02:38:15.817812Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-14T02:38:15.817839Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 view(471) far exceeds block count (29); potential sync issue    

@@ -9,8 +9,13 @@ DRY_RUN=false
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REGIONS_FILE_PATH="$SCRIPT_DIR/regions.txt"
 
-TOTAL_STOPPED=0
-TOTAL_REGIONS=0
+SUMMARY_FILE=$(mktemp)
+STOP_PIDS=()
+
+cleanup_summary() {
+  rm -f "$SUMMARY_FILE"
+}
+trap cleanup_summary EXIT
 
 # Disable AWS CLI pager to avoid interactive prompts while piping output.
 export AWS_PAGER=""
@@ -128,21 +133,46 @@ stop_region_instances() {
   "${stop_cmd[@]}"
   echo "[${region:-default}] Stopped instances: ${instance_array[*]}"
 
-  TOTAL_STOPPED=$((TOTAL_STOPPED + ${#instance_array[@]}))
-  TOTAL_REGIONS=$((TOTAL_REGIONS + 1))
+  printf "%s\t%d\n" "${region:-default}" "${#instance_array[@]}" >> "$SUMMARY_FILE"
 }
 
 declare -a TARGET_REGIONS=()
 determine_regions
 
+stop_summary() {
+  if [[ ! -s "$SUMMARY_FILE" ]]; then
+    echo "Summary: nothing to stop"
+    return
+  fi
+
+  local total=0
+  local regions=0
+
+  while IFS=$'\t' read -r region count; do
+    [[ -z "$region" ]] && continue
+    total=$((total + count))
+    regions=$((regions + 1))
+  done < "$SUMMARY_FILE"
+
+  if $DRY_RUN; then
+    echo "Dry run summary: would stop ${total} instance(s) across ${regions} region(s)."
+  else
+    echo "Summary: stopped ${total} instance(s) across ${regions} region(s)."
+  fi
+}
+
 for region in "${TARGET_REGIONS[@]}"; do
-  stop_region_instances "$region"
+  stop_region_instances "$region" &
+  STOP_PIDS+=("$!")
 done
 
-if (( TOTAL_REGIONS == 0 )); then
-  echo "Summary: nothing to stop"
-elif $DRY_RUN; then
-  echo "Dry run summary: would stop ${TOTAL_STOPPED} instance(s) across ${TOTAL_REGIONS} region(s)."
-else
-  echo "Summary: stopped ${TOTAL_STOPPED} instance(s) across ${TOTAL_REGIONS} region(s)."
-fi
+status=0
+for pid in "${STOP_PIDS[@]}"; do
+  if ! wait "$pid"; then
+    status=1
+  fi
+done
+
+stop_summary
+
+exit $status

@@ -1,5 +1,9 @@
 // crate/src/node.rs
-use crate::{app::TestApp, event::SystemEvent, kv_store::MemoryKVStore, stats::PerformanceStats};
+use crate::{
+    app::TestApp, event::SystemEvent, kv_store::MemoryKVStore, stats::PerformanceStats,
+    tx_utils::parse_transaction_id,
+};
+use dashmap::DashSet;
 use ed25519_dalek::SigningKey;
 use hotstuff_rs::networking::network::Network;
 use hotstuff_rs::{
@@ -14,6 +18,7 @@ use hotstuff_rs::{
         validator_set::{ValidatorSet, ValidatorSetState},
     },
 };
+use socket2::MsgHdr;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::sync::broadcast;
@@ -44,6 +49,8 @@ impl Node {
         tx_queue: Arc<SegQueue<String>>, // External transaction queue
         stats: Arc<PerformanceStats>,    // Performance statistics handle
         event_tx: broadcast::Sender<SystemEvent>,
+        confirmed_txs: Arc<DashSet<u64>>,
+        in_flight_txs: Arc<DashSet<u64>>,
     ) -> Self {
         let verifying_key: VerifyingKey = keypair.verifying_key().into();
 
@@ -81,8 +88,14 @@ impl Node {
         );
 
         // 5. Create the application and keep a handle
-        // let app = TestApp::new(format!("node-{:?}", verifying_key.to_bytes()[0..4].to_vec()));
-        let app = TestApp::new(node_id, tx_queue.clone());
+        let last_seen_height = Arc::new(AtomicU64::new(0));
+        let app = TestApp::new(
+            node_id,
+            tx_queue.clone(),
+            Arc::clone(&confirmed_txs),
+            Arc::clone(&last_seen_height),
+            Arc::clone(&in_flight_txs),
+        );
         // let app_handle = Arc::new(Mutex::new(app.clone()));
 
         // 6. Build configuration mirroring the upstream defaults, allowing env overrides
@@ -125,9 +138,9 @@ impl Node {
 
         let event_tx_for_commit = event_tx.clone(); // Clone event broadcaster
         let kv_clone_commit = kv_store.clone();
-        // let kv_clone_insert = kv_store.clone();
-        // let kv_clone_receive = kv_store.clone();
+        let kv_clone_receive = kv_store.clone();
         let stats_for_commit = stats.clone();
+        let last_seen_height_for_commit = Arc::clone(&last_seen_height);
 
         // 7. Start the replica with detailed event handlers (mirroring upstream)
         let replica = ReplicaSpec::builder()
@@ -138,9 +151,12 @@ impl Node {
             // === Core events of interest ===
             .on_start_view({
                 let event_tx_start_view = event_tx.clone();
+                let last_seen = Arc::clone(&last_seen_height);
                 move |event| {
                     let msg = format!("Node {} starting view {}", node_id, event.view);
                     crate::log_node(node_id, log::Level::Info, &msg);
+                    let prev_view = event.view.int().saturating_sub(1);
+                    last_seen.fetch_max(prev_view, Ordering::Relaxed);
                     let _ = event_tx_start_view.send(crate::event::SystemEvent::StartView { view: event.view.int() });
                 }
             })
@@ -157,13 +173,13 @@ impl Node {
                 }
             })
             .on_receive_proposal({
+                let in_flight = Arc::clone(&in_flight_txs);
+                let last_seen = Arc::clone(&last_seen_height);
                 move |event| {
-                    // let msg = format!(
-                    //     "Node {} received proposal for view {}",
-                    //     node_id,
-                    //     event.proposal.view
-                    // );
-                    // crate::log_node(node_id, log::Level::Debug, &msg);
+                    for tx_id in extract_transaction_ids_from_block(&event.proposal.block) {
+                        in_flight.insert(tx_id);
+                    }
+                    last_seen.fetch_max(event.proposal.block.height.int(), Ordering::Relaxed);
                 }
             })
             .on_phase_vote({
@@ -215,11 +231,11 @@ impl Node {
                 move |event| {
                     let block_hash = event.block;
                     let commit_time = event.timestamp;
-                    
+
                     match kv_clone_commit.block(&block_hash) {
                         Ok(Some(block)) => {
                             let height = block.height.int();
-                            
+
                             // Key fix: parse the transaction count correctly
                             let tx_count = if block.data.vec().len() >= 2 {
                                 let tx_count_bytes = block.data.vec()[1].bytes();
@@ -233,14 +249,14 @@ impl Node {
                             } else {
                                     0
                                     };
-                            
+
                             // Update statistics and compute various TPS metrics
                             let (end_to_end_tps, pure_consensus_tps, submission_tps, total_confirmed_txs, total_confirmed_blocks, is_first_commit) = {
                                 // let mut stats = stats_for_commit.lock().unwrap();
-                                
+
                                 // Check if this is the first commit
                                 let is_first = stats_for_commit.get_confirmed_blocks() == 0;
-                                
+
                                 // Record the committed block
                                 stats_for_commit.record_block_committed(tx_count.into());
 
@@ -277,6 +293,7 @@ impl Node {
                                 tx_ids.len(),
                                 tx_ids
                             );
+                            last_seen_height_for_commit.fetch_max(height, Ordering::Relaxed);
                             // Critical path: HotStuff commit event sent
 
                             // Primary statistics log entry
@@ -290,7 +307,7 @@ impl Node {
                             if total_confirmed_blocks % 10 == 0 {
                                 // let stats_guard = stats_for_commit.lock().unwrap();
                                 let recent_tps = stats_for_commit.get_recent_consensus_tps(30.0);
-                                
+
                                 info!("Node {} consensus report (block #{}):", node_id, total_confirmed_blocks);
                                 info!("  Submit TPS: {:.2} (client -> queue)", submission_tps);
                                 info!("  End-to-end TPS: {:.2} (queue -> commit)", end_to_end_tps);
@@ -316,7 +333,7 @@ impl Node {
                                 //         info!("Queue overhead: {:.1}%", queue_overhead);
                                 //     }
                                 // }
-                                
+
                                 // drop(stats_guard);
                             }
                         },
@@ -563,7 +580,7 @@ fn parse_transaction_data_item(tx_data_str: &str, data_index: usize) -> Vec<u64>
                 continue;
             }
 
-            if let Some(tx_id) = parse_transaction_string(line) {
+            if let Some(tx_id) = parse_transaction_id(line) {
                 tx_ids.push(tx_id);
                 // debug!("[debug] data item {} line {} parsed tx ID {} from {}",
                 //   data_index, line_idx, tx_id, line);
@@ -573,7 +590,7 @@ fn parse_transaction_data_item(tx_data_str: &str, data_index: usize) -> Vec<u64>
         }
     }
     // Method 2: treat entire datum as a single transaction string
-    else if let Some(tx_id) = parse_transaction_string(tx_data_str) {
+    else if let Some(tx_id) = parse_transaction_id(tx_data_str) {
         tx_ids.push(tx_id);
         // debug!("[debug] data item {} parsed single tx ID {}", data_index, tx_id);
     }
@@ -582,7 +599,7 @@ fn parse_transaction_data_item(tx_data_str: &str, data_index: usize) -> Vec<u64>
         // debug!("[debug] data item {} parsed JSON array with {} entries", data_index, transactions.len());
 
         for tx_str in transactions {
-            if let Some(tx_id) = parse_transaction_string(&tx_str) {
+            if let Some(tx_id) = parse_transaction_id(&tx_str) {
                 tx_ids.push(tx_id);
             }
         }
@@ -592,7 +609,7 @@ fn parse_transaction_data_item(tx_data_str: &str, data_index: usize) -> Vec<u64>
         // debug!("[debug] data item {} trying comma split", data_index);
 
         for part in tx_data_str.split(',') {
-            if let Some(tx_id) = parse_transaction_string(part.trim()) {
+            if let Some(tx_id) = parse_transaction_id(part.trim()) {
                 tx_ids.push(tx_id);
             }
         }
@@ -602,37 +619,4 @@ fn parse_transaction_data_item(tx_data_str: &str, data_index: usize) -> Vec<u64>
 
     // debug!("[debug] data item {} produced {} transaction IDs", data_index, tx_ids.len());
     tx_ids
-}
-
-// Preserve the existing parse_transaction_string function
-fn parse_transaction_string(tx_str: &str) -> Option<u64> {
-    let trimmed = tx_str.trim();
-
-    // Format 1: pompe:timestamp:tx_id:from->to:amount
-    let parts: Vec<&str> = trimmed.split(':').collect();
-    if parts.len() >= 4 && parts[0] == "pompe" {
-        return parts[2].parse::<u64>().ok();
-    }
-
-    // Format 1b: smrol:final_sequence:tx_id:from->to:amount
-    if parts.len() >= 3 && parts[0] == "smrol" {
-        return parts[2].parse::<u64>().ok();
-    }
-
-    // Format 2: tx_id:from->to:amount (regular transactions)
-    if parts.len() >= 3 {
-        return parts[0].parse::<u64>().ok();
-    }
-
-    // Format 3: "tx_123"
-    if trimmed.starts_with("tx_") {
-        return trimmed[3..].parse::<u64>().ok();
-    }
-
-    // Format 4: raw numeric ID
-    if let Ok(id) = trimmed.parse::<u64>() {
-        return Some(id);
-    }
-
-    None
 }

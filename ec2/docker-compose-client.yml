@@ -13,11 +13,12 @@ services:
       - NODE_LEAST_ID=${NODE_LEAST_ID}
       - NODE_NUM=${NODE_NUM}
       - NODE_HOSTS=${NODE_HOSTS}
-      - TARGET_TPS=${TARGET_TPS}
       - TEST_DURATION=${TEST_DURATION}
       - RUST_LOG=${RUST_LOG}
       - CLIENT_ORDERING_MODE=${CLIENT_ORDERING_MODE}
-      - CLIENT_TOTAL_TX=10000
+      - TARGET_TPS=500
+      - CLIENT_TOTAL_TX=100
+      - CLIENT_BATCH_SIZE=10000
     volumes:
       - ./logs:/logs
       - ./logs:/log

@@ -12,7 +12,7 @@ use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock, Weak};
 use std::time::{Duration, Instant};
 use tokio::sync::{mpsc as async_mpsc, Mutex as AsyncMutex, Notify};
 use tracing::{debug, error, info, warn};
@@ -272,6 +272,10 @@ where
         }
     }
 }
+pub trait SlotReadyListener: Send + Sync {
+    fn on_slot_ready(&self, leader_id: usize, slot: u64);
+}
+
 #[derive(Debug)]
 pub struct PnfifoBc {
     node_id: usize,
@@ -302,6 +306,7 @@ pub struct PnfifoBc {
     // Networking
     network: Arc<SmrolTcpNetwork>,
     broadcast_tx: async_mpsc::UnboundedSender<SmrolMessage>,
+    slot_ready_listener: OnceLock<Weak<dyn SlotReadyListener>>,
 }
 
 impl PnfifoBc {
@@ -405,7 +410,17 @@ impl PnfifoBc {
             threshold_public,
             network,
             broadcast_tx,
+            slot_ready_listener: OnceLock::new(),
         })
+    }
+
+    pub fn set_slot_ready_listener(
+        &self,
+        listener: Weak<dyn SlotReadyListener>,
+    ) -> Result<(), String> {
+        self.slot_ready_listener
+            .set(listener)
+            .map_err(|_| "slot ready listener already set".to_string())
     }
 
     // PNFIFO internal: process leader proposals inside the dedicated channel task
@@ -608,6 +623,10 @@ impl PnfifoBc {
             slot: key.1,
             value,
         };
+        debug!(
+            "[PNFIFO] Node {} created PROPOSAL for leader {} slot {}",
+            node_id, key.0, key.1
+        );
 
         Ok(proposal)
     }
@@ -915,6 +934,10 @@ impl PnfifoBc {
                     .slot_outputs
                     .insert(key, (value.clone(), combined_signature.clone()));
                 pnfifo.slot_final_flags.insert(key, true);
+                debug!(
+                    "[PNFIFO] Node {} stores output for leader {} slot {}",
+                    pnfifo.node_id, leader_id, slot
+                );
 
                 PnfifoBc::notify_slot(pnfifo, leader_id, slot);
             }
@@ -933,6 +956,10 @@ impl PnfifoBc {
         self.slot_outputs
             .get(&(leader_id, slot))
             .map(|entry| entry.value().clone())
+    }
+
+    pub fn has_output(&self, leader_id: usize, slot: u64) -> bool {
+        self.slot_outputs.contains_key(&(leader_id, slot))
     }
 
     // Used by the sequencing layer: wait for output availability (Algorithm 2 Line 5)
@@ -994,6 +1021,14 @@ impl PnfifoBc {
                 "[PNFIFO] Notified waiters for Leader {} slot {}",
                 leader_id, slot
             );
+        }
+
+        if let Some(listener) = pnfifo
+            .slot_ready_listener
+            .get()
+            .and_then(|weak| weak.upgrade())
+        {
+            listener.on_slot_ready(leader_id, slot);
         }
     }
 

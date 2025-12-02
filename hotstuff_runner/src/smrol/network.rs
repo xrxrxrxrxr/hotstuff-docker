@@ -3,20 +3,21 @@
 //! incoming frames to PNFIFO / Sequencing / Consensus queues directly.
 
 use crate::affinity::{affinity_from_env, bind_current_thread};
+use crate::flood_limiter::FloodLimiter;
 use crate::smrol::message::SmrolMessage;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::net::SocketAddr;
 use std::sync::{
-    atomic::{AtomicUsize, Ordering},
-    Arc, Mutex,
+    atomic::{AtomicU64, AtomicUsize, Ordering},
+    Arc, Mutex, OnceLock,
 };
 use std::time::{Duration, Instant};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::tcp::OwnedWriteHalf;
 use tokio::net::{TcpListener, TcpStream};
 use tokio::runtime::{Builder, Runtime};
-use tokio::sync::{mpsc as async_mpsc, Mutex as AsyncMutex, RwLock};
+use tokio::sync::{mpsc as async_mpsc, mpsc::error::TrySendError, Mutex as AsyncMutex, RwLock};
 use tracing::{debug, error, info, warn};
 
 /// On-wire SMROL frame. Mirrors PompeNetworkMessage but carries SmrolMessage.
@@ -37,10 +38,17 @@ struct ConnectionStats {
 
 #[derive(Clone, Debug)]
 struct ConnectionHandle {
-    sender: async_mpsc::UnboundedSender<Arc<SmrolNetworkMessage>>,
+    sender: async_mpsc::Sender<Arc<SmrolNetworkMessage>>,
     stats: Arc<Mutex<ConnectionStats>>,
     backlog: Arc<AtomicUsize>,
     target: usize,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+enum QueueSendResult {
+    Enqueued,
+    Saturated,
+    Closed,
 }
 
 #[derive(Debug)]
@@ -56,6 +64,52 @@ pub struct SmrolTcpNetwork {
     sent_messages: Arc<Mutex<HashMap<String, u64>>>,
 
     rt: Arc<Runtime>,
+    per_connection_queue: usize,
+    writer_limiter: Arc<FloodLimiter>,
+}
+
+fn attack_only_mode() -> bool {
+    static FLAG: OnceLock<bool> = OnceLock::new();
+    *FLAG.get_or_init(|| {
+        std::env::var("SMROL_ATTACK_ONLY")
+            .map(|v| {
+                matches!(
+                    v.trim().to_ascii_lowercase().as_str(),
+                    "1" | "true" | "yes" | "on"
+                )
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn per_connection_queue_capacity() -> usize {
+    static CAP: OnceLock<usize> = OnceLock::new();
+    *CAP.get_or_init(|| {
+        std::env::var("SMROL_CONN_QUEUE_CAP")
+            .ok()
+            .and_then(|v| v.parse::<usize>().ok())
+            .map(|cap| cap.max(64))
+            .unwrap_or(1024)
+    })
+}
+
+fn build_writer_limiter() -> FloodLimiter {
+    if !attack_only_mode() {
+        return FloodLimiter::unlimited("smrol-writer");
+    }
+
+    fn env_f64(key: &str) -> Option<f64> {
+        std::env::var(key).ok()?.trim().parse::<f64>().ok()
+    }
+
+    let queue_cap = per_connection_queue_capacity().max(1) as f64;
+    let default_rate = queue_cap * 4.0;
+    let default_burst = queue_cap * 2.0;
+
+    let rate = env_f64("SMROL_ATTACK_NETWORK_RATE").unwrap_or(default_rate);
+    let burst = env_f64("SMROL_ATTACK_NETWORK_BURST").unwrap_or(default_burst);
+
+    FloodLimiter::new("smrol-writer", rate, burst)
 }
 
 impl SmrolTcpNetwork {
@@ -109,6 +163,7 @@ impl SmrolTcpNetwork {
             node_id, rt_threads, listen_port
         );
 
+        let per_connection_queue = per_connection_queue_capacity();
         let network = Self {
             node_id,
             listen_port,
@@ -118,6 +173,8 @@ impl SmrolTcpNetwork {
             connections: Arc::new(RwLock::new(HashMap::new())),
             sent_messages: Arc::new(Mutex::new(HashMap::new())),
             rt: runtime,
+            per_connection_queue,
+            writer_limiter: Arc::new(build_writer_limiter()),
         };
 
         network.start_connection_maintenance();
@@ -246,17 +303,20 @@ impl SmrolTcpNetwork {
             message_id,
         });
 
+        if !self.writer_limiter.allow(1.0) {
+            return Ok(());
+        }
+
         if let Some(handle) = {
             let connections = self.connections.read().await;
             connections.get(&target_node_id).cloned()
         } {
-            if self
-                .enqueue_to_handle(handle.clone(), network_msg.clone())
-                .await?
-            {
-                return Ok(());
-            } else {
-                self.connections.write().await.remove(&target_node_id);
+            match self.enqueue_to_handle(&handle, network_msg.clone())? {
+                QueueSendResult::Enqueued => return Ok(()),
+                QueueSendResult::Saturated => return Ok(()),
+                QueueSendResult::Closed => {
+                    self.connections.write().await.remove(&target_node_id);
+                }
             }
         }
 
@@ -268,7 +328,7 @@ impl SmrolTcpNetwork {
         }
 
         let (_reader, writer) = stream.into_split();
-        let (tx, rx) = async_mpsc::unbounded_channel::<Arc<SmrolNetworkMessage>>();
+        let (tx, rx) = async_mpsc::channel::<Arc<SmrolNetworkMessage>>(self.per_connection_queue);
         let stats = Arc::new(Mutex::new(ConnectionStats {
             last_used: Instant::now(),
             send_count: 0,
@@ -300,10 +360,11 @@ impl SmrolTcpNetwork {
             backlog,
         );
 
-        if self.enqueue_to_handle(handle, network_msg).await? {
-            Ok(())
-        } else {
-            Err(format!("failed to enqueue message to {}", target_node_id))
+        match self.enqueue_to_handle(&handle, network_msg)? {
+            QueueSendResult::Enqueued | QueueSendResult::Saturated => Ok(()),
+            QueueSendResult::Closed => {
+                Err(format!("failed to enqueue message to {}", target_node_id))
+            }
         }
     }
 
@@ -329,7 +390,21 @@ impl SmrolTcpNetwork {
     // }
 
     pub async fn broadcast(&self, message: SmrolMessage) -> Result<(), String> {
-        let _ = self.send_to_node(self.node_id, message.clone()).await;
+        self.broadcast_inner(message, true).await
+    }
+
+    pub async fn broadcast_skip_self(&self, message: SmrolMessage) -> Result<(), String> {
+        self.broadcast_inner(message, false).await
+    }
+
+    async fn broadcast_inner(
+        &self,
+        message: SmrolMessage,
+        include_self: bool,
+    ) -> Result<(), String> {
+        if include_self {
+            let _ = self.send_to_node(self.node_id, message.clone()).await;
+        }
 
         for (&nid, _) in &self.peer_nodes {
             if nid == self.node_id {
@@ -345,12 +420,12 @@ impl SmrolTcpNetwork {
         Ok(())
     }
 
-    async fn enqueue_to_handle(
+    fn enqueue_to_handle(
         &self,
-        handle: ConnectionHandle,
+        handle: &ConnectionHandle,
         msg: Arc<SmrolNetworkMessage>,
-    ) -> Result<bool, String> {
-        match handle.sender.send(msg) {
+    ) -> Result<QueueSendResult, String> {
+        match handle.sender.try_send(msg) {
             Ok(()) => {
                 let pending = handle.backlog.fetch_add(1, Ordering::Relaxed) + 1;
                 metrics::gauge!(
@@ -358,9 +433,15 @@ impl SmrolTcpNetwork {
                     "target" => handle.target.to_string()
                 )
                 .set(pending as f64);
-                Ok(true)
+                Ok(QueueSendResult::Enqueued)
             }
-            Err(_e) => Ok(false),
+            Err(TrySendError::Full(_msg)) => {
+                if attack_only_mode() {
+                    self.writer_limiter.note_drop();
+                }
+                Ok(QueueSendResult::Saturated)
+            }
+            Err(TrySendError::Closed(_msg)) => Ok(QueueSendResult::Closed),
         }
     }
 
@@ -368,7 +449,7 @@ impl SmrolTcpNetwork {
         &self,
         target_node_id: usize,
         mut writer: OwnedWriteHalf,
-        mut rx: async_mpsc::UnboundedReceiver<Arc<SmrolNetworkMessage>>,
+        mut rx: async_mpsc::Receiver<Arc<SmrolNetworkMessage>>,
         connections: Arc<RwLock<HashMap<usize, ConnectionHandle>>>,
         stats: Arc<Mutex<ConnectionStats>>,
         backlog: Arc<AtomicUsize>,
@@ -494,8 +575,8 @@ impl SmrolTcpNetwork {
             bincode::serialize(network_msg).map_err(|e| format!("Serialization failed: {}", e))?;
         let len = serialized.len() as u32;
         // let t0=Instant::now();
-        if len > 100_000 {
-            // 100KB
+        if len > 1_000_000 {
+            // 1MB
             warn!(
                 "⚠️ Large message: {} bytes to node {:?}",
                 len, network_msg.to_node_id
@@ -547,6 +628,8 @@ impl Clone for SmrolTcpNetwork {
             connections: Arc::clone(&self.connections),
             sent_messages: Arc::clone(&self.sent_messages),
             rt: Arc::clone(&self.rt),
+            per_connection_queue: self.per_connection_queue,
+            writer_limiter: Arc::clone(&self.writer_limiter),
         }
     }
 }

@@ -23,7 +23,7 @@ COPY hotstuff_rs/src            hotstuff_rs/src
 
 # Step 2: prebuild dependencies
 RUN mkdir -p hotstuff_runner/src/bin \
-    && for bin in docker_node client docker_node_adversary; do \
+    && for bin in docker_node client docker_node_adversary pure_attacker; do \
         printf 'fn main() {}\n' > "hotstuff_runner/src/bin/${bin}.rs"; \
     done
 
@@ -50,7 +50,8 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
     fi; \
     cargo build --release --bin docker_node && \
     cargo build --release --bin client && \
-    cargo build --release --bin docker_node_adversary
+    cargo build --release --bin docker_node_adversary && \
+    cargo build --release --bin pure_attacker
 
 # Runtime image
 FROM ubuntu:22.04
@@ -68,6 +69,7 @@ RUN useradd -r -s /bin/false hotstuff
 COPY --from=builder /app/hotstuff_runner/target/release/docker_node /usr/local/bin/docker_node
 COPY --from=builder /app/hotstuff_runner/target/release/client /usr/local/bin/client
 COPY --from=builder /app/hotstuff_runner/target/release/docker_node_adversary /usr/local/bin/docker_node_adversary
+COPY --from=builder /app/hotstuff_runner/target/release/pure_attacker /usr/local/bin/pure_attacker
 
 
 # Switch to the application user

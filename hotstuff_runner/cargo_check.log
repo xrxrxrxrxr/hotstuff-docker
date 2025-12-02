@@ -1,0 +1,797 @@
+warning: unused import: `log::info`
+  --> /Users/xzha5518/Documents/experiment/hotstuff-docker/hotstuff_rs/src/algorithm.rs:15:5
+   |
+15 | use log::info;
+   |     ^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `SigningKey`
+  --> /Users/xzha5518/Documents/experiment/hotstuff-docker/hotstuff_rs/src/pacemaker/implementation.rs:16:34
+   |
+16 | use ed25519_dalek::{VerifyingKey,SigningKey};
+   |                                  ^^^^^^^^^^
+
+warning: unused import: `log::warn`
+  --> /Users/xzha5518/Documents/experiment/hotstuff-docker/hotstuff_rs/src/pacemaker/implementation.rs:17:5
+   |
+17 | use log::warn;
+   |     ^^^^^^^^^
+
+warning: unused import: `warn`
+  --> /Users/xzha5518/Documents/experiment/hotstuff-docker/hotstuff_rs/src/hotstuff/implementation.rs:15:16
+   |
+15 | use log::{info,warn};
+   |                ^^^^
+
+warning: unused imports: `error` and `info`
+   --> /Users/xzha5518/Documents/experiment/hotstuff-docker/hotstuff_rs/src/block_tree/invariants.rs:312:11
+    |
+312 | use log::{error, info, warn};
+    |           ^^^^^  ^^^^
+
+warning: elided lifetime has a name
+  --> /Users/xzha5518/Documents/experiment/hotstuff-docker/hotstuff_rs/src/block_tree/pluggables.rs:29:49
+   |
+29 |     fn snapshot<'b>(&'b self) -> Self::Snapshot<'_>;
+   |                 -- lifetime `'b` declared here  ^^ this elided lifetime gets resolved as `'b`
+   |
+   = note: `#[warn(elided_named_lifetimes)]` on by default
+
+warning: trait `Vote` is never used
+  --> /Users/xzha5518/Documents/experiment/hotstuff-docker/hotstuff_rs/src/types/signed_messages.rs:69:18
+   |
+69 | pub(crate) trait Vote: SignedMessage {
+   |                  ^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: associated function `quorum` is never used
+   --> /Users/xzha5518/Documents/experiment/hotstuff-docker/hotstuff_rs/src/types/signed_messages.rs:142:8
+    |
+80  | pub(crate) trait Certificate {
+    |                  ----------- associated function in this trait
+...
+142 |     fn quorum(validator_set_power: TotalPower) -> TotalPower {
+    |        ^^^^^^
+
+warning: field `0` is never read
+   --> /Users/xzha5518/Documents/experiment/hotstuff-docker/hotstuff_rs/src/pacemaker/implementation.rs:598:21
+    |
+598 |     UpdateViewError(UpdateViewError),
+    |     --------------- ^^^^^^^^^^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `PacemakerError` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+598 -     UpdateViewError(UpdateViewError),
+598 +     UpdateViewError(()),
+    |
+
+warning: field `0` is never read
+   --> /Users/xzha5518/Documents/experiment/hotstuff-docker/hotstuff_rs/src/pacemaker/implementation.rs:601:21
+    |
+601 |     ExtendViewError(ExtendViewError),
+    |     --------------- ^^^^^^^^^^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `PacemakerError` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+601 -     ExtendViewError(ExtendViewError),
+601 +     ExtendViewError(()),
+    |
+
+warning: field `0` is never read
+   --> /Users/xzha5518/Documents/experiment/hotstuff-docker/hotstuff_rs/src/pacemaker/implementation.rs:604:20
+    |
+604 |     BlockTreeError(BlockTreeError),
+    |     -------------- ^^^^^^^^^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `PacemakerError` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+604 -     BlockTreeError(BlockTreeError),
+604 +     BlockTreeError(()),
+    |
+
+warning: fields `cur_view` and `next_view` are never read
+   --> /Users/xzha5518/Documents/experiment/hotstuff-docker/hotstuff_rs/src/pacemaker/implementation.rs:632:9
+    |
+630 |     NonIncreasingViewError {
+    |     ---------------------- fields in this variant
+631 |         /// The current view.
+632 |         cur_view: ViewNumber,
+    |         ^^^^^^^^
+...
+635 |         next_view: ViewNumber,
+    |         ^^^^^^^^^
+    |
+    = note: `UpdateViewError` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: variant `GetViewTimeoutError` is never constructed
+   --> /Users/xzha5518/Documents/experiment/hotstuff-docker/hotstuff_rs/src/pacemaker/implementation.rs:641:5
+    |
+627 | pub enum UpdateViewError {
+    |          --------------- variant in this enum
+...
+641 |     GetViewTimeoutError { view: ViewNumber },
+    |     ^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `UpdateViewError` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: field `view` is never read
+   --> /Users/xzha5518/Documents/experiment/hotstuff-docker/hotstuff_rs/src/pacemaker/implementation.rs:648:33
+    |
+648 |     TriedToExtendNonEpochView { view: ViewNumber },
+    |     -------------------------   ^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `ExtendViewError` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: field `view` is never read
+   --> /Users/xzha5518/Documents/experiment/hotstuff-docker/hotstuff_rs/src/pacemaker/implementation.rs:651:27
+    |
+651 |     GetViewTimeoutError { view: ViewNumber },
+    |     -------------------   ^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `ExtendViewError` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: field `0` is never read
+   --> /Users/xzha5518/Documents/experiment/hotstuff-docker/hotstuff_rs/src/hotstuff/implementation.rs:733:20
+    |
+733 |     BlockTreeError(BlockTreeError),
+    |     -------------- ^^^^^^^^^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `HotStuffError` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+733 -     BlockTreeError(BlockTreeError),
+733 +     BlockTreeError(()),
+    |
+
+warning: field `0` is never read
+   --> /Users/xzha5518/Documents/experiment/hotstuff-docker/hotstuff_rs/src/block_sync/client.rs:595:20
+    |
+595 |     BlockTreeError(BlockTreeError),
+    |     -------------- ^^^^^^^^^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `BlockSyncClientError` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+595 -     BlockTreeError(BlockTreeError),
+595 +     BlockTreeError(()),
+    |
+
+warning: `hotstuff_rs` (lib) generated 17 warnings (run `cargo fix --lib -p hotstuff_rs` to apply 5 suggestions)
+    Checking hotstuff_runner v0.1.0 (/Users/xzha5518/Documents/experiment/hotstuff-docker/hotstuff_runner)
+error[E0252]: the name `warn` is defined multiple times
+  --> src/smrol/sequencing.rs:44:35
+   |
+23 | use log::warn;
+   |     --------- previous import of the macro `warn` here
+...
+44 | use tracing::{debug, error, info, warn};
+   |                                   ^^^^ `warn` reimported here
+   |
+   = note: `warn` must be defined only once in the macro namespace of this module
+help: you can use `as` to change the binding name of the import
+   |
+44 | use tracing::{debug, error, info, warn as other_warn};
+   |                                        +++++++++++++
+
+warning: unused import: `borsh::BorshSerialize`
+ --> src/app.rs:3:5
+  |
+3 | use borsh::BorshSerialize;
+  |     ^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused imports: `Receiver` and `TryRecvError`
+ --> src/app.rs:4:26
+  |
+4 | use crossbeam::channel::{Receiver, TryRecvError};
+  |                          ^^^^^^^^  ^^^^^^^^^^^^
+
+warning: unused import: `self`
+ --> src/app.rs:5:24
+  |
+5 | use crossbeam::queue::{self, SegQueue};
+  |                        ^^^^
+
+warning: unused import: `std::thread`
+  --> src/app.rs:20:5
+   |
+20 | use std::thread;
+   |     ^^^^^^^^^^^
+
+warning: unused imports: `Duration` and `Instant`
+  --> src/app.rs:21:17
+   |
+21 | use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+   |                 ^^^^^^^^  ^^^^^^^
+
+warning: unused import: `convert::Infallible`
+  --> src/app.rs:22:11
+   |
+22 | use std::{convert::Infallible, sync::Arc};
+   |           ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::time::Instant`
+ --> src/event.rs:4:5
+  |
+4 | use std::time::Instant;
+  |     ^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Instant`
+  --> src/pompe.rs:14:27
+   |
+14 | use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+   |                           ^^^^^^^
+
+warning: unused import: `crossbeam::queue::SegQueue`
+ --> src/pompe_adversary.rs:5:5
+  |
+5 | use crossbeam::queue::SegQueue;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ed25519_dalek::SigningKey`
+ --> src/pompe_adversary.rs:7:5
+  |
+7 | use ed25519_dalek::SigningKey;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `hotstuff_rs::types::crypto_primitives::VerifyingKey`
+ --> src/pompe_adversary.rs:8:5
+  |
+8 | use hotstuff_rs::types::crypto_primitives::VerifyingKey;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Deserialize` and `Serialize`
+ --> src/pompe_adversary.rs:9:13
+  |
+9 | use serde::{Deserialize, Serialize};
+  |             ^^^^^^^^^^^  ^^^^^^^^^
+
+warning: unused import: `Sha256`
+  --> src/pompe_adversary.rs:10:20
+   |
+10 | use sha2::{Digest, Sha256};
+   |                    ^^^^^^
+
+warning: unused imports: `BTreeMap`, `HashMap`, and `VecDeque`
+  --> src/pompe_adversary.rs:11:24
+   |
+11 | use std::collections::{BTreeMap, HashMap, VecDeque};
+   |                        ^^^^^^^^  ^^^^^^^  ^^^^^^^^
+
+warning: unused import: `std::net::SocketAddr`
+  --> src/pompe_adversary.rs:12:5
+   |
+12 | use std::net::SocketAddr;
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Duration`, `Instant`, `SystemTime`, and `UNIX_EPOCH`
+  --> src/pompe_adversary.rs:15:17
+   |
+15 | use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+   |                 ^^^^^^^^  ^^^^^^^  ^^^^^^^^^^  ^^^^^^^^^^
+
+warning: unused import: `AtomicUsize`
+ --> src/stats.rs:1:36
+  |
+1 | use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
+  |                                    ^^^^^^^^^^^
+
+warning: unused import: `Instant`
+ --> src/stats.rs:2:17
+  |
+2 | use std::time::{Instant, SystemTime, UNIX_EPOCH};
+  |                 ^^^^^^^
+
+warning: unused imports: `Data`, `events::*`, `self`, and `variables::HIGHEST_COMMITTED_BLOCK`
+  --> src/tcp_node.rs:10:37
+   |
+10 |     block_tree::{pluggables::KVGet, variables::HIGHEST_COMMITTED_BLOCK},
+   |                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+11 |     events::*,
+   |     ^^^^^^^^^
+12 |     replica::{self, Configuration, Replica, ReplicaSpec},
+   |               ^^^^
+...
+16 |         data_types::{BufferSize, ChainID, Data, EpochLength, ViewNumber},
+   |                                           ^^^^
+
+warning: unused import: `socket2::MsgHdr`
+  --> src/tcp_node.rs:21:5
+   |
+21 | use socket2::MsgHdr;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused import: `Instant`
+  --> src/tcp_node.rs:23:27
+   |
+23 | use std::time::{Duration, Instant};
+   |                           ^^^^^^^
+
+warning: unused import: `uuid::Uuid`
+  --> src/smrol/consensus.rs:14:5
+   |
+14 | use uuid::Uuid;
+   |     ^^^^^^^^^^
+
+warning: unused import: `SmrolMessage`
+ --> src/smrol/finalization.rs:3:15
+  |
+3 |     message::{SmrolMessage, SmrolTransaction},
+  |               ^^^^^^^^^^^^
+
+warning: unused imports: `bls_verify_agg` and `bls_verify_single`
+ --> src/smrol/sequencing.rs:5:27
+  |
+5 |         bls_build_agg_pk, bls_verify_agg, bls_verify_single, ErasurePackage, MultiSigContext,
+  |                           ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^
+
+warning: unused import: `AggregatePublicKey as BlstAggregatePublicKey`
+  --> src/smrol/sequencing.rs:14:5
+   |
+14 |     AggregatePublicKey as BlstAggregatePublicKey, AggregateSignature as BlstAggregateSignature,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Verifier`
+  --> src/smrol/sequencing.rs:21:72
+   |
+21 | use ed25519_dalek::{Signature as Ed25519Signature, Signer, SigningKey, Verifier, VerifyingKey};
+   |                                                                        ^^^^^^^^
+
+warning: unused import: `result`
+  --> src/smrol/sequencing.rs:37:5
+   |
+37 |     result,
+   |     ^^^^^^
+
+warning: unused import: `thread::sleep`
+  --> src/smrol/sequencing.rs:39:21
+   |
+39 | use std::{pin::Pin, thread::sleep};
+   |                     ^^^^^^^^^^^^^
+
+warning: unused import: `SemaphorePermit`
+  --> src/smrol/sequencing.rs:41:81
+   |
+41 |     sync::{mpsc as async_mpsc, oneshot, Mutex as AsyncMutex, RwLock, Semaphore, SemaphorePermit},
+   |                                                                                 ^^^^^^^^^^^^^^^
+
+warning: unused import: `warn`
+  --> src/smrol/sequencing.rs:44:35
+   |
+44 | use tracing::{debug, error, info, warn};
+   |                                   ^^^^
+
+warning: unused import: `tracing_subscriber::field::debug`
+  --> src/smrol/sequencing.rs:45:5
+   |
+45 | use tracing_subscriber::field::debug;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `network`
+   --> src/pompe.rs:533:25
+    |
+533 |         if let Some(ref network) = self.network {
+    |                         ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_network`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `node_id`
+   --> src/pompe.rs:697:17
+    |
+697 |             let node_id = self.node_id;
+    |                 ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_node_id`
+
+warning: unused variable: `state`
+   --> src/pompe.rs:698:17
+    |
+698 |             let state = Arc::clone(&self.state);
+    |                 ^^^^^ help: if this is intentional, prefix it with an underscore: `_state`
+
+warning: unused variable: `lockfree_adapter`
+   --> src/pompe.rs:699:17
+    |
+699 |             let lockfree_adapter = self.lockfree_adapter.clone();
+    |                 ^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_lockfree_adapter`
+
+warning: unused variable: `network_for_flush`
+   --> src/pompe.rs:701:17
+    |
+701 |             let network_for_flush = self.network.as_ref().map(|n| Arc::clone(n));
+    |                 ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_network_for_flush`
+
+warning: unused variable: `is_leader_flag`
+   --> src/pompe.rs:702:17
+    |
+702 |             let is_leader_flag = self.is_current_leader.clone();
+    |                 ^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_is_leader_flag`
+
+warning: unused variable: `event_tx_for_flush`
+   --> src/pompe.rs:703:17
+    |
+703 |             let event_tx_for_flush = self.event_tx.clone();
+    |                 ^^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_event_tx_for_flush`
+
+warning: unused variable: `nid`
+   --> src/pompe_network.rs:542:21
+    |
+542 |                 Ok((nid, Ok(()))) => success_count += 1,
+    |                     ^^^ help: if this is intentional, prefix it with an underscore: `_nid`
+
+warning: unused variable: `interval`
+   --> src/pompe.rs:705:25
+    |
+705 |                 let mut interval = tokio::time::interval(tokio::time::Duration::from_millis(
+    |                         ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_interval`
+
+warning: variable does not need to be mutable
+   --> src/pompe.rs:705:21
+    |
+705 |                 let mut interval = tokio::time::interval(tokio::time::Duration::from_millis(
+    |                     ----^^^^^^^^
+    |                     |
+    |                     help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `should_respond`
+   --> src/pompe.rs:895:13
+    |
+895 |         let should_respond = if state.ordering1_responses.contains_key(&tx_hash) {
+    |             ^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_should_respond`
+
+warning: unused variable: `network`
+   --> src/pompe.rs:976:9
+    |
+976 |         network: &Arc<crate::pompe_network::PompeNetwork>,
+    |         ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_network`
+
+warning: variable does not need to be mutable
+    --> src/pompe.rs:1043:17
+     |
+1043 |             let mut response_entry = state.ordering1_responses.get_mut(&tx_hash);
+     |                 ----^^^^^^^^^^^^^^
+     |                 |
+     |                 help: remove this `mut`
+
+warning: unused variable: `config`
+    --> src/pompe.rs:1481:9
+     |
+1481 |         config: &PompeConfig,
+     |         ^^^^^^ help: if this is intentional, prefix it with an underscore: `_config`
+
+warning: unused variable: `network`
+    --> src/pompe.rs:1482:9
+     |
+1482 |         network: Option<Arc<crate::pompe_network::PompeNetwork>>,
+     |         ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_network`
+
+warning: unused variable: `network`
+   --> src/pompe_adversary.rs:324:25
+    |
+324 |         if let Some(ref network) = self.network {
+    |                         ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_network`
+
+warning: unused variable: `node_id`
+   --> src/pompe_adversary.rs:478:17
+    |
+478 |             let node_id = self.node_id;
+    |                 ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_node_id`
+
+warning: unused variable: `state`
+   --> src/pompe_adversary.rs:479:17
+    |
+479 |             let state = Arc::clone(&self.state);
+    |                 ^^^^^ help: if this is intentional, prefix it with an underscore: `_state`
+
+warning: unused variable: `lockfree_adapter`
+   --> src/pompe_adversary.rs:480:17
+    |
+480 |             let lockfree_adapter = self.lockfree_adapter.clone();
+    |                 ^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_lockfree_adapter`
+
+warning: unused variable: `net`
+   --> src/pompe_adversary.rs:491:33
+    |
+491 |                     if let Some(net) = &network_for_flush {
+    |                                 ^^^ help: if this is intentional, prefix it with an underscore: `_net`
+
+warning: unused variable: `network`
+   --> src/pompe_adversary.rs:758:9
+    |
+758 |         network: &Arc<crate::pompe_network::PompeNetwork>,
+    |         ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_network`
+
+warning: unused variable: `broadcast_tx`
+   --> src/pompe_adversary.rs:759:9
+    |
+759 |         broadcast_tx: &mpsc::Sender<PompeMessage>,
+    |         ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_broadcast_tx`
+
+warning: unused variable: `should_proceed`
+   --> src/pompe_adversary.rs:783:13
+    |
+783 |         let should_proceed = {
+    |             ^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_should_proceed`
+
+warning: unused variable: `signatures`
+   --> src/pompe_adversary.rs:600:29
+    |
+600 | ...                   signatures,
+    |                       ^^^^^^^^^^ help: try ignoring the field: `signatures: _`
+
+warning: unused variable: `lockfree_adapter`
+   --> src/pompe_adversary.rs:866:9
+    |
+866 |         lockfree_adapter: &Option<Arc<LockFreeHotStuffAdapter>>,
+    |         ^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_lockfree_adapter`
+
+warning: unused variable: `config`
+   --> src/pompe_adversary.rs:867:9
+    |
+867 |         config: &PompeConfig,
+    |         ^^^^^^ help: if this is intentional, prefix it with an underscore: `_config`
+
+warning: unused variable: `config`
+    --> src/pompe_adversary.rs:1154:9
+     |
+1154 |         config: &PompeConfig,
+     |         ^^^^^^ help: if this is intentional, prefix it with an underscore: `_config`
+
+warning: unused variable: `network`
+    --> src/pompe_adversary.rs:1155:9
+     |
+1155 |         network: Option<Arc<crate::pompe_network::PompeNetwork>>,
+     |         ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_network`
+
+warning: unused variable: `e`
+   --> src/tokio_network.rs:292:24
+    |
+292 |             if let Err(e) = Self::write_frame(&mut guard.writer, &frame).await {
+    |                        ^ help: if this is intentional, prefix it with an underscore: `_e`
+
+warning: unused variable: `h_e_prime`
+  --> src/smrol/finalization.rs:67:13
+   |
+67 |         let h_e_prime = if !s_prime.is_empty() {
+   |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_h_e_prime`
+
+warning: variable does not need to be mutable
+   --> src/smrol/network.rs:263:13
+    |
+263 |         let mut stream = TcpStream::connect(addr)
+    |             ----^^^^^^
+    |             |
+    |             help: remove this `mut`
+
+warning: unused variable: `start`
+   --> src/smrol/network.rs:492:13
+    |
+492 |         let start = Instant::now();
+    |             ^^^^^ help: if this is intentional, prefix it with an underscore: `_start`
+
+warning: unused variable: `process_id`
+    --> src/smrol/sequencing.rs:2700:13
+     |
+2700 |         let process_id = self.process_id;
+     |             ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_process_id`
+
+warning: unused variable: `entry_len`
+    --> src/smrol/sequencing.rs:3139:17
+     |
+3139 |             let entry_len = match self.median_sigs.entry(vc_key) {
+     |                 ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_entry_len`
+
+warning: unused variable: `verify_time`
+    --> src/smrol/sequencing.rs:3572:13
+     |
+3572 |         let verify_time = verify_start.elapsed();
+     |             ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_verify_time`
+
+warning: unused variable: `check_time`
+    --> src/smrol/sequencing.rs:3605:13
+     |
+3605 |         let check_time = check_start.elapsed();
+     |             ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_check_time`
+
+warning: unused variable: `finalize_time`
+    --> src/smrol/sequencing.rs:3614:13
+     |
+3614 |         let finalize_time = finalize_start.elapsed();
+     |             ^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_finalize_time`
+
+warning: unused variable: `total`
+    --> src/smrol/sequencing.rs:3949:13
+     |
+3949 |         let total = finalize_total_start.elapsed();
+     |             ^^^^^ help: if this is intentional, prefix it with an underscore: `_total`
+
+warning: variable does not need to be mutable
+    --> src/smrol/sequencing.rs:3898:13
+     |
+3898 |         let mut payload = if let Some((_, tx)) = self.pending_txs.remove(&vc_key) {
+     |             ----^^^^^^^
+     |             |
+     |             help: remove this `mut`
+
+warning: unused import: `Digest`
+  --> src/pompe_adversary.rs:10:12
+   |
+10 | use sha2::{Digest, Sha256};
+   |            ^^^^^^
+
+warning: unused variable: `view_number`
+   --> src/app.rs:103:13
+    |
+103 |         let view_number = request.cur_view().int();
+    |             ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_view_number`
+
+warning: unused variable: `produce_elapsed`
+   --> src/app.rs:240:13
+    |
+240 |         let produce_elapsed = produce_start.elapsed();
+    |             ^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_produce_elapsed`
+
+warning: value assigned to `produced_view_in_block` is never read
+   --> src/app.rs:313:17
+    |
+313 |         let mut produced_view_in_block: Option<u64> = None;
+    |                 ^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+    = note: `#[warn(unused_assignments)]` on by default
+
+warning: unused variable: `validate_elapsed`
+   --> src/app.rs:363:13
+    |
+363 |         let validate_elapsed = validate_start.elapsed();
+    |             ^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_validate_elapsed`
+
+warning: unused variable: `kv_clone_receive`
+   --> src/tcp_node.rs:141:13
+    |
+141 |         let kv_clone_receive = kv_store.clone();
+    |             ^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_kv_clone_receive`
+
+warning: unused variable: `event`
+   --> src/tcp_node.rs:164:23
+    |
+164 |                 move |event| {
+    |                       ^^^^^ help: if this is intentional, prefix it with an underscore: `_event`
+
+warning: unused variable: `event`
+   --> src/tcp_node.rs:186:23
+    |
+186 |                 move |event| {
+    |                       ^^^^^ help: if this is intentional, prefix it with an underscore: `_event`
+
+warning: unused variable: `event`
+   --> src/tcp_node.rs:197:23
+    |
+197 |                 move |event| {
+    |                       ^^^^^ help: if this is intentional, prefix it with an underscore: `_event`
+
+warning: unused variable: `event`
+   --> src/tcp_node.rs:208:23
+    |
+208 |                 move |event| {
+    |                       ^^^^^ help: if this is intentional, prefix it with an underscore: `_event`
+
+warning: unused variable: `commit_time`
+   --> src/tcp_node.rs:233:25
+    |
+233 |                     let commit_time = event.timestamp;
+    |                         ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_commit_time`
+
+warning: unused variable: `is_first_commit`
+   --> src/tcp_node.rs:254:131
+    |
+254 | ...l_confirmed_blocks, is_first_commit) = {
+    |                        ^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_is_first_commit`
+
+warning: unused variable: `event`
+   --> src/tcp_node.rs:361:23
+    |
+361 |                 move |event| {
+    |                       ^^^^^ help: if this is intentional, prefix it with an underscore: `_event`
+
+warning: unused variable: `event`
+   --> src/tcp_node.rs:382:23
+    |
+382 |                 move |event| {
+    |                       ^^^^^ help: if this is intentional, prefix it with an underscore: `_event`
+
+warning: unused variable: `event`
+   --> src/tcp_node.rs:392:23
+    |
+392 |                 move |event| {
+    |                       ^^^^^ help: if this is intentional, prefix it with an underscore: `_event`
+
+warning: unused variable: `event`
+   --> src/tcp_node.rs:403:23
+    |
+403 |                 move |event| {
+    |                       ^^^^^ help: if this is intentional, prefix it with an underscore: `_event`
+
+warning: unused variable: `pc_view`
+   --> src/tcp_node.rs:415:25
+    |
+415 |                     let pc_view = event.advance_view.progress_certificate.view();
+    |                         ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_pc_view`
+
+warning: unused variable: `next_view`
+   --> src/tcp_node.rs:429:25
+    |
+429 |                     let next_view = cur_view + 1;
+    |                         ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_next_view`
+
+warning: unused variable: `event`
+   --> src/tcp_node.rs:441:23
+    |
+441 |                 move |event| {
+    |                       ^^^^^ help: if this is intentional, prefix it with an underscore: `_event`
+
+warning: unused variable: `event`
+   --> src/tcp_node.rs:452:23
+    |
+452 |                 move |event| {
+    |                       ^^^^^ help: if this is intentional, prefix it with an underscore: `_event`
+
+warning: unused variable: `preview`
+   --> src/tcp_node.rs:547:17
+    |
+547 |             let preview = &tx_data_str[0..std::cmp::min(100, tx_data_str.len())];
+    |                 ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_preview`
+
+warning: unused variable: `line_idx`
+   --> src/tcp_node.rs:578:14
+    |
+578 |         for (line_idx, line) in lines.iter().enumerate() {
+    |              ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_line_idx`
+
+warning: unused variable: `data_index`
+   --> src/tcp_node.rs:570:51
+    |
+570 | fn parse_transaction_data_item(tx_data_str: &str, data_index: usize) -> Vec<u64> {
+    |                                                   ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_data_index`
+
+warning: unused variable: `epoch`
+   --> src/smrol/finalization.rs:106:9
+    |
+106 |         epoch: u64,
+    |         ^^^^^ help: if this is intentional, prefix it with an underscore: `_epoch`
+
+warning: unused variable: `stats`
+   --> src/smrol/network.rs:373:9
+    |
+373 |         stats: Arc<Mutex<ConnectionStats>>,
+    |         ^^^^^ help: if this is intentional, prefix it with an underscore: `_stats`
+
+warning: unused variable: `sender_id`
+    --> src/smrol/sequencing.rs:2328:33
+     |
+2328 |                 while let Some((sender_id, message)) = worker_rx.recv().await {
+     |                                 ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_sender_id`
+
+For more information about this error, try `rustc --explain E0252`.
+warning: `hotstuff_runner` (lib) generated 96 warnings
+error: could not compile `hotstuff_runner` (lib) due to 1 previous error; 96 warnings emitted

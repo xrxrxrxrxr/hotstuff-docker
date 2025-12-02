@@ -2,13 +2,14 @@
 //! Pompe network implementation with fixes for incomplete timestamp collection
 
 use crate::affinity::{affinity_from_env, bind_current_thread};
+use crate::flood_limiter::FloodLimiter;
 use crate::pompe::PompeMessage;
 use crate::resolve_target;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::{
     atomic::{AtomicUsize, Ordering},
-    Arc, Mutex,
+    Arc, Mutex, OnceLock,
 };
 use std::time::{Duration, Instant};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -16,6 +17,7 @@ use tokio::net::tcp::OwnedWriteHalf;
 use tokio::net::{TcpListener, TcpStream};
 use tokio::runtime::{Builder, Runtime};
 use tokio::sync::mpsc as async_mpsc;
+use tokio::sync::mpsc::error::TrySendError;
 use tokio::sync::Mutex as AsyncMutex;
 use tracing::{debug, error, info, warn};
 
@@ -36,8 +38,15 @@ struct ConnectionStats {
 
 #[derive(Clone, Debug)]
 struct ConnectionHandle {
-    sender: async_mpsc::UnboundedSender<Arc<PompeNetworkMessage>>,
+    sender: async_mpsc::Sender<Arc<PompeNetworkMessage>>,
     stats: Arc<Mutex<ConnectionStats>>,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+enum QueueSendResult {
+    Enqueued,
+    Saturated,
+    Closed,
 }
 
 // #[derive(Clone)]
@@ -55,6 +64,22 @@ pub struct PompeNetwork {
     sent_messages: Arc<Mutex<HashMap<String, u64>>>, // Deduplicate messages
     // Dedicated runtime so Pompe networking does not block other tasks
     rt: Arc<Runtime>,
+    per_connection_queue: usize,
+    writer_limiter: Arc<FloodLimiter>,
+}
+
+fn attack_only_mode() -> bool {
+    static FLAG: OnceLock<bool> = OnceLock::new();
+    *FLAG.get_or_init(|| {
+        std::env::var("POMPE_ATTACK_ONLY")
+            .map(|v| {
+                matches!(
+                    v.trim().to_ascii_lowercase().as_str(),
+                    "1" | "true" | "yes" | "on"
+                )
+            })
+            .unwrap_or(false)
+    })
 }
 
 impl PompeNetwork {
@@ -128,6 +153,28 @@ impl PompeNetwork {
             );
         }
 
+        let per_connection_queue = std::env::var("POMPE_CONN_QUEUE_CAP")
+            .ok()
+            .and_then(|s| s.parse::<usize>().ok())
+            .unwrap_or(1024)
+            .max(64);
+
+        let writer_limiter = if attack_only_mode() {
+            let default_rate = (per_connection_queue * 4) as f64;
+            let default_burst = (per_connection_queue * 2) as f64;
+            let rate = std::env::var("POMPE_ATTACK_NETWORK_RATE")
+                .ok()
+                .and_then(|s| s.parse::<f64>().ok())
+                .unwrap_or(default_rate);
+            let burst = std::env::var("POMPE_ATTACK_NETWORK_BURST")
+                .ok()
+                .and_then(|s| s.parse::<f64>().ok())
+                .unwrap_or(default_burst);
+            FloodLimiter::new("pompe-writer", rate, burst)
+        } else {
+            FloodLimiter::unlimited("pompe-writer")
+        };
+
         let network = Self {
             node_id,
             pompe_port,
@@ -138,6 +185,8 @@ impl PompeNetwork {
             // connection_pool: Arc::new(Mutex::new(HashMap::new())),
             sent_messages: Arc::new(Mutex::new(HashMap::new())),
             rt,
+            per_connection_queue,
+            writer_limiter: Arc::new(writer_limiter),
         };
         // Start connection maintenance in the background
         network.start_connection_maintenance();
@@ -295,6 +344,10 @@ impl PompeNetwork {
             return Ok(());
         }
 
+        if !self.writer_limiter.allow(1.0) {
+            return Ok(());
+        }
+
         // Generate a message ID for deduplication
         let message_id = format!(
             "{}:{}:{}",
@@ -337,21 +390,24 @@ impl PompeNetwork {
             let guard = self.connections.read().await;
             guard.get(&target_node_id).cloned()
         } {
-            if self
-                .enqueue_to_handle(handle.clone(), Arc::clone(&network_msg))
-                .await?
-            {
-                if let Ok(mut stats) = handle.stats.lock() {
-                    stats.last_used = Instant::now();
-                    stats.send_count += 1;
+            match self.enqueue_to_handle(&handle, Arc::clone(&network_msg)) {
+                QueueSendResult::Enqueued => {
+                    if let Ok(mut stats) = handle.stats.lock() {
+                        stats.last_used = Instant::now();
+                        stats.send_count += 1;
+                    }
+                    return Ok(());
                 }
-                return Ok(());
-            } else {
-                self.connections.write().await.remove(&target_node_id);
-                warn!(
-                    "Node {} -> Node {} connection unavailable; rebuilding",
-                    self.node_id, target_node_id
-                );
+                QueueSendResult::Saturated => {
+                    return Ok(());
+                }
+                QueueSendResult::Closed => {
+                    self.connections.write().await.remove(&target_node_id);
+                    warn!(
+                        "Node {} -> Node {} connection unavailable; rebuilding",
+                        self.node_id, target_node_id
+                    );
+                }
             }
         }
 
@@ -374,7 +430,7 @@ impl PompeNetwork {
         }
 
         let (_reader_half, writer_half) = stream.into_split();
-        let (tx, rx) = async_mpsc::unbounded_channel::<Arc<PompeNetworkMessage>>();
+        let (tx, rx) = async_mpsc::channel::<Arc<PompeNetworkMessage>>(self.per_connection_queue);
         let stats = Arc::new(Mutex::new(ConnectionStats {
             last_used: Instant::now(),
             send_count: 0,
@@ -397,26 +453,36 @@ impl PompeNetwork {
             stats,
         );
 
-        if self.enqueue_to_handle(handle.clone(), network_msg).await? {
-            if let Ok(mut stats) = handle.stats.lock() {
-                stats.last_used = Instant::now();
-                stats.send_count += 1;
+        match self.enqueue_to_handle(&handle, network_msg) {
+            QueueSendResult::Enqueued => {
+                if let Ok(mut stats) = handle.stats.lock() {
+                    stats.last_used = Instant::now();
+                    stats.send_count += 1;
+                }
+                Ok(())
             }
-            Ok(())
-        } else {
-            self.connections.write().await.remove(&target_node_id);
-            Err(format!("Failed to send to node {}", target_node_id))
+            QueueSendResult::Saturated => Ok(()),
+            QueueSendResult::Closed => {
+                self.connections.write().await.remove(&target_node_id);
+                Err(format!("Failed to send to node {}", target_node_id))
+            }
         }
     }
 
-    async fn enqueue_to_handle(
+    fn enqueue_to_handle(
         &self,
-        handle: ConnectionHandle,
+        handle: &ConnectionHandle,
         msg: Arc<PompeNetworkMessage>,
-    ) -> Result<bool, String> {
-        match handle.sender.send(msg) {
-            Ok(()) => Ok(true),
-            Err(_e) => Ok(false),
+    ) -> QueueSendResult {
+        match handle.sender.try_send(msg) {
+            Ok(()) => QueueSendResult::Enqueued,
+            Err(TrySendError::Full(_msg)) => {
+                if attack_only_mode() {
+                    self.writer_limiter.note_drop();
+                }
+                QueueSendResult::Saturated
+            }
+            Err(TrySendError::Closed(_msg)) => QueueSendResult::Closed,
         }
     }
 
@@ -424,7 +490,7 @@ impl PompeNetwork {
         &self,
         target_node_id: usize,
         mut writer: OwnedWriteHalf,
-        mut rx: async_mpsc::UnboundedReceiver<Arc<PompeNetworkMessage>>,
+        mut rx: async_mpsc::Receiver<Arc<PompeNetworkMessage>>,
         connections: Arc<tokio::sync::RwLock<HashMap<usize, ConnectionHandle>>>,
         stats: Arc<Mutex<ConnectionStats>>,
     ) {
@@ -501,6 +567,18 @@ impl PompeNetwork {
 
     // Parallel broadcast: short-circuit self then fan out concurrently
     pub async fn broadcast(&self, message: PompeMessage) -> Result<(), String> {
+        self.broadcast_inner(message, true).await
+    }
+
+    pub async fn broadcast_skip_self(&self, message: PompeMessage) -> Result<(), String> {
+        self.broadcast_inner(message, false).await
+    }
+
+    async fn broadcast_inner(
+        &self,
+        message: PompeMessage,
+        include_self: bool,
+    ) -> Result<(), String> {
         use tokio::task::JoinHandle;
         let start_time = std::time::Instant::now();
         info!(
@@ -514,7 +592,7 @@ impl PompeNetwork {
         let mut failure_details: Vec<String> = Vec::new();
 
         // 1) Send to self first (short-circuit, no TCP)
-        if self.peer_node_ids.contains(&self.node_id) {
+        if include_self && self.peer_node_ids.contains(&self.node_id) {
             match self.send_to_node(self.node_id, message.clone()).await {
                 Ok(_) => success_count += 1,
                 Err(e) => failure_details.push(format!("self: {}", e)),
@@ -643,7 +721,7 @@ async fn handle_pompe_connection(
 
         let message_length = u32::from_be_bytes(length_buf) as usize;
 
-        if message_length > 1024 * 1024 {
+        if message_length > 10 * 1024 * 1024 {
             error!("Pompe message too large: {} bytes", message_length);
             break;
         }
@@ -706,6 +784,8 @@ impl Clone for PompeNetwork {
             connections: Arc::clone(&self.connections),
             sent_messages: Arc::clone(&self.sent_messages),
             rt: Arc::clone(&self.rt),
+            per_connection_queue: self.per_connection_queue,
+            writer_limiter: Arc::clone(&self.writer_limiter),
         }
     }
 }

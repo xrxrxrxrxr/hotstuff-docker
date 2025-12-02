@@ -7,7 +7,7 @@ use crate::smrol::{
     finalization::OutputFinalization,
     message::{SmrolMessage, SmrolTransaction},
     network::SmrolTcpNetwork,
-    pnfifo::PnfifoBc,
+    pnfifo::{PnfifoBc, SlotReadyListener},
     ModuleMessage,
 };
 use blst::min_sig::{
@@ -47,6 +47,8 @@ pub(crate) const MULTISIG_VERIFY_MEDIAN_POOL_NAME: &str = "multisig_verify_media
 pub(crate) const MULTISIG_VERIFY_COMBINED_POOL_NAME: &str = "multisig_verify_combined";
 
 const MULTISIG_SIGNATURE_LEN: usize = 48;
+const DEFAULT_MAX_PENDING_SEQ_REQUESTS: usize = 10000;
+const ENV_MAX_PENDING_SEQ_REQUESTS: &str = "SMROL_MAX_PENDING_SEQ_REQUESTS";
 
 static DISABLE_MULTISIG_VERIFICATION: Lazy<bool> =
     Lazy::new(|| match std::env::var("SMROL_DISABLE_MULTISIG") {
@@ -953,6 +955,14 @@ pub struct SeqRequest {
     pub tx: Transaction,
 }
 
+#[derive(Clone)]
+struct PendingSeqRequest {
+    sender_id: usize,
+    sequence_number: u64,
+    tx_hash: String,
+    transaction: SmrolTransaction,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SeqResponse {
     pub vc: Vec<u8>,
@@ -1050,6 +1060,7 @@ pub struct TransactionSequencing {
     final_sign_concurrency: usize,
     final_verify_semaphore: Arc<Semaphore>,
     final_verify_concurrency: usize,
+    max_pending_seq_requests: usize,
     pub multisig_ctx: Arc<MultiSigContext>,
     median_batcher: MedianBatcher,
     final_batcher: FinalBatcher,
@@ -1063,6 +1074,7 @@ pub struct TransactionSequencing {
     erasure_store: DashMap<VC, ErasurePackage>,
     originated_vcs: DashSet<VC>,
     pending_seq_finals: DashMap<VC, Vec<SeqFinal>>,
+    pending_seq_requests: DashMap<(usize, u64), Vec<PendingSeqRequest>>,
     response_shares: Arc<DashMap<VC, HashMap<usize, SeqResponseRecord>>>,
     completed_responses: DashSet<VC>,
     median_sigs: DashMap<VC, HashMap<usize, Vec<u8>>>,
@@ -1119,14 +1131,21 @@ impl TransactionSequencing {
         verifying_keys: HashMap<usize, VerifyingKey>,
         finalization: Arc<RwLock<OutputFinalization>>,
         sequenced_entry_tx: async_mpsc::UnboundedSender<TransactionEntry>,
+        include_self_broadcast: bool,
     ) -> Self {
         let (broadcast_tx, mut broadcast_rx) = async_mpsc::unbounded_channel::<SmrolMessage>();
         let network_clone = Arc::clone(&network);
         let node_id = process_id;
+        let include_self_flag = include_self_broadcast;
         network.spawn(async move {
             info!("[sequencing] node {} started broadcast worker", node_id);
             while let Some(msg) = broadcast_rx.recv().await {
-                if let Err(e) = network_clone.broadcast(msg).await {
+                let send_res = if include_self_flag {
+                    network_clone.broadcast(msg).await
+                } else {
+                    network_clone.broadcast_skip_self(msg).await
+                };
+                if let Err(e) = send_res {
                     error!("[sequencing] broadcast worker failed: {}", e);
                 }
             }
@@ -1202,8 +1221,10 @@ impl TransactionSequencing {
         set_inflight("final_verify", 0);
 
         let median_batch_size = read_batch_size(ENV_MEDIAN_BATCH_SIZE, DEFAULT_MEDIAN_BATCH_SIZE);
-        let median_batch_timeout =
-            read_batch_timeout(ENV_MEDIAN_BATCH_TIMEOUT, DEFAULT_MEDIAN_BATCH_TIMEOUT_MICROS);
+        let median_batch_timeout = read_batch_timeout(
+            ENV_MEDIAN_BATCH_TIMEOUT,
+            DEFAULT_MEDIAN_BATCH_TIMEOUT_MICROS,
+        );
         let final_batch_size = read_batch_size(ENV_FINAL_BATCH_SIZE, DEFAULT_FINAL_BATCH_SIZE);
         let final_batch_timeout =
             read_batch_timeout(ENV_FINAL_BATCH_TIMEOUT, DEFAULT_FINAL_BATCH_TIMEOUT_MICROS);
@@ -1212,6 +1233,12 @@ impl TransactionSequencing {
         let final_batcher = FinalBatcher::new(final_batch_size, final_batch_timeout);
 
         warn!("SMROL_MEDIAN_INFLIGHT={}, SMROL_ORDER_FINALIZE_INFLIGHT={}, SMROL_FINAL_SIGN_INFLIGHT={}, SMROL_FINAL_VERIFY_INFLIGHT={}", median_concurrency, order_finalize_concurrency, final_sign_concurrency, final_verify_concurrency);
+
+        let max_pending_seq_requests = std::env::var(ENV_MAX_PENDING_SEQ_REQUESTS)
+            .ok()
+            .and_then(|raw| raw.trim().parse::<usize>().ok())
+            .filter(|value| *value > 0)
+            .unwrap_or(DEFAULT_MAX_PENDING_SEQ_REQUESTS);
 
         Self {
             f,
@@ -1230,6 +1257,7 @@ impl TransactionSequencing {
             final_sign_concurrency,
             final_verify_semaphore,
             final_verify_concurrency,
+            max_pending_seq_requests,
             multisig_ctx,
             median_batcher,
             final_batcher,
@@ -1243,6 +1271,7 @@ impl TransactionSequencing {
             erasure_store: DashMap::new(),
             originated_vcs: DashSet::new(),
             pending_seq_finals: DashMap::new(),
+            pending_seq_requests: DashMap::new(),
             response_shares: Arc::new(DashMap::new()),
             completed_responses: DashSet::new(),
             median_sigs: DashMap::new(),
@@ -1459,6 +1488,55 @@ impl TransactionSequencing {
 
     fn build_final_signature_message(vc: &[u8], value: u64) -> Vec<u8> {
         Self::build_tagged_vc_message(MSG_TAG_FINAL, vc, value)
+    }
+
+    fn enqueue_pending_seq_request(
+        &self,
+        leader_id: usize,
+        wait_slot: u64,
+        pending_req: PendingSeqRequest,
+    ) {
+        {
+            let mut entry = self
+                .pending_seq_requests
+                .entry((leader_id, wait_slot))
+                .or_insert_with(Vec::new);
+            entry.push(pending_req);
+        }
+
+        let pending_size = self.pending_seq_requests.len();
+        debug!(
+            "[Sequencing] Node {} pending SeqRequest waitlist size: {}",
+            self.process_id, pending_size
+        );
+    }
+
+    fn requeue_pending_seq_requests(&self, pending: Vec<PendingSeqRequest>) {
+        for req in pending {
+            let message = (
+                req.sender_id,
+                SmrolMessage::SeqRequest {
+                    tx_hash: req.tx_hash.clone(),
+                    transaction: req.transaction.clone(),
+                    sender_id: req.sender_id,
+                    sequence_number: req.sequence_number,
+                },
+            );
+
+            match self.request_tx.send(message) {
+                Ok(_) => {
+                    let pending_total = self.request_backlog.fetch_add(1, Ordering::Relaxed) + 1;
+                    metrics::gauge!("smrol.channel_backlog", "channel" => "request")
+                        .set(pending_total as f64);
+                }
+                Err(err) => {
+                    warn!(
+                        "⚠️ [Sequencing] Node {} failed to requeue deferred SeqRequest slot {}: {}",
+                        self.process_id, req.sequence_number, err
+                    );
+                }
+            }
+        }
     }
     fn spawn_request_processor(self: &Arc<Self>) {
         let worker_count = REQUEST_WORKER_COUNT.max(1);
@@ -2402,6 +2480,47 @@ impl TransactionSequencing {
         transaction: SmrolTransaction,
         sequence_number: u64,
     ) -> Result<(), String> {
+        // if transaction.id == 999_999_999 {
+        //     debug!(
+        //         "[Sequencing] Node {} skipping adversary transaction {}, sender {}",
+        //         self.process_id, tx_hash, sender_id
+        //     );
+        //     return Ok(());
+        // }
+
+        if transaction.id > 100000 {
+            warn!(
+                "[Sequencing] 🚨 Node {} received suspiciously high tx_id {}, sender {}",
+                self.process_id, transaction.id, sender_id
+            );
+        }
+        if sequence_number > 1 && !self.pnfifo.has_output(sender_id, sequence_number - 1) {
+            let wait_slot = sequence_number - 1;
+            debug!(
+                "[Sequencing] Node {} deferring SeqRequest from {} seq {} waiting for leader {} slot {} output",
+                self.process_id,
+                sender_id,
+                sequence_number,
+                sender_id,
+                wait_slot
+            );
+            // if transaction.id > 100000 {
+            //     warn!(
+            //         "[Sequencing] 🚨 Node {} enqueuing suspiciously high tx_id {}, sender {} (defer)",
+            //         self.process_id, transaction.id, sender_id
+            //     );
+            // }
+
+            let pending_req = PendingSeqRequest {
+                sender_id,
+                sequence_number,
+                tx_hash: tx_hash.clone(),
+                transaction: transaction.clone(),
+            };
+            self.enqueue_pending_seq_request(sender_id, wait_slot, pending_req);
+            return Ok(());
+        }
+
         let serialized =
             bincode::serialize(&transaction).map_err(|e| format!("Serialization failed: {}", e))?;
         let data_shards = std::cmp::max(1, self.pnfifo_threshold);
@@ -2570,6 +2689,7 @@ impl TransactionSequencing {
         encode_duration: Duration,
     ) -> Result<Option<TransactionEntry>, String> {
         let total_start = Instant::now();
+
         // info!(
         //     "📥 [Sequencing] Line 2:4: received SEQ-REQUEST, node {} seq_num: {} tx={}",
         //     sender,
@@ -3858,6 +3978,26 @@ impl TransactionSequencing {
         let total = finalize_total_start.elapsed();
 
         Some(entry)
+    }
+}
+
+impl SlotReadyListener for TransactionSequencing {
+    fn on_slot_ready(&self, leader_id: usize, slot: u64) {
+        if let Some((_, pending)) = self.pending_seq_requests.remove(&(leader_id, slot)) {
+            debug!(
+                "[Sequencing] Node {} resuming {} deferred SeqRequest(s) for leader {} slot {}",
+                self.process_id,
+                pending.len(),
+                leader_id,
+                slot
+            );
+            self.requeue_pending_seq_requests(pending);
+        }
+        debug!(
+            "[Sequencing] Node {} pending_seq_requests len {}",
+            self.process_id,
+            self.pending_seq_requests.len()
+        )
     }
 }
 

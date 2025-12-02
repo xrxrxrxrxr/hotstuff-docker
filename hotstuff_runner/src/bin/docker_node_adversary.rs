@@ -2,6 +2,7 @@
 //! Completely lock-free event-driven Docker node implementation
 
 use crossbeam::queue::SegQueue;
+use dashmap::DashSet;
 use ed25519_dalek::SigningKey;
 use hotstuff_rs::types::{
     crypto_primitives::VerifyingKey,
@@ -14,32 +15,63 @@ use hotstuff_runner::{
     event::{self, ResponseCommand, SystemEvent, TestTransaction},
     pompe::{self, load_pompe_config, LockFreeHotStuffAdapter},
     pompe_adversary::PompeManager,
-    smrol::manager::SmrolManager,
+    smrol::manager_adversary::SmrolManagerAdv,
+    smrol::{self, adapter::SmrolHotStuffAdapter, manager::load_smrol_config, SmrolTransaction},
     stats::PerformanceStats,
     tcp_node::Node,
     tokio_network::{TokioNetwork, TokioNetworkConfig},
+    tx_utils::parse_transaction_id,
 };
 use rand::Rng;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::env;
 use std::fs;
 use std::fs::{create_dir_all, File};
 use std::net::SocketAddr;
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::sync::Arc;
+use std::sync::OnceLock;
 use std::time::Duration;
 use std::time::Instant;
+use std::{collections::HashMap, thread::sleep};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::{broadcast, mpsc, Notify};
 use tracing::{debug, error, info, warn};
 use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 
+static HOST_MAP: OnceLock<HashMap<String, String>> = OnceLock::new();
+
+pub fn resolve_target(target_id: usize, port: u16) -> String {
+    let target_name = format!("node{}", target_id);
+
+    // Initialize HOST_MAP (run once)
+    let map = HOST_MAP.get_or_init(|| {
+        let hosts_str = std::env::var("NODE_HOSTS")
+            .unwrap_or_else(|_| panic!("NODE_HOSTS environment variable not set"));
+        hosts_str
+            .split(',')
+            .filter_map(|entry| {
+                let mut parts = entry.split(':');
+                let name = parts.next()?.trim().to_string();
+                let ip = parts.next()?.trim().to_string();
+                Some((name, ip))
+            })
+            .collect::<HashMap<_, _>>()
+    });
+
+    let host_ip = map
+        .get(&target_name)
+        .unwrap_or_else(|| panic!("Target {} not found in NODE_HOSTS", target_name));
+
+    format!("{}:{}", host_ip, port)
+}
+
 pub struct TransactionGenerator {
     current_tx_id: u64,
     current_nonce: u64,
     accounts: Vec<String>,
+    large_payload: Option<String>,
 }
 
 impl TransactionGenerator {
@@ -52,31 +84,61 @@ impl TransactionGenerator {
             "eve".to_string(),
         ];
 
+        let payload_bytes = std::env::var("ADVERSARY_PAYLOAD_BYTES")
+            .ok()
+            .and_then(|raw| raw.trim().parse::<usize>().ok())
+            .filter(|size| *size > 0);
+
+        if let Some(size) = payload_bytes {
+            info!(
+                "[adversary] enabling large payload flood mode: {} bytes per field",
+                size
+            );
+        }
+
+        let large_payload = payload_bytes.map(|size| {
+            let mut payload = String::with_capacity(size);
+            while payload.len() < size {
+                let remaining = size - payload.len();
+                let chunk = remaining.min(1024);
+                payload.push_str(&"X".repeat(chunk));
+            }
+            payload
+        });
+
         Self {
             current_tx_id: 0,
             current_nonce: 0,
             accounts,
+            large_payload,
         }
     }
 
     pub fn generate_transaction(&mut self) -> TestTransaction {
         let mut rng = rand::thread_rng();
 
-        let from_idx = rng.gen_range(0, self.accounts.len());
-        let mut to_idx = rng.gen_range(0, self.accounts.len());
-        while to_idx == from_idx {
-            to_idx = rng.gen_range(0, self.accounts.len());
-        }
-
-        let from = self.accounts[from_idx].clone();
-        let to = self.accounts[to_idx].clone();
+        let (from, to) = if let Some(payload) = &self.large_payload {
+            let mut from_payload = payload.clone();
+            from_payload.push_str(&format!("-{}", self.current_tx_id));
+            (from_payload, payload.clone())
+        } else {
+            let from_idx = rng.gen_range(0, self.accounts.len());
+            let mut to_idx = rng.gen_range(0, self.accounts.len());
+            while to_idx == from_idx {
+                to_idx = rng.gen_range(0, self.accounts.len());
+            }
+            (
+                self.accounts[from_idx].clone(),
+                self.accounts[to_idx].clone(),
+            )
+        };
         let amount = rng.gen_range(1, 100000);
 
         self.current_tx_id += 1;
         self.current_nonce += 1;
 
         TestTransaction {
-            id: 999999999999999,
+            id: rng.gen_range(100_0001u64, 3000_001u64),
             from,
             to,
             amount,
@@ -155,24 +217,46 @@ impl LockFreeStats {
 pub struct RegularTransactionProcessor {
     direct_queue: Arc<SegQueue<String>>,
     size_counter: AtomicUsize,
+    confirmed_txs: Arc<DashSet<u64>>,
+    in_flight_txs: Arc<DashSet<u64>>,
 }
 
 impl RegularTransactionProcessor {
-    fn new(hotstuff_queue: Arc<SegQueue<String>>) -> Self {
+    fn new(
+        hotstuff_queue: Arc<SegQueue<String>>,
+        confirmed_txs: Arc<DashSet<u64>>,
+        in_flight_txs: Arc<DashSet<u64>>,
+    ) -> Self {
         Self {
             direct_queue: hotstuff_queue,
             size_counter: AtomicUsize::new(0),
+            confirmed_txs,
+            in_flight_txs,
         }
     }
 
     fn push_transaction(&self, transaction: String) {
         let tx_clone = transaction.clone();
+        if let Some(tx_id) = parse_transaction_id(&tx_clone) {
+            if self.confirmed_txs.contains(&tx_id) {
+                debug!("Tx {} already confirmed, dropping", tx_id);
+                return;
+            }
+            if !self.in_flight_txs.insert(tx_id) {
+                debug!("Tx {} already in-flight, skipping", tx_id);
+                return;
+            }
+        }
         self.direct_queue.push(transaction);
         self.size_counter.fetch_add(1, Ordering::Relaxed);
         info!("Tx {} pushed to HotStuff queue.", tx_clone);
         // Limit queue size to prevent memory issues
         if self.get_queue_size() > 100000 {
-            let _ = self.direct_queue.pop(); // Remove oldest transaction
+            if let Some(evicted) = self.direct_queue.pop() {
+                if let Some(tx_id) = parse_transaction_id(&evicted) {
+                    self.in_flight_txs.remove(&tx_id);
+                }
+            }
         }
     }
 
@@ -217,9 +301,8 @@ fn setup_tracing_logger(node_id: usize) {
 }
 
 fn create_peer_address(i: usize) -> Result<SocketAddr, String> {
-    let hostname = format!("node{}", i);
-    let port = 10000 + i as u16;
-    let addr_str = format!("{}:{}", hostname, port);
+    let port = 10000;
+    let addr_str = resolve_target(i, port);
 
     info!("Trying to resolve address: {}", addr_str);
 
@@ -253,7 +336,7 @@ async fn start_lockfree_client_listener(
     node_stats: Arc<PerformanceStats>,
     event_for_response_tx: broadcast::Sender<SystemEvent>,
     pompe_manager: Option<Arc<PompeManager>>,
-    smrol_manager: Option<Arc<SmrolManager>>,
+    smrol_manager: Option<Arc<SmrolManagerAdv>>,
 ) -> Result<(), String> {
     let addr = format!("0.0.0.0:{}", port);
     let listener = TcpListener::bind(&addr)
@@ -472,6 +555,8 @@ async fn start_lockfree_performance_monitor(
     node_stats: Arc<PerformanceStats>,
     pompe_manager: Option<Arc<PompeManager>>,
     lockfree_stats: Arc<LockFreeStats>,
+    confirmed_txs: Arc<DashSet<u64>>,
+    in_flight_txs: Arc<DashSet<u64>>,
 ) {
     info!("[Lock-free] Node {} performance monitor started", node_id);
 
@@ -637,6 +722,12 @@ async fn start_lockfree_performance_monitor(
                               submission_tps, consensus_tps, pompe_tps);
                     }
 
+                    SystemEvent::HotStuffCommitted { tx_ids, .. } => {
+                        for tx_id in tx_ids {
+                            confirmed_txs.insert(tx_id);
+                            in_flight_txs.remove(&tx_id);
+                        }
+                    }
                     _ => {
                         // Handle other event types
                     }
@@ -650,9 +741,12 @@ async fn start_lockfree_performance_monitor(
 }
 
 // Adversarial transaction generator, calls Ordering1 continuously
-async fn adversary(pompe_manager: Option<Arc<PompeManager>>) {
+async fn adversary_pompe(pompe_manager: Option<Arc<PompeManager>>) {
     if let Some(pompe) = pompe_manager {
         let mut tx_generator = TransactionGenerator::new();
+        let attack_only = PompeManager::attack_only_enabled();
+        let mut interval_sent: u64 = 0;
+        let mut last_report = Instant::now();
         loop {
             let transaction = tx_generator.generate_transaction();
             let tx_string = format!(
@@ -661,11 +755,51 @@ async fn adversary(pompe_manager: Option<Arc<PompeManager>>) {
             );
             match pompe.process_raw_transaction(&tx_string).await {
                 Ok(_) => {
-                    warn!("😈 [Adversary] flooding transactions: {}", tx_string);
+                    if attack_only {
+                        interval_sent += 1;
+                        if last_report.elapsed() >= Duration::from_secs(5) {
+                            info!(
+                                "😈 [Adversary] attack-only flood rate: {} tx in last {}s",
+                                interval_sent,
+                                last_report.elapsed().as_secs().max(1)
+                            );
+                            interval_sent = 0;
+                            last_report = Instant::now();
+                        }
+                    } else {
+                        debug!("😈 [Adversary] flooding transactions: {}", tx_string);
+                    }
                 }
                 Err(e) => {
                     error!(
                         "Pompe transaction processing failed: {}, error: {}",
+                        tx_string, e
+                    );
+                }
+            }
+            // sleep(Duration::from_micros(100));
+        }
+    }
+}
+
+async fn adversary_smrol(smrol_manager: Option<Arc<SmrolManagerAdv>>) {
+    if let Some(smrol) = smrol_manager {
+        let mut tx_generator = TransactionGenerator::new();
+        loop {
+            let transaction = tx_generator.generate_transaction();
+            let tx_string = format!(
+                "{}:{}->{}:{}",
+                transaction.id, transaction.from, transaction.to, transaction.amount
+            );
+            let smrol_tx =
+                SmrolTransaction::from_test_transaction(transaction.clone(), "client".to_string());
+            match smrol.process_smrol_transaction(smrol_tx).await {
+                Ok(_) => {
+                    debug!("😈 [Adversary] flooding transactions: {}", tx_string);
+                }
+                Err(e) => {
+                    error!(
+                        "SMROL transaction processing failed: {}, error: {}",
                         tx_string, e
                     );
                 }
@@ -686,7 +820,7 @@ async fn async_main() -> Result<(), String> {
         .expect("NODE_ID must be a number");
 
     let my_port: u16 = env::var("NODE_PORT")
-        .unwrap_or_else(|_| (10000 + node_id).to_string())
+        .unwrap_or_else(|_| (10000).to_string())
         .parse()
         .expect("NODE_PORT must be a number");
 
@@ -698,6 +832,8 @@ async fn async_main() -> Result<(), String> {
         .unwrap_or_else(|_| "4".to_string())
         .parse()
         .expect("NODE_NUM must be a number");
+
+    let adversary_mode = env::var("ADVERSARY_MODE").unwrap_or_else(|_| "pompe".to_string());
 
     setup_tracing_logger(node_id);
     info!(
@@ -753,7 +889,7 @@ async fn async_main() -> Result<(), String> {
 
     let tcp_config = TokioNetworkConfig {
         my_addr,
-        peer_addrs,
+        peer_addrs: peer_addrs.clone(),
         my_key: my_verifying_key,
     };
 
@@ -776,7 +912,13 @@ async fn async_main() -> Result<(), String> {
 
     // Use the lock-free transaction queue from Node for regular transactions
     let shared_tx_queue = Arc::new(SegQueue::new());
-    let regular_tx_processor = Arc::new(RegularTransactionProcessor::new(shared_tx_queue.clone()));
+    let confirmed_txs = Arc::new(DashSet::new());
+    let in_flight_txs = Arc::new(DashSet::new());
+    let regular_tx_processor = Arc::new(RegularTransactionProcessor::new(
+        shared_tx_queue.clone(),
+        confirmed_txs.clone(),
+        in_flight_txs.clone(),
+    ));
 
     // Performance stats
     let node_stats = Arc::new(PerformanceStats::new());
@@ -808,12 +950,35 @@ async fn async_main() -> Result<(), String> {
         shared_tx_queue.clone(),
         node_stats.clone(),
         event_for_response_tx.clone(), /* 🎯 */
+        confirmed_txs.clone(),
+        in_flight_txs.clone(),
     );
 
     // Add monitoring for regular transaction queue size (similar to second code)
     let regular_tx_monitor = Arc::clone(&regular_tx_processor);
     let stats_for_monitor = Arc::clone(&node_stats);
     let lockfree_stats_for_monitor = Arc::clone(&lockfree_stats);
+
+    // Prepare verifying key mapping / SMROL address map
+    let mut verifying_keys_map = HashMap::new();
+    let mut node_id_to_addr = HashMap::new();
+
+    for (i, key) in all_verifying_keys.iter().enumerate() {
+        let actual_node_id = node_least_id + i; // Actual node_id
+        verifying_keys_map.insert(actual_node_id, *key);
+
+        if let Some(addr) = peer_addrs.get(key) {
+            let smrol_port = 21000u16 + actual_node_id as u16;
+            let smrol_addr = SocketAddr::new(addr.ip(), smrol_port);
+            node_id_to_addr.insert(actual_node_id, smrol_addr);
+        } else {
+            warn!(
+                "SMROL peer address missing for node {} (verifier {:?})",
+                actual_node_id,
+                key.to_bytes()[0..4].to_vec()
+            );
+        }
+    }
 
     // Create Pompe manager
     // pompe manager
@@ -833,12 +998,17 @@ async fn async_main() -> Result<(), String> {
             pompe_config,
             tcp_network.clone(),
             event_for_response_tx.clone(), /* pompe event sender 🎯 */
+            signing_key.clone(),
+            verifying_keys_map.clone(),
         );
 
-        // Use connected mode lock-free adapter
         let mut lockfree_adapter = LockFreeHotStuffAdapter::new();
         lockfree_adapter.connect_to_queue(shared_tx_queue.clone());
+        lockfree_adapter.set_filters(confirmed_txs.clone(), in_flight_txs.clone());
         let lockfree_adapter = Arc::new(lockfree_adapter);
+        if adversary_mode == "pompe" {
+            warn!("[Pompe-ADV] Adversary mode enabled; still wiring HotStuff adapter to preserve commits");
+        }
         pompe.set_lockfree_adapter(Arc::clone(&lockfree_adapter));
 
         let pompe_arc = Arc::new(pompe);
@@ -860,8 +1030,40 @@ async fn async_main() -> Result<(), String> {
         None
     };
 
-    // TODO: create smrol manager here
+    let smrol_config = load_smrol_config();
+    let smrol_manager = Arc::new(
+        SmrolManagerAdv::new(
+            node_id,
+            smrol_config,
+            signing_key.clone(),
+            verifying_keys_map,
+            node_id_to_addr,
+            event_for_response_tx.clone(),
+        )
+        .await?,
+    );
+
+    // Wire SMROL output directly into the shared HotStuff queue
+    let smrol_adapter = Arc::new(SmrolHotStuffAdapter::new());
+    smrol_adapter.connect_to_queue(shared_tx_queue.clone());
+    smrol_adapter.set_filters(confirmed_txs.clone(), in_flight_txs.clone());
+    if adversary_mode == "smrol" {
+        warn!(
+            "[SMROL-ADV] Adversary mode enabled; still wiring HotStuff adapter to preserve commits"
+        );
+    }
+    smrol_manager
+        .set_hotstuff_adapter(Arc::clone(&smrol_adapter))
+        .await;
+
+    if let Err(e) = Arc::clone(&smrol_manager).start_message_loop().await {
+        error!("Failed to start SMROL message loop: {}", e);
+        return Err(e);
+    }
+
     // TODO: pass smrol manager to client listener
+    let smrol_manager_clone = smrol_manager.clone();
+    let smrol_manager_clone2 = smrol_manager.clone();
 
     // Pass Pompe manager to client listener
     let pompe_manager_clone = pompe_manager.clone();
@@ -877,7 +1079,7 @@ async fn async_main() -> Result<(), String> {
             node_stats_clone,
             event_for_response_tx_clone,
             pompe_manager_clone,
-            None,
+            Some(smrol_manager_clone),
         )
         .await
         {
@@ -886,18 +1088,34 @@ async fn async_main() -> Result<(), String> {
     });
 
     //   **** Run adversary function continuously rather than listening to the client
-    // tokio::spawn(async move {
-    adversary(pompe_manager_clone2).await;
-    //    });
+    sleep(Duration::from_secs(30));
+    if adversary_mode == "smrol" {
+        warn!("😈 Starting SMROL adversary mode");
+        adversary_smrol(Some(smrol_manager_clone2)).await;
+    } else {
+        warn!("😈 Starting Pompe adversary mode");
+        adversary_pompe(pompe_manager_clone2).await;
+    }
 
-    let lockfree_stats_clone = Arc::clone(&lockfree_stats);
-    tokio::spawn(start_lockfree_performance_monitor(
-        node_id,
-        event_rx,
-        node_stats.clone(),
-        pompe_manager.clone(),
-        lockfree_stats_clone,
-    ));
+    if !PompeManager::attack_only_enabled() {
+        let lockfree_stats_clone = Arc::clone(&lockfree_stats);
+        let confirmed_txs_clone = Arc::clone(&confirmed_txs);
+        let in_flight_txs_clone = Arc::clone(&in_flight_txs);
+        tokio::spawn(start_lockfree_performance_monitor(
+            node_id,
+            event_rx,
+            node_stats.clone(),
+            pompe_manager.clone(),
+            lockfree_stats_clone,
+            confirmed_txs_clone,
+            in_flight_txs_clone,
+        ));
+    } else {
+        info!(
+            "Node {} attack-only: skipping lock-free performance monitor",
+            node_id
+        );
+    }
 
     tokio::time::sleep(Duration::from_secs(5)).await;
     info!("Network connectivity test:");
@@ -923,81 +1141,88 @@ async fn async_main() -> Result<(), String> {
         }
     }
 
-    tokio::spawn(async move {
-        info!("[Regular tx monitor] Regular transaction monitor started");
-        let mut monitor_interval = tokio::time::interval(Duration::from_secs(5));
-        let mut last_queue_size = 0;
-        let mut loop_counter = 0;
+    if !PompeManager::attack_only_enabled() {
+        tokio::spawn(async move {
+            info!("[Regular tx monitor] Regular transaction monitor started");
+            let mut monitor_interval = tokio::time::interval(Duration::from_secs(5));
+            let mut last_queue_size = 0;
+            let mut loop_counter = 0;
 
-        loop {
-            monitor_interval.tick().await;
-            loop_counter += 1;
+            loop {
+                monitor_interval.tick().await;
+                loop_counter += 1;
 
-            let current_queue_size = regular_tx_monitor.get_queue_size();
-            let submission_tps = stats_for_monitor.get_submission_tps();
-            let consensus_tps = stats_for_monitor.get_end_to_end_tps();
-            let total_confirmed_txs = stats_for_monitor.get_confirmed_transactions();
-            let total_confirmed_blocks = stats_for_monitor.get_confirmed_blocks();
+                let current_queue_size = regular_tx_monitor.get_queue_size();
+                let submission_tps = stats_for_monitor.get_submission_tps();
+                let consensus_tps = stats_for_monitor.get_end_to_end_tps();
+                let total_confirmed_txs = stats_for_monitor.get_confirmed_transactions();
+                let total_confirmed_blocks = stats_for_monitor.get_confirmed_blocks();
 
-            // Update lockfree stats with regular transaction queue size
-            lockfree_stats_for_monitor.update_hotstuff_queue_size(current_queue_size);
+                // Update lockfree stats with regular transaction queue size
+                lockfree_stats_for_monitor.update_hotstuff_queue_size(current_queue_size);
 
-            // Queue size change notification (following second code logic)
-            if current_queue_size != last_queue_size {
-                if current_queue_size > last_queue_size {
-                    info!(
-                        "Node {} Regular queue increased: {} -> {} (+{})",
-                        node_id,
-                        last_queue_size,
-                        current_queue_size,
-                        current_queue_size - last_queue_size
-                    );
-                } else {
-                    info!(
-                        "Node {} Regular queue decreased: {} -> {} (-{})",
-                        node_id,
-                        last_queue_size,
-                        current_queue_size,
-                        last_queue_size - current_queue_size
+                // Queue size change notification (following second code logic)
+                if current_queue_size != last_queue_size {
+                    if current_queue_size > last_queue_size {
+                        info!(
+                            "Node {} Regular queue increased: {} -> {} (+{})",
+                            node_id,
+                            last_queue_size,
+                            current_queue_size,
+                            current_queue_size - last_queue_size
+                        );
+                    } else {
+                        info!(
+                            "Node {} Regular queue decreased: {} -> {} (-{})",
+                            node_id,
+                            last_queue_size,
+                            current_queue_size,
+                            last_queue_size - current_queue_size
+                        );
+                    }
+                    last_queue_size = current_queue_size;
+                }
+
+                // Check for queue backlog (following second code logic)
+                if current_queue_size > 1000 {
+                    warn!(
+                        "Node {} Regular transaction queue backlog: {} transactions",
+                        node_id, current_queue_size
                     );
                 }
-                last_queue_size = current_queue_size;
-            }
 
-            // Check for queue backlog (following second code logic)
-            if current_queue_size > 1000 {
-                warn!(
-                    "Node {} Regular transaction queue backlog: {} transactions",
-                    node_id, current_queue_size
-                );
-            }
+                // Periodic detailed monitoring (every 10 cycles = 50 seconds)
+                if loop_counter % 10 == 0 {
+                    info!("[Regular tx monitor] Node {} status report:", node_id);
+                    info!("  Regular queue size: {}", current_queue_size);
+                    info!("  Submission TPS: {:.2}", submission_tps);
+                    info!("  Consensus TPS: {:.2}", consensus_tps);
+                    info!("  Total confirmed transactions: {}", total_confirmed_txs);
+                    info!("  Total confirmed blocks: {}", total_confirmed_blocks);
 
-            // Periodic detailed monitoring (every 10 cycles = 50 seconds)
-            if loop_counter % 10 == 0 {
-                info!("[Regular tx monitor] Node {} status report:", node_id);
-                info!("  Regular queue size: {}", current_queue_size);
-                info!("  Submission TPS: {:.2}", submission_tps);
-                info!("  Consensus TPS: {:.2}", consensus_tps);
-                info!("  Total confirmed transactions: {}", total_confirmed_txs);
-                info!("  Total confirmed blocks: {}", total_confirmed_blocks);
-
-                // Performance analysis
-                if submission_tps > 0.0 && consensus_tps > 0.0 {
-                    let efficiency = (consensus_tps / submission_tps) * 100.0;
-                    if efficiency > 90.0 {
-                        info!("  Processing efficiency: {:.1}% - Excellent", efficiency);
-                    } else if efficiency > 70.0 {
-                        info!("  Processing efficiency: {:.1}% - Good", efficiency);
-                    } else {
-                        warn!(
-                            "  Processing efficiency: {:.1}% - Needs attention",
-                            efficiency
-                        );
+                    // Performance analysis
+                    if submission_tps > 0.0 && consensus_tps > 0.0 {
+                        let efficiency = (consensus_tps / submission_tps) * 100.0;
+                        if efficiency > 90.0 {
+                            info!("  Processing efficiency: {:.1}% - Excellent", efficiency);
+                        } else if efficiency > 70.0 {
+                            info!("  Processing efficiency: {:.1}% - Good", efficiency);
+                        } else {
+                            warn!(
+                                "  Processing efficiency: {:.1}% - Needs attention",
+                                efficiency
+                            );
+                        }
                     }
                 }
             }
-        }
-    });
+        });
+    } else {
+        info!(
+            "Node {} attack-only: skipping regular transaction monitor",
+            node_id
+        );
+    }
 
     info!(
         "[Dual-path lock-free] Node {} all components started, entering dual-path event loop",

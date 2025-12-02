@@ -108,16 +108,15 @@ impl SmrolTransaction {
     }
 
     pub fn to_hotstuff_format(&self, final_sequence: u64) -> String {
+        self.to_hotstuff_format_with_id(final_sequence, self.id)
+    }
+
+    pub fn to_hotstuff_format_with_id(&self, final_sequence: u64, tx_id: u64) -> String {
+        let from = "Alice".to_string();
+        let to = "Bob".to_string();
         format!(
             "smrol:{}:{}:{}->{}:{}",
-            final_sequence, self.id, self.from, self.to, self.amount
+            final_sequence, tx_id, from, to, self.amount
         )
     }
-    // Without final sequence
-    // pub fn to_hotstuff_format(&self, final_sequence: u64) -> String {
-    //     format!(
-    //         "smrol:{}:{}->{}:{}",
-    //         self.id, self.from, self.to, self.amount
-    //     )
-    // }
 }

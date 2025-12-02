@@ -1,7 +1,9 @@
 // hotstuff_runner/src/app.rs - lock-free version
+use crate::tx_utils::parse_transaction_id;
 use borsh::BorshSerialize;
 use crossbeam::channel::{Receiver, TryRecvError};
 use crossbeam::queue::{self, SegQueue};
+use dashmap::DashSet;
 use hotstuff_rs::{
     app::{
         App, ProduceBlockRequest, ProduceBlockResponse, ValidateBlockRequest, ValidateBlockResponse,
@@ -14,6 +16,7 @@ use hotstuff_rs::{
 };
 use log::{debug, info, warn};
 use sha2::{Digest, Sha256};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::thread;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use std::{convert::Infallible, sync::Arc};
@@ -24,12 +27,21 @@ pub struct TestApp {
     block_count: u64,
     // Use a lock-free queue instead of Mutex<Vec<String>>
     tx_queue: Arc<SegQueue<String>>,
+    confirmed_txs: Arc<DashSet<u64>>,
+    in_flight_txs: Arc<DashSet<u64>>,
+    last_seen_height: Arc<AtomicU64>,
 }
 
 const NUMBER_KEY: [u8; 1] = [0];
 
 impl TestApp {
-    pub fn new(node_id: usize, tx_queue: Arc<SegQueue<String>>) -> Self {
+    pub fn new(
+        node_id: usize,
+        tx_queue: Arc<SegQueue<String>>,
+        confirmed_txs: Arc<DashSet<u64>>,
+        last_seen_height: Arc<AtomicU64>,
+        in_flight_txs: Arc<DashSet<u64>>,
+    ) -> Self {
         info!(
             "Creating TestApp for Node {} (queue address: {:p})",
             node_id, &*tx_queue
@@ -38,6 +50,9 @@ impl TestApp {
             node_id,
             block_count: 0,
             tx_queue,
+            confirmed_txs,
+            in_flight_txs,
+            last_seen_height,
         }
     }
 
@@ -91,6 +106,9 @@ impl<K: KVStore> App<K> for TestApp {
 
         // Pull transactions from the lock-free queue without locking
         let mut transactions = Vec::new();
+        let required_height = self.block_count;
+        let seen_height = self.last_seen_height.load(Ordering::Relaxed);
+        let ready_for_new_block = seen_height >= required_height;
         // Maximum transactions per block; configurable via APP_BLOCK_MAX_TX (default 800)
         let max_tx_count: usize = std::env::var("APP_BLOCK_MAX_TX")
             .ok()
@@ -100,23 +118,40 @@ impl<K: KVStore> App<K> for TestApp {
         // Check queue size first to avoid unnecessary loops
         let queue_size = self.tx_queue.len();
         let actual_max = std::cmp::min(max_tx_count, queue_size);
-        debug!(
+        warn!(
             "Node {} [produce_block] queue size: {}, attempting up to {} transactions this block",
             self.node_id, queue_size, actual_max
         );
         // if queue_size != 0 {
-        //     info!(
+        //     warn!(
         //         "Node {} [produce_block] queue size: {}, attempting up to {} transactions this block",
         //         self.node_id, queue_size, actual_max
         //     );
         // }
 
-        if actual_max > 0 {
+        if ready_for_new_block && actual_max > 0 {
             transactions.reserve(actual_max); // Pre-allocate capacity
 
             // Use a tighter loop
             while transactions.len() < max_tx_count {
                 if let Some(tx) = self.tx_queue.pop() {
+                    if let Some(tx_id) = parse_transaction_id(&tx) {
+                        if self.confirmed_txs.contains(&tx_id) {
+                            debug!(
+                                "Node {} [produce_block] skipping confirmed transaction {}",
+                                self.node_id, tx_id
+                            );
+                            continue;
+                        }
+                        if self.in_flight_txs.contains(&tx_id) {
+                            debug!(
+                                "Node {} [produce_block] skipping in-flight transaction {}",
+                                self.node_id, tx_id
+                            );
+                            continue;
+                        }
+                        // self.in_flight_txs.insert(tx_id);
+                    }
                     debug!(
                         "Node {} [produce_block] fetched transaction from queue: {}",
                         self.node_id, &tx
@@ -128,10 +163,17 @@ impl<K: KVStore> App<K> for TestApp {
             }
         }
 
+        if !ready_for_new_block {
+            warn!(
+                "Node {} [produce_block] waiting for previous block (need >= {}, seen {})",
+                self.node_id, required_height, seen_height
+            );
+        }
+
         let tx_count = transactions.len();
         info!(
-            "Node {} [produce_block] pulled {} transactions from the lock-free queue (limit {})",
-            self.node_id, tx_count, max_tx_count
+            "Node {} [produce_block] pulled {} transactions from the lock-free queue (limit {}, ready={})",
+            self.node_id, tx_count, max_tx_count, ready_for_new_block
         );
 
         // Build block data
@@ -203,6 +245,8 @@ impl<K: KVStore> App<K> for TestApp {
             request.cur_view().int(),
             tx_count
         );
+
+        self.block_count += 1;
 
         ProduceBlockResponse {
             data_hash,
