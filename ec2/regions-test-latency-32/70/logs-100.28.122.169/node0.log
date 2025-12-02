@@ -1,0 +1,272 @@
+2025-11-08T23:59:04.236115Z  WARN ThreadId(01) docker_node: metrics exporter disabled by SMROL_DISABLE_METRICS
+2025-11-08T23:59:24.449064Z  WARN ThreadId(01) hotstuff_runner::tcp_node: Node 0 view timeout set to 4000 ms
+2025-11-08T23:59:24.458565Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 2: Connection refused (os error 111)
+2025-11-08T23:59:24.459198Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 4: Connection refused (os error 111)
+2025-11-08T23:59:24.459530Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 5: Connection refused (os error 111)
+2025-11-08T23:59:24.477671Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: SMROL_MEDIAN_INFLIGHT=24, SMROL_ORDER_FINALIZE_INFLIGHT=4, SMROL_FINAL_SIGN_INFLIGHT=4, SMROL_FINAL_VERIFY_INFLIGHT=24
+2025-11-08T23:59:24.477698Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: [Sequencing] Node 0 multi-signature verification disabled: false
+2025-11-08T23:59:24.478575Z  WARN ThreadId(06) hotstuff_runner::smrol::sequencing: [Sequencing] Node 0 final verify dispatcher started
+2025-11-08T23:59:24.478584Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T23:59:29.478581Z  WARN ThreadId(04) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T23:59:29.482102Z  WARN ThreadId(01) docker_node: Node 0 port 20000 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.483877Z  WARN ThreadId(01) docker_node: Node 1 port 20001 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.485703Z  WARN ThreadId(01) docker_node: Node 2 port 20002 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.487440Z  WARN ThreadId(01) docker_node: Node 3 port 20003 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.489207Z  WARN ThreadId(01) docker_node: Node 4 port 20004 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.490979Z  WARN ThreadId(01) docker_node: Node 5 port 20005 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.493089Z  WARN ThreadId(01) docker_node: Node 6 port 20006 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.494984Z  WARN ThreadId(01) docker_node: Node 7 port 20007 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.496592Z  WARN ThreadId(01) docker_node: Node 8 port 20008 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.499270Z  WARN ThreadId(01) docker_node: Node 9 port 20009 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.501082Z  WARN ThreadId(01) docker_node: Node 10 port 20010 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.503047Z  WARN ThreadId(01) docker_node: Node 11 port 20011 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.504716Z  WARN ThreadId(01) docker_node: Node 12 port 20012 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.506224Z  WARN ThreadId(01) docker_node: Node 13 port 20013 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.509241Z  WARN ThreadId(01) docker_node: Node 14 port 20014 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.511027Z  WARN ThreadId(01) docker_node: Node 15 port 20015 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.512811Z  WARN ThreadId(01) docker_node: Node 16 port 20016 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.514496Z  WARN ThreadId(01) docker_node: Node 17 port 20017 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.516529Z  WARN ThreadId(01) docker_node: Node 18 port 20018 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.518352Z  WARN ThreadId(01) docker_node: Node 19 port 20019 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.520083Z  WARN ThreadId(01) docker_node: Node 20 port 20020 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.521921Z  WARN ThreadId(01) docker_node: Node 21 port 20021 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.523559Z  WARN ThreadId(01) docker_node: Node 22 port 20022 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.526054Z  WARN ThreadId(01) docker_node: Node 23 port 20023 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.527682Z  WARN ThreadId(01) docker_node: Node 24 port 20024 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.529359Z  WARN ThreadId(01) docker_node: Node 25 port 20025 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.530976Z  WARN ThreadId(01) docker_node: Node 26 port 20026 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.532749Z  WARN ThreadId(01) docker_node: Node 27 port 20027 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.534441Z  WARN ThreadId(01) docker_node: Node 28 port 20028 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.536420Z  WARN ThreadId(01) docker_node: Node 29 port 20029 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.538343Z  WARN ThreadId(01) docker_node: Node 30 port 20030 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.540245Z  WARN ThreadId(01) docker_node: Node 31 port 20031 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.542366Z  WARN ThreadId(01) docker_node: Node 32 port 20032 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.544111Z  WARN ThreadId(01) docker_node: Node 33 port 20033 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.547416Z  WARN ThreadId(01) docker_node: Node 34 port 20034 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.549430Z  WARN ThreadId(01) docker_node: Node 35 port 20035 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.551155Z  WARN ThreadId(01) docker_node: Node 36 port 20036 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.553012Z  WARN ThreadId(01) docker_node: Node 37 port 20037 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.554835Z  WARN ThreadId(01) docker_node: Node 38 port 20038 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.556553Z  WARN ThreadId(01) docker_node: Node 39 port 20039 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.558380Z  WARN ThreadId(01) docker_node: Node 40 port 20040 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.560130Z  WARN ThreadId(01) docker_node: Node 41 port 20041 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.562125Z  WARN ThreadId(01) docker_node: Node 42 port 20042 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.564049Z  WARN ThreadId(01) docker_node: Node 43 port 20043 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.565634Z  WARN ThreadId(01) docker_node: Node 44 port 20044 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.567283Z  WARN ThreadId(01) docker_node: Node 45 port 20045 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.569100Z  WARN ThreadId(01) docker_node: Node 46 port 20046 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.570688Z  WARN ThreadId(01) docker_node: Node 47 port 20047 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.572401Z  WARN ThreadId(01) docker_node: Node 48 port 20048 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.574140Z  WARN ThreadId(01) docker_node: Node 49 port 20049 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.575907Z  WARN ThreadId(01) docker_node: Node 50 port 20050 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.577688Z  WARN ThreadId(01) docker_node: Node 51 port 20051 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.580221Z  WARN ThreadId(01) docker_node: Node 52 port 20052 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.581878Z  WARN ThreadId(01) docker_node: Node 53 port 20053 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.583417Z  WARN ThreadId(01) docker_node: Node 54 port 20054 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.585191Z  WARN ThreadId(01) docker_node: Node 55 port 20055 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.586924Z  WARN ThreadId(01) docker_node: Node 56 port 20056 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.588561Z  WARN ThreadId(01) docker_node: Node 57 port 20057 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.590273Z  WARN ThreadId(01) docker_node: Node 58 port 20058 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.591693Z  WARN ThreadId(01) docker_node: Node 59 port 20059 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.593484Z  WARN ThreadId(01) docker_node: Node 60 port 20060 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.595152Z  WARN ThreadId(01) docker_node: Node 61 port 20061 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.596864Z  WARN ThreadId(01) docker_node: Node 62 port 20062 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.598509Z  WARN ThreadId(01) docker_node: Node 63 port 20063 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.600230Z  WARN ThreadId(01) docker_node: Node 64 port 20064 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.602108Z  WARN ThreadId(01) docker_node: Node 65 port 20065 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.603964Z  WARN ThreadId(01) docker_node: Node 66 port 20066 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.605600Z  WARN ThreadId(01) docker_node: Node 67 port 20067 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.607300Z  WARN ThreadId(01) docker_node: Node 68 port 20068 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:29.609051Z  WARN ThreadId(01) docker_node: Node 69 port 20069 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-08T23:59:34.478724Z  WARN ThreadId(04) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T23:59:39.478563Z  WARN ThreadId(04) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T23:59:44.478712Z  WARN ThreadId(04) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T23:59:49.479132Z  WARN ThreadId(04) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T23:59:54.478700Z  WARN ThreadId(04) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-08T23:59:57.899115Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 68 slow write: 6.401619ms
+2025-11-08T23:59:57.903711Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 59 slow write: 6.461631ms
+2025-11-08T23:59:57.906436Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 46 slow write: 12.86104ms
+2025-11-08T23:59:57.907092Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 44 slow write: 15.181561ms
+2025-11-08T23:59:57.907120Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 47 slow write: 13.414235ms
+2025-11-08T23:59:57.908000Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 48 slow write: 16.250069ms
+2025-11-08T23:59:57.909173Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 45 slow write: 16.624979ms
+2025-11-08T23:59:58.068222Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 61 slow write: 9.350327ms
+2025-11-08T23:59:58.156047Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 18 slow write: 77.225189ms
+2025-11-08T23:59:58.157462Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 19 slow write: 80.301961ms
+2025-11-08T23:59:58.157733Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 16 slow write: 77.747423ms
+2025-11-08T23:59:58.158581Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 14 slow write: 80.460555ms
+2025-11-08T23:59:58.158734Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 15 slow write: 79.88043ms
+2025-11-08T23:59:58.158949Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 17 slow write: 79.799688ms
+2025-11-08T23:59:58.206001Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 30 slow write: 140.942973ms
+2025-11-08T23:59:58.207150Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 27 slow write: 111.093644ms
+2025-11-08T23:59:58.211845Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 26 slow write: 136.977088ms
+2025-11-08T23:59:58.212135Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 28 slow write: 144.936609ms
+2025-11-08T23:59:58.217648Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 29 slow write: 141.645572ms
+2025-11-08T23:59:58.221878Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 31 slow write: 142.298388ms
+2025-11-08T23:59:58.258349Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 22 slow write: 103.462613ms
+2025-11-08T23:59:58.262268Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 21 slow write: 108.771613ms
+2025-11-08T23:59:58.270945Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 25 slow write: 113.891918ms
+2025-11-08T23:59:58.309580Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 23 slow write: 115.961723ms
+2025-11-08T23:59:58.326118Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 24 slow write: 99.645842ms
+2025-11-08T23:59:58.328193Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 20 slow write: 100.129025ms
+2025-11-08T23:59:59.478500Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-09T00:00:04.478980Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-09T00:00:04.610112Z  WARN ThreadId(07) docker_node: Node 0 Regular transaction queue backlog: 2309 transactions
+2025-11-09T00:00:05.993586Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 64 slow write: 13.853686ms
+2025-11-09T00:00:09.479181Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-09T00:00:09.609445Z  WARN ThreadId(05) docker_node: Node 0 Regular transaction queue backlog: 3838 transactions
+2025-11-09T00:00:09.889083Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 86 timed out; latency may accumulate
+2025-11-09T00:00:14.478995Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-09T00:00:14.609986Z  WARN ThreadId(04) docker_node: Node 0 Regular transaction queue backlog: 5455 transactions
+2025-11-09T00:00:15.698801Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 41 slow write: 13.608131ms
+2025-11-09T00:00:15.935979Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 90 timed out; latency may accumulate
+2025-11-09T00:00:19.479355Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-09T00:00:19.479388Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-09T00:00:19.610646Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 7103 transactions
+2025-11-09T00:00:24.478857Z  WARN ThreadId(07) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-09T00:00:24.478899Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-09T00:00:24.609954Z  WARN ThreadId(09) docker_node: Node 0 Regular transaction queue backlog: 8667 transactions
+2025-11-09T00:00:25.082571Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 24 slow write: 5.024122ms
+2025-11-09T00:00:25.086097Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 28 slow write: 5.29202ms
+2025-11-09T00:00:25.090305Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 20 slow write: 6.04876ms
+2025-11-09T00:00:25.141431Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 31 slow write: 12.621734ms
+2025-11-09T00:00:25.142338Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 61 slow write: 14.044252ms
+2025-11-09T00:00:25.142982Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 57 slow write: 15.689586ms
+2025-11-09T00:00:25.143301Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 62 slow write: 17.012861ms
+2025-11-09T00:00:25.143748Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 59 slow write: 18.427588ms
+2025-11-09T00:00:25.144057Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 14 slow write: 19.878347ms
+2025-11-09T00:00:25.144330Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 10 slow write: 21.097969ms
+2025-11-09T00:00:25.144654Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 48 slow write: 22.436555ms
+2025-11-09T00:00:25.146725Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 38 slow write: 25.289981ms
+2025-11-09T00:00:25.147258Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 53 slow write: 27.029567ms
+2025-11-09T00:00:25.147723Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 56 slow write: 29.831881ms
+2025-11-09T00:00:25.148127Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 51 slow write: 31.405803ms
+2025-11-09T00:00:25.148442Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 47 slow write: 33.20058ms
+2025-11-09T00:00:25.149131Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 8 slow write: 35.178192ms
+2025-11-09T00:00:25.149511Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 54 slow write: 36.645711ms
+2025-11-09T00:00:25.150188Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 34 slow write: 39.683042ms
+2025-11-09T00:00:25.150626Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 39 slow write: 42.200709ms
+2025-11-09T00:00:25.151148Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 13 slow write: 43.520143ms
+2025-11-09T00:00:25.151521Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 11 slow write: 45.029844ms
+2025-11-09T00:00:25.151803Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 50 slow write: 47.495679ms
+2025-11-09T00:00:25.152194Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 15 slow write: 48.29526ms
+2025-11-09T00:00:25.152628Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 4 slow write: 22.940468ms
+2025-11-09T00:00:25.153003Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 41 slow write: 23.533144ms
+2025-11-09T00:00:25.153662Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 61 slow write: 10.991291ms
+2025-11-09T00:00:25.157572Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 50 slow write: 5.412534ms
+2025-11-09T00:00:25.159338Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 11 slow write: 7.595342ms
+2025-11-09T00:00:25.159617Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 13 slow write: 8.134606ms
+2025-11-09T00:00:25.160264Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 39 slow write: 9.185093ms
+2025-11-09T00:00:25.160733Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 34 slow write: 10.18529ms
+2025-11-09T00:00:25.161468Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 54 slow write: 11.386611ms
+2025-11-09T00:00:25.161767Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 8 slow write: 12.313186ms
+2025-11-09T00:00:25.163303Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 47 slow write: 14.241038ms
+2025-11-09T00:00:25.163664Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 51 slow write: 15.234133ms
+2025-11-09T00:00:25.164411Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 56 slow write: 16.304102ms
+2025-11-09T00:00:25.165038Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 53 slow write: 17.36541ms
+2025-11-09T00:00:25.165324Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 38 slow write: 18.09398ms
+2025-11-09T00:00:25.166499Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 48 slow write: 21.536551ms
+2025-11-09T00:00:25.166878Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 10 slow write: 22.25198ms
+2025-11-09T00:00:25.167185Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 14 slow write: 22.893387ms
+2025-11-09T00:00:25.167665Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 59 slow write: 23.616086ms
+2025-11-09T00:00:25.167986Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 62 slow write: 24.273253ms
+2025-11-09T00:00:25.168617Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 57 slow write: 25.316261ms
+2025-11-09T00:00:25.173407Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 37 slow write: 6.145193ms
+2025-11-09T00:00:25.173448Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 5 slow write: 6.490782ms
+2025-11-09T00:00:25.177312Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 54 slow write: 5.403653ms
+2025-11-09T00:00:25.177365Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 47 slow write: 6.39975ms
+2025-11-09T00:00:25.177465Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 51 slow write: 7.863378ms
+2025-11-09T00:00:25.179195Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 15 slow write: 14.179416ms
+2025-11-09T00:00:25.219530Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 38 slow write: 29.880562ms
+2025-11-09T00:00:29.152457Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(113) far exceeds block count (1); potential sync issue    
+2025-11-09T00:00:29.478899Z  WARN ThreadId(07) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-09T00:00:29.478931Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-09T00:00:34.478329Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-09T00:00:34.478368Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-09T00:00:36.088768Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 119 timed out; latency may accumulate
+2025-11-09T00:00:39.478972Z  WARN ThreadId(03) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-09T00:00:39.479005Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-09T00:00:42.999849Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 126 timed out; latency may accumulate
+2025-11-09T00:00:44.478594Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-09T00:00:44.478625Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-09T00:00:49.478373Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-09T00:00:49.478409Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-09T00:00:54.478422Z  WARN ThreadId(03) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-09T00:00:54.479724Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-09T00:00:55.523363Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 135 timed out; latency may accumulate
+2025-11-09T00:00:59.478996Z  WARN ThreadId(07) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-09T00:00:59.479034Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-09T00:01:01.707293Z ERROR ThreadId(06) docker_node: Node 0 failed to send response
+2025-11-09T00:01:04.478884Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-09T00:01:04.478921Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-09T00:01:05.970158Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 149 timed out; latency may accumulate
+2025-11-09T00:01:09.478336Z  WARN ThreadId(07) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-09T00:01:09.478364Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-09T00:01:14.478465Z  WARN ThreadId(07) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-09T00:01:14.478500Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-09T00:01:19.478831Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-09T00:01:19.478868Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-09T00:01:24.035002Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 168 timed out; latency may accumulate
+2025-11-09T00:01:24.481832Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-09T00:01:24.481875Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-09T00:01:29.478288Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-09T00:01:29.478314Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-09T00:01:31.576512Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(183) far exceeds block count (2); potential sync issue    
+2025-11-09T00:01:34.479258Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-09T00:01:34.479292Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-09T00:01:39.478556Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-09T00:01:39.478604Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-09T00:01:44.478890Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-09T00:01:44.478932Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-09T00:01:49.479179Z  WARN ThreadId(09) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-09T00:01:49.480274Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-09T00:01:54.478432Z  WARN ThreadId(05) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-09T00:01:54.478537Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-09T00:01:59.478264Z  WARN ThreadId(07) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-09T00:01:59.478301Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-09T00:02:04.479084Z  WARN ThreadId(06) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-09T00:02:04.479120Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-09T00:02:09.478322Z  WARN ThreadId(03) docker_node: Low processing efficiency: 0.0% - system may need tuning
+2025-11-09T00:02:09.478359Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-09T00:02:11.855308Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 26 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-09T00:02:12.058492Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 26 slot 2785): Failed to send VOTE: Connection failed 13.210.235.104:21026: Connection refused (os error 111)
+2025-11-09T00:02:12.144389Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[83, 100, 254, 206, 223, 181, 90, 184, 224, 191, 219, 172, 36, 25, 133, 7, 42, 142, 134, 12, 151, 50, 182, 158, 241, 144, 73, 254, 112, 238, 164, 217] view=252 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=false (exists=false) | cond3(view>locked || extends)=true (pc.view=252, locked.view=249, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[235, 35, 14, 75, 52, 207, 61, 190, 98, 53, 58, 3, 204, 248, 116, 238, 5, 162, 204, 114, 250, 90, 213, 211, 98, 83, 45, 116, 9, 202, 205, 45] highest_pc.view=250 locked.block=[72, 6, 47, 68, 122, 207, 127, 198, 201, 255, 61, 103, 38, 241, 71, 140, 136, 42, 35, 49, 254, 17, 69, 246, 62, 26, 75, 9, 231, 103, 240, 62] locked.view=249    
+2025-11-09T00:02:12.256663Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 26 slot 2786): Failed to send VOTE: Connection failed 13.210.235.104:21026: Connection refused (os error 111)
+2025-11-09T00:02:12.472662Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 26 slot 2790): Failed to send VOTE: Connection failed 13.210.235.104:21026: Connection refused (os error 111)
+2025-11-09T00:02:12.474322Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 31 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-09T00:02:12.678253Z  WARN ThreadId(07) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 31 slot 2324): Failed to send VOTE: Connection failed 3.25.233.47:21031: Connection refused (os error 111)
+2025-11-09T00:02:12.884007Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 31 slot 2326): Failed to send VOTE: Connection failed 3.25.233.47:21031: Connection refused (os error 111)
+2025-11-09T00:02:13.085486Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 26 slot 2789): Failed to send VOTE: Connection failed 13.210.235.104:21026: Connection refused (os error 111)
+2025-11-09T00:02:13.177904Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 27 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-09T00:02:13.178428Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 30 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-09T00:02:13.292065Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 31 slot 2325): Failed to send VOTE: Connection failed 3.25.233.47:21031: Connection refused (os error 111)
+2025-11-09T00:02:13.292648Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 36 failed: Failed to write length: Connection reset by peer (os error 104)
+2025-11-09T00:02:13.493385Z  WARN ThreadId(03) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 31 slot 2327): Failed to send VOTE: Connection failed 3.25.233.47:21031: Connection refused (os error 111)
+2025-11-09T00:02:13.494948Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 24 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-09T00:02:13.495512Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 21 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-09T00:02:13.542950Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 15 failed: Failed to write length: Connection reset by peer (os error 104)
+2025-11-09T00:02:13.543091Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 33 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-09T00:02:13.543162Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 32 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-09T00:02:13.543247Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 28 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-09T00:02:13.543258Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 35 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-09T00:02:13.543361Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 34 failed: Failed to write length: Connection reset by peer (os error 104)
+2025-11-09T00:02:13.543363Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 37 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-09T00:02:13.543385Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 25 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-09T00:02:13.543397Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 29 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-09T00:02:13.543510Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 14 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-09T00:02:13.543566Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 20 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-09T00:02:13.543622Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 23 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-09T00:02:13.543647Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 22 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-09T00:02:13.587570Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 10 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-09T00:02:13.614048Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 7 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-09T00:02:13.614208Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 13 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-09T00:02:13.614243Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 8 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-09T00:02:13.614256Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 11 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-09T00:02:13.614557Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 12 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-09T00:02:13.661580Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 9 failed: Failed to write length: Connection reset by peer (os error 104)
+2025-11-09T00:02:13.694535Z  WARN ThreadId(07) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 26 slot 2788): Failed to send VOTE: Connection failed 13.210.235.104:21026: Connection refused (os error 111)
+2025-11-09T00:02:13.759362Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 18 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-09T00:02:13.759670Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 16 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-09T00:02:13.759886Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 19 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-09T00:02:13.760090Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [SMROL] writer task 0 -> 17 failed: Failed to write length: Broken pipe (os error 32)
+2025-11-09T00:02:13.761344Z  WARN ThreadId(09) hotstuff_runner::smrol::pnfifo: ⚠️ [PNFIFO] Node 0 proposal handling failed (leader 8 slot 3001): Failed to send VOTE: Connection failed 54.193.37.237:21008: Connection refused (os error 111)

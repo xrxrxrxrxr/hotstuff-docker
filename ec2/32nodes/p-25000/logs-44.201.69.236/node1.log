@@ -1,0 +1,88 @@
+2025-11-12T01:52:41.066032Z  WARN ThreadId(01) docker_node: metrics exporter disabled by SMROL_DISABLE_METRICS
+2025-11-12T01:53:01.269009Z  WARN ThreadId(01) hotstuff_runner::tcp_node: Node 1 view timeout set to 4000 ms
+2025-11-12T01:53:01.272129Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 1 failed to connect to node 2: Connection refused (os error 111)
+2025-11-12T01:53:01.272486Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 3: Connection refused (os error 111)
+2025-11-12T01:53:01.280505Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: SMROL_MEDIAN_INFLIGHT=24, SMROL_ORDER_FINALIZE_INFLIGHT=4, SMROL_FINAL_SIGN_INFLIGHT=4, SMROL_FINAL_VERIFY_INFLIGHT=24
+2025-11-12T01:53:01.280553Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: [Sequencing] Node 1 multi-signature verification disabled: false
+2025-11-12T01:53:01.280646Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [Sequencing] Node 1 final verify dispatcher started
+2025-11-12T01:53:01.281753Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-12T01:53:05.271206Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 0 timed out; latency may accumulate
+2025-11-12T01:53:06.282326Z  WARN ThreadId(04) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-12T01:53:06.285576Z  WARN ThreadId(01) docker_node: Node 0 port 20000 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.287924Z  WARN ThreadId(01) docker_node: Node 1 port 20001 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.289731Z  WARN ThreadId(01) docker_node: Node 2 port 20002 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.291248Z  WARN ThreadId(01) docker_node: Node 3 port 20003 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.292905Z  WARN ThreadId(01) docker_node: Node 4 port 20004 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.294597Z  WARN ThreadId(01) docker_node: Node 5 port 20005 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.296608Z  WARN ThreadId(01) docker_node: Node 6 port 20006 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.298249Z  WARN ThreadId(01) docker_node: Node 7 port 20007 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.300101Z  WARN ThreadId(01) docker_node: Node 8 port 20008 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.301728Z  WARN ThreadId(01) docker_node: Node 9 port 20009 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.303539Z  WARN ThreadId(01) docker_node: Node 10 port 20010 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.305332Z  WARN ThreadId(01) docker_node: Node 11 port 20011 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.306949Z  WARN ThreadId(01) docker_node: Node 12 port 20012 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.308626Z  WARN ThreadId(01) docker_node: Node 13 port 20013 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.310217Z  WARN ThreadId(01) docker_node: Node 14 port 20014 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.311870Z  WARN ThreadId(01) docker_node: Node 15 port 20015 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.313580Z  WARN ThreadId(01) docker_node: Node 16 port 20016 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.315142Z  WARN ThreadId(01) docker_node: Node 17 port 20017 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.316745Z  WARN ThreadId(01) docker_node: Node 18 port 20018 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.318362Z  WARN ThreadId(01) docker_node: Node 19 port 20019 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.320742Z  WARN ThreadId(01) docker_node: Node 20 port 20020 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.322533Z  WARN ThreadId(01) docker_node: Node 21 port 20021 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.324206Z  WARN ThreadId(01) docker_node: Node 22 port 20022 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.325819Z  WARN ThreadId(01) docker_node: Node 23 port 20023 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.327414Z  WARN ThreadId(01) docker_node: Node 24 port 20024 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.329285Z  WARN ThreadId(01) docker_node: Node 25 port 20025 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.330988Z  WARN ThreadId(01) docker_node: Node 26 port 20026 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.332632Z  WARN ThreadId(01) docker_node: Node 27 port 20027 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.334316Z  WARN ThreadId(01) docker_node: Node 28 port 20028 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.336962Z  WARN ThreadId(01) docker_node: Node 29 port 20029 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.338758Z  WARN ThreadId(01) docker_node: Node 30 port 20030 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:06.340351Z  WARN ThreadId(01) docker_node: Node 31 port 20031 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T01:53:10.069990Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[137, 28, 43, 199, 165, 5, 150, 113, 210, 163, 6, 181, 93, 216, 186, 206, 110, 175, 160, 162, 148, 243, 160, 180, 246, 83, 81, 44, 151, 6, 114, 246] view=1 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=true (exists=true) | cond3(view>locked || extends)=false (pc.view=1, locked.view=2, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[129, 230, 201, 90, 86, 36, 97, 115, 44, 157, 152, 178, 129, 213, 228, 11, 38, 153, 199, 91, 198, 209, 18, 131, 11, 14, 83, 108, 50, 14, 168, 55] highest_pc.view=3 locked.block=[28, 9, 113, 234, 18, 138, 133, 228, 172, 82, 158, 38, 131, 16, 105, 27, 219, 56, 155, 48, 55, 15, 197, 108, 62, 26, 159, 141, 201, 218, 28, 108] locked.view=2    
+2025-11-12T01:53:10.070013Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[208, 138, 52, 113, 190, 253, 186, 220, 208, 35, 107, 253, 77, 27, 129, 40, 57, 250, 34, 29, 217, 3, 4, 206, 124, 226, 79, 175, 193, 147, 132, 221] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[137, 28, 43, 199, 165, 5, 150, 113, 210, 163, 6, 181, 93, 216, 186, 206, 110, 175, 160, 162, 148, 243, 160, 180, 246, 83, 81, 44, 151, 6, 114, 246] justify.view=1 | highest_pc.block=[129, 230, 201, 90, 86, 36, 97, 115, 44, 157, 152, 178, 129, 213, 228, 11, 38, 153, 199, 91, 198, 209, 18, 131, 11, 14, 83, 108, 50, 14, 168, 55] highest_pc.view=3 | locked.block=[28, 9, 113, 234, 18, 138, 133, 228, 172, 82, 158, 38, 131, 16, 105, 27, 219, 56, 155, 48, 55, 15, 197, 108, 62, 26, 159, 141, 201, 218, 28, 108] locked.view=2    
+2025-11-12T01:53:11.281745Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-12T01:53:16.281668Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-12T01:53:20.141972Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 15 timed out; latency may accumulate
+2025-11-12T01:53:20.526045Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-12T01:53:21.281683Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-12T01:53:25.822621Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 25 timed out; latency may accumulate
+2025-11-12T01:53:26.281633Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-12T01:53:31.282060Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (7.3 msg/conn)
+2025-11-12T01:53:31.691521Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 36 timed out; latency may accumulate
+2025-11-12T01:53:32.340942Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Detected transaction backlog: submit rate (0.3) > confirm rate (0.0)
+2025-11-12T01:53:33.940005Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Detected transaction backlog: submit rate (0.2) > confirm rate (0.0)
+2025-11-12T01:53:35.006815Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-12T01:53:36.282600Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (12.0 msg/conn)
+2025-11-12T01:53:41.282231Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T01:53:46.281871Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T01:53:51.281680Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T01:53:56.282383Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T01:53:57.013028Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 64 timed out; latency may accumulate
+2025-11-12T01:54:01.282103Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T01:54:01.469487Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 67 timed out; latency may accumulate
+2025-11-12T01:54:03.123756Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[128, 33, 32, 63, 235, 116, 53, 115, 53, 123, 198, 71, 126, 113, 224, 250, 185, 200, 56, 144, 139, 59, 241, 163, 116, 172, 203, 48, 101, 36, 0, 210] view=47 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=true (exists=true) | cond3(view>locked || extends)=false (pc.view=47, locked.view=65, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[13, 147, 59, 10, 198, 216, 255, 200, 49, 123, 0, 205, 48, 169, 139, 165, 217, 226, 102, 156, 213, 243, 190, 78, 255, 48, 16, 177, 2, 123, 84, 106] highest_pc.view=66 locked.block=[126, 105, 58, 108, 38, 157, 118, 134, 22, 135, 47, 193, 224, 86, 29, 103, 221, 194, 14, 9, 181, 95, 163, 85, 22, 169, 238, 214, 245, 248, 195, 91] locked.view=65    
+2025-11-12T01:54:03.123806Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[70, 118, 176, 169, 30, 107, 9, 64, 50, 177, 68, 100, 74, 50, 11, 155, 38, 125, 248, 97, 152, 177, 176, 2, 239, 126, 4, 0, 185, 19, 79, 107] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[128, 33, 32, 63, 235, 116, 53, 115, 53, 123, 198, 71, 126, 113, 224, 250, 185, 200, 56, 144, 139, 59, 241, 163, 116, 172, 203, 48, 101, 36, 0, 210] justify.view=47 | highest_pc.block=[13, 147, 59, 10, 198, 216, 255, 200, 49, 123, 0, 205, 48, 169, 139, 165, 217, 226, 102, 156, 213, 243, 190, 78, 255, 48, 16, 177, 2, 123, 84, 106] highest_pc.view=66 | locked.block=[126, 105, 58, 108, 38, 157, 118, 134, 22, 135, 47, 193, 224, 86, 29, 103, 221, 194, 14, 9, 181, 95, 163, 85, 22, 169, 238, 214, 245, 248, 195, 91] locked.view=65    
+2025-11-12T01:54:06.282100Z  WARN ThreadId(04) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T01:54:06.903218Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[128, 33, 32, 63, 235, 116, 53, 115, 53, 123, 198, 71, 126, 113, 224, 250, 185, 200, 56, 144, 139, 59, 241, 163, 116, 172, 203, 48, 101, 36, 0, 210] view=47 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=true (exists=true) | cond3(view>locked || extends)=false (pc.view=47, locked.view=65, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[13, 147, 59, 10, 198, 216, 255, 200, 49, 123, 0, 205, 48, 169, 139, 165, 217, 226, 102, 156, 213, 243, 190, 78, 255, 48, 16, 177, 2, 123, 84, 106] highest_pc.view=66 locked.block=[126, 105, 58, 108, 38, 157, 118, 134, 22, 135, 47, 193, 224, 86, 29, 103, 221, 194, 14, 9, 181, 95, 163, 85, 22, 169, 238, 214, 245, 248, 195, 91] locked.view=65    
+2025-11-12T01:54:06.903249Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[168, 159, 137, 40, 125, 234, 17, 129, 135, 255, 68, 0, 187, 159, 81, 77, 218, 120, 91, 106, 169, 101, 187, 46, 250, 70, 116, 21, 160, 200, 219, 165] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[128, 33, 32, 63, 235, 116, 53, 115, 53, 123, 198, 71, 126, 113, 224, 250, 185, 200, 56, 144, 139, 59, 241, 163, 116, 172, 203, 48, 101, 36, 0, 210] justify.view=47 | highest_pc.block=[13, 147, 59, 10, 198, 216, 255, 200, 49, 123, 0, 205, 48, 169, 139, 165, 217, 226, 102, 156, 213, 243, 190, 78, 255, 48, 16, 177, 2, 123, 84, 106] highest_pc.view=66 | locked.block=[126, 105, 58, 108, 38, 157, 118, 134, 22, 135, 47, 193, 224, 86, 29, 103, 221, 194, 14, 9, 181, 95, 163, 85, 22, 169, 238, 214, 245, 248, 195, 91] locked.view=65    
+2025-11-12T01:54:09.471169Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 69 timed out; latency may accumulate
+2025-11-12T01:54:11.282332Z  WARN ThreadId(04) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T01:54:14.741313Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 76 timed out; latency may accumulate
+2025-11-12T01:54:16.282184Z  WARN ThreadId(04) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T01:54:19.240396Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 79 timed out; latency may accumulate
+2025-11-12T01:54:20.537774Z  WARN ThreadId(20) hotstuff_runner::app: Node 1 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-12T01:54:21.282471Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T01:54:24.859956Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 84 timed out; latency may accumulate
+2025-11-12T01:54:26.282311Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T01:54:29.511704Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 88 timed out; latency may accumulate
+2025-11-12T01:54:31.282298Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T01:54:36.281921Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T01:54:41.281753Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T01:54:43.291704Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 99 timed out; latency may accumulate
+2025-11-12T01:54:46.282348Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T01:54:49.209726Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 103 timed out; latency may accumulate
+2025-11-12T01:54:51.281689Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T01:54:56.282078Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T01:54:58.056058Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 108 timed out; latency may accumulate

@@ -1,0 +1,148 @@
+2025-11-12T04:21:58.574106Z  WARN ThreadId(01) docker_node: metrics exporter disabled by SMROL_DISABLE_METRICS
+2025-11-12T04:22:18.777668Z  WARN ThreadId(01) hotstuff_runner::tcp_node: Node 0 view timeout set to 4000 ms
+2025-11-12T04:22:18.780367Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 1: Connection refused (os error 111)
+2025-11-12T04:22:18.781732Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 0 failed to connect to node 5: Connection refused (os error 111)
+2025-11-12T04:22:18.789154Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: SMROL_MEDIAN_INFLIGHT=24, SMROL_ORDER_FINALIZE_INFLIGHT=4, SMROL_FINAL_SIGN_INFLIGHT=4, SMROL_FINAL_VERIFY_INFLIGHT=24
+2025-11-12T04:22:18.789205Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: [Sequencing] Node 0 multi-signature verification disabled: false
+2025-11-12T04:22:18.789290Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [Sequencing] Node 0 final verify dispatcher started
+2025-11-12T04:22:18.790372Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-12T04:22:22.779823Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 0 timed out; latency may accumulate
+2025-11-12T04:22:23.789817Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-12T04:22:23.791913Z  WARN ThreadId(01) docker_node: Node 0 port 20000 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.793783Z  WARN ThreadId(01) docker_node: Node 1 port 20001 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.795399Z  WARN ThreadId(01) docker_node: Node 2 port 20002 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.796837Z  WARN ThreadId(01) docker_node: Node 3 port 20003 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.798582Z  WARN ThreadId(01) docker_node: Node 4 port 20004 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.800241Z  WARN ThreadId(01) docker_node: Node 5 port 20005 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.801967Z  WARN ThreadId(01) docker_node: Node 6 port 20006 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.803718Z  WARN ThreadId(01) docker_node: Node 7 port 20007 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.805393Z  WARN ThreadId(01) docker_node: Node 8 port 20008 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.806935Z  WARN ThreadId(01) docker_node: Node 9 port 20009 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.808577Z  WARN ThreadId(01) docker_node: Node 10 port 20010 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.810459Z  WARN ThreadId(01) docker_node: Node 11 port 20011 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.812157Z  WARN ThreadId(01) docker_node: Node 12 port 20012 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.814006Z  WARN ThreadId(01) docker_node: Node 13 port 20013 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.815752Z  WARN ThreadId(01) docker_node: Node 14 port 20014 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.817302Z  WARN ThreadId(01) docker_node: Node 15 port 20015 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.818883Z  WARN ThreadId(01) docker_node: Node 16 port 20016 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.820528Z  WARN ThreadId(01) docker_node: Node 17 port 20017 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.822287Z  WARN ThreadId(01) docker_node: Node 18 port 20018 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.823840Z  WARN ThreadId(01) docker_node: Node 19 port 20019 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.825570Z  WARN ThreadId(01) docker_node: Node 20 port 20020 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.827272Z  WARN ThreadId(01) docker_node: Node 21 port 20021 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.828930Z  WARN ThreadId(01) docker_node: Node 22 port 20022 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.830651Z  WARN ThreadId(01) docker_node: Node 23 port 20023 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.832376Z  WARN ThreadId(01) docker_node: Node 24 port 20024 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.834691Z  WARN ThreadId(01) docker_node: Node 25 port 20025 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.836975Z  WARN ThreadId(01) docker_node: Node 26 port 20026 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.839198Z  WARN ThreadId(01) docker_node: Node 27 port 20027 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.840793Z  WARN ThreadId(01) docker_node: Node 28 port 20028 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.842467Z  WARN ThreadId(01) docker_node: Node 29 port 20029 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.844323Z  WARN ThreadId(01) docker_node: Node 30 port 20030 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:23.846016Z  WARN ThreadId(01) docker_node: Node 31 port 20031 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-12T04:22:28.790409Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-12T04:22:31.536183Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 5 timed out; latency may accumulate
+2025-11-12T04:22:33.790383Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-12T04:22:36.329263Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 10 timed out; latency may accumulate
+2025-11-12T04:22:38.789896Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-12T04:22:41.264672Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 15 timed out; latency may accumulate
+2025-11-12T04:22:41.967758Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-11-12T04:22:43.790485Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-11-12T04:22:47.521185Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Detected transaction backlog: submit rate (2.5) > confirm rate (0.0)
+2025-11-12T04:22:48.349846Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 0 flushed 63168 transactions
+2025-11-12T04:22:48.790571Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (6.9 msg/conn)
+2025-11-12T04:22:48.820766Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 0 flushed 10528 transactions
+2025-11-12T04:22:48.846910Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 73696 transactions
+2025-11-12T04:22:49.336747Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 0 flushed 34215 transactions
+2025-11-12T04:22:49.825097Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 0 flushed 23688 transactions
+2025-11-12T04:22:52.561575Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 35 timed out; latency may accumulate
+2025-11-12T04:22:53.790273Z  WARN ThreadId(02) docker_node: HotStuff processing bottleneck detected:
+2025-11-12T04:22:53.790298Z  WARN ThreadId(02) docker_node:    - HotStuff queue backlog: 73696 transactions
+2025-11-12T04:22:53.790309Z  WARN ThreadId(02) docker_node:    - Confirmation TPS (0.0) much lower than submission TPS (0.2)
+2025-11-12T04:22:53.790316Z  WARN ThreadId(02) docker_node:    - Possible cause: HotStuff consensus network delay or block size limitation
+2025-11-12T04:22:53.790326Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (7.8 msg/conn)
+2025-11-12T04:22:53.847502Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 171078 transactions
+2025-11-12T04:22:57.161939Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 0 flushed 47376 transactions
+2025-11-12T04:22:57.658287Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 0 flushed 26319 transactions
+2025-11-12T04:22:58.161336Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 0 flushed 26320 transactions
+2025-11-12T04:22:58.655878Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 0 flushed 15792 transactions
+2025-11-12T04:22:58.790193Z  WARN ThreadId(09) docker_node: HotStuff processing bottleneck detected:
+2025-11-12T04:22:58.790217Z  WARN ThreadId(09) docker_node:    - HotStuff queue backlog: 171078 transactions
+2025-11-12T04:22:58.790226Z  WARN ThreadId(09) docker_node:    - Confirmation TPS (0.0) much lower than submission TPS (0.2)
+2025-11-12T04:22:58.790232Z  WARN ThreadId(09) docker_node:    - Possible cause: HotStuff consensus network delay or block size limitation
+2025-11-12T04:22:58.790242Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (11.4 msg/conn)
+2025-11-12T04:22:58.846688Z  WARN ThreadId(06) docker_node: Node 0 Regular transaction queue backlog: 339524 transactions
+2025-11-12T04:22:59.916584Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 0 flushed 84224 transactions
+2025-11-12T04:23:00.409507Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 0 flushed 65797 transactions
+2025-11-12T04:23:00.892703Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 0 flushed 13160 transactions
+2025-11-12T04:23:01.395790Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 0 flushed 21056 transactions
+2025-11-12T04:23:01.968792Z  WARN ThreadId(09) hotstuff_runner::pompe: ⚡ [Timed Output] Node 0 flushed 181607 transactions
+2025-11-12T04:23:02.403582Z  WARN ThreadId(02) hotstuff_runner::pompe: ⚡ [Timed Output] Node 0 flushed 23688 transactions
+2025-11-12T04:23:02.897434Z  WARN ThreadId(06) hotstuff_runner::pompe: ⚡ [Timed Output] Node 0 flushed 13160 transactions
+2025-11-12T04:23:03.790509Z  WARN ThreadId(08) docker_node: HotStuff processing bottleneck detected:
+2025-11-12T04:23:03.790537Z  WARN ThreadId(08) docker_node:    - HotStuff queue backlog: 339524 transactions
+2025-11-12T04:23:03.790545Z  WARN ThreadId(08) docker_node:    - Confirmation TPS (0.0) much lower than submission TPS (0.1)
+2025-11-12T04:23:03.790551Z  WARN ThreadId(08) docker_node:    - Possible cause: HotStuff consensus network delay or block size limitation
+2025-11-12T04:23:03.790560Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T04:23:03.846716Z  WARN ThreadId(08) docker_node: Node 0 Regular transaction queue backlog: 742216 transactions
+2025-11-12T04:23:05.725635Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[209, 193, 165, 24, 114, 37, 224, 72, 150, 59, 114, 192, 89, 166, 5, 149, 32, 48, 84, 88, 155, 255, 1, 30, 94, 85, 169, 209, 26, 218, 153, 151] view=34 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=true (exists=true) | cond3(view>locked || extends)=false (pc.view=34, locked.view=37, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[117, 254, 66, 144, 212, 37, 99, 49, 113, 223, 159, 0, 200, 180, 81, 110, 230, 230, 36, 244, 18, 71, 122, 223, 104, 26, 113, 160, 141, 134, 118, 178] highest_pc.view=38 locked.block=[48, 57, 12, 139, 60, 252, 242, 60, 127, 173, 35, 62, 75, 241, 0, 14, 81, 216, 183, 162, 15, 91, 219, 167, 197, 181, 23, 161, 132, 217, 104, 209] locked.view=37    
+2025-11-12T04:23:05.725676Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[187, 43, 108, 107, 175, 103, 52, 140, 184, 181, 160, 169, 170, 200, 226, 243, 99, 73, 19, 178, 169, 200, 166, 0, 63, 153, 25, 127, 162, 50, 237, 85] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[209, 193, 165, 24, 114, 37, 224, 72, 150, 59, 114, 192, 89, 166, 5, 149, 32, 48, 84, 88, 155, 255, 1, 30, 94, 85, 169, 209, 26, 218, 153, 151] justify.view=34 | highest_pc.block=[117, 254, 66, 144, 212, 37, 99, 49, 113, 223, 159, 0, 200, 180, 81, 110, 230, 230, 36, 244, 18, 71, 122, 223, 104, 26, 113, 160, 141, 134, 118, 178] highest_pc.view=38 | locked.block=[48, 57, 12, 139, 60, 252, 242, 60, 127, 173, 35, 62, 75, 241, 0, 14, 81, 216, 183, 162, 15, 91, 219, 167, 197, 181, 23, 161, 132, 217, 104, 209] locked.view=37    
+2025-11-12T04:23:08.789797Z  WARN ThreadId(08) docker_node: HotStuff processing bottleneck detected:
+2025-11-12T04:23:08.789823Z  WARN ThreadId(08) docker_node:    - HotStuff queue backlog: 742216 transactions
+2025-11-12T04:23:08.789832Z  WARN ThreadId(08) docker_node:    - Confirmation TPS (0.0) much lower than submission TPS (0.1)
+2025-11-12T04:23:08.789838Z  WARN ThreadId(08) docker_node:    - Possible cause: HotStuff consensus network delay or block size limitation
+2025-11-12T04:23:08.789850Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T04:23:08.847068Z  WARN ThreadId(08) docker_node: Node 0 Regular transaction queue backlog: 742216 transactions
+2025-11-12T04:23:10.495266Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 41 timed out; latency may accumulate
+2025-11-12T04:23:13.790440Z  WARN ThreadId(08) docker_node: HotStuff processing bottleneck detected:
+2025-11-12T04:23:13.790474Z  WARN ThreadId(08) docker_node:    - HotStuff queue backlog: 742216 transactions
+2025-11-12T04:23:13.790486Z  WARN ThreadId(08) docker_node:    - Confirmation TPS (0.0) much lower than submission TPS (0.1)
+2025-11-12T04:23:13.790505Z  WARN ThreadId(08) docker_node:    - Possible cause: HotStuff consensus network delay or block size limitation
+2025-11-12T04:23:13.790519Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T04:23:13.846742Z  WARN ThreadId(08) docker_node: Node 0 Regular transaction queue backlog: 742216 transactions
+2025-11-12T04:23:13.996852Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[209, 193, 165, 24, 114, 37, 224, 72, 150, 59, 114, 192, 89, 166, 5, 149, 32, 48, 84, 88, 155, 255, 1, 30, 94, 85, 169, 209, 26, 218, 153, 151] view=34 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=true (exists=true) | cond3(view>locked || extends)=false (pc.view=34, locked.view=37, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[117, 254, 66, 144, 212, 37, 99, 49, 113, 223, 159, 0, 200, 180, 81, 110, 230, 230, 36, 244, 18, 71, 122, 223, 104, 26, 113, 160, 141, 134, 118, 178] highest_pc.view=38 locked.block=[48, 57, 12, 139, 60, 252, 242, 60, 127, 173, 35, 62, 75, 241, 0, 14, 81, 216, 183, 162, 15, 91, 219, 167, 197, 181, 23, 161, 132, 217, 104, 209] locked.view=37    
+2025-11-12T04:23:13.996908Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[160, 103, 25, 222, 113, 62, 60, 216, 8, 139, 56, 73, 189, 225, 68, 10, 28, 69, 36, 243, 145, 135, 210, 203, 133, 231, 177, 55, 174, 17, 185, 126] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[209, 193, 165, 24, 114, 37, 224, 72, 150, 59, 114, 192, 89, 166, 5, 149, 32, 48, 84, 88, 155, 255, 1, 30, 94, 85, 169, 209, 26, 218, 153, 151] justify.view=34 | highest_pc.block=[117, 254, 66, 144, 212, 37, 99, 49, 113, 223, 159, 0, 200, 180, 81, 110, 230, 230, 36, 244, 18, 71, 122, 223, 104, 26, 113, 160, 141, 134, 118, 178] highest_pc.view=38 | locked.block=[48, 57, 12, 139, 60, 252, 242, 60, 127, 173, 35, 62, 75, 241, 0, 14, 81, 216, 183, 162, 15, 91, 219, 167, 197, 181, 23, 161, 132, 217, 104, 209] locked.view=37    
+2025-11-12T04:23:18.789934Z  WARN ThreadId(08) docker_node: HotStuff processing bottleneck detected:
+2025-11-12T04:23:18.789962Z  WARN ThreadId(08) docker_node:    - HotStuff queue backlog: 742216 transactions
+2025-11-12T04:23:18.789969Z  WARN ThreadId(08) docker_node:    - Confirmation TPS (0.0) much lower than submission TPS (0.1)
+2025-11-12T04:23:18.789974Z  WARN ThreadId(08) docker_node:    - Possible cause: HotStuff consensus network delay or block size limitation
+2025-11-12T04:23:18.789984Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T04:23:18.847134Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 742216 transactions
+2025-11-12T04:23:23.790177Z  WARN ThreadId(02) docker_node: HotStuff processing bottleneck detected:
+2025-11-12T04:23:23.790198Z  WARN ThreadId(02) docker_node:    - HotStuff queue backlog: 742216 transactions
+2025-11-12T04:23:23.790206Z  WARN ThreadId(02) docker_node:    - Confirmation TPS (0.0) much lower than submission TPS (0.1)
+2025-11-12T04:23:23.790212Z  WARN ThreadId(02) docker_node:    - Possible cause: HotStuff consensus network delay or block size limitation
+2025-11-12T04:23:23.790225Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T04:23:23.847433Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 742216 transactions
+2025-11-12T04:23:25.172381Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 45 timed out; latency may accumulate
+2025-11-12T04:23:28.416214Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[209, 193, 165, 24, 114, 37, 224, 72, 150, 59, 114, 192, 89, 166, 5, 149, 32, 48, 84, 88, 155, 255, 1, 30, 94, 85, 169, 209, 26, 218, 153, 151] view=34 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=true (exists=true) | cond3(view>locked || extends)=false (pc.view=34, locked.view=43, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[231, 212, 187, 174, 234, 187, 40, 188, 226, 102, 227, 88, 139, 7, 26, 30, 135, 122, 254, 206, 231, 255, 254, 11, 13, 196, 24, 238, 126, 172, 103, 78] highest_pc.view=44 locked.block=[24, 248, 162, 192, 231, 253, 24, 146, 42, 78, 47, 78, 143, 15, 9, 68, 153, 181, 131, 93, 169, 89, 77, 231, 69, 84, 40, 103, 56, 37, 170, 237] locked.view=43    
+2025-11-12T04:23:28.416247Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[48, 248, 200, 166, 99, 247, 32, 191, 130, 237, 82, 196, 46, 153, 158, 58, 173, 11, 137, 79, 109, 77, 126, 65, 177, 229, 74, 162, 171, 103, 103, 82] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[209, 193, 165, 24, 114, 37, 224, 72, 150, 59, 114, 192, 89, 166, 5, 149, 32, 48, 84, 88, 155, 255, 1, 30, 94, 85, 169, 209, 26, 218, 153, 151] justify.view=34 | highest_pc.block=[231, 212, 187, 174, 234, 187, 40, 188, 226, 102, 227, 88, 139, 7, 26, 30, 135, 122, 254, 206, 231, 255, 254, 11, 13, 196, 24, 238, 126, 172, 103, 78] highest_pc.view=44 | locked.block=[24, 248, 162, 192, 231, 253, 24, 146, 42, 78, 47, 78, 143, 15, 9, 68, 153, 181, 131, 93, 169, 89, 77, 231, 69, 84, 40, 103, 56, 37, 170, 237] locked.view=43    
+2025-11-12T04:23:28.790566Z  WARN ThreadId(02) docker_node: HotStuff processing bottleneck detected:
+2025-11-12T04:23:28.790595Z  WARN ThreadId(02) docker_node:    - HotStuff queue backlog: 742216 transactions
+2025-11-12T04:23:28.790604Z  WARN ThreadId(02) docker_node:    - Confirmation TPS (0.0) much lower than submission TPS (0.0)
+2025-11-12T04:23:28.790611Z  WARN ThreadId(02) docker_node:    - Possible cause: HotStuff consensus network delay or block size limitation
+2025-11-12T04:23:28.790622Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T04:23:28.846818Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 742216 transactions
+2025-11-12T04:23:29.173221Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 46 timed out; latency may accumulate
+2025-11-12T04:23:33.790218Z  WARN ThreadId(02) docker_node: HotStuff processing bottleneck detected:
+2025-11-12T04:23:33.790250Z  WARN ThreadId(02) docker_node:    - HotStuff queue backlog: 742216 transactions
+2025-11-12T04:23:33.790259Z  WARN ThreadId(02) docker_node:    - Confirmation TPS (0.0) much lower than submission TPS (0.0)
+2025-11-12T04:23:33.790266Z  WARN ThreadId(02) docker_node:    - Possible cause: HotStuff consensus network delay or block size limitation
+2025-11-12T04:23:33.790279Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T04:23:33.847478Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 742216 transactions
+2025-11-12T04:23:38.790599Z  WARN ThreadId(02) docker_node: HotStuff processing bottleneck detected:
+2025-11-12T04:23:38.790636Z  WARN ThreadId(02) docker_node:    - HotStuff queue backlog: 742216 transactions
+2025-11-12T04:23:38.790647Z  WARN ThreadId(02) docker_node:    - Confirmation TPS (0.0) much lower than submission TPS (0.0)
+2025-11-12T04:23:38.790656Z  WARN ThreadId(02) docker_node:    - Possible cause: HotStuff consensus network delay or block size limitation
+2025-11-12T04:23:38.790669Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T04:23:38.846863Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 742216 transactions
+2025-11-12T04:23:43.690282Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 [produce_block] queue size: 742216, attempting up to 180000 transactions this block    
+2025-11-12T04:23:43.790262Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T04:23:43.847538Z  WARN ThreadId(08) docker_node: Node 0 Regular transaction queue backlog: 321661 transactions
+2025-11-12T04:23:48.660661Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 53 timed out; latency may accumulate
+2025-11-12T04:23:48.790198Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T04:23:53.790472Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T04:23:58.789770Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T04:24:03.790062Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T04:24:08.790366Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (17.9 msg/conn)
+2025-11-12T04:24:13.790207Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (17.9 msg/conn)

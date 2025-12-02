@@ -1,0 +1,95 @@
+2025-11-13T08:00:41.120835Z  WARN ThreadId(01) docker_node: metrics exporter disabled by SMROL_DISABLE_METRICS
+2025-11-13T08:01:02.845699Z  WARN ThreadId(01) hotstuff_runner::tcp_node: Node 1 view timeout set to 4000 ms
+2025-11-13T08:01:02.863812Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: SMROL_MEDIAN_INFLIGHT=24, SMROL_ORDER_FINALIZE_INFLIGHT=4, SMROL_FINAL_SIGN_INFLIGHT=4, SMROL_FINAL_VERIFY_INFLIGHT=24
+2025-11-13T08:01:02.863861Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: [Sequencing] Node 1 multi-signature verification disabled: false
+2025-11-13T08:01:02.864551Z  WARN ThreadId(08) hotstuff_runner::smrol::sequencing: [Sequencing] Node 1 final verify dispatcher started
+2025-11-13T08:01:07.869076Z  WARN ThreadId(01) docker_node: Node 0 port 20000 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.871080Z  WARN ThreadId(01) docker_node: Node 1 port 20001 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.872852Z  WARN ThreadId(01) docker_node: Node 2 port 20002 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.874609Z  WARN ThreadId(01) docker_node: Node 3 port 20003 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.876595Z  WARN ThreadId(01) docker_node: Node 4 port 20004 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.878329Z  WARN ThreadId(01) docker_node: Node 5 port 20005 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.879959Z  WARN ThreadId(01) docker_node: Node 6 port 20006 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.881561Z  WARN ThreadId(01) docker_node: Node 7 port 20007 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.883179Z  WARN ThreadId(01) docker_node: Node 8 port 20008 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.884730Z  WARN ThreadId(01) docker_node: Node 9 port 20009 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.886741Z  WARN ThreadId(01) docker_node: Node 10 port 20010 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.888615Z  WARN ThreadId(01) docker_node: Node 11 port 20011 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.890422Z  WARN ThreadId(01) docker_node: Node 12 port 20012 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.892148Z  WARN ThreadId(01) docker_node: Node 13 port 20013 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.893711Z  WARN ThreadId(01) docker_node: Node 14 port 20014 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.895365Z  WARN ThreadId(01) docker_node: Node 15 port 20015 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.897107Z  WARN ThreadId(01) docker_node: Node 16 port 20016 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.898900Z  WARN ThreadId(01) docker_node: Node 17 port 20017 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.901051Z  WARN ThreadId(01) docker_node: Node 18 port 20018 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.902921Z  WARN ThreadId(01) docker_node: Node 19 port 20019 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.904605Z  WARN ThreadId(01) docker_node: Node 20 port 20020 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.906215Z  WARN ThreadId(01) docker_node: Node 21 port 20021 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.907761Z  WARN ThreadId(01) docker_node: Node 22 port 20022 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.909494Z  WARN ThreadId(01) docker_node: Node 23 port 20023 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.911227Z  WARN ThreadId(01) docker_node: Node 24 port 20024 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.912869Z  WARN ThreadId(01) docker_node: Node 25 port 20025 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.914916Z  WARN ThreadId(01) docker_node: Node 26 port 20026 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.917205Z  WARN ThreadId(01) docker_node: Node 27 port 20027 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.919359Z  WARN ThreadId(01) docker_node: Node 28 port 20028 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:01:07.921366Z  WARN ThreadId(01) docker_node: Node 29 port 20029 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-11-13T08:03:19.342465Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 1 failed to connect to node 0: Connection timed out (os error 110)
+2025-11-13T08:03:19.342741Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [208, 74, 178, 50]: Failed to connect to 54.153.130.36:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342744Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [208, 74, 178, 50]: Failed to connect to 54.153.130.36:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342754Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [234, 74, 108, 99]: Failed to connect to 13.56.193.109:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342758Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [234, 74, 108, 99]: Failed to connect to 13.56.193.109:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342761Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [11, 81, 58, 217]: Failed to connect to 3.108.252.86:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342765Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [11, 81, 58, 217]: Failed to connect to 3.108.252.86:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342768Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [232, 218, 99, 164]: Failed to connect to 18.231.82.229:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342772Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [232, 218, 99, 164]: Failed to connect to 18.231.82.229:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342775Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [237, 73, 40, 198]: Failed to connect to 44.213.81.185:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342779Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [237, 73, 40, 198]: Failed to connect to 44.213.81.185:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342782Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [81, 28, 52, 161]: Failed to connect to 3.99.60.235:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342805Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [81, 28, 52, 161]: Failed to connect to 3.99.60.235:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342811Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [11, 238, 245, 169]: Failed to connect to 13.229.144.220:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342827Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [11, 238, 245, 169]: Failed to connect to 13.229.144.220:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342834Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [30, 42, 19, 124]: Failed to connect to 18.175.140.132:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342840Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [172, 219, 14, 41]: Failed to connect to 18.229.155.173:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342845Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [100, 195, 8, 21]: Failed to connect to 52.214.66.167:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342851Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [83, 71, 9, 98]: Failed to connect to 63.179.249.153:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342857Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [253, 23, 36, 56]: Failed to connect to 52.53.255.254:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342862Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [110, 122, 28, 221]: Failed to connect to 3.235.76.43:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342860Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [30, 42, 19, 124]: Failed to connect to 18.175.140.132:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342868Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [102, 205, 96, 139]: Failed to connect to 15.134.86.241:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342893Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [172, 219, 14, 41]: Failed to connect to 18.229.155.173:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342906Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [217, 191, 33, 72]: Failed to connect to 13.250.182.68:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342916Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [100, 195, 8, 21]: Failed to connect to 52.214.66.167:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342922Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [138, 135, 95, 255]: Failed to connect to 54.151.21.207:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342924Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [83, 71, 9, 98]: Failed to connect to 63.179.249.153:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342928Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [32, 130, 139, 245]: Failed to connect to 13.114.32.250:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342932Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [253, 23, 36, 56]: Failed to connect to 52.53.255.254:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342934Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [145, 162, 138, 11]: Failed to connect to 15.207.112.65:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342945Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [110, 122, 28, 221]: Failed to connect to 3.235.76.43:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342972Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [102, 205, 96, 139]: Failed to connect to 15.134.86.241:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342987Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [49, 243, 50, 45]: Failed to connect to 63.178.195.124:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.342999Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [217, 191, 33, 72]: Failed to connect to 13.250.182.68:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.343005Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [92, 156, 109, 242]: Failed to connect to 13.229.155.220:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.343007Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [138, 135, 95, 255]: Failed to connect to 54.151.21.207:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.343009Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [32, 64, 64, 227]: Failed to connect to 16.176.132.254:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.343014Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [102, 190, 126, 51]: Failed to connect to 13.201.99.3:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.343016Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [32, 130, 139, 245]: Failed to connect to 13.114.32.250:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.343017Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [213, 66, 7, 218]: Failed to connect to 13.115.222.222:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.343024Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [180, 8, 140, 211]: Failed to connect to 35.178.205.121:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.343027Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [145, 162, 138, 11]: Failed to connect to 15.207.112.65:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.343028Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [202, 147, 172, 23]: Failed to connect to 44.210.16.110:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.343035Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [49, 243, 50, 45]: Failed to connect to 63.178.195.124:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.343036Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [138, 136, 227, 221]: Failed to connect to 35.170.81.254:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.343058Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [92, 156, 109, 242]: Failed to connect to 13.229.155.220:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.343065Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [32, 64, 64, 227]: Failed to connect to 16.176.132.254:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.343072Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [102, 190, 126, 51]: Failed to connect to 13.201.99.3:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.343079Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [213, 66, 7, 218]: Failed to connect to 13.115.222.222:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.343091Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [180, 8, 140, 211]: Failed to connect to 35.178.205.121:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.343098Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [202, 147, 172, 23]: Failed to connect to 44.210.16.110:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.343119Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [138, 136, 227, 221]: Failed to connect to 35.170.81.254:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.343126Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [67, 167, 46, 113]: Failed to connect to 3.101.112.203:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.343129Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [67, 167, 46, 113]: Failed to connect to 3.101.112.203:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.343133Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [49, 222, 190, 85]: Failed to connect to 15.157.189.106:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.343138Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [49, 222, 190, 85]: Failed to connect to 15.157.189.106:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.343140Z ERROR ThreadId(20) hotstuff_runner::tokio_network: Broadcast send failed to [19, 152, 246, 44]: Failed to connect to 184.169.210.120:10000: Connection timed out (os error 110)
+2025-11-13T08:03:19.343144Z ERROR ThreadId(19) hotstuff_runner::tokio_network: Broadcast send failed to [19, 152, 246, 44]: Failed to connect to 184.169.210.120:10000: Connection timed out (os error 110)
+2025-11-13T08:03:23.343968Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 1 view 0 timed out; latency may accumulate

@@ -1,50 +1,86 @@
 # Dockerfile
 FROM rust:latest as builder
 
-# 安装必要的系统依赖
+ARG ENABLE_TOKIO_CONSOLE=0
+ENV ENABLE_TOKIO_CONSOLE=${ENABLE_TOKIO_CONSOLE}
+
+# Install required system dependencies
 RUN apt-get update && apt-get install -y \
     pkg-config \
     libssl-dev \
     iputils-ping \
     && rm -rf /var/lib/apt/lists/*
 
-# 设置工作目录
+# Set the working directory
 WORKDIR /app
 
-# 复制整个项目（包括hotstuff_runner子目录）
+# Step 1: copy Cargo manifests first (for dependency caching)
+COPY hotstuff_runner/Cargo.toml hotstuff_runner/Cargo.toml
+COPY hotstuff_runner/Cargo.lock hotstuff_runner/Cargo.lock
+COPY hotstuff_rs/Cargo.toml     hotstuff_rs/Cargo.toml
+COPY hotstuff_rs/Cargo.lock     hotstuff_rs/Cargo.lock
+COPY hotstuff_rs/src            hotstuff_rs/src
+
+# Step 2: prebuild dependencies
+RUN mkdir -p hotstuff_runner/src/bin \
+    && for bin in docker_node client docker_node_adversary pure_attacker; do \
+        printf 'fn main() {}\n' > "hotstuff_runner/src/bin/${bin}.rs"; \
+    done
+
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/app/target \
+    if [ "$ENABLE_TOKIO_CONSOLE" = "1" ]; then \
+        export RUSTFLAGS="--cfg tokio_unstable"; \
+    else \
+        unset RUSTFLAGS; \
+    fi; \
+    cargo build --manifest-path hotstuff_runner/Cargo.toml --release --locked --bins
+
+# Copy the entire project (including the hotstuff_runner subdirectory)
 COPY . .
 
-# 进入hotstuff_runner目录并构建应用
+# Enter hotstuff_runner and build the binaries
 WORKDIR /app/hotstuff_runner
-RUN cargo build --release --bin docker_node
-RUN cargo build --release --bin client
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/app/target \
+    if [ "$ENABLE_TOKIO_CONSOLE" = "1" ]; then \
+        export RUSTFLAGS="--cfg tokio_unstable"; \
+    else \
+        unset RUSTFLAGS; \
+    fi; \
+    cargo build --release --bin docker_node && \
+    cargo build --release --bin client && \
+    cargo build --release --bin docker_node_adversary && \
+    cargo build --release --bin pure_attacker
 
-# 运行时镜像
+# Runtime image
 FROM ubuntu:22.04
 
-# 安装运行时依赖
+# Install runtime dependencies
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     netcat \
     && rm -rf /var/lib/apt/lists/*
 
-# 创建应用用户
+# Create application user
 RUN useradd -r -s /bin/false hotstuff
 
-# 复制构建好的二进制文件
+# Copy the compiled binaries
 COPY --from=builder /app/hotstuff_runner/target/release/docker_node /usr/local/bin/docker_node
 COPY --from=builder /app/hotstuff_runner/target/release/client /usr/local/bin/client
+COPY --from=builder /app/hotstuff_runner/target/release/docker_node_adversary /usr/local/bin/docker_node_adversary
+COPY --from=builder /app/hotstuff_runner/target/release/pure_attacker /usr/local/bin/pure_attacker
 
 
-# 切换到应用用户
+# Switch to the application user
 # USER hotstuff
 
-# # 设置默认环境变量
+# # Set default environment variables
 # ENV NODE_ID=0
 # ENV NODE_PORT=8000
 
-# # 暴露端口
+# # Expose ports
 # EXPOSE 8000
 
-# 启动命令
+# Startup command
 CMD ["docker_node"]

@@ -6,17 +6,34 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
+      args:
+        ENABLE_TOKIO_CONSOLE: ${ENABLE_TOKIO_CONSOLE:-0}
     container_name: hotstuff_node0
     hostname: node0
     environment:
       - NODE_ID=0
-      - NODE_PORT=10000
-      - RUST_LOG=debug
+      - NODE_PORT=${NODE_PORT}
+      - RUST_LOG=${LOG_LEVEL}
       - NODE_LEAST_ID=${NODE_LEAST_ID}
       - NODE_NUM=${NODE_NUM}
+      - NODE_HOSTS=${NODE_HOSTS}
+      - POMPE_ENABLE=${POMPE_ENABLE}
+      - POMPE_BATCH_SIZE=${POMPE_BATCH_SIZE}
+      - POMPE_STABLE_PERIOD_MS=${POMPE_STABLE_PERIOD_MS}
+      - POMPE_LEADER_NODE_ID=${POMPE_LEADER_NODE_ID}
+      - ENABLE_RUNTIME_PROFILING=${ENABLE_RUNTIME_PROFILING}
+      - SMROL_DISABLE_MULTISIG=${SMROL_DISABLE_MULTISIG}
+      - SMROL_DISABLE_METRICS=${SMROL_DISABLE_METRICS}
+      - METRICS_PORT=9900
+      - TOKIO_CONSOLE_BIND=0.0.0.0:6669
+      - METRICS_LISTEN_ADDR=0.0.0.0:9900
     ports:
+      - "20000:20000"
       - "10000:10000"
       - "9000:9000"
+      - "21000:21000" 
+      - "6660:6669"
+      - "9900:9900"
     volumes:
       - ./logs:/logs
       - ./logs/node:/log
@@ -34,17 +51,30 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
+      args:
+        ENABLE_TOKIO_CONSOLE: ${ENABLE_TOKIO_CONSOLE:-0}
     container_name: hotstuff_node1
     hostname: node1
     environment:
       - NODE_ID=1
-      - NODE_PORT=10001
-      - RUST_LOG=debug
+      - NODE_PORT=${NODE_PORT}
+      - RUST_LOG=${LOG_LEVEL}
       - NODE_LEAST_ID=${NODE_LEAST_ID}
       - NODE_NUM=${NODE_NUM}
+      - NODE_HOSTS=${NODE_HOSTS}
+      - POMPE_ENABLE=${POMPE_ENABLE}
+      - POMPE_BATCH_SIZE=${POMPE_BATCH_SIZE}
+      - POMPE_STABLE_PERIOD_MS=${POMPE_STABLE_PERIOD_MS}
+      - POMPE_LEADER_NODE_ID=${POMPE_LEADER_NODE_ID}
+      - ENABLE_RUNTIME_PROFILING=${ENABLE_RUNTIME_PROFILING}
+      - SMROL_DISABLE_MULTISIG=${SMROL_DISABLE_MULTISIG}
+      - TOKIO_CONSOLE_BIND=0.0.0.0:6669
     ports:
-      - "10001:10001"
-      - "9001:9001"
+      - "20001:20000"
+      - "10001:10000"
+      - "9001:9000"
+      - "21001:21000"  
+      - "6661:6669"
     volumes:
       - ./logs:/logs
       - ./logs/node:/log
@@ -57,23 +87,36 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    # command: sh -c "sleep 15 && docker_node"
+    # command: ["docker_node_adversary"]
 
   node2:
     build: 
       context: .
       dockerfile: Dockerfile
+      args:
+        ENABLE_TOKIO_CONSOLE: ${ENABLE_TOKIO_CONSOLE:-0}
     container_name: hotstuff_node2
     hostname: node2
     environment:
       - NODE_ID=2
-      - NODE_PORT=10002
-      - RUST_LOG=debug
+      - NODE_PORT=${NODE_PORT}
+      - RUST_LOG=${LOG_LEVEL}
       - NODE_LEAST_ID=${NODE_LEAST_ID}
       - NODE_NUM=${NODE_NUM}
+      - NODE_HOSTS=${NODE_HOSTS}
+      - POMPE_ENABLE=${POMPE_ENABLE}
+      - POMPE_BATCH_SIZE=${POMPE_BATCH_SIZE}
+      - POMPE_STABLE_PERIOD_MS=${POMPE_STABLE_PERIOD_MS}
+      - POMPE_LEADER_NODE_ID=${POMPE_LEADER_NODE_ID}
+      - ENABLE_RUNTIME_PROFILING=${ENABLE_RUNTIME_PROFILING}
+      - SMROL_DISABLE_MULTISIG=${SMROL_DISABLE_MULTISIG}
+      - TOKIO_CONSOLE_BIND=0.0.0.0:6669
     ports:
-      - "10002:10002"
-      - "9002:9002"
+      - "20002:20000"
+      - "10002:10000"
+      - "9002:9000"
+      - "21002:21000"
+      - "6662:6669"
     volumes:
       - ./logs:/logs
       - ./logs/node:/log
@@ -91,17 +134,33 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
+      args:
+        ENABLE_TOKIO_CONSOLE: ${ENABLE_TOKIO_CONSOLE:-0}
     container_name: hotstuff_node3
     hostname: node3
     environment:
       - NODE_ID=3
-      - NODE_PORT=10003
-      - RUST_LOG=debug
+      - NODE_PORT=${NODE_PORT}
+      - RUST_LOG=${LOG_LEVEL}
       - NODE_LEAST_ID=${NODE_LEAST_ID}
       - NODE_NUM=${NODE_NUM}
+      - NODE_HOSTS=${NODE_HOSTS}
+      - POMPE_ENABLE=${POMPE_ENABLE}
+      - POMPE_BATCH_SIZE=${POMPE_BATCH_SIZE}
+      - POMPE_STABLE_PERIOD_MS=${POMPE_STABLE_PERIOD_MS}
+      - POMPE_LEADER_NODE_ID=${POMPE_LEADER_NODE_ID}
+      - ENABLE_RUNTIME_PROFILING=${ENABLE_RUNTIME_PROFILING}
+      - SMROL_DISABLE_MULTISIG=${SMROL_DISABLE_MULTISIG}
+      - SMROL_DISABLE_METRICS=${SMROL_DISABLE_METRICS}
+      - TOKIO_CONSOLE_BIND=0.0.0.0:6669
+      # - METRICS_LISTEN_ADDR=0.0.0.0:9903
     ports:
-      - "10003:10003"
-      - "9003:9003"
+      - "20003:20000"
+      - "10003:10000"
+      - "9003:9000"
+      - "21003:21000"
+      - "6663:6669"
+      - "9893:9893"
     volumes:
       - ./logs:/logs
       - ./logs/node:/log
@@ -115,194 +174,26 @@ services:
       retries: 3
       start_period: 30s
 
-  # node4:
-  #   build: 
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: hotstuff_node4
-  #   hostname: node4
-  #   environment:
-  #     - NODE_ID=4
-  #     - NODE_PORT=10004
-  #     - RUST_LOG=debug
-  #     - NODE_LEAST_ID=${NODE_LEAST_ID}
-  #     - NODE_NUM=${NODE_NUM}
-  #   ports:
-  #     - "10004:10004"
-  #     - "9004:9004"
-  #   volumes:
-  #     - ./logs:/logs
-  #     - ./logs/node:/log
-  #   networks:
-  #     - hotstuff_network
-  #   restart: unless-stopped
-  #   healthcheck:
-  #     test: ["CMD", "nc", "-z", "localhost", "10004"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 3
-  #     start_period: 30s
-    # command: sh -c "sleep 15 && docker_node"
-
-  # node5:
-  #   build: 
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: hotstuff_node5
-  #   hostname: node5
-  #   environment:
-  #     - NODE_ID=5
-  #     - NODE_PORT=10005
-  #     - RUST_LOG=debug
-  #     - NODE_LEAST_ID=${NODE_LEAST_ID}
-  #     - NODE_NUM=${NODE_NUM}
-  #   ports:
-  #     - "10005:10005"
-  #     - "9005:9005"
-  #   volumes:
-  #     - ./logs:/logs
-  #     - ./logs/node:/log
-  #   networks:
-  #     - hotstuff_network
-  #   restart: unless-stopped
-  #   healthcheck:
-  #     test: ["CMD", "nc", "-z", "localhost", "10005"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 3
-  #     start_period: 30s
-  #   command: sh -c "sleep 5 && docker_node"
-  # node6:
-  #   build: 
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: hotstuff_node6
-  #   hostname: node6
-  #   environment:
-  #     - NODE_ID=6
-  #     - NODE_PORT=10006
-  #     - RUST_LOG=info
-  #     - NODE_LEAST_ID=${NODE_LEAST_ID}
-  #     - NODE_NUM=${NODE_NUM}
-  #   ports:
-  #     - "10006:10006"
-  #     - "9006:9006"
-  #   volumes:
-  #     - ./logs:/logs
-  #     - ./logs/node:/log
-  #   networks:
-  #     - hotstuff_network
-  #   restart: unless-stopped
-  #   healthcheck:
-  #     test: ["CMD", "nc", "-z", "localhost", "10006"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 3
-  #     start_period: 30s
-  #   command: sh -c "sleep 8 && docker_node"
-
-  # node7:
-  #   build: 
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: hotstuff_node7
-  #   hostname: node7
-  #   environment:
-  #     - NODE_ID=7
-  #     - NODE_PORT=10007
-  #     - RUST_LOG=info
-  #     - NODE_LEAST_ID=${NODE_LEAST_ID}
-  #     - NODE_NUM=${NODE_NUM}
-  #   ports:
-  #     - "10007:10007"
-  #     - "9007:9007"
-  #   volumes:
-  #     - ./logs:/logs
-  #     - ./logs/node:/log
-  #   networks:
-  #     - hotstuff_network
-  #   restart: unless-stopped
-  #   healthcheck:
-  #     test: ["CMD", "nc", "-z", "localhost", "10007"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 3
-  #     start_period: 30s
-  #   command: sh -c "sleep 10 && docker_node"
-
-  # node8:
-  #   build: 
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: hotstuff_node8
-  #   hostname: node8
-  #   environment:
-  #     - NODE_ID=8
-  #     - NODE_PORT=10008
-  #     - RUST_LOG=info
-  #     - NODE_LEAST_ID=${NODE_LEAST_ID}
-  #     - NODE_NUM=${NODE_NUM}
-  #   ports:
-  #     - "10008:10008"
-  #     - "9008:9008"
-  #   volumes:
-  #     - ./logs:/logs
-  #     - ./logs/node:/log
-  #   networks:
-  #     - hotstuff_network
-  #   restart: unless-stopped
-  #   healthcheck:
-  #     test: ["CMD", "nc", "-z", "localhost", "10008"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 3
-  #     start_period: 30s
-
-  # node9:
-  #   build: 
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: hotstuff_node9
-  #   hostname: node9
-  #   environment:
-  #     - NODE_ID=9
-  #     - NODE_PORT=10009
-  #     - RUST_LOG=debug
-  #     - NODE_LEAST_ID=${NODE_LEAST_ID}
-  #     - NODE_NUM=${NODE_NUM}
-  #   ports:
-  #     - "10009:10009"
-  #     - "9009:9009"
-  #   volumes:
-  #     - ./logs:/logs
-  #     - ./logs/node:/log
-  #   networks:
-  #     - hotstuff_network
-  #   restart: unless-stopped
-  #   healthcheck:
-  #     test: ["CMD", "nc", "-z", "localhost", "10009"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 3
-  #     start_period: 30s
-
-
-
-
-  # 客户端节点 - 交互模式
+  # client: interactive mode
   client:
     build: 
       context: .
       dockerfile: Dockerfile
+      args:
+        ENABLE_TOKIO_CONSOLE: ${ENABLE_TOKIO_CONSOLE:-0}
     container_name: hotstuff_client
     hostname: client
-    command: ["client"]  # 覆盖默认命令
+    command: ["client"] 
     environment:
       - CLIENT_ID=client_1
       - CLIENT_MODE=interactive
-      - RUST_LOG=info
+      - CLIENT_ORDERING_MODE=${CLIENT_ORDERING_MODE}
+      - RUST_LOG=${LOG_LEVEL}
       - NODE_LEAST_ID=${NODE_LEAST_ID}
       - NODE_NUM=${NODE_NUM}
+      - NODE_HOSTS=${NODE_HOSTS}
+      - POMPE_ENABLE=${POMPE_ENABLE} # Pompe
+      - ENABLE_RUNTIME_PROFILING=${ENABLE_RUNTIME_PROFILING}
     volumes:
       - ./logs:/logs
       - ./logs/node:/log
@@ -313,7 +204,7 @@ services:
       - node1
       - node2
       - node3
-    restart: unless-stopped
+    restart: no 
     profiles:
       - interactive
 
@@ -321,33 +212,47 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
+      args:
+        ENABLE_TOKIO_CONSOLE: ${ENABLE_TOKIO_CONSOLE:-0}
     container_name: hotstuff_perf_tester
     hostname: perf_tester
-    command: ["client"]  # ← 这里指定运行 client_node 二进制文件
+    command: ["client"]  
     volumes:
       - ./logs:/logs
     environment:
       - CLIENT_ID=perf_tester_001
-      - CLIENT_MODE=load_test  # ← 这个环境变量很重要
-      - TARGET_TPS=1000         # ← 目标 1000 TPS
-      - TEST_DURATION=300      # ← 运行 5 分钟
-      - RUST_LOG=warn
+      - CLIENT_MODE=load_test  
+      - CLIENT_ORDERING_MODE=${CLIENT_ORDERING_MODE}
+      - TARGET_TPS=1000        
+      - TEST_DURATION=300      
+      - RUST_LOG=${LOG_LEVEL}
+      - POMPE_ENABLE=${POMPE_ENABLE} 
+      - NODE_HOSTS=${NODE_HOSTS}
+      - ENABLE_RUNTIME_PROFILING=${ENABLE_RUNTIME_PROFILING}
     profiles:
       - perf_test
 
+# client: load test mode
   load_tester:
     build: 
       context: .
       dockerfile: Dockerfile
+      args:
+        ENABLE_TOKIO_CONSOLE: ${ENABLE_TOKIO_CONSOLE:-0}
     container_name: hotstuff_load_tester
     hostname: load_tester
-    command: ["client"]  # 覆盖默认命令
+    command: ["client"]  
     environment:
       - CLIENT_ID=load_tester_001
       - CLIENT_MODE=load_test
-      - TARGET_TPS=300
-      - TEST_DURATION=300
-      - RUST_LOG=info
+      - CLIENT_ORDERING_MODE=${CLIENT_ORDERING_MODE}
+      - TARGET_TPS=${TARGET_TPS}
+      - TEST_DURATION=100
+      - RUST_LOG=${LOG_LEVEL}
+      - NODE_LEAST_ID=${NODE_LEAST_ID}  
+      - NODE_NUM=${NODE_NUM}
+      - NODE_HOSTS=${NODE_HOSTS}
+      - POMPE_ENABLE=${POMPE_ENABLE}
     volumes:
       - ./logs:/logs
       - ./logs/node:/log

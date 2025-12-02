@@ -1,66 +1,81 @@
+// hotstuff_runner/src/app.rs - lock-free version
+use crate::tx_utils::parse_transaction_id;
 use borsh::BorshSerialize;
-// hotstuff_runner/src/app.rs
+use crossbeam::channel::{Receiver, TryRecvError};
+use crossbeam::queue::{self, SegQueue};
+use dashmap::DashSet;
 use hotstuff_rs::{
-    app::{App, ProduceBlockRequest, ProduceBlockResponse, ValidateBlockRequest, ValidateBlockResponse},
+    app::{
+        App, ProduceBlockRequest, ProduceBlockResponse, ValidateBlockRequest, ValidateBlockResponse,
+    },
     block_tree::pluggables::KVStore,
     types::{
         data_types::{CryptoHash, Data, Datum},
         update_sets::AppStateUpdates,
     },
 };
-use log::info;
-use sha2::{Sha256, Digest};
-use std::{convert::Infallible, sync::{Arc, Mutex}};
-use std::time::{SystemTime, UNIX_EPOCH};
+use log::{debug, info, warn};
+use sha2::{Digest, Sha256};
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::thread;
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+use std::{convert::Infallible, sync::Arc};
 
 #[derive(Clone)]
 pub struct TestApp {
     node_id: usize,
     block_count: u64,
-    // 模拟的交易池
-    // pending_transactions: Vec<String>,
-    // 改为外部传入的共享交易队列
-    tx_queue: Arc<Mutex<Vec<String>>>,
+    // Use a lock-free queue instead of Mutex<Vec<String>>
+    tx_queue: Arc<SegQueue<String>>,
+    confirmed_txs: Arc<DashSet<u64>>,
+    in_flight_txs: Arc<DashSet<u64>>,
+    last_seen_height: Arc<AtomicU64>,
 }
 
 const NUMBER_KEY: [u8; 1] = [0];
 
 impl TestApp {
-    pub fn new(node_id: usize, tx_queue: Arc<Mutex<Vec<String>>>) -> Self {
-        info!("🆕 创建 TestApp 实例 for Node {} (队列地址: {:p})", node_id, &*tx_queue);
+    pub fn new(
+        node_id: usize,
+        tx_queue: Arc<SegQueue<String>>,
+        confirmed_txs: Arc<DashSet<u64>>,
+        last_seen_height: Arc<AtomicU64>,
+        in_flight_txs: Arc<DashSet<u64>>,
+    ) -> Self {
+        info!(
+            "Creating TestApp for Node {} (queue address: {:p})",
+            node_id, &*tx_queue
+        );
         Self {
             node_id,
             block_count: 0,
             tx_queue,
+            confirmed_txs,
+            in_flight_txs,
+            last_seen_height,
         }
     }
 
-    // 添加详细的状态日志
     fn log_consensus_state(&self, operation: &str, view: u64, height: u64) {
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_millis();
 
-        info!("Node {} [{}] 🔄 共识状态追踪:", self.node_id, operation);
-        info!("Node {}   📍 时间戳: {}", self.node_id, timestamp);
-        info!("Node {}   🔢 当前View: {}", self.node_id, view);
-        info!("Node {}   📏 区块高度: {}", self.node_id, height);
-        info!("Node {}   📊 节点区块计数: {}", self.node_id, self.block_count);
-        info!("Node {}   🎯 待处理交易: {}", self.node_id, {
-            let queue = self.tx_queue.lock().unwrap();
-            queue.len()
-        });
+        info!("Node {} [{}] consensus state:", self.node_id, operation);
+        info!("Node {}   timestamp: {}", self.node_id, timestamp);
+        info!("Node {}   current view: {}", self.node_id, view);
+        info!("Node {}   block height: {}", self.node_id, height);
+        info!(
+            "Node {}   node block count: {}",
+            self.node_id, self.block_count
+        );
+        info!(
+            "Node {}   pending transactions: {}",
+            self.node_id,
+            self.tx_queue.len()
+        );
     }
-
-    // pub fn add_transaction(&mut self, tx: String) {
-    //     self.pending_transactions.push(tx.clone());
-    //     info!("[{}] ➕ 添加交易到 TestApp: {} (总数: {}, 线程: {:?})", 
-    //           self.node_id, 
-    //           tx, 
-    //           self.pending_transactions.len(),
-    //           std::thread::current().id());
-    // }
 
     pub fn initial_app_state() -> AppStateUpdates {
         let mut state = AppStateUpdates::new();
@@ -70,14 +85,12 @@ impl TestApp {
 
     fn compute_data_hash(data: &Data) -> CryptoHash {
         let mut hasher = Sha256::new();
-        
-        // 遍历 Data 中的每个 Datum
+
         for datum in data.iter() {
             hasher.update(datum.bytes());
         }
-        
+
         let result = hasher.finalize();
-        // CryptoHash 需要32字节数组
         let mut hash_bytes = [0u8; 32];
         hash_bytes.copy_from_slice(&result);
         CryptoHash::new(hash_bytes)
@@ -86,169 +99,253 @@ impl TestApp {
 
 impl<K: KVStore> App<K> for TestApp {
     fn produce_block(&mut self, request: ProduceBlockRequest<K>) -> ProduceBlockResponse {
-        info!("[produce_block] 🔨 Node {} Producing block for view {}",  self.node_id,request.cur_view());
-        self.log_consensus_state("PRODUCE_BLOCK_START", request.cur_view().int(), self.block_count);
+        // thread::sleep(Duration::from_millis(25));
+        let view_number = request.cur_view().int();
+        let produce_start = std::time::Instant::now();
+        // warn!("[produce_block] Node {} Producing block for view {} (only current view)", self.node_id, view_number);
 
-        if request.cur_view().int() > 0 && self.block_count + 1 != request.cur_view().int() {
-            info!("Node {} [produce_block] ⚠️ View/Height 不匹配! View: {}, 期望Height: {}, 实际Count: {}", 
-                  self.node_id, request.cur_view().int(), request.cur_view().int(), self.block_count);
-        }
+        // Pull transactions from the lock-free queue without locking
+        let mut transactions = Vec::new();
+        let required_height = self.block_count;
+        let seen_height = self.last_seen_height.load(Ordering::Relaxed);
+        let ready_for_new_block = seen_height >= required_height;
+        // Maximum transactions per block; configurable via APP_BLOCK_MAX_TX (default 800)
+        let max_tx_count: usize = std::env::var("APP_BLOCK_MAX_TX")
+            .ok()
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(800);
 
+        // Check queue size first to avoid unnecessary loops
+        let queue_size = self.tx_queue.len();
+        let actual_max = std::cmp::min(max_tx_count, queue_size);
+        warn!(
+            "Node {} [produce_block] queue size: {}, attempting up to {} transactions this block",
+            self.node_id, queue_size, actual_max
+        );
+        // if queue_size != 0 {
+        //     warn!(
+        //         "Node {} [produce_block] queue size: {}, attempting up to {} transactions this block",
+        //         self.node_id, queue_size, actual_max
+        //     );
+        // }
 
-        // 从共享队列获取并清空交易
-        let transactions = {
-            let mut queue = self.tx_queue.lock().unwrap();
-            let tx_count = queue.len().min(300); // 每个区块最多300个交易
-            info!("Node {} [produce_block] 📊 queue.len = {}, tx_count = {}", self.node_id, queue.len(), tx_count);
+        if ready_for_new_block && actual_max > 0 {
+            transactions.reserve(actual_max); // Pre-allocate capacity
 
-            let mut batch = Vec::new();
-            for _ in 0..tx_count {
-                if let Some(tx) = queue.pop() {
-                    batch.push(tx);
+            // Use a tighter loop
+            while transactions.len() < max_tx_count {
+                if let Some(tx) = self.tx_queue.pop() {
+                    if let Some(tx_id) = parse_transaction_id(&tx) {
+                        if self.confirmed_txs.contains(&tx_id) {
+                            debug!(
+                                "Node {} [produce_block] skipping confirmed transaction {}",
+                                self.node_id, tx_id
+                            );
+                            continue;
+                        }
+                        if self.in_flight_txs.contains(&tx_id) {
+                            debug!(
+                                "Node {} [produce_block] skipping in-flight transaction {}",
+                                self.node_id, tx_id
+                            );
+                            continue;
+                        }
+                        // self.in_flight_txs.insert(tx_id);
+                    }
+                    debug!(
+                        "Node {} [produce_block] fetched transaction from queue: {}",
+                        self.node_id, &tx
+                    );
+                    transactions.push(tx);
+                } else {
+                    break;
                 }
             }
-            batch
-        };
+        }
+
+        if !ready_for_new_block {
+            warn!(
+                "Node {} [produce_block] waiting for previous block (need >= {}, seen {})",
+                self.node_id, required_height, seen_height
+            );
+        }
 
         let tx_count = transactions.len();
-        info!("Node {} [produce_block] 📊 从共享队列获取 tx_count = {} 个交易", self.node_id, tx_count);
+        info!(
+            "Node {} [produce_block] pulled {} transactions from the lock-free queue (limit {}, ready={})",
+            self.node_id, tx_count, max_tx_count, ready_for_new_block
+        );
 
-
-        // 创建区块数据
+        // Build block data
         let mut data_vec = Vec::new();
-        
-        // 添加视图号作为第一个Datum
-        // 直接序列化 u64 而不是 ViewNumber
+
+        // Add the view number as the first datum
         let view_number = request.cur_view().int();
         let view_bytes = view_number.to_le_bytes().to_vec();
         data_vec.push(Datum::new(view_bytes));
-        
-        
-        // 添加交易计数, 在data中作为第二个Datum
-        // 使用 u32 来存储交易计数
+
+        // Log the relationship between view number and block count
+        if self.block_count > 0 && view_number > self.block_count + 100 {
+            warn!(
+                "Node {} view({}) far exceeds block count ({}); potential sync issue",
+                self.node_id, view_number, self.block_count
+            );
+        }
+
+        // Add the transaction count
         let tx_count_bytes = (tx_count as u32).to_le_bytes().to_vec();
         data_vec.push(Datum::new(tx_count_bytes));
-        
+
         for tx in &transactions {
             data_vec.push(Datum::new(tx.as_bytes().to_vec()));
-            // info!("Node {} [produce_block] 🔨  - 交易: {}", self.node_id, tx);
         }
-        
 
-        // 创建Data
+        // Create Data
         let data = Data::new(data_vec);
 
-        // 计算数据哈希
+        // Compute data hash
         let data_hash = Self::compute_data_hash(&data);
 
-        // 创建应用状态更新
+        // Create app state updates
         let mut app_state_updates = AppStateUpdates::new();
-        
-        // 更新区块计数
+
+        // Update block count
         let block_count_key = format!("block_count_{}", self.node_id);
         let block_count_value = (self.block_count + 1).to_string();
-        app_state_updates.insert(
-            block_count_key.into_bytes(), 
-            block_count_value.into_bytes()
-        );
-        
-        // 存储区块哈希
+        app_state_updates.insert(block_count_key.into_bytes(), block_count_value.into_bytes());
+
+        // Store block hash
         let block_hash_key = format!("block_{}", request.cur_view());
-        app_state_updates.insert(
-            block_hash_key.into_bytes(), 
-            data_hash.bytes().to_vec()
+        app_state_updates.insert(block_hash_key.into_bytes(), data_hash.bytes().to_vec());
+
+        info!(
+            "Node {} [produce_block] transaction pool state:",
+            self.node_id
+        );
+        info!(
+            "Node {} [produce_block]  - local pending transactions: {}",
+            self.node_id,
+            self.tx_queue.len()
+        );
+        info!(
+            "Node {} [produce_block]  - transactions included in this block: {}",
+            self.node_id, tx_count
+        );
+        info!(
+            "Node {} [produce_block]  - block data hash: {:?}",
+            self.node_id,
+            &data_hash.bytes()[0..8]
         );
 
-        info!("Node {} [produce_block] 📊 交易池状态:",self.node_id);
-        info!("Node {} [produce_block]  - 本地待处理交易: {}", self.node_id,self.tx_queue.lock().unwrap().len());
-        info!("Node {} [produce_block]  - 本区块将包含交易: {}",self.node_id, tx_count);
-        info!("Node {} [produce_block]  - 本区块数据哈希: {:?}",self.node_id, &data_hash.bytes()[0..8]);
+        let produce_elapsed = produce_start.elapsed();
+        // warn!("[produce_block] Node {} cost {:?} (tx={})", self.node_id, produce_elapsed, tx_count);
+        debug!(
+            "[Node {}] Produced block at view {} with {} transactions",
+            self.node_id,
+            request.cur_view().int(),
+            tx_count
+        );
 
-        info!("[Node {}] Produced block with {} transactions", self.node_id, tx_count);
+        self.block_count += 1;
 
         ProduceBlockResponse {
             data_hash,
             data,
-            app_state_updates: Some(app_state_updates),
-            validator_set_updates: None, // 不更新验证者集合
+            // Option A: avoid non-essential state writes; determinism derives solely from block data
+            app_state_updates: None,
+            validator_set_updates: None,
         }
     }
 
-    fn validate_block(&mut self, request: ValidateBlockRequest<K>) -> ValidateBlockResponse {
+    fn validate_block_for_sync(
+        &mut self,
+        request: ValidateBlockRequest<K>,
+    ) -> ValidateBlockResponse {
+        let validate_start = std::time::Instant::now();
         let block = request.proposed_block();
-        info!("[Node {}] Validating block at height {}", self.node_id, block.height);
+        info!(
+            "[Node {}] Validating block at height {}",
+            self.node_id, block.height
+        );
+
         let tx_count = if block.data.vec().len() >= 2 {
             let tx_count_bytes = block.data.vec()[1].bytes();
             if tx_count_bytes.len() >= 4 {
                 let mut bytes = [0u8; 4];
                 bytes.copy_from_slice(&tx_count_bytes[0..4]);
-                        u32::from_le_bytes(bytes)
-                    } else {
-                        0
-                    }
-                } else {
-                    0
-                };
-
-        // 添加更详细的日志
-        // info!("Node {} [validate_block] 🔍 验证区块详情:",self.node_id);
-        // info!("Node {} [validate_block]  - 区块高度: {}",self.node_id, block.height);
-        // info!("Node {} [validate_block]  - 交易数量: {}",self.node_id, tx_count);
-        // info!("Node {} [validate_block]  - 区块哈希: {:?}",self.node_id, &block.hash);
-        // info!("Node {} [validate_block]  - 当前节点区块计数: {}", self.node_id,self.block_count);
-
-
-        // 基本验证逻辑
-        // 1. 检查区块数据是否为空
-        if block.data.len().int() == 0 {
-            info!("[Node {}] ❌ Block validation failed: empty data", self.node_id);
-            return ValidateBlockResponse::Invalid;
-        }
-
-        // 2. 验证数据哈希
-        let computed_hash = Self::compute_data_hash(&block.data);
-        if computed_hash != block.data_hash {
-            info!("[Node {}] ❌ Block validation failed: hash mismatch", self.node_id);
-            return ValidateBlockResponse::Invalid;
-        }
-
-        // 3. 验证数据格式 - 至少需要两个 Datum（视图号和交易计数）
-        if block.data.len().int() < 2 {
-            info!("[Node {}] ❌ Block validation failed: invalid data format", self.node_id);
-            return ValidateBlockResponse::Invalid;
-        }
-
-        // 简化验证逻辑 - 暂时移除视图验证，因为API限制
-        // 在实际应用中，我们可能需要用其他方式获取当前视图信息
-        
-        // 解析并验证基本数据结构
-        let data_vec = block.data.vec();
-        if let Some(view_datum) = data_vec.get(0) {
-            // 验证视图号数据格式
-            let datum_bytes = view_datum.bytes();
-            if datum_bytes.len() < 8 {
-                info!("[Node {}] Block validation failed: invalid view datum size", self.node_id);
-                return ValidateBlockResponse::Invalid;
+                u32::from_le_bytes(bytes)
+            } else {
+                0
             }
         } else {
-            info!("[Node {}] Block validation failed: no view datum", self.node_id);
+            0
+        };
+
+        // Basic validation logic
+        if block.data.len().int() == 0 {
+            info!(
+                "[Node {}] Block validation failed: empty data",
+                self.node_id
+            );
             return ValidateBlockResponse::Invalid;
         }
 
-        // 验证交易计数数据
+        // Validate data hash
+        let computed_hash = Self::compute_data_hash(&block.data);
+        if computed_hash != block.data_hash {
+            info!(
+                "[Node {}] Block validation failed: hash mismatch",
+                self.node_id
+            );
+            return ValidateBlockResponse::Invalid;
+        }
+
+        // Validate data format
+        if block.data.len().int() < 2 {
+            info!(
+                "[Node {}] Block validation failed: invalid data format",
+                self.node_id
+            );
+            return ValidateBlockResponse::Invalid;
+        }
+
+        let data_vec = block.data.vec();
+        let mut produced_view_in_block: Option<u64> = None;
+        if let Some(view_datum) = data_vec.get(0) {
+            let datum_bytes = view_datum.bytes();
+            if datum_bytes.len() < 8 {
+                info!(
+                    "[Node {}] Block validation failed: invalid view datum size",
+                    self.node_id
+                );
+                return ValidateBlockResponse::Invalid;
+            }
+            let mut vb = [0u8; 8];
+            vb.copy_from_slice(&datum_bytes[0..8]);
+            produced_view_in_block = Some(u64::from_le_bytes(vb));
+        } else {
+            info!(
+                "[Node {}] Block validation failed: no view datum",
+                self.node_id
+            );
+            return ValidateBlockResponse::Invalid;
+        }
+
+        // Validate transaction count datum
         if let Some(tx_count_datum) = data_vec.get(1) {
             let datum_bytes = tx_count_datum.bytes();
             if datum_bytes.len() < 4 {
-                info!("[Node {}] Block validation failed: invalid transaction count datum", self.node_id);
+                info!(
+                    "[Node {}] Block validation failed: invalid transaction count datum",
+                    self.node_id
+                );
                 return ValidateBlockResponse::Invalid;
             }
-            
-            // 解析交易计数
+
             let mut tx_count_bytes = [0u8; 4];
             tx_count_bytes.copy_from_slice(&datum_bytes[0..4]);
             let tx_count = u32::from_le_bytes(tx_count_bytes) as usize;
-            
-            // 验证数据项数量：视图号 + 交易计数 + 交易数据
+
             let expected_items = 2 + tx_count;
             if data_vec.len() != expected_items {
                 info!("[Node {}] Block validation failed: data item count mismatch. Expected: {}, Got: {}", 
@@ -256,37 +353,39 @@ impl<K: KVStore> App<K> for TestApp {
                 return ValidateBlockResponse::Invalid;
             }
         } else {
-            info!("[Node {}] Block validation failed: no transaction count datum", self.node_id);
+            info!(
+                "[Node {}] Block validation failed: no transaction count datum",
+                self.node_id
+            );
             return ValidateBlockResponse::Invalid;
         }
 
-        // 创建状态更新
+        let validate_elapsed = validate_start.elapsed();
+        // warn!("[validate_block] Node {} cost {:?}", self.node_id, validate_elapsed);
+
+        // Normalize key space: only store keys uniquely determined by block metadata (consistent across replicas)
         let mut app_state_updates = AppStateUpdates::new();
-        
-        // 更新区块计数
-        self.block_count += 1;
-        let block_count_key = format!("block_count_{}", self.node_id);
-        let block_count_value = self.block_count.to_string();
+        let block_hash_key = format!("block_hash_at_height_{}", block.height.int());
         app_state_updates.insert(
-            block_count_key.into_bytes(), 
-            block_count_value.into_bytes()
-        );
-        
-        // 存储区块哈希（使用区块高度作为键）
-        let block_hash_key = format!("block_height_{}", block.height);
-        let block_hash_key_clone=block_hash_key.clone();
-        app_state_updates.insert(
-            block_hash_key.into_bytes(), 
-            block.data_hash.bytes().to_vec()
+            block_hash_key.into_bytes(),
+            block.data_hash.bytes().to_vec(),
         );
 
-        // 检查insert的内容
-        // app_state_updates.get_insert(&block_hash_key_clone.into_bytes()).map(|value| {
-            // info!("[Node {}] Block hash stored in app state: {:?}", self.node_id, value);
-        // });
-
-        info!("[Node {}] Block validation passed, height: {}, TxCount: {}", self.node_id, block.height, tx_count );
-        // info!("[Node {}] ✅ 区块验证通过 - 高度: {}", self.node_id, block.height);
+        if let Some(vv) = produced_view_in_block {
+            info!(
+                "[Node {}] Block validation passed, height: {}, TxCount: {}, produced_view: {}, view_gap: {}",
+                self.node_id,
+                block.height,
+                tx_count,
+                vv,
+                block.height.int().saturating_sub(vv)
+            );
+        } else {
+            info!(
+                "[Node {}] Block validation passed, height: {}, TxCount: {}",
+                self.node_id, block.height, tx_count
+            );
+        }
 
         ValidateBlockResponse::Valid {
             app_state_updates: Some(app_state_updates),
@@ -294,8 +393,8 @@ impl<K: KVStore> App<K> for TestApp {
         }
     }
 
-    fn validate_block_for_sync(&mut self, request: ValidateBlockRequest<K>) -> ValidateBlockResponse {
-        // 同步时的验证逻辑与普通验证相同
-        self.validate_block(request)
+    fn validate_block(&mut self, request: ValidateBlockRequest<K>) -> ValidateBlockResponse {
+        // thread::sleep(Duration::from_millis(25));
+        self.validate_block_for_sync(request)
     }
 }

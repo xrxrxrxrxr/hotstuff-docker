@@ -1,0 +1,690 @@
+2025-11-14T02:36:05.865046Z  INFO ThreadId(01) client: [logger] client logging initialized
+2025-11-14T02:36:05.865068Z  INFO ThreadId(01) client: [client] transaction send mode: Smrol
+2025-11-14T02:36:05.865073Z  INFO ThreadId(01) client: [client] starting separated-state client: client
+2025-11-14T02:36:05.865094Z  INFO ThreadId(01) client: [client] initializing core: client
+2025-11-14T02:36:05.865099Z  INFO ThreadId(01) client: [client] waiting for consensus nodes to start...
+2025-11-14T02:36:25.866560Z  INFO ThreadId(01) client: [client] establishing persistent connections to all nodes...
+2025-11-14T02:36:25.866639Z  INFO ThreadId(01) client: Resolved address for node 0: 3.236.229.226:9000
+2025-11-14T02:36:25.866649Z  INFO ThreadId(01) client: [client] establishing persistent connection to node 0: 3.236.229.226:9000
+2025-11-14T02:36:25.867108Z  INFO ThreadId(01) client: [client] established persistent connection to node 0
+2025-11-14T02:36:25.867120Z  INFO ThreadId(01) client: [client] connected to node 0
+2025-11-14T02:36:25.867136Z  INFO ThreadId(03) client: [client] starting response receiver for node 0
+2025-11-14T02:36:25.867183Z  INFO ThreadId(01) client: Resolved address for node 1: 3.235.140.102:9000
+2025-11-14T02:36:25.867192Z  INFO ThreadId(01) client: [client] establishing persistent connection to node 1: 3.235.140.102:9000
+2025-11-14T02:36:25.867596Z  INFO ThreadId(01) client: [client] established persistent connection to node 1
+2025-11-14T02:36:25.867609Z  INFO ThreadId(01) client: [client] connected to node 1
+2025-11-14T02:36:25.867612Z  INFO ThreadId(02) client: [client] starting response receiver for node 1
+2025-11-14T02:36:25.867618Z  INFO ThreadId(01) client: Resolved address for node 2: 13.57.220.216:9000
+2025-11-14T02:36:25.867624Z  INFO ThreadId(01) client: [client] establishing persistent connection to node 2: 13.57.220.216:9000
+2025-11-14T02:36:25.934689Z  INFO ThreadId(01) client: [client] established persistent connection to node 2
+2025-11-14T02:36:25.934692Z  INFO ThreadId(03) client: [client] starting response receiver for node 2
+2025-11-14T02:36:25.934716Z  INFO ThreadId(01) client: [client] connected to node 2
+2025-11-14T02:36:25.934727Z  INFO ThreadId(01) client: Resolved address for node 3: 54.215.24.47:9000
+2025-11-14T02:36:25.934734Z  INFO ThreadId(01) client: [client] establishing persistent connection to node 3: 54.215.24.47:9000
+2025-11-14T02:36:26.001885Z  INFO ThreadId(01) client: [client] established persistent connection to node 3
+2025-11-14T02:36:26.001907Z  INFO ThreadId(01) client: [client] connected to node 3
+2025-11-14T02:36:26.001914Z  INFO ThreadId(02) client: [client] starting response receiver for node 3
+2025-11-14T02:36:26.001916Z  INFO ThreadId(01) client: Resolved address for node 4: 13.232.170.90:9000
+2025-11-14T02:36:26.001931Z  INFO ThreadId(01) client: [client] establishing persistent connection to node 4: 13.232.170.90:9000
+2025-11-14T02:36:26.186812Z  INFO ThreadId(01) client: [client] established persistent connection to node 4
+2025-11-14T02:36:26.186820Z  INFO ThreadId(03) client: [client] starting response receiver for node 4
+2025-11-14T02:36:26.186834Z  INFO ThreadId(01) client: [client] connected to node 4
+2025-11-14T02:36:26.186846Z  INFO ThreadId(01) client: Resolved address for node 5: 52.66.245.65:9000
+2025-11-14T02:36:26.186851Z  INFO ThreadId(01) client: [client] establishing persistent connection to node 5: 52.66.245.65:9000
+2025-11-14T02:36:26.371057Z  INFO ThreadId(01) client: [client] established persistent connection to node 5
+2025-11-14T02:36:26.371066Z  INFO ThreadId(02) client: [client] starting response receiver for node 5
+2025-11-14T02:36:26.371080Z  INFO ThreadId(01) client: [client] connected to node 5
+2025-11-14T02:36:26.371093Z  INFO ThreadId(01) client: Resolved address for node 6: 13.229.153.94:9000
+2025-11-14T02:36:26.371097Z  INFO ThreadId(01) client: [client] establishing persistent connection to node 6: 13.229.153.94:9000
+2025-11-14T02:36:26.584692Z  INFO ThreadId(01) client: [client] established persistent connection to node 6
+2025-11-14T02:36:26.584715Z  INFO ThreadId(01) client: [client] connected to node 6
+2025-11-14T02:36:26.584735Z  INFO ThreadId(03) client: [client] starting response receiver for node 6
+2025-11-14T02:36:26.584745Z  INFO ThreadId(01) client: Resolved address for node 7: 13.231.0.18:9000
+2025-11-14T02:36:26.584750Z  INFO ThreadId(01) client: [client] establishing persistent connection to node 7: 13.231.0.18:9000
+2025-11-14T02:36:26.728584Z  INFO ThreadId(02) client: [client] starting response receiver for node 7
+2025-11-14T02:36:26.728614Z  INFO ThreadId(01) client: [client] established persistent connection to node 7
+2025-11-14T02:36:26.728647Z  INFO ThreadId(01) client: [client] connected to node 7
+2025-11-14T02:36:26.728685Z  INFO ThreadId(01) client: Resolved address for node 8: 16.52.150.42:9000
+2025-11-14T02:36:26.728692Z  INFO ThreadId(01) client: [client] establishing persistent connection to node 8: 16.52.150.42:9000
+2025-11-14T02:36:26.743205Z  INFO ThreadId(01) client: [client] established persistent connection to node 8
+2025-11-14T02:36:26.743227Z  INFO ThreadId(01) client: [client] connected to node 8
+2025-11-14T02:36:26.743231Z  INFO ThreadId(02) client: [client] starting response receiver for node 8
+2025-11-14T02:36:26.743235Z  INFO ThreadId(01) client: Resolved address for node 9: 15.223.171.62:9000
+2025-11-14T02:36:26.743241Z  INFO ThreadId(01) client: [client] establishing persistent connection to node 9: 15.223.171.62:9000
+2025-11-14T02:36:26.757392Z  INFO ThreadId(01) client: [client] established persistent connection to node 9
+2025-11-14T02:36:26.757398Z  INFO ThreadId(03) client: [client] starting response receiver for node 9
+2025-11-14T02:36:26.757413Z  INFO ThreadId(01) client: [client] connected to node 9
+2025-11-14T02:36:26.757421Z  INFO ThreadId(01) client: Resolved address for node 10: 18.194.110.36:9000
+2025-11-14T02:36:26.757425Z  INFO ThreadId(01) client: [client] establishing persistent connection to node 10: 18.194.110.36:9000
+2025-11-14T02:36:26.848726Z  INFO ThreadId(01) client: [client] established persistent connection to node 10
+2025-11-14T02:36:26.848734Z  INFO ThreadId(02) client: [client] starting response receiver for node 10
+2025-11-14T02:36:26.848749Z  INFO ThreadId(01) client: [client] connected to node 10
+2025-11-14T02:36:26.848756Z  INFO ThreadId(01) client: Resolved address for node 11: 3.72.63.56:9000
+2025-11-14T02:36:26.848760Z  INFO ThreadId(01) client: [client] establishing persistent connection to node 11: 3.72.63.56:9000
+2025-11-14T02:36:26.940321Z  INFO ThreadId(01) client: [client] established persistent connection to node 11
+2025-11-14T02:36:26.940329Z  INFO ThreadId(03) client: [client] starting response receiver for node 11
+2025-11-14T02:36:26.940343Z  INFO ThreadId(01) client: [client] connected to node 11
+2025-11-14T02:36:26.940350Z  INFO ThreadId(01) client: Resolved address for node 12: 54.155.90.15:9000
+2025-11-14T02:36:26.940354Z  INFO ThreadId(01) client: [client] establishing persistent connection to node 12: 54.155.90.15:9000
+2025-11-14T02:36:27.008356Z  INFO ThreadId(01) client: [client] established persistent connection to node 12
+2025-11-14T02:36:27.008369Z  INFO ThreadId(02) client: [client] starting response receiver for node 12
+2025-11-14T02:36:27.008377Z  INFO ThreadId(01) client: [client] connected to node 12
+2025-11-14T02:36:27.008385Z  INFO ThreadId(01) client: Resolved address for node 13: 54.228.144.147:9000
+2025-11-14T02:36:27.008389Z  INFO ThreadId(01) client: [client] establishing persistent connection to node 13: 54.228.144.147:9000
+2025-11-14T02:36:27.076630Z  INFO ThreadId(01) client: [client] established persistent connection to node 13
+2025-11-14T02:36:27.076638Z  INFO ThreadId(03) client: [client] starting response receiver for node 13
+2025-11-14T02:36:27.076651Z  INFO ThreadId(01) client: [client] connected to node 13
+2025-11-14T02:36:27.076679Z  INFO ThreadId(01) client: Resolved address for node 14: 54.232.252.190:9000
+2025-11-14T02:36:27.076683Z  INFO ThreadId(01) client: [client] establishing persistent connection to node 14: 54.232.252.190:9000
+2025-11-14T02:36:27.188116Z  INFO ThreadId(01) client: [client] established persistent connection to node 14
+2025-11-14T02:36:27.188124Z  INFO ThreadId(02) client: [client] starting response receiver for node 14
+2025-11-14T02:36:27.188140Z  INFO ThreadId(01) client: [client] connected to node 14
+2025-11-14T02:36:27.188148Z  INFO ThreadId(01) client: Resolved address for node 15: 18.231.3.60:9000
+2025-11-14T02:36:27.188152Z  INFO ThreadId(01) client: [client] establishing persistent connection to node 15: 18.231.3.60:9000
+2025-11-14T02:36:27.299450Z  INFO ThreadId(01) client: [client] established persistent connection to node 15
+2025-11-14T02:36:27.299455Z  INFO ThreadId(03) client: [client] starting response receiver for node 15
+2025-11-14T02:36:27.299538Z  INFO ThreadId(01) client: [client] connected to node 15
+2025-11-14T02:36:27.299545Z  INFO ThreadId(01) client: [client] established 16 persistent connections
+2025-11-14T02:36:27.299553Z  INFO ThreadId(01) client: [client] target TPS: 500 x n
+2025-11-14T02:36:27.299557Z  INFO ThreadId(01) client: [load-test] starting load test - target TPS: 500, duration: 180 s
+2025-11-14T02:36:27.299562Z  INFO ThreadId(01) client: [load-test] overriding batch size via CLIENT_BATCH_SIZE=5000
+2025-11-14T02:36:27.299883Z  INFO ThreadId(01) client: [load-test] batch 1 sent 1 transactions to node 0
+2025-11-14T02:36:27.300082Z  INFO ThreadId(01) client: [load-test] batch 1 sent 1 transactions to node 1
+2025-11-14T02:36:27.300205Z  INFO ThreadId(01) client: [load-test] batch 1 sent 1 transactions to node 2
+2025-11-14T02:36:27.300366Z  INFO ThreadId(01) client: [load-test] batch 1 sent 1 transactions to node 3
+2025-11-14T02:36:27.300468Z  INFO ThreadId(01) client: [load-test] batch 1 sent 1 transactions to node 4
+2025-11-14T02:36:27.300675Z  INFO ThreadId(01) client: [load-test] batch 1 sent 1 transactions to node 5
+2025-11-14T02:36:27.300806Z  INFO ThreadId(01) client: [load-test] batch 1 sent 1 transactions to node 6
+2025-11-14T02:36:27.300904Z  INFO ThreadId(01) client: [load-test] batch 1 sent 1 transactions to node 7
+2025-11-14T02:36:27.301056Z  INFO ThreadId(01) client: [load-test] batch 1 sent 1 transactions to node 8
+2025-11-14T02:36:27.301174Z  INFO ThreadId(01) client: [load-test] batch 1 sent 1 transactions to node 9
+2025-11-14T02:36:27.301265Z  INFO ThreadId(01) client: [load-test] batch 1 sent 1 transactions to node 10
+2025-11-14T02:36:27.301396Z  INFO ThreadId(01) client: [load-test] batch 1 sent 1 transactions to node 11
+2025-11-14T02:36:27.301566Z  INFO ThreadId(01) client: [load-test] batch 1 sent 1 transactions to node 12
+2025-11-14T02:36:27.301733Z  INFO ThreadId(01) client: [load-test] batch 1 sent 1 transactions to node 13
+2025-11-14T02:36:27.301895Z  INFO ThreadId(01) client: [load-test] batch 1 sent 1 transactions to node 14
+2025-11-14T02:36:27.302066Z  INFO ThreadId(01) client: [load-test] batch 1 sent 1 transactions to node 15
+2025-11-14T02:36:27.355603Z  INFO ThreadId(03) client: [latency] tx 2 ordering delay: 55.683 ms
+2025-11-14T02:36:27.355626Z  INFO ThreadId(03) client: [latency] tx 1 ordering delay: 55.94 ms
+2025-11-14T02:36:27.369556Z  INFO ThreadId(03) client: [latency] tx 10 ordering delay: 68.466 ms
+2025-11-14T02:36:27.381912Z  INFO ThreadId(03) client: [latency] tx 9 ordering delay: 80.969 ms
+2025-11-14T02:36:27.541162Z  INFO ThreadId(01) client: [load-test] batch 2 sent 1 transactions to node 0
+2025-11-14T02:36:27.541370Z  INFO ThreadId(01) client: [load-test] batch 2 sent 1 transactions to node 1
+2025-11-14T02:36:27.541530Z  INFO ThreadId(01) client: [load-test] batch 2 sent 1 transactions to node 2
+2025-11-14T02:36:27.541792Z  INFO ThreadId(01) client: [load-test] batch 2 sent 1 transactions to node 3
+2025-11-14T02:36:27.541907Z  INFO ThreadId(01) client: [load-test] batch 2 sent 1 transactions to node 4
+2025-11-14T02:36:27.542184Z  INFO ThreadId(01) client: [load-test] batch 2 sent 1 transactions to node 5
+2025-11-14T02:36:27.542310Z  INFO ThreadId(01) client: [load-test] batch 2 sent 1 transactions to node 6
+2025-11-14T02:36:27.542470Z  INFO ThreadId(01) client: [load-test] batch 2 sent 1 transactions to node 7
+2025-11-14T02:36:27.542586Z  INFO ThreadId(01) client: [load-test] batch 2 sent 1 transactions to node 8
+2025-11-14T02:36:27.542755Z  INFO ThreadId(01) client: [load-test] batch 2 sent 1 transactions to node 9
+2025-11-14T02:36:27.542860Z  INFO ThreadId(01) client: [load-test] batch 2 sent 1 transactions to node 10
+2025-11-14T02:36:27.543064Z  INFO ThreadId(01) client: [load-test] batch 2 sent 1 transactions to node 11
+2025-11-14T02:36:27.543265Z  INFO ThreadId(01) client: [load-test] batch 2 sent 1 transactions to node 12
+2025-11-14T02:36:27.543604Z  INFO ThreadId(01) client: [load-test] batch 2 sent 1 transactions to node 13
+2025-11-14T02:36:27.543734Z  INFO ThreadId(01) client: [load-test] batch 2 sent 1 transactions to node 14
+2025-11-14T02:36:27.543824Z  INFO ThreadId(01) client: [load-test] batch 2 sent 1 transactions to node 15
+2025-11-14T02:36:27.579098Z  INFO ThreadId(03) client: [latency] tx 11 ordering delay: 277.891 ms
+2025-11-14T02:36:27.580203Z  INFO ThreadId(03) client: [latency] tx 13 ordering delay: 278.776 ms
+2025-11-14T02:36:27.580714Z  INFO ThreadId(03) client: [latency] tx 4 ordering delay: 280.492 ms
+2025-11-14T02:36:27.580725Z  INFO ThreadId(03) client: [latency] tx 3 ordering delay: 280.633 ms
+2025-11-14T02:36:27.583626Z  INFO ThreadId(03) client: [latency] tx 14 ordering delay: 282.036 ms
+2025-11-14T02:36:27.584401Z  INFO ThreadId(03) client: [latency] tx 25 ordering delay: 41.909 ms
+2025-11-14T02:36:27.585275Z  INFO ThreadId(03) client: [latency] tx 17 ordering delay: 44.409 ms
+2025-11-14T02:36:27.596872Z  INFO ThreadId(03) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:27.596893Z  INFO ThreadId(03) client: [ordering] latency statistics (samples: 11):
+2025-11-14T02:36:27.596910Z  INFO ThreadId(03) client:   Average: 158.84 ms
+2025-11-14T02:36:27.596915Z  INFO ThreadId(03) client:   P50: 80.969 ms
+2025-11-14T02:36:27.596920Z  INFO ThreadId(03) client:   P95: 282.036 ms
+2025-11-14T02:36:27.596924Z  INFO ThreadId(03) client:   P99: 282.036 ms
+2025-11-14T02:36:27.596928Z  INFO ThreadId(03) client: 📊 ==========================================
+2025-11-14T02:36:27.599630Z  INFO ThreadId(02) client: [latency] tx 12 ordering delay: 298.34 ms
+2025-11-14T02:36:27.615461Z  INFO ThreadId(03) client: [latency] tx 26 ordering delay: 72.839 ms
+2025-11-14T02:36:27.691721Z  INFO ThreadId(02) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:27.691742Z  INFO ThreadId(02) client: [ordering] latency statistics (samples: 13):
+2025-11-14T02:36:27.691758Z  INFO ThreadId(02) client:   Average: 162.95 ms
+2025-11-14T02:36:27.691762Z  INFO ThreadId(02) client:   P50: 80.969 ms
+2025-11-14T02:36:27.691766Z  INFO ThreadId(02) client:   P95: 298.34 ms
+2025-11-14T02:36:27.691771Z  INFO ThreadId(02) client:   P99: 298.34 ms
+2025-11-14T02:36:27.691775Z  INFO ThreadId(02) client: 📊 ==========================================
+2025-11-14T02:36:27.712536Z  INFO ThreadId(02) client: [latency] tx 18 ordering delay: 171.317 ms
+2025-11-14T02:36:27.737965Z  INFO ThreadId(01) client: [load-test] batch 3 sent 1 transactions to node 0
+2025-11-14T02:36:27.738072Z  INFO ThreadId(01) client: [load-test] batch 3 sent 1 transactions to node 1
+2025-11-14T02:36:27.738162Z  INFO ThreadId(01) client: [load-test] batch 3 sent 1 transactions to node 2
+2025-11-14T02:36:27.738248Z  INFO ThreadId(01) client: [load-test] batch 3 sent 1 transactions to node 3
+2025-11-14T02:36:27.738581Z  INFO ThreadId(01) client: [load-test] batch 3 sent 1 transactions to node 4
+2025-11-14T02:36:27.769332Z  INFO ThreadId(02) client: [latency] tx 29 ordering delay: 226.232 ms
+2025-11-14T02:36:27.769375Z  INFO ThreadId(02) client: [latency] tx 30 ordering delay: 226.067 ms
+2025-11-14T02:36:27.778203Z  INFO ThreadId(02) client: [latency] tx 34 ordering delay: 40.191 ms
+2025-11-14T02:36:27.778222Z  INFO ThreadId(02) client: [latency] tx 33 ordering delay: 40.46 ms
+2025-11-14T02:36:27.797061Z  INFO ThreadId(02) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:27.797103Z  INFO ThreadId(02) client: [ordering] latency statistics (samples: 18):
+2025-11-14T02:36:27.797112Z  INFO ThreadId(02) client:   Average: 156.81 ms
+2025-11-14T02:36:27.797118Z  INFO ThreadId(02) client:   P50: 171.317 ms
+2025-11-14T02:36:27.797125Z  INFO ThreadId(02) client:   P95: 298.34 ms
+2025-11-14T02:36:27.797132Z  INFO ThreadId(02) client:   P99: 298.34 ms
+2025-11-14T02:36:27.797139Z  INFO ThreadId(02) client: 📊 ==========================================
+2025-11-14T02:36:27.852131Z  INFO ThreadId(01) client: [load-test] batch 3 sent 1 transactions to node 5
+2025-11-14T02:36:27.852361Z  INFO ThreadId(01) client: [load-test] batch 3 sent 1 transactions to node 6
+2025-11-14T02:36:27.852597Z  INFO ThreadId(01) client: [load-test] batch 3 sent 1 transactions to node 7
+2025-11-14T02:36:27.852846Z  INFO ThreadId(01) client: [load-test] batch 3 sent 1 transactions to node 8
+2025-11-14T02:36:27.853070Z  INFO ThreadId(01) client: [load-test] batch 3 sent 1 transactions to node 9
+2025-11-14T02:36:27.853208Z  INFO ThreadId(01) client: [load-test] batch 3 sent 1 transactions to node 10
+2025-11-14T02:36:27.853330Z  INFO ThreadId(01) client: [load-test] batch 3 sent 1 transactions to node 11
+2025-11-14T02:36:27.853396Z  INFO ThreadId(01) client: [load-test] batch 3 sent 1 transactions to node 12
+2025-11-14T02:36:27.853533Z  INFO ThreadId(01) client: [load-test] batch 3 sent 1 transactions to node 13
+2025-11-14T02:36:27.853655Z  INFO ThreadId(01) client: [load-test] batch 3 sent 1 transactions to node 14
+2025-11-14T02:36:27.853780Z  INFO ThreadId(01) client: [load-test] batch 3 sent 1 transactions to node 15
+2025-11-14T02:36:27.887453Z  INFO ThreadId(03) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:27.887519Z  INFO ThreadId(03) client: [ordering] latency statistics (samples: 18):
+2025-11-14T02:36:27.887525Z  INFO ThreadId(03) client:   Average: 156.81 ms
+2025-11-14T02:36:27.887529Z  INFO ThreadId(03) client:   P50: 171.317 ms
+2025-11-14T02:36:27.887534Z  INFO ThreadId(03) client:   P95: 298.34 ms
+2025-11-14T02:36:27.887538Z  INFO ThreadId(03) client:   P99: 298.34 ms
+2025-11-14T02:36:27.887544Z  INFO ThreadId(03) client: 📊 ==========================================
+2025-11-14T02:36:27.889066Z  INFO ThreadId(03) client: [latency] tx 41 ordering delay: 36.439 ms
+2025-11-14T02:36:27.903414Z  INFO ThreadId(03) client: [latency] tx 42 ordering delay: 50.513 ms
+2025-11-14T02:36:27.938814Z  INFO ThreadId(03) client: [latency] tx 15 ordering delay: 637.038 ms
+2025-11-14T02:36:27.939308Z  INFO ThreadId(03) client: [latency] tx 16 ordering delay: 637.382 ms
+2025-11-14T02:36:27.949184Z  INFO ThreadId(03) client: [latency] tx 45 ordering delay: 95.818 ms
+2025-11-14T02:36:27.953082Z  INFO ThreadId(03) client: [latency] tx 8 ordering delay: 652.249 ms
+2025-11-14T02:36:27.967437Z  INFO ThreadId(03) client: [latency] tx 5 ordering delay: 667.04 ms
+2025-11-14T02:36:27.969902Z  INFO ThreadId(03) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:27.969916Z  INFO ThreadId(03) client: [ordering] latency statistics (samples: 25):
+2025-11-14T02:36:27.969921Z  INFO ThreadId(03) client:   Average: 223.97 ms
+2025-11-14T02:36:27.969926Z  INFO ThreadId(03) client:   P50: 171.317 ms
+2025-11-14T02:36:27.969930Z  INFO ThreadId(03) client:   P95: 652.249 ms
+2025-11-14T02:36:27.969934Z  INFO ThreadId(03) client:   P99: 667.04 ms
+2025-11-14T02:36:27.969938Z  INFO ThreadId(03) client: 📊 ==========================================
+2025-11-14T02:36:27.999007Z  INFO ThreadId(03) client: [latency] tx 46 ordering delay: 145.573 ms
+2025-11-14T02:36:28.030604Z  INFO ThreadId(02) client: [latency] tx 7 ordering delay: 729.879 ms
+2025-11-14T02:36:28.035176Z  INFO ThreadId(02) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:28.035197Z  INFO ThreadId(02) client: [ordering] latency statistics (samples: 27):
+2025-11-14T02:36:28.035205Z  INFO ThreadId(02) client:   Average: 239.80 ms
+2025-11-14T02:36:28.035226Z  INFO ThreadId(02) client:   P50: 171.317 ms
+2025-11-14T02:36:28.035233Z  INFO ThreadId(02) client:   P95: 667.04 ms
+2025-11-14T02:36:28.035239Z  INFO ThreadId(02) client:   P99: 729.879 ms
+2025-11-14T02:36:28.035246Z  INFO ThreadId(02) client: 📊 ==========================================
+2025-11-14T02:36:28.039917Z  INFO ThreadId(02) client: [latency] tx 20 ordering delay: 498.356 ms
+2025-11-14T02:36:28.060803Z  INFO ThreadId(02) client: [latency] tx 19 ordering delay: 519.392 ms
+2025-11-14T02:36:28.063531Z  INFO ThreadId(02) client: [latency] tx 35 ordering delay: 325.371 ms
+2025-11-14T02:36:28.079882Z  INFO ThreadId(01) client: [load-test] batch 4 sent 1 transactions to node 0
+2025-11-14T02:36:28.080173Z  INFO ThreadId(01) client: [load-test] batch 4 sent 1 transactions to node 1
+2025-11-14T02:36:28.080275Z  INFO ThreadId(01) client: [load-test] batch 4 sent 1 transactions to node 2
+2025-11-14T02:36:28.080415Z  INFO ThreadId(01) client: [load-test] batch 4 sent 1 transactions to node 3
+2025-11-14T02:36:28.080583Z  INFO ThreadId(01) client: [load-test] batch 4 sent 1 transactions to node 4
+2025-11-14T02:36:28.080716Z  INFO ThreadId(01) client: [load-test] batch 4 sent 1 transactions to node 5
+2025-11-14T02:36:28.080890Z  INFO ThreadId(01) client: [load-test] batch 4 sent 1 transactions to node 6
+2025-11-14T02:36:28.081046Z  INFO ThreadId(01) client: [load-test] batch 4 sent 1 transactions to node 7
+2025-11-14T02:36:28.081222Z  INFO ThreadId(01) client: [load-test] batch 4 sent 1 transactions to node 8
+2025-11-14T02:36:28.081390Z  INFO ThreadId(01) client: [load-test] batch 4 sent 1 transactions to node 9
+2025-11-14T02:36:28.081544Z  INFO ThreadId(01) client: [load-test] batch 4 sent 1 transactions to node 10
+2025-11-14T02:36:28.081713Z  INFO ThreadId(01) client: [load-test] batch 4 sent 1 transactions to node 11
+2025-11-14T02:36:28.081841Z  INFO ThreadId(01) client: [load-test] batch 4 sent 1 transactions to node 12
+2025-11-14T02:36:28.081950Z  INFO ThreadId(01) client: [load-test] batch 4 sent 1 transactions to node 13
+2025-11-14T02:36:28.082069Z  INFO ThreadId(01) client: [load-test] batch 4 sent 1 transactions to node 14
+2025-11-14T02:36:28.082258Z  INFO ThreadId(01) client: [load-test] batch 4 sent 1 transactions to node 15
+2025-11-14T02:36:28.087689Z  INFO ThreadId(02) client: [latency] tx 43 ordering delay: 234.573 ms
+2025-11-14T02:36:28.100654Z  INFO ThreadId(02) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:28.100695Z  INFO ThreadId(02) client: [ordering] latency statistics (samples: 31):
+2025-11-14T02:36:28.100701Z  INFO ThreadId(02) client:   Average: 259.75 ms
+2025-11-14T02:36:28.100706Z  INFO ThreadId(02) client:   P50: 226.232 ms
+2025-11-14T02:36:28.100710Z  INFO ThreadId(02) client:   P95: 667.04 ms
+2025-11-14T02:36:28.100714Z  INFO ThreadId(02) client:   P99: 729.879 ms
+2025-11-14T02:36:28.100719Z  INFO ThreadId(02) client: 📊 ==========================================
+2025-11-14T02:36:28.102843Z  INFO ThreadId(02) client: [latency] tx 27 ordering delay: 560.061 ms
+2025-11-14T02:36:28.129023Z  INFO ThreadId(02) client: [latency] tx 49 ordering delay: 49.294 ms
+2025-11-14T02:36:28.129044Z  INFO ThreadId(02) client: [latency] tx 50 ordering delay: 49.136 ms
+2025-11-14T02:36:28.129049Z  INFO ThreadId(02) client: [latency] tx 58 ordering delay: 47.82 ms
+2025-11-14T02:36:28.132883Z  INFO ThreadId(02) client: [latency] tx 57 ordering delay: 51.811 ms
+2025-11-14T02:36:28.154101Z  INFO ThreadId(02) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:28.154133Z  INFO ThreadId(02) client: [ordering] latency statistics (samples: 36):
+2025-11-14T02:36:28.154139Z  INFO ThreadId(02) client:   Average: 244.73 ms
+2025-11-14T02:36:28.154144Z  INFO ThreadId(02) client:   P50: 226.067 ms
+2025-11-14T02:36:28.154148Z  INFO ThreadId(02) client:   P95: 667.04 ms
+2025-11-14T02:36:28.154152Z  INFO ThreadId(02) client:   P99: 729.879 ms
+2025-11-14T02:36:28.154157Z  INFO ThreadId(02) client: 📊 ==========================================
+2025-11-14T02:36:28.154172Z  INFO ThreadId(02) client: [latency] tx 6 ordering delay: 853.695 ms
+2025-11-14T02:36:28.179216Z  INFO ThreadId(02) client: [latency] tx 32 ordering delay: 635.431 ms
+2025-11-14T02:36:28.184760Z  INFO ThreadId(02) client: [latency] tx 36 ordering delay: 446.568 ms
+2025-11-14T02:36:28.204425Z  INFO ThreadId(02) client: [latency] tx 59 ordering delay: 122.994 ms
+2025-11-14T02:36:28.206332Z  INFO ThreadId(02) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:28.206352Z  INFO ThreadId(02) client: [ordering] latency statistics (samples: 40):
+2025-11-14T02:36:28.206359Z  INFO ThreadId(02) client:   Average: 271.73 ms
+2025-11-14T02:36:28.206372Z  INFO ThreadId(02) client:   P50: 226.232 ms
+2025-11-14T02:36:28.206381Z  INFO ThreadId(02) client:   P95: 729.879 ms
+2025-11-14T02:36:28.206388Z  INFO ThreadId(02) client:   P99: 853.695 ms
+2025-11-14T02:36:28.206402Z  INFO ThreadId(02) client: 📊 ==========================================
+2025-11-14T02:36:28.224607Z  INFO ThreadId(02) client: [latency] tx 51 ordering delay: 144.392 ms
+2025-11-14T02:36:28.226885Z  INFO ThreadId(02) client: [latency] tx 52 ordering delay: 146.582 ms
+2025-11-14T02:36:28.232637Z  INFO ThreadId(03) client: [latency] tx 28 ordering delay: 689.729 ms
+2025-11-14T02:36:28.238207Z  INFO ThreadId(03) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:28.238229Z  INFO ThreadId(03) client: [ordering] latency statistics (samples: 43):
+2025-11-14T02:36:28.238234Z  INFO ThreadId(03) client:   Average: 275.58 ms
+2025-11-14T02:36:28.238239Z  INFO ThreadId(03) client:   P50: 226.067 ms
+2025-11-14T02:36:28.238243Z  INFO ThreadId(03) client:   P95: 689.729 ms
+2025-11-14T02:36:28.238247Z  INFO ThreadId(03) client:   P99: 853.695 ms
+2025-11-14T02:36:28.238251Z  INFO ThreadId(03) client: 📊 ==========================================
+2025-11-14T02:36:28.245700Z  INFO ThreadId(03) client: [latency] tx 60 ordering delay: 164.104 ms
+2025-11-14T02:36:28.257089Z  INFO ThreadId(03) client: [latency] tx 44 ordering delay: 403.848 ms
+2025-11-14T02:36:28.288032Z  INFO ThreadId(01) client: [load-test] batch 5 sent 1 transactions to node 0
+2025-11-14T02:36:28.288219Z  INFO ThreadId(01) client: [load-test] batch 5 sent 1 transactions to node 1
+2025-11-14T02:36:28.288402Z  INFO ThreadId(01) client: [load-test] batch 5 sent 1 transactions to node 2
+2025-11-14T02:36:28.288467Z  INFO ThreadId(01) client: [load-test] batch 5 sent 1 transactions to node 3
+2025-11-14T02:36:28.288566Z  INFO ThreadId(01) client: [load-test] batch 5 sent 1 transactions to node 4
+2025-11-14T02:36:28.288743Z  INFO ThreadId(01) client: [load-test] batch 5 sent 1 transactions to node 5
+2025-11-14T02:36:28.288982Z  INFO ThreadId(01) client: [load-test] batch 5 sent 1 transactions to node 6
+2025-11-14T02:36:28.289096Z  INFO ThreadId(01) client: [load-test] batch 5 sent 1 transactions to node 7
+2025-11-14T02:36:28.289210Z  INFO ThreadId(01) client: [load-test] batch 5 sent 1 transactions to node 8
+2025-11-14T02:36:28.289361Z  INFO ThreadId(01) client: [load-test] batch 5 sent 1 transactions to node 9
+2025-11-14T02:36:28.289512Z  INFO ThreadId(01) client: [load-test] batch 5 sent 1 transactions to node 10
+2025-11-14T02:36:28.289735Z  INFO ThreadId(01) client: [load-test] batch 5 sent 1 transactions to node 11
+2025-11-14T02:36:28.289964Z  INFO ThreadId(01) client: [load-test] batch 5 sent 1 transactions to node 12
+2025-11-14T02:36:28.290150Z  INFO ThreadId(01) client: [load-test] batch 5 sent 1 transactions to node 13
+2025-11-14T02:36:28.290248Z  INFO ThreadId(01) client: [load-test] batch 5 sent 1 transactions to node 14
+2025-11-14T02:36:28.290360Z  INFO ThreadId(01) client: [load-test] batch 5 sent 1 transactions to node 15
+2025-11-14T02:36:28.291364Z  INFO ThreadId(03) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:28.291393Z  INFO ThreadId(03) client: [ordering] latency statistics (samples: 45):
+2025-11-14T02:36:28.291405Z  INFO ThreadId(03) client:   Average: 275.95 ms
+2025-11-14T02:36:28.291420Z  INFO ThreadId(03) client:   P50: 226.067 ms
+2025-11-14T02:36:28.291425Z  INFO ThreadId(03) client:   P95: 689.729 ms
+2025-11-14T02:36:28.291429Z  INFO ThreadId(03) client:   P99: 853.695 ms
+2025-11-14T02:36:28.291433Z  INFO ThreadId(03) client: 📊 ==========================================
+2025-11-14T02:36:28.317383Z  INFO ThreadId(03) client: [latency] tx 22 ordering delay: 775.431 ms
+2025-11-14T02:36:28.317403Z  INFO ThreadId(03) client: [latency] tx 38 ordering delay: 578.809 ms
+2025-11-14T02:36:28.336895Z  INFO ThreadId(03) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:28.336919Z  INFO ThreadId(03) client: [ordering] latency statistics (samples: 47):
+2025-11-14T02:36:28.336925Z  INFO ThreadId(03) client:   Average: 293.02 ms
+2025-11-14T02:36:28.336929Z  INFO ThreadId(03) client:   P50: 226.232 ms
+2025-11-14T02:36:28.336934Z  INFO ThreadId(03) client:   P95: 729.879 ms
+2025-11-14T02:36:28.336938Z  INFO ThreadId(03) client:   P99: 853.695 ms
+2025-11-14T02:36:28.336942Z  INFO ThreadId(03) client: 📊 ==========================================
+2025-11-14T02:36:28.345897Z  INFO ThreadId(03) client: [latency] tx 65 ordering delay: 58.018 ms
+2025-11-14T02:36:28.345917Z  INFO ThreadId(03) client: [latency] tx 73 ordering delay: 56.813 ms
+2025-11-14T02:36:28.345922Z  INFO ThreadId(03) client: [latency] tx 74 ordering delay: 56.705 ms
+2025-11-14T02:36:28.345926Z  INFO ThreadId(03) client: [latency] tx 66 ordering delay: 57.871 ms
+2025-11-14T02:36:28.345931Z  INFO ThreadId(03) client: [latency] tx 61 ordering delay: 264.208 ms
+2025-11-14T02:36:28.353044Z  INFO ThreadId(03) client: [latency] tx 62 ordering delay: 271.172 ms
+2025-11-14T02:36:28.382025Z  INFO ThreadId(02) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:28.382048Z  INFO ThreadId(02) client: [ordering] latency statistics (samples: 53):
+2025-11-14T02:36:28.382054Z  INFO ThreadId(02) client:   Average: 274.28 ms
+2025-11-14T02:36:28.382058Z  INFO ThreadId(02) client:   P50: 226.067 ms
+2025-11-14T02:36:28.382062Z  INFO ThreadId(02) client:   P95: 729.879 ms
+2025-11-14T02:36:28.382067Z  INFO ThreadId(02) client:   P99: 853.695 ms
+2025-11-14T02:36:28.382077Z  INFO ThreadId(02) client: 📊 ==========================================
+2025-11-14T02:36:28.389219Z  INFO ThreadId(02) client: [latency] tx 77 ordering delay: 99.45 ms
+2025-11-14T02:36:28.391294Z  INFO ThreadId(02) client: [latency] tx 78 ordering delay: 101.302 ms
+2025-11-14T02:36:28.406997Z  INFO ThreadId(02) client: [latency] tx 54 ordering delay: 326.381 ms
+2025-11-14T02:36:28.410510Z  INFO ThreadId(02) client: [latency] tx 37 ordering delay: 672.234 ms
+2025-11-14T02:36:28.412016Z  INFO ThreadId(03) client: [latency] tx 75 ordering delay: 122.634 ms
+2025-11-14T02:36:28.414108Z  INFO ThreadId(03) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:28.414122Z  INFO ThreadId(03) client: [ordering] latency statistics (samples: 58):
+2025-11-14T02:36:28.414127Z  INFO ThreadId(03) client:   Average: 273.43 ms
+2025-11-14T02:36:28.414131Z  INFO ThreadId(03) client:   P50: 226.067 ms
+2025-11-14T02:36:28.414136Z  INFO ThreadId(03) client:   P95: 729.879 ms
+2025-11-14T02:36:28.414140Z  INFO ThreadId(03) client:   P99: 853.695 ms
+2025-11-14T02:36:28.414145Z  INFO ThreadId(03) client: 📊 ==========================================
+2025-11-14T02:36:28.414744Z  INFO ThreadId(03) client: [latency] tx 76 ordering delay: 125.216 ms
+2025-11-14T02:36:28.428979Z  INFO ThreadId(03) client: [latency] tx 39 ordering delay: 576.781 ms
+2025-11-14T02:36:28.437593Z  INFO ThreadId(03) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:28.437629Z  INFO ThreadId(03) client: [ordering] latency statistics (samples: 60):
+2025-11-14T02:36:28.437634Z  INFO ThreadId(03) client:   Average: 276.01 ms
+2025-11-14T02:36:28.437639Z  INFO ThreadId(03) client:   P50: 226.067 ms
+2025-11-14T02:36:28.437643Z  INFO ThreadId(03) client:   P95: 729.879 ms
+2025-11-14T02:36:28.437655Z  INFO ThreadId(03) client:   P99: 853.695 ms
+2025-11-14T02:36:28.437673Z  INFO ThreadId(03) client: 📊 ==========================================
+2025-11-14T02:36:28.441286Z  INFO ThreadId(03) client: [latency] tx 23 ordering delay: 899.061 ms
+2025-11-14T02:36:28.462969Z  INFO ThreadId(03) client: [latency] tx 53 ordering delay: 382.506 ms
+2025-11-14T02:36:28.467202Z  INFO ThreadId(03) client: [latency] tx 67 ordering delay: 178.937 ms
+2025-11-14T02:36:28.469677Z  INFO ThreadId(03) client: [latency] tx 68 ordering delay: 181.233 ms
+2025-11-14T02:36:28.469837Z  INFO ThreadId(03) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:28.469848Z  INFO ThreadId(03) client: [ordering] latency statistics (samples: 64):
+2025-11-14T02:36:28.469853Z  INFO ThreadId(03) client:   Average: 284.41 ms
+2025-11-14T02:36:28.469857Z  INFO ThreadId(03) client:   P50: 226.067 ms
+2025-11-14T02:36:28.469862Z  INFO ThreadId(03) client:   P95: 729.879 ms
+2025-11-14T02:36:28.469865Z  INFO ThreadId(03) client:   P99: 899.061 ms
+2025-11-14T02:36:28.469870Z  INFO ThreadId(03) client: 📊 ==========================================
+2025-11-14T02:36:28.475967Z  INFO ThreadId(01) client: [load-test] batch 6 sent 1 transactions to node 0
+2025-11-14T02:36:28.476093Z  INFO ThreadId(01) client: [load-test] batch 6 sent 1 transactions to node 1
+2025-11-14T02:36:28.476350Z  INFO ThreadId(01) client: [load-test] batch 6 sent 1 transactions to node 2
+2025-11-14T02:36:28.476410Z  INFO ThreadId(01) client: [load-test] batch 6 sent 1 transactions to node 3
+2025-11-14T02:36:28.476523Z  INFO ThreadId(01) client: [load-test] batch 6 sent 1 transactions to node 4
+2025-11-14T02:36:28.476640Z  INFO ThreadId(01) client: [load-test] batch 6 sent 1 transactions to node 5
+2025-11-14T02:36:28.476776Z  INFO ThreadId(01) client: [load-test] batch 6 sent 1 transactions to node 6
+2025-11-14T02:36:28.476929Z  INFO ThreadId(01) client: [load-test] batch 6 sent 1 transactions to node 7
+2025-11-14T02:36:28.477097Z  INFO ThreadId(01) client: [load-test] batch 6 sent 1 transactions to node 8
+2025-11-14T02:36:28.477192Z  INFO ThreadId(01) client: [load-test] batch 6 sent 1 transactions to node 9
+2025-11-14T02:36:28.477313Z  INFO ThreadId(01) client: [load-test] batch 6 sent 1 transactions to node 10
+2025-11-14T02:36:28.477449Z  INFO ThreadId(01) client: [load-test] batch 6 sent 1 transactions to node 11
+2025-11-14T02:36:28.477679Z  INFO ThreadId(01) client: [load-test] batch 6 sent 1 transactions to node 12
+2025-11-14T02:36:28.477792Z  INFO ThreadId(01) client: [load-test] batch 6 sent 1 transactions to node 13
+2025-11-14T02:36:28.477914Z  INFO ThreadId(01) client: [load-test] batch 6 sent 1 transactions to node 14
+2025-11-14T02:36:28.477997Z  INFO ThreadId(01) client: [load-test] batch 6 sent 1 transactions to node 15
+2025-11-14T02:36:28.540114Z  INFO ThreadId(03) client: [latency] tx 89 ordering delay: 63.133 ms
+2025-11-14T02:36:28.540137Z  INFO ThreadId(03) client: [latency] tx 82 ordering delay: 64.146 ms
+2025-11-14T02:36:28.540143Z  INFO ThreadId(03) client: [latency] tx 81 ordering delay: 64.438 ms
+2025-11-14T02:36:28.540147Z  INFO ThreadId(03) client: [latency] tx 90 ordering delay: 63.043 ms
+2025-11-14T02:36:28.542648Z  INFO ThreadId(03) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:28.542692Z  INFO ThreadId(03) client: [ordering] latency statistics (samples: 68):
+2025-11-14T02:36:28.542697Z  INFO ThreadId(03) client:   Average: 271.43 ms
+2025-11-14T02:36:28.542702Z  INFO ThreadId(03) client:   P50: 178.937 ms
+2025-11-14T02:36:28.542719Z  INFO ThreadId(03) client:   P95: 729.879 ms
+2025-11-14T02:36:28.542723Z  INFO ThreadId(03) client:   P99: 899.061 ms
+2025-11-14T02:36:28.542728Z  INFO ThreadId(03) client: 📊 ==========================================
+2025-11-14T02:36:28.569347Z  INFO ThreadId(03) client: [latency] tx 24 ordering delay: 1026.996 ms
+2025-11-14T02:36:28.573928Z  INFO ThreadId(03) client: [latency] tx 40 ordering delay: 721.514 ms
+2025-11-14T02:36:28.576612Z  INFO ThreadId(03) client: [latency] tx 93 ordering delay: 99.13 ms
+2025-11-14T02:36:28.578462Z  INFO ThreadId(03) client: [latency] tx 94 ordering delay: 100.754 ms
+2025-11-14T02:36:28.579238Z  INFO ThreadId(03) client: [latency] tx 56 ordering delay: 498.307 ms
+2025-11-14T02:36:28.584484Z  INFO ThreadId(03) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:28.584514Z  INFO ThreadId(03) client: [ordering] latency statistics (samples: 73):
+2025-11-14T02:36:28.584520Z  INFO ThreadId(03) client:   Average: 286.36 ms
+2025-11-14T02:36:28.584525Z  INFO ThreadId(03) client:   P50: 178.937 ms
+2025-11-14T02:36:28.584529Z  INFO ThreadId(03) client:   P95: 775.431 ms
+2025-11-14T02:36:28.584533Z  INFO ThreadId(03) client:   P99: 1026.996 ms
+2025-11-14T02:36:28.584537Z  INFO ThreadId(03) client: 📊 ==========================================
+2025-11-14T02:36:28.599073Z  INFO ThreadId(03) client: [latency] tx 91 ordering delay: 121.849 ms
+2025-11-14T02:36:28.605165Z  INFO ThreadId(03) client: [latency] tx 92 ordering delay: 127.821 ms
+2025-11-14T02:36:28.605576Z  INFO ThreadId(03) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:28.605591Z  INFO ThreadId(03) client: [ordering] latency statistics (samples: 75):
+2025-11-14T02:36:28.605597Z  INFO ThreadId(03) client:   Average: 282.05 ms
+2025-11-14T02:36:28.605608Z  INFO ThreadId(03) client:   P50: 171.317 ms
+2025-11-14T02:36:28.605612Z  INFO ThreadId(03) client:   P95: 775.431 ms
+2025-11-14T02:36:28.605616Z  INFO ThreadId(03) client:   P99: 1026.996 ms
+2025-11-14T02:36:28.605621Z  INFO ThreadId(03) client: 📊 ==========================================
+2025-11-14T02:36:28.620949Z  INFO ThreadId(03) client: [latency] tx 84 ordering delay: 144.553 ms
+2025-11-14T02:36:28.623063Z  INFO ThreadId(03) client: [latency] tx 83 ordering delay: 146.888 ms
+2025-11-14T02:36:28.629255Z  INFO ThreadId(02) client: [latency] tx 70 ordering delay: 340.661 ms
+2025-11-14T02:36:28.631710Z  INFO ThreadId(02) client: [latency] tx 69 ordering delay: 343.206 ms
+2025-11-14T02:36:28.631806Z  INFO ThreadId(02) client: [latency] tx 21 ordering delay: 1089.981 ms
+2025-11-14T02:36:28.636515Z  INFO ThreadId(02) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:28.636540Z  INFO ThreadId(02) client: [ordering] latency statistics (samples: 80):
+2025-11-14T02:36:28.636547Z  INFO ThreadId(02) client:   Average: 290.24 ms
+2025-11-14T02:36:28.636553Z  INFO ThreadId(02) client:   P50: 178.937 ms
+2025-11-14T02:36:28.636558Z  INFO ThreadId(02) client:   P95: 853.695 ms
+2025-11-14T02:36:28.636565Z  INFO ThreadId(02) client:   P99: 1089.981 ms
+2025-11-14T02:36:28.636572Z  INFO ThreadId(02) client: 📊 ==========================================
+2025-11-14T02:36:28.669809Z  INFO ThreadId(01) client: [load-test] batch 7 sent 1 transactions to node 0
+2025-11-14T02:36:28.670045Z  INFO ThreadId(01) client: [load-test] batch 7 sent 1 transactions to node 1
+2025-11-14T02:36:28.670157Z  INFO ThreadId(01) client: [load-test] batch 7 sent 1 transactions to node 2
+2025-11-14T02:36:28.670375Z  INFO ThreadId(01) client: [load-test] batch 7 sent 1 transactions to node 3
+2025-11-14T02:36:28.670571Z  INFO ThreadId(01) client: [load-test] batch 7 sent 1 transactions to node 4
+2025-11-14T02:36:28.670770Z  INFO ThreadId(01) client: [load-test] batch 7 sent 1 transactions to node 5
+2025-11-14T02:36:28.670900Z  INFO ThreadId(01) client: [load-test] batch 7 sent 1 transactions to node 6
+2025-11-14T02:36:28.671039Z  INFO ThreadId(01) client: [load-test] batch 7 sent 1 transactions to node 7
+2025-11-14T02:36:28.671213Z  INFO ThreadId(01) client: [load-test] batch 7 sent 1 transactions to node 8
+2025-11-14T02:36:28.671449Z  INFO ThreadId(01) client: [load-test] batch 7 sent 1 transactions to node 9
+2025-11-14T02:36:28.671685Z  INFO ThreadId(01) client: [load-test] batch 7 sent 1 transactions to node 10
+2025-11-14T02:36:28.671830Z  INFO ThreadId(01) client: [load-test] batch 7 sent 1 transactions to node 11
+2025-11-14T02:36:28.671966Z  INFO ThreadId(01) client: [load-test] batch 7 sent 1 transactions to node 12
+2025-11-14T02:36:28.672168Z  INFO ThreadId(01) client: [load-test] batch 7 sent 1 transactions to node 13
+2025-11-14T02:36:28.672367Z  INFO ThreadId(01) client: [load-test] batch 7 sent 1 transactions to node 14
+2025-11-14T02:36:28.672538Z  INFO ThreadId(01) client: [load-test] batch 7 sent 1 transactions to node 15
+2025-11-14T02:36:28.672546Z  INFO ThreadId(01) client: [load-test] completed; total transactions sent: 112
+2025-11-14T02:36:28.673063Z  INFO ThreadId(02) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:28.673083Z  INFO ThreadId(02) client: [ordering] latency statistics (samples: 80):
+2025-11-14T02:36:28.673098Z  INFO ThreadId(02) client:   Average: 290.24 ms
+2025-11-14T02:36:28.673105Z  INFO ThreadId(02) client:   P50: 178.937 ms
+2025-11-14T02:36:28.673110Z  INFO ThreadId(02) client:   P95: 853.695 ms
+2025-11-14T02:36:28.673116Z  INFO ThreadId(02) client:   P99: 1089.981 ms
+2025-11-14T02:36:28.673122Z  INFO ThreadId(02) client: 📊 ==========================================
+2025-11-14T02:36:28.696469Z  INFO ThreadId(02) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:28.696497Z  INFO ThreadId(02) client: [ordering] latency statistics (samples: 80):
+2025-11-14T02:36:28.696503Z  INFO ThreadId(02) client:   Average: 290.24 ms
+2025-11-14T02:36:28.696508Z  INFO ThreadId(02) client:   P50: 178.937 ms
+2025-11-14T02:36:28.696512Z  INFO ThreadId(02) client:   P95: 853.695 ms
+2025-11-14T02:36:28.696516Z  INFO ThreadId(02) client:   P99: 1089.981 ms
+2025-11-14T02:36:28.696521Z  INFO ThreadId(02) client: 📊 ==========================================
+2025-11-14T02:36:28.712600Z  INFO ThreadId(02) client: [latency] tx 97 ordering delay: 43.014 ms
+2025-11-14T02:36:28.712623Z  INFO ThreadId(02) client: [latency] tx 98 ordering delay: 42.771 ms
+2025-11-14T02:36:28.712629Z  INFO ThreadId(02) client: [latency] tx 105 ordering delay: 41.579 ms
+2025-11-14T02:36:28.712633Z  INFO ThreadId(02) client: [latency] tx 106 ordering delay: 41.399 ms
+2025-11-14T02:36:28.726799Z  INFO ThreadId(02) client: [latency] tx 72 ordering delay: 437.781 ms
+2025-11-14T02:36:28.768985Z  INFO ThreadId(02) client: [latency] tx 109 ordering delay: 97.116 ms
+2025-11-14T02:36:28.770492Z  INFO ThreadId(02) client: [latency] tx 110 ordering delay: 98.487 ms
+2025-11-14T02:36:28.770714Z  INFO ThreadId(02) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:28.770735Z  INFO ThreadId(02) client: [ordering] latency statistics (samples: 87):
+2025-11-14T02:36:28.770740Z  INFO ThreadId(02) client:   Average: 276.10 ms
+2025-11-14T02:36:28.770755Z  INFO ThreadId(02) client:   P50: 146.888 ms
+2025-11-14T02:36:28.770764Z  INFO ThreadId(02) client:   P95: 775.431 ms
+2025-11-14T02:36:28.770768Z  INFO ThreadId(02) client:   P99: 1089.981 ms
+2025-11-14T02:36:28.770773Z  INFO ThreadId(02) client: 📊 ==========================================
+2025-11-14T02:36:28.795848Z  INFO ThreadId(02) client: [latency] tx 107 ordering delay: 124.361 ms
+2025-11-14T02:36:28.798932Z  INFO ThreadId(02) client: [latency] tx 108 ordering delay: 127.2 ms
+2025-11-14T02:36:28.799803Z  INFO ThreadId(03) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:28.799821Z  INFO ThreadId(03) client: [ordering] latency statistics (samples: 89):
+2025-11-14T02:36:28.799827Z  INFO ThreadId(03) client:   Average: 272.73 ms
+2025-11-14T02:36:28.799831Z  INFO ThreadId(03) client:   P50: 146.582 ms
+2025-11-14T02:36:28.799835Z  INFO ThreadId(03) client:   P95: 775.431 ms
+2025-11-14T02:36:28.799840Z  INFO ThreadId(03) client:   P99: 1089.981 ms
+2025-11-14T02:36:28.799844Z  INFO ThreadId(03) client: 📊 ==========================================
+2025-11-14T02:36:28.814346Z  INFO ThreadId(02) client: [latency] tx 99 ordering delay: 144.263 ms
+2025-11-14T02:36:28.814509Z  INFO ThreadId(02) client: [latency] tx 100 ordering delay: 144.33 ms
+2025-11-14T02:36:28.829050Z  INFO ThreadId(02) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:28.829086Z  INFO ThreadId(02) client: [ordering] latency statistics (samples: 91):
+2025-11-14T02:36:28.829092Z  INFO ThreadId(02) client:   Average: 269.90 ms
+2025-11-14T02:36:28.829097Z  INFO ThreadId(02) client:   P50: 145.573 ms
+2025-11-14T02:36:28.829101Z  INFO ThreadId(02) client:   P95: 775.431 ms
+2025-11-14T02:36:28.829104Z  INFO ThreadId(02) client:   P99: 1089.981 ms
+2025-11-14T02:36:28.829110Z  INFO ThreadId(02) client: 📊 ==========================================
+2025-11-14T02:36:28.890417Z  INFO ThreadId(02) client: [latency] tx 88 ordering delay: 413.6 ms
+2025-11-14T02:36:28.891583Z  INFO ThreadId(02) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:28.891603Z  INFO ThreadId(02) client: [ordering] latency statistics (samples: 92):
+2025-11-14T02:36:28.891610Z  INFO ThreadId(02) client:   Average: 271.47 ms
+2025-11-14T02:36:28.891616Z  INFO ThreadId(02) client:   P50: 146.582 ms
+2025-11-14T02:36:28.891622Z  INFO ThreadId(02) client:   P95: 775.431 ms
+2025-11-14T02:36:28.891628Z  INFO ThreadId(02) client:   P99: 1089.981 ms
+2025-11-14T02:36:28.891640Z  INFO ThreadId(02) client: 📊 ==========================================
+2025-11-14T02:36:28.896447Z  INFO ThreadId(01) client: [load-test] completed; total transactions sent: 112
+2025-11-14T02:36:28.896471Z  INFO ThreadId(01) client: [client-stats] sent: 112, confirmed: 112, failed: 0, TPS: 70.15, success rate: 100.0%, avg tx bytes: 46387.3
+2025-11-14T02:36:28.896477Z  INFO ThreadId(01) client: [client] load test complete; awaiting response processing...
+2025-11-14T02:36:28.909191Z  INFO ThreadId(02) client: [latency] tx 86 ordering delay: 432.627 ms
+2025-11-14T02:36:28.911972Z  INFO ThreadId(02) client: [latency] tx 31 ordering delay: 1368.336 ms
+2025-11-14T02:36:28.928892Z  INFO ThreadId(02) client: [latency] tx 101 ordering delay: 258.464 ms
+2025-11-14T02:36:28.930291Z  INFO ThreadId(02) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:28.930311Z  INFO ThreadId(02) client: [ordering] latency statistics (samples: 95):
+2025-11-14T02:36:28.930316Z  INFO ThreadId(02) client:   Average: 284.57 ms
+2025-11-14T02:36:28.930321Z  INFO ThreadId(02) client:   P50: 146.888 ms
+2025-11-14T02:36:28.930325Z  INFO ThreadId(02) client:   P95: 853.695 ms
+2025-11-14T02:36:28.930329Z  INFO ThreadId(02) client:   P99: 1368.336 ms
+2025-11-14T02:36:28.930334Z  INFO ThreadId(02) client: 📊 ==========================================
+2025-11-14T02:36:28.935058Z  INFO ThreadId(02) client: [latency] tx 47 ordering delay: 1081.498 ms
+2025-11-14T02:36:28.959100Z  INFO ThreadId(02) client: [latency] tx 55 ordering delay: 878.34 ms
+2025-11-14T02:36:28.978346Z  INFO ThreadId(02) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:28.978372Z  INFO ThreadId(02) client: [ordering] latency statistics (samples: 97):
+2025-11-14T02:36:28.978378Z  INFO ThreadId(02) client:   Average: 298.91 ms
+2025-11-14T02:36:28.978382Z  INFO ThreadId(02) client:   P50: 164.104 ms
+2025-11-14T02:36:28.978386Z  INFO ThreadId(02) client:   P95: 899.061 ms
+2025-11-14T02:36:28.978391Z  INFO ThreadId(02) client:   P99: 1368.336 ms
+2025-11-14T02:36:28.978395Z  INFO ThreadId(02) client: 📊 ==========================================
+2025-11-14T02:36:28.985557Z  INFO ThreadId(02) client: [latency] tx 102 ordering delay: 314.946 ms
+2025-11-14T02:36:29.002309Z  INFO ThreadId(02) client: [latency] tx 104 ordering delay: 331.369 ms
+2025-11-14T02:36:29.030752Z  INFO ThreadId(02) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:29.030780Z  INFO ThreadId(02) client: [ordering] latency statistics (samples: 99):
+2025-11-14T02:36:29.030786Z  INFO ThreadId(02) client:   Average: 299.40 ms
+2025-11-14T02:36:29.030790Z  INFO ThreadId(02) client:   P50: 171.317 ms
+2025-11-14T02:36:29.030794Z  INFO ThreadId(02) client:   P95: 899.061 ms
+2025-11-14T02:36:29.030799Z  INFO ThreadId(02) client:   P99: 1368.336 ms
+2025-11-14T02:36:29.030819Z  INFO ThreadId(02) client: 📊 ==========================================
+2025-11-14T02:36:29.036583Z  INFO ThreadId(02) client: [latency] tx 85 ordering delay: 560.13 ms
+2025-11-14T02:36:29.104381Z  INFO ThreadId(03) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:29.104413Z  INFO ThreadId(03) client: [ordering] latency statistics (samples: 100):
+2025-11-14T02:36:29.104422Z  INFO ThreadId(03) client:   Average: 302.01 ms
+2025-11-14T02:36:29.104428Z  INFO ThreadId(03) client:   P50: 178.937 ms
+2025-11-14T02:36:29.104434Z  INFO ThreadId(03) client:   P95: 899.061 ms
+2025-11-14T02:36:29.104440Z  INFO ThreadId(03) client:   P99: 1368.336 ms
+2025-11-14T02:36:29.104447Z  INFO ThreadId(03) client: 📊 ==========================================
+2025-11-14T02:36:29.155317Z  INFO ThreadId(03) client: [latency] tx 63 ordering delay: 1073.304 ms
+2025-11-14T02:36:29.159821Z  INFO ThreadId(03) client: [latency] tx 79 ordering delay: 869.637 ms
+2025-11-14T02:36:29.165961Z  INFO ThreadId(03) client: [latency] tx 95 ordering delay: 688.134 ms
+2025-11-14T02:36:29.168100Z  INFO ThreadId(03) client: [latency] tx 111 ordering delay: 495.892 ms
+2025-11-14T02:36:29.190876Z  INFO ThreadId(03) client: [latency] tx 103 ordering delay: 520.063 ms
+2025-11-14T02:36:29.191205Z  INFO ThreadId(03) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:29.191224Z  INFO ThreadId(03) client: [ordering] latency statistics (samples: 105):
+2025-11-14T02:36:29.191231Z  INFO ThreadId(03) client:   Average: 322.36 ms
+2025-11-14T02:36:29.191237Z  INFO ThreadId(03) client:   P50: 226.067 ms
+2025-11-14T02:36:29.191242Z  INFO ThreadId(03) client:   P95: 899.061 ms
+2025-11-14T02:36:29.191249Z  INFO ThreadId(03) client:   P99: 1089.981 ms
+2025-11-14T02:36:29.191256Z  INFO ThreadId(03) client: 📊 ==========================================
+2025-11-14T02:36:29.230882Z  INFO ThreadId(03) client: [latency] tx 48 ordering delay: 1377.164 ms
+2025-11-14T02:36:29.232136Z  INFO ThreadId(03) client: [latency] tx 64 ordering delay: 1150.042 ms
+2025-11-14T02:36:29.238960Z  INFO ThreadId(03) client: [latency] tx 80 ordering delay: 948.682 ms
+2025-11-14T02:36:29.262067Z  INFO ThreadId(03) client: [latency] tx 96 ordering delay: 784.122 ms
+2025-11-14T02:36:29.265253Z  INFO ThreadId(03) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:29.265274Z  INFO ThreadId(03) client: [ordering] latency statistics (samples: 109):
+2025-11-14T02:36:29.265282Z  INFO ThreadId(03) client:   Average: 349.61 ms
+2025-11-14T02:36:29.265287Z  INFO ThreadId(03) client:   P50: 234.573 ms
+2025-11-14T02:36:29.265291Z  INFO ThreadId(03) client:   P95: 1073.304 ms
+2025-11-14T02:36:29.265296Z  INFO ThreadId(03) client:   P99: 1368.336 ms
+2025-11-14T02:36:29.265301Z  INFO ThreadId(03) client: 📊 ==========================================
+2025-11-14T02:36:29.265308Z  INFO ThreadId(03) client: [latency] tx 112 ordering delay: 592.93 ms
+2025-11-14T02:36:29.321797Z  INFO ThreadId(03) client: [latency] tx 71 ordering delay: 1033.018 ms
+2025-11-14T02:36:29.343420Z  INFO ThreadId(03) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:29.343447Z  INFO ThreadId(03) client: [ordering] latency statistics (samples: 111):
+2025-11-14T02:36:29.343453Z  INFO ThreadId(03) client:   Average: 357.96 ms
+2025-11-14T02:36:29.343458Z  INFO ThreadId(03) client:   P50: 258.464 ms
+2025-11-14T02:36:29.343462Z  INFO ThreadId(03) client:   P95: 1073.304 ms
+2025-11-14T02:36:29.343466Z  INFO ThreadId(03) client:   P99: 1368.336 ms
+2025-11-14T02:36:29.343509Z  INFO ThreadId(03) client: 📊 ==========================================
+2025-11-14T02:36:29.523865Z  INFO ThreadId(03) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:29.523891Z  INFO ThreadId(03) client: [ordering] latency statistics (samples: 111):
+2025-11-14T02:36:29.523898Z  INFO ThreadId(03) client:   Average: 357.96 ms
+2025-11-14T02:36:29.523902Z  INFO ThreadId(03) client:   P50: 258.464 ms
+2025-11-14T02:36:29.523919Z  INFO ThreadId(03) client:   P95: 1073.304 ms
+2025-11-14T02:36:29.523923Z  INFO ThreadId(03) client:   P99: 1368.336 ms
+2025-11-14T02:36:29.523928Z  INFO ThreadId(03) client: 📊 ==========================================
+2025-11-14T02:36:29.880121Z  INFO ThreadId(03) client: [latency] tx 87 ordering delay: 1403.451 ms
+2025-11-14T02:36:29.987108Z  INFO ThreadId(03) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:29.987136Z  INFO ThreadId(03) client: [ordering] latency statistics (samples: 112):
+2025-11-14T02:36:29.987142Z  INFO ThreadId(03) client:   Average: 367.29 ms
+2025-11-14T02:36:29.987147Z  INFO ThreadId(03) client:   P50: 264.208 ms
+2025-11-14T02:36:29.987151Z  INFO ThreadId(03) client:   P95: 1081.498 ms
+2025-11-14T02:36:29.987155Z  INFO ThreadId(03) client:   P99: 1377.164 ms
+2025-11-14T02:36:29.987160Z  INFO ThreadId(03) client: 📊 ==========================================
+2025-11-14T02:36:37.615348Z  INFO ThreadId(03) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:37.615383Z  INFO ThreadId(03) client: [ordering] latency statistics (samples: 112):
+2025-11-14T02:36:37.615390Z  INFO ThreadId(03) client:   Average: 367.29 ms
+2025-11-14T02:36:37.615396Z  INFO ThreadId(03) client:   P50: 264.208 ms
+2025-11-14T02:36:37.615401Z  INFO ThreadId(03) client:   P95: 1081.498 ms
+2025-11-14T02:36:37.615406Z  INFO ThreadId(03) client:   P99: 1377.164 ms
+2025-11-14T02:36:37.615415Z  INFO ThreadId(03) client: [consensus] latency statistics (samples: 112):
+2025-11-14T02:36:37.615420Z  INFO ThreadId(03) client:   Average: 8548.80 ms
+2025-11-14T02:36:37.615425Z  INFO ThreadId(03) client:   P50: 8720.227 ms
+2025-11-14T02:36:37.615430Z  INFO ThreadId(03) client:   P95: 9500.956 ms
+2025-11-14T02:36:37.615435Z  INFO ThreadId(03) client:   P99: 9501.553 ms
+2025-11-14T02:36:37.615452Z  INFO ThreadId(03) client: [pushed2hotstuff->consensus] latency statistics (samples: 112):
+2025-11-14T02:36:37.615457Z  INFO ThreadId(03) client:   Average: 8181.28 ms
+2025-11-14T02:36:37.615462Z  INFO ThreadId(03) client:   P50: 8372.782 ms
+2025-11-14T02:36:37.615466Z  INFO ThreadId(03) client:   P95: 9217.356 ms
+2025-11-14T02:36:37.615540Z  INFO ThreadId(03) client:   P99: 9221.058 ms
+2025-11-14T02:36:37.615545Z  INFO ThreadId(03) client: [latency] comparison analysis:
+2025-11-14T02:36:37.615557Z  INFO ThreadId(03) client:   Ordering average: 367.29 ms
+2025-11-14T02:36:37.615562Z  INFO ThreadId(03) client:   Consensus average: 8548.80 ms
+2025-11-14T02:36:37.615569Z  INFO ThreadId(03) client:   Consensus/Ordering ratio: 23.28x
+2025-11-14T02:36:37.615575Z  INFO ThreadId(03) client:   Pushed2HotStuff->Consensus average: 8181.28 ms
+2025-11-14T02:36:37.615579Z  INFO ThreadId(03) client: 📊 ==========================================
+2025-11-14T02:36:58.897346Z  INFO ThreadId(01) client: [client] entering post-load-test latency reporting; press Ctrl+C to exit
+2025-11-14T02:36:58.897438Z  INFO ThreadId(02) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:36:58.897460Z  INFO ThreadId(02) client: [ordering] latency statistics (samples: 112):
+2025-11-14T02:36:58.897466Z  INFO ThreadId(02) client:   Average: 367.29 ms
+2025-11-14T02:36:58.897471Z  INFO ThreadId(02) client:   P50: 264.208 ms
+2025-11-14T02:36:58.897476Z  INFO ThreadId(02) client:   P95: 1081.498 ms
+2025-11-14T02:36:58.897481Z  INFO ThreadId(02) client:   P99: 1377.164 ms
+2025-11-14T02:36:58.897490Z  INFO ThreadId(02) client: [consensus] latency statistics (samples: 112):
+2025-11-14T02:36:58.897494Z  INFO ThreadId(02) client:   Average: 8548.80 ms
+2025-11-14T02:36:58.897499Z  INFO ThreadId(02) client:   P50: 8720.227 ms
+2025-11-14T02:36:58.897503Z  INFO ThreadId(02) client:   P95: 9500.956 ms
+2025-11-14T02:36:58.897507Z  INFO ThreadId(02) client:   P99: 9501.553 ms
+2025-11-14T02:36:58.897515Z  INFO ThreadId(02) client: [pushed2hotstuff->consensus] latency statistics (samples: 112):
+2025-11-14T02:36:58.897519Z  INFO ThreadId(02) client:   Average: 8181.28 ms
+2025-11-14T02:36:58.897536Z  INFO ThreadId(02) client:   P50: 8372.782 ms
+2025-11-14T02:36:58.897539Z  INFO ThreadId(02) client:   P95: 9217.356 ms
+2025-11-14T02:36:58.897543Z  INFO ThreadId(02) client:   P99: 9221.058 ms
+2025-11-14T02:36:58.897547Z  INFO ThreadId(02) client: [latency] comparison analysis:
+2025-11-14T02:36:58.897551Z  INFO ThreadId(02) client:   Ordering average: 367.29 ms
+2025-11-14T02:36:58.897555Z  INFO ThreadId(02) client:   Consensus average: 8548.80 ms
+2025-11-14T02:36:58.897561Z  INFO ThreadId(02) client:   Consensus/Ordering ratio: 23.28x
+2025-11-14T02:36:58.897565Z  INFO ThreadId(02) client:   Pushed2HotStuff->Consensus average: 8181.28 ms
+2025-11-14T02:36:58.897569Z  INFO ThreadId(02) client: 📊 ==========================================
+2025-11-14T02:37:28.898362Z  INFO ThreadId(03) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:37:28.898397Z  INFO ThreadId(03) client: [ordering] latency statistics (samples: 112):
+2025-11-14T02:37:28.898404Z  INFO ThreadId(03) client:   Average: 367.29 ms
+2025-11-14T02:37:28.898409Z  INFO ThreadId(03) client:   P50: 264.208 ms
+2025-11-14T02:37:28.898414Z  INFO ThreadId(03) client:   P95: 1081.498 ms
+2025-11-14T02:37:28.898419Z  INFO ThreadId(03) client:   P99: 1377.164 ms
+2025-11-14T02:37:28.898433Z  INFO ThreadId(03) client: [consensus] latency statistics (samples: 112):
+2025-11-14T02:37:28.898438Z  INFO ThreadId(03) client:   Average: 8548.80 ms
+2025-11-14T02:37:28.898442Z  INFO ThreadId(03) client:   P50: 8720.227 ms
+2025-11-14T02:37:28.898447Z  INFO ThreadId(03) client:   P95: 9500.956 ms
+2025-11-14T02:37:28.898451Z  INFO ThreadId(03) client:   P99: 9501.553 ms
+2025-11-14T02:37:28.898459Z  INFO ThreadId(03) client: [pushed2hotstuff->consensus] latency statistics (samples: 112):
+2025-11-14T02:37:28.898464Z  INFO ThreadId(03) client:   Average: 8181.28 ms
+2025-11-14T02:37:28.898468Z  INFO ThreadId(03) client:   P50: 8372.782 ms
+2025-11-14T02:37:28.898473Z  INFO ThreadId(03) client:   P95: 9217.356 ms
+2025-11-14T02:37:28.898477Z  INFO ThreadId(03) client:   P99: 9221.058 ms
+2025-11-14T02:37:28.898482Z  INFO ThreadId(03) client: [latency] comparison analysis:
+2025-11-14T02:37:28.898486Z  INFO ThreadId(03) client:   Ordering average: 367.29 ms
+2025-11-14T02:37:28.898490Z  INFO ThreadId(03) client:   Consensus average: 8548.80 ms
+2025-11-14T02:37:28.898497Z  INFO ThreadId(03) client:   Consensus/Ordering ratio: 23.28x
+2025-11-14T02:37:28.898502Z  INFO ThreadId(03) client:   Pushed2HotStuff->Consensus average: 8181.28 ms
+2025-11-14T02:37:28.898506Z  INFO ThreadId(03) client: 📊 ==========================================
+2025-11-14T02:37:58.899699Z  INFO ThreadId(03) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:37:58.899732Z  INFO ThreadId(03) client: [ordering] latency statistics (samples: 112):
+2025-11-14T02:37:58.899738Z  INFO ThreadId(03) client:   Average: 367.29 ms
+2025-11-14T02:37:58.899744Z  INFO ThreadId(03) client:   P50: 264.208 ms
+2025-11-14T02:37:58.899749Z  INFO ThreadId(03) client:   P95: 1081.498 ms
+2025-11-14T02:37:58.899754Z  INFO ThreadId(03) client:   P99: 1377.164 ms
+2025-11-14T02:37:58.899768Z  INFO ThreadId(03) client: [consensus] latency statistics (samples: 112):
+2025-11-14T02:37:58.899773Z  INFO ThreadId(03) client:   Average: 8548.80 ms
+2025-11-14T02:37:58.899777Z  INFO ThreadId(03) client:   P50: 8720.227 ms
+2025-11-14T02:37:58.899782Z  INFO ThreadId(03) client:   P95: 9500.956 ms
+2025-11-14T02:37:58.899786Z  INFO ThreadId(03) client:   P99: 9501.553 ms
+2025-11-14T02:37:58.899794Z  INFO ThreadId(03) client: [pushed2hotstuff->consensus] latency statistics (samples: 112):
+2025-11-14T02:37:58.899799Z  INFO ThreadId(03) client:   Average: 8181.28 ms
+2025-11-14T02:37:58.899803Z  INFO ThreadId(03) client:   P50: 8372.782 ms
+2025-11-14T02:37:58.899808Z  INFO ThreadId(03) client:   P95: 9217.356 ms
+2025-11-14T02:37:58.899812Z  INFO ThreadId(03) client:   P99: 9221.058 ms
+2025-11-14T02:37:58.899816Z  INFO ThreadId(03) client: [latency] comparison analysis:
+2025-11-14T02:37:58.899835Z  INFO ThreadId(03) client:   Ordering average: 367.29 ms
+2025-11-14T02:37:58.899839Z  INFO ThreadId(03) client:   Consensus average: 8548.80 ms
+2025-11-14T02:37:58.899844Z  INFO ThreadId(03) client:   Consensus/Ordering ratio: 23.28x
+2025-11-14T02:37:58.899849Z  INFO ThreadId(03) client:   Pushed2HotStuff->Consensus average: 8181.28 ms
+2025-11-14T02:37:58.899852Z  INFO ThreadId(03) client: 📊 ==========================================
+2025-11-14T02:38:18.689576Z  INFO ThreadId(02) client: [client] node 6 connection closed: early eof
+2025-11-14T02:38:19.001577Z  INFO ThreadId(02) client: [client] node 7 connection closed: early eof
+2025-11-14T02:38:19.180427Z  INFO ThreadId(02) client: [client] node 3 connection closed: early eof
+2025-11-14T02:38:19.218115Z  INFO ThreadId(02) client: [client] node 2 connection closed: early eof
+2025-11-14T02:38:19.364734Z  INFO ThreadId(02) client: [client] node 5 connection closed: early eof
+2025-11-14T02:38:19.387855Z  INFO ThreadId(02) client: [client] node 4 connection closed: early eof
+2025-11-14T02:38:19.717896Z  INFO ThreadId(02) client: [client] node 1 connection closed: early eof
+2025-11-14T02:38:19.940223Z  INFO ThreadId(02) client: [client] node 0 connection closed: early eof
+2025-11-14T02:38:20.286696Z  INFO ThreadId(02) client: [client] node 9 connection closed: early eof
+2025-11-14T02:38:20.328647Z  INFO ThreadId(02) client: [client] node 8 connection closed: early eof
+2025-11-14T02:38:20.368466Z  INFO ThreadId(02) client: [client] node 11 connection closed: early eof
+2025-11-14T02:38:20.412774Z  INFO ThreadId(02) client: [client] node 10 connection closed: early eof
+2025-11-14T02:38:20.518937Z  INFO ThreadId(02) client: [client] node 13 connection closed: early eof
+2025-11-14T02:38:20.543592Z  INFO ThreadId(02) client: [client] node 12 connection closed: early eof
+2025-11-14T02:38:21.131905Z  INFO ThreadId(02) client: [client] node 15 connection closed: early eof
+2025-11-14T02:38:21.175023Z  INFO ThreadId(02) client: [client] node 14 connection closed: early eof
+2025-11-14T02:38:28.901020Z  INFO ThreadId(02) client: [latency] ============= aggregate latency report =============
+2025-11-14T02:38:28.901053Z  INFO ThreadId(02) client: [ordering] latency statistics (samples: 112):
+2025-11-14T02:38:28.901060Z  INFO ThreadId(02) client:   Average: 367.29 ms
+2025-11-14T02:38:28.901065Z  INFO ThreadId(02) client:   P50: 264.208 ms
+2025-11-14T02:38:28.901070Z  INFO ThreadId(02) client:   P95: 1081.498 ms
+2025-11-14T02:38:28.901075Z  INFO ThreadId(02) client:   P99: 1377.164 ms
+2025-11-14T02:38:28.901084Z  INFO ThreadId(02) client: [consensus] latency statistics (samples: 112):
+2025-11-14T02:38:28.901089Z  INFO ThreadId(02) client:   Average: 8548.80 ms
+2025-11-14T02:38:28.901094Z  INFO ThreadId(02) client:   P50: 8720.227 ms
+2025-11-14T02:38:28.901104Z  INFO ThreadId(02) client:   P95: 9500.956 ms
+2025-11-14T02:38:28.901109Z  INFO ThreadId(02) client:   P99: 9501.553 ms
+2025-11-14T02:38:28.901119Z  INFO ThreadId(02) client: [pushed2hotstuff->consensus] latency statistics (samples: 112):
+2025-11-14T02:38:28.901124Z  INFO ThreadId(02) client:   Average: 8181.28 ms
+2025-11-14T02:38:28.901129Z  INFO ThreadId(02) client:   P50: 8372.782 ms
+2025-11-14T02:38:28.901133Z  INFO ThreadId(02) client:   P95: 9217.356 ms
+2025-11-14T02:38:28.901138Z  INFO ThreadId(02) client:   P99: 9221.058 ms
+2025-11-14T02:38:28.901170Z  INFO ThreadId(02) client: [latency] comparison analysis:
+2025-11-14T02:38:28.901176Z  INFO ThreadId(02) client:   Ordering average: 367.29 ms
+2025-11-14T02:38:28.901181Z  INFO ThreadId(02) client:   Consensus average: 8548.80 ms
+2025-11-14T02:38:28.901187Z  INFO ThreadId(02) client:   Consensus/Ordering ratio: 23.28x
+2025-11-14T02:38:28.901193Z  INFO ThreadId(02) client:   Pushed2HotStuff->Consensus average: 8181.28 ms
+2025-11-14T02:38:28.901197Z  INFO ThreadId(02) client: 📊 ==========================================
