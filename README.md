@@ -1,12 +1,21 @@
 ### Test mode: 
 
-- local 4 nodes (dockers) + 1 client (docker) test
-- load_tester client supported, customised TPS
-- calculate TPS via log
+- Global-scale test specifications can be found under ec2/ folder.
+- The client calculates Latency, consensus nodes log TPS.
+
+Local test:
 ```
  ./run_test.sh
  docker-compose --profile "*" down    
 ```
+
+EC2 test:
+```
+cd ec2
+./start_instances.sh --plan plan-*.json
+NODE_IP_SOURCE=public ./get_ips.sh
+```
+
 ### Note: 
 Modified `fn block_data(&self, block: &CryptoHash)` in `hotstuff_rs/src/block_tree/pluggables.rs` to support `on_commit_block` log in `hotstuff_runner/src/tcp_node.rs`. 
 
