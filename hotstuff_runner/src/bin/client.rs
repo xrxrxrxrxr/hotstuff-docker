@@ -495,6 +495,10 @@ impl ClientNode {
         let is_latency = false;
 
         let mut is_batch = false;
+        let mut batch_size_costant: usize = env::var("CLIENT_BATCH_SIZE_CONSTANT")
+            .unwrap_or_else(|_| "1".to_string())
+            .parse()
+            .expect("CLIENT_BATCH_SIZE_CONSTANT must be numeric");
         // let mut batch_size = std::cmp::max(100, config.target_tps / 5);
         let mut batch_size = match env::var("CLIENT_BATCH_SIZE") {
             Ok(raw) => match raw.trim().parse::<u32>() {
@@ -565,9 +569,9 @@ impl ClientNode {
             for node_offset in 0..node_num {
                 let node_id = node_least_id + node_offset;
                 let transactions: Vec<TestTransaction> = if is_batch {
-                    vec![self.tx_generator.generate_batched_tx(batch_size as usize)]
+                    vec![self.tx_generator.generate_batched_tx(batch_size as usize)] // batch mode
                 } else {
-                    self.tx_generator.generate_batch(batch_size as usize)
+                    self.tx_generator.generate_batch(batch_size_costant as usize) // normal mode, x txs per node
                 };
                 self.record_transaction_sizes(&transactions);
 
@@ -1159,7 +1163,7 @@ async fn async_main() -> Result<(), Box<dyn std::error::Error>> {
                 "[client] unknown CLIENT_ORDERING_MODE='{}'; defaulting to SMROL pipeline",
                 other
             );
-            (false, true)
+            (false, false)
         }
     };
     info!(

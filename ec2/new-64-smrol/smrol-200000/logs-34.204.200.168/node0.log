@@ -1,0 +1,360 @@
+2025-12-05T14:32:29.783982Z  WARN ThreadId(01) docker_node: metrics exporter disabled by SMROL_DISABLE_METRICS
+2025-12-05T14:32:49.999905Z  WARN ThreadId(01) hotstuff_runner::tcp_node: Node 0 view timeout set to 5000 ms
+2025-12-05T14:32:50.009319Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 0 failed to connect to node 1: Connection refused (os error 111)
+2025-12-05T14:32:50.009713Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 2: Connection refused (os error 111)
+2025-12-05T14:32:50.010429Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 4: Connection refused (os error 111)
+2025-12-05T14:32:50.010814Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 5: Connection refused (os error 111)
+2025-12-05T14:32:50.026504Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: SMROL_MEDIAN_INFLIGHT=24, SMROL_ORDER_FINALIZE_INFLIGHT=4, SMROL_FINAL_SIGN_INFLIGHT=4, SMROL_FINAL_VERIFY_INFLIGHT=24
+2025-12-05T14:32:50.026551Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: [Sequencing] Node 0 multi-signature verification disabled: false
+2025-12-05T14:32:50.027107Z  WARN ThreadId(09) hotstuff_runner::smrol::sequencing: [Sequencing] Node 0 final verify dispatcher started
+2025-12-05T14:32:50.028187Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:32:50.789112Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 16: Connection refused (os error 111)
+2025-12-05T14:32:50.972820Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 17: Connection refused (os error 111)
+2025-12-05T14:32:51.170259Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 18: Connection refused (os error 111)
+2025-12-05T14:32:55.003545Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 0 timed out; latency may accumulate
+2025-12-05T14:32:55.028576Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:32:55.031142Z  WARN ThreadId(01) docker_node: Node 0 port 20000 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.032881Z  WARN ThreadId(01) docker_node: Node 1 port 20001 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.034502Z  WARN ThreadId(01) docker_node: Node 2 port 20002 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.036098Z  WARN ThreadId(01) docker_node: Node 3 port 20003 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.037660Z  WARN ThreadId(01) docker_node: Node 4 port 20004 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.039338Z  WARN ThreadId(01) docker_node: Node 5 port 20005 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.040983Z  WARN ThreadId(01) docker_node: Node 6 port 20006 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.042598Z  WARN ThreadId(01) docker_node: Node 7 port 20007 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.044302Z  WARN ThreadId(01) docker_node: Node 8 port 20008 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.045907Z  WARN ThreadId(01) docker_node: Node 9 port 20009 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.047517Z  WARN ThreadId(01) docker_node: Node 10 port 20010 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.048986Z  WARN ThreadId(01) docker_node: Node 11 port 20011 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.050723Z  WARN ThreadId(01) docker_node: Node 12 port 20012 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.052394Z  WARN ThreadId(01) docker_node: Node 13 port 20013 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.054076Z  WARN ThreadId(01) docker_node: Node 14 port 20014 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.055750Z  WARN ThreadId(01) docker_node: Node 15 port 20015 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.057394Z  WARN ThreadId(01) docker_node: Node 16 port 20016 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.058945Z  WARN ThreadId(01) docker_node: Node 17 port 20017 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.060446Z  WARN ThreadId(01) docker_node: Node 18 port 20018 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.061955Z  WARN ThreadId(01) docker_node: Node 19 port 20019 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.063516Z  WARN ThreadId(01) docker_node: Node 20 port 20020 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.065039Z  WARN ThreadId(01) docker_node: Node 21 port 20021 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.066680Z  WARN ThreadId(01) docker_node: Node 22 port 20022 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.068278Z  WARN ThreadId(01) docker_node: Node 23 port 20023 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.069991Z  WARN ThreadId(01) docker_node: Node 24 port 20024 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.071493Z  WARN ThreadId(01) docker_node: Node 25 port 20025 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.073220Z  WARN ThreadId(01) docker_node: Node 26 port 20026 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.074673Z  WARN ThreadId(01) docker_node: Node 27 port 20027 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.076406Z  WARN ThreadId(01) docker_node: Node 28 port 20028 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.078130Z  WARN ThreadId(01) docker_node: Node 29 port 20029 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.079543Z  WARN ThreadId(01) docker_node: Node 30 port 20030 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.081090Z  WARN ThreadId(01) docker_node: Node 31 port 20031 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.082598Z  WARN ThreadId(01) docker_node: Node 32 port 20032 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.084268Z  WARN ThreadId(01) docker_node: Node 33 port 20033 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.085818Z  WARN ThreadId(01) docker_node: Node 34 port 20034 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.087494Z  WARN ThreadId(01) docker_node: Node 35 port 20035 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.101982Z  WARN ThreadId(01) docker_node: Node 36 port 20036 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.104137Z  WARN ThreadId(01) docker_node: Node 37 port 20037 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.105830Z  WARN ThreadId(01) docker_node: Node 38 port 20038 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.107342Z  WARN ThreadId(01) docker_node: Node 39 port 20039 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.108902Z  WARN ThreadId(01) docker_node: Node 40 port 20040 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.110488Z  WARN ThreadId(01) docker_node: Node 41 port 20041 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.111938Z  WARN ThreadId(01) docker_node: Node 42 port 20042 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.113618Z  WARN ThreadId(01) docker_node: Node 43 port 20043 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.115732Z  WARN ThreadId(01) docker_node: Node 44 port 20044 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.117871Z  WARN ThreadId(01) docker_node: Node 45 port 20045 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.119534Z  WARN ThreadId(01) docker_node: Node 46 port 20046 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.121060Z  WARN ThreadId(01) docker_node: Node 47 port 20047 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.122545Z  WARN ThreadId(01) docker_node: Node 48 port 20048 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.124114Z  WARN ThreadId(01) docker_node: Node 49 port 20049 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.125632Z  WARN ThreadId(01) docker_node: Node 50 port 20050 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.127680Z  WARN ThreadId(01) docker_node: Node 51 port 20051 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.129354Z  WARN ThreadId(01) docker_node: Node 52 port 20052 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.131092Z  WARN ThreadId(01) docker_node: Node 53 port 20053 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.133038Z  WARN ThreadId(01) docker_node: Node 54 port 20054 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.134881Z  WARN ThreadId(01) docker_node: Node 55 port 20055 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.136609Z  WARN ThreadId(01) docker_node: Node 56 port 20056 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.138339Z  WARN ThreadId(01) docker_node: Node 57 port 20057 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.139956Z  WARN ThreadId(01) docker_node: Node 58 port 20058 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.141590Z  WARN ThreadId(01) docker_node: Node 59 port 20059 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.143268Z  WARN ThreadId(01) docker_node: Node 60 port 20060 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.144920Z  WARN ThreadId(01) docker_node: Node 61 port 20061 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.146550Z  WARN ThreadId(01) docker_node: Node 62 port 20062 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:32:55.148271Z  WARN ThreadId(01) docker_node: Node 63 port 20063 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-05T14:33:00.027707Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:33:05.028094Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:33:09.625894Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-12-05T14:33:10.028503Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:33:15.028413Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:33:20.028099Z  WARN ThreadId(09) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:33:25.027706Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:33:27.468317Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(30)
+2025-12-05T14:33:27.469872Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(40)
+2025-12-05T14:33:27.471382Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(13)
+2025-12-05T14:33:27.473093Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(22)
+2025-12-05T14:33:27.474565Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400168 bytes to node Some(4)
+2025-12-05T14:33:27.476146Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(26)
+2025-12-05T14:33:27.479448Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 4 slow write: 6.2653ms
+2025-12-05T14:33:27.479668Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400168 bytes to node Some(8)
+2025-12-05T14:33:27.481427Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(25)
+2025-12-05T14:33:27.482879Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400168 bytes to node Some(2)
+2025-12-05T14:33:27.484300Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400168 bytes to node Some(9)
+2025-12-05T14:33:27.485728Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(33)
+2025-12-05T14:33:27.487209Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(54)
+2025-12-05T14:33:27.488662Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(11)
+2025-12-05T14:33:27.490170Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(14)
+2025-12-05T14:33:27.491697Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(34)
+2025-12-05T14:33:27.493236Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(29)
+2025-12-05T14:33:27.494715Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(57)
+2025-12-05T14:33:27.496185Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(56)
+2025-12-05T14:33:27.497652Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(19)
+2025-12-05T14:33:27.499143Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(31)
+2025-12-05T14:33:27.500570Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(55)
+2025-12-05T14:33:27.502036Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(36)
+2025-12-05T14:33:27.503431Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(45)
+2025-12-05T14:33:27.504914Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(28)
+2025-12-05T14:33:27.506350Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(41)
+2025-12-05T14:33:27.507819Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(49)
+2025-12-05T14:33:27.509323Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(48)
+2025-12-05T14:33:27.510829Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(27)
+2025-12-05T14:33:27.512301Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(21)
+2025-12-05T14:33:27.513727Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(12)
+2025-12-05T14:33:27.515209Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400168 bytes to node Some(3)
+2025-12-05T14:33:27.516634Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(62)
+2025-12-05T14:33:27.518086Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(42)
+2025-12-05T14:33:27.519846Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(53)
+2025-12-05T14:33:27.521659Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400168 bytes to node Some(1)
+2025-12-05T14:33:27.523329Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(23)
+2025-12-05T14:33:27.524879Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(18)
+2025-12-05T14:33:27.526426Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(47)
+2025-12-05T14:33:27.528258Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(17)
+2025-12-05T14:33:27.529770Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(24)
+2025-12-05T14:33:27.531264Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400168 bytes to node Some(5)
+2025-12-05T14:33:27.532845Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400168 bytes to node Some(6)
+2025-12-05T14:33:27.534500Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(37)
+2025-12-05T14:33:27.535972Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(16)
+2025-12-05T14:33:27.537412Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(58)
+2025-12-05T14:33:27.538711Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(15)
+2025-12-05T14:33:27.538903Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(51)
+2025-12-05T14:33:27.540147Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(35)
+2025-12-05T14:33:27.540417Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400168 bytes to node Some(7)
+2025-12-05T14:33:27.541643Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(10)
+2025-12-05T14:33:27.541931Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(59)
+2025-12-05T14:33:27.543086Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(20)
+2025-12-05T14:33:27.543381Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(61)
+2025-12-05T14:33:27.544665Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(50)
+2025-12-05T14:33:27.544920Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(39)
+2025-12-05T14:33:27.546075Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(38)
+2025-12-05T14:33:27.546432Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(46)
+2025-12-05T14:33:27.547669Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 3 slow write: 33.856648ms
+2025-12-05T14:33:27.549912Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(52)
+2025-12-05T14:33:27.553065Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 1 slow write: 33.116359ms
+2025-12-05T14:33:27.558033Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(44)
+2025-12-05T14:33:27.568490Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 40 slow write: 100.060955ms
+2025-12-05T14:33:27.570855Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(43)
+2025-12-05T14:33:27.572204Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 36 slow write: 71.48735ms
+2025-12-05T14:33:27.573258Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 2 slow write: 91.664992ms
+2025-12-05T14:33:27.589772Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(60)
+2025-12-05T14:33:27.605752Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 5 slow write: 75.881374ms
+2025-12-05T14:33:27.615611Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(32)
+2025-12-05T14:33:27.615809Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 39 slow write: 72.347228ms
+2025-12-05T14:33:27.617342Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 37 slow write: 84.330111ms
+2025-12-05T14:33:27.620772Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 38 slow write: 74.574047ms
+2025-12-05T14:33:27.635817Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ Large message: 2400169 bytes to node Some(63)
+2025-12-05T14:33:27.777192Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 9 slow write: 294.091027ms
+2025-12-05T14:33:27.782209Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 8 slow write: 302.686203ms
+2025-12-05T14:33:27.782554Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 14 slow write: 293.810668ms
+2025-12-05T14:33:27.839048Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 15 slow write: 301.358164ms
+2025-12-05T14:33:27.842646Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 13 slow write: 372.671962ms
+2025-12-05T14:33:27.848281Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 11 slow write: 360.99926ms
+2025-12-05T14:33:27.864491Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 47 slow write: 339.496689ms
+2025-12-05T14:33:27.870340Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 51 slow write: 332.821933ms
+2025-12-05T14:33:27.873572Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 57 slow write: 380.209538ms
+2025-12-05T14:33:27.873706Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 12 slow write: 361.338813ms
+2025-12-05T14:33:27.878524Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 56 slow write: 383.699262ms
+2025-12-05T14:33:27.878633Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 55 slow write: 379.426285ms
+2025-12-05T14:33:27.882353Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 6 slow write: 350.99738ms
+2025-12-05T14:33:27.896251Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 53 slow write: 378.096936ms
+2025-12-05T14:33:27.899680Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 7 slow write: 360.70747ms
+2025-12-05T14:33:27.901033Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 10 slow write: 360.822408ms
+2025-12-05T14:33:27.914636Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 49 slow write: 408.216165ms
+2025-12-05T14:33:27.916017Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 48 slow write: 408.126518ms
+2025-12-05T14:33:27.933324Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 52 slow write: 385.114777ms
+2025-12-05T14:33:27.942352Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 54 slow write: 456.535402ms
+2025-12-05T14:33:27.943816Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 50 slow write: 400.648377ms
+2025-12-05T14:33:27.954446Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 46 slow write: 409.393883ms
+2025-12-05T14:33:27.958236Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 45 slow write: 456.129855ms
+2025-12-05T14:33:27.972903Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 42 slow write: 456.192689ms
+2025-12-05T14:33:28.052520Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 41 slow write: 547.517289ms
+2025-12-05T14:33:28.097653Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 61 slow write: 555.648353ms
+2025-12-05T14:33:28.101237Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 44 slow write: 544.963027ms
+2025-12-05T14:33:28.115359Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 43 slow write: 544.787466ms
+2025-12-05T14:33:28.139943Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Detected transaction backlog: submit rate (1.5) > confirm rate (0.0)
+2025-12-05T14:33:28.146780Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 60 slow write: 558.998888ms
+2025-12-05T14:33:28.189360Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 62 slow write: 674.075579ms
+2025-12-05T14:33:28.200953Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 58 slow write: 664.907825ms
+2025-12-05T14:33:28.213870Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 59 slow write: 673.262765ms
+2025-12-05T14:33:28.234400Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 33 slow write: 750.03225ms
+2025-12-05T14:33:28.280554Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 35 slow write: 741.750094ms
+2025-12-05T14:33:28.308463Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 63 slow write: 672.941274ms
+2025-12-05T14:33:28.369829Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 34 slow write: 879.57855ms
+2025-12-05T14:33:28.394002Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 31 slow write: 896.274649ms
+2025-12-05T14:33:28.418472Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 19 slow write: 922.210737ms
+2025-12-05T14:33:28.462901Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 20 slow write: 921.188598ms
+2025-12-05T14:33:28.523059Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 32 slow write: 907.664602ms
+2025-12-05T14:33:28.559058Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 21 slow write: 1.048104122s
+2025-12-05T14:33:28.561863Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 16 slow write: 1.027270757s
+2025-12-05T14:33:28.616536Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 23 slow write: 1.094726087s
+2025-12-05T14:33:28.624591Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 18 slow write: 1.101117575s
+2025-12-05T14:33:28.628814Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 17 slow write: 1.101921749s
+2025-12-05T14:33:28.655967Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 30 slow write: 1.189071028s
+2025-12-05T14:33:28.664222Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 26 slow write: 1.189516248s
+2025-12-05T14:33:28.682062Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 29 slow write: 1.190192505s
+2025-12-05T14:33:28.695236Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 27 slow write: 1.185778328s
+2025-12-05T14:33:28.703262Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 28 slow write: 1.199757985s
+2025-12-05T14:33:28.767492Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 22 slow write: 1.295813011s
+2025-12-05T14:33:28.793164Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 24 slow write: 1.264191353s
+2025-12-05T14:33:28.964545Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 25 slow write: 1.484468083s
+2025-12-05T14:33:30.028288Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:33:30.148992Z  WARN ThreadId(08) docker_node: Node 0 Regular transaction queue backlog: 378966 transactions
+2025-12-05T14:33:35.028533Z  WARN ThreadId(04) docker_node: HotStuff processing bottleneck detected:
+2025-12-05T14:33:35.028561Z  WARN ThreadId(04) docker_node:    - HotStuff queue backlog: 378966 transactions
+2025-12-05T14:33:35.028572Z  WARN ThreadId(04) docker_node:    - Confirmation TPS (0.0) much lower than submission TPS (0.1)
+2025-12-05T14:33:35.028581Z  WARN ThreadId(04) docker_node:    - Possible cause: HotStuff consensus network delay or block size limitation
+2025-12-05T14:33:35.028597Z  WARN ThreadId(04) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:33:35.149239Z  WARN ThreadId(08) docker_node: Node 0 Regular transaction queue backlog: 561431 transactions
+2025-12-05T14:33:40.027967Z  WARN ThreadId(04) docker_node: HotStuff processing bottleneck detected:
+2025-12-05T14:33:40.027996Z  WARN ThreadId(04) docker_node:    - HotStuff queue backlog: 561431 transactions
+2025-12-05T14:33:40.028005Z  WARN ThreadId(04) docker_node:    - Confirmation TPS (0.0) much lower than submission TPS (0.1)
+2025-12-05T14:33:40.028012Z  WARN ThreadId(04) docker_node:    - Possible cause: HotStuff consensus network delay or block size limitation
+2025-12-05T14:33:40.028026Z  WARN ThreadId(04) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:33:40.149333Z  WARN ThreadId(05) docker_node: Node 0 Regular transaction queue backlog: 715824 transactions
+2025-12-05T14:33:45.027681Z  WARN ThreadId(04) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:33:45.149329Z  WARN ThreadId(06) docker_node: Node 0 Regular transaction queue backlog: 828112 transactions
+2025-12-05T14:33:46.482178Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[14, 99, 38, 137, 170, 30, 106, 40, 117, 83, 96, 89, 47, 237, 56, 207, 117, 116, 111, 107, 145, 223, 193, 73, 66, 169, 220, 170, 218, 141, 108, 188] view=95 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=true (exists=true) | cond3(view>locked || extends)=false (pc.view=95, locked.view=96, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[189, 4, 220, 25, 108, 236, 66, 185, 75, 73, 239, 57, 155, 14, 161, 110, 210, 180, 60, 234, 68, 112, 58, 90, 41, 158, 197, 180, 49, 69, 163, 51] highest_pc.view=97 locked.block=[46, 113, 28, 164, 230, 115, 83, 44, 237, 128, 36, 103, 4, 145, 7, 83, 25, 141, 112, 27, 233, 183, 18, 254, 229, 142, 13, 202, 146, 116, 32, 253] locked.view=96    
+2025-12-05T14:33:46.482223Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[158, 83, 0, 52, 146, 148, 247, 133, 49, 109, 189, 71, 201, 220, 247, 78, 30, 13, 151, 122, 71, 111, 158, 12, 116, 49, 133, 160, 191, 211, 160, 80] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[14, 99, 38, 137, 170, 30, 106, 40, 117, 83, 96, 89, 47, 237, 56, 207, 117, 116, 111, 107, 145, 223, 193, 73, 66, 169, 220, 170, 218, 141, 108, 188] justify.view=95 | highest_pc.block=[189, 4, 220, 25, 108, 236, 66, 185, 75, 73, 239, 57, 155, 14, 161, 110, 210, 180, 60, 234, 68, 112, 58, 90, 41, 158, 197, 180, 49, 69, 163, 51] highest_pc.view=97 | locked.block=[46, 113, 28, 164, 230, 115, 83, 44, 237, 128, 36, 103, 4, 145, 7, 83, 25, 141, 112, 27, 233, 183, 18, 254, 229, 142, 13, 202, 146, 116, 32, 253] locked.view=96    
+2025-12-05T14:33:50.028325Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:33:50.148715Z  WARN ThreadId(04) docker_node: Node 0 Regular transaction queue backlog: 1031631 transactions
+2025-12-05T14:33:55.027899Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:33:55.149275Z  WARN ThreadId(09) docker_node: Node 0 Regular transaction queue backlog: 1480778 transactions
+2025-12-05T14:34:00.028072Z  WARN ThreadId(05) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:34:00.149450Z  WARN ThreadId(07) docker_node: Node 0 Regular transaction queue backlog: 1873778 transactions
+2025-12-05T14:34:00.180043Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[14, 99, 38, 137, 170, 30, 106, 40, 117, 83, 96, 89, 47, 237, 56, 207, 117, 116, 111, 107, 145, 223, 193, 73, 66, 169, 220, 170, 218, 141, 108, 188] view=95 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=true (exists=true) | cond3(view>locked || extends)=false (pc.view=95, locked.view=97, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[7, 82, 180, 13, 33, 150, 36, 183, 83, 195, 51, 111, 42, 235, 128, 19, 119, 207, 43, 36, 204, 99, 113, 92, 102, 155, 167, 134, 205, 180, 238, 221] highest_pc.view=100 locked.block=[189, 4, 220, 25, 108, 236, 66, 185, 75, 73, 239, 57, 155, 14, 161, 110, 210, 180, 60, 234, 68, 112, 58, 90, 41, 158, 197, 180, 49, 69, 163, 51] locked.view=97    
+2025-12-05T14:34:00.180080Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[211, 79, 192, 42, 133, 164, 128, 170, 28, 215, 77, 195, 245, 186, 12, 163, 85, 2, 171, 104, 18, 233, 51, 53, 37, 237, 163, 84, 226, 193, 45, 73] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[14, 99, 38, 137, 170, 30, 106, 40, 117, 83, 96, 89, 47, 237, 56, 207, 117, 116, 111, 107, 145, 223, 193, 73, 66, 169, 220, 170, 218, 141, 108, 188] justify.view=95 | highest_pc.block=[7, 82, 180, 13, 33, 150, 36, 183, 83, 195, 51, 111, 42, 235, 128, 19, 119, 207, 43, 36, 204, 99, 113, 92, 102, 155, 167, 134, 205, 180, 238, 221] highest_pc.view=100 | locked.block=[189, 4, 220, 25, 108, 236, 66, 185, 75, 73, 239, 57, 155, 14, 161, 110, 210, 180, 60, 234, 68, 112, 58, 90, 41, 158, 197, 180, 49, 69, 163, 51] locked.view=97    
+2025-12-05T14:34:02.085693Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(32)
+2025-12-05T14:34:02.086240Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(30)
+2025-12-05T14:34:02.086746Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(44)
+2025-12-05T14:34:02.087227Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(22)
+2025-12-05T14:34:02.087692Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(40)
+2025-12-05T14:34:02.088179Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(13)
+2025-12-05T14:34:02.088700Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(52)
+2025-12-05T14:34:02.089191Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600168 bytes to node Some(2)
+2025-12-05T14:34:02.089705Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600168 bytes to node Some(4)
+2025-12-05T14:34:02.090162Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(26)
+2025-12-05T14:34:02.090575Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(46)
+2025-12-05T14:34:02.090993Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(60)
+2025-12-05T14:34:02.091409Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600168 bytes to node Some(8)
+2025-12-05T14:34:02.091745Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(43)
+2025-12-05T14:34:02.092580Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(25)
+2025-12-05T14:34:02.093376Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(29)
+2025-12-05T14:34:02.093942Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600168 bytes to node Some(9)
+2025-12-05T14:34:02.094334Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(33)
+2025-12-05T14:34:02.094726Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(54)
+2025-12-05T14:34:02.095162Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(11)
+2025-12-05T14:34:02.095573Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(14)
+2025-12-05T14:34:02.095992Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(49)
+2025-12-05T14:34:02.096410Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(34)
+2025-12-05T14:34:02.096878Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(56)
+2025-12-05T14:34:02.097296Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(57)
+2025-12-05T14:34:02.097724Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(31)
+2025-12-05T14:34:02.097940Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(15)
+2025-12-05T14:34:02.098145Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(19)
+2025-12-05T14:34:02.098412Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(12)
+2025-12-05T14:34:02.098541Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(36)
+2025-12-05T14:34:02.098884Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ Large message: 1600168 bytes to node Some(3)
+2025-12-05T14:34:02.098971Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(55)
+2025-12-05T14:34:02.099348Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(28)
+2025-12-05T14:34:02.099489Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(21)
+2025-12-05T14:34:02.099740Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(41)
+2025-12-05T14:34:02.100157Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(45)
+2025-12-05T14:34:02.100307Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(42)
+2025-12-05T14:34:02.100531Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(48)
+2025-12-05T14:34:02.100954Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(27)
+2025-12-05T14:34:02.101141Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(53)
+2025-12-05T14:34:02.101386Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(58)
+2025-12-05T14:34:02.101786Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(51)
+2025-12-05T14:34:02.101802Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600168 bytes to node Some(1)
+2025-12-05T14:34:02.102271Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(62)
+2025-12-05T14:34:02.102306Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ Large message: 1600168 bytes to node Some(7)
+2025-12-05T14:34:02.102816Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(37)
+2025-12-05T14:34:02.102855Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(63)
+2025-12-05T14:34:02.103357Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(18)
+2025-12-05T14:34:02.103359Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(35)
+2025-12-05T14:34:02.103826Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(47)
+2025-12-05T14:34:02.103829Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(10)
+2025-12-05T14:34:02.104246Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(23)
+2025-12-05T14:34:02.104305Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(61)
+2025-12-05T14:34:02.104634Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(24)
+2025-12-05T14:34:02.104777Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(39)
+2025-12-05T14:34:02.105133Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600168 bytes to node Some(5)
+2025-12-05T14:34:02.105227Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(59)
+2025-12-05T14:34:02.105522Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600168 bytes to node Some(6)
+2025-12-05T14:34:02.105831Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(20)
+2025-12-05T14:34:02.106114Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(17)
+2025-12-05T14:34:02.106673Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(16)
+2025-12-05T14:34:02.106925Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(50)
+2025-12-05T14:34:02.107244Z  WARN ThreadId(25) hotstuff_runner::smrol::network: ⚠️ Large message: 1600169 bytes to node Some(38)
+2025-12-05T14:34:02.107902Z  WARN ThreadId(24) hotstuff_runner::smrol::network: ⚠️ [Check] Writer 0 -> 4 slow write: 18.345806ms
+2025-12-05T14:34:05.027886Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:34:05.149259Z  WARN ThreadId(02) docker_node: Node 0 Regular transaction queue backlog: 2540480 transactions
+2025-12-05T14:34:05.530101Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 [produce_block] queue size: 2540480, attempting up to 180000 transactions this block    
+2025-12-05T14:34:05.904245Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(104) far exceeds block count (1); potential sync issue    
+2025-12-05T14:34:10.028016Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:34:10.149823Z  WARN ThreadId(06) docker_node: Node 0 Regular transaction queue backlog: 1839447 transactions
+2025-12-05T14:34:15.028102Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:34:15.149288Z  WARN ThreadId(08) docker_node: Node 0 Regular transaction queue backlog: 2730716 transactions
+2025-12-05T14:34:20.028098Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:34:20.149280Z  WARN ThreadId(08) docker_node: Node 0 Regular transaction queue backlog: 3095645 transactions
+2025-12-05T14:34:23.727575Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 107 timed out; latency may accumulate
+2025-12-05T14:34:25.028268Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:34:25.149516Z  WARN ThreadId(08) docker_node: Node 0 Regular transaction queue backlog: 3095645 transactions
+2025-12-05T14:34:28.465587Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[7, 82, 180, 13, 33, 150, 36, 183, 83, 195, 51, 111, 42, 235, 128, 19, 119, 207, 43, 36, 204, 99, 113, 92, 102, 155, 167, 134, 205, 180, 238, 221] view=100 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=true (exists=true) | cond3(view>locked || extends)=false (pc.view=100, locked.view=103, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[239, 191, 218, 161, 95, 32, 136, 241, 155, 178, 203, 118, 18, 3, 219, 191, 209, 149, 101, 204, 230, 45, 196, 239, 43, 209, 94, 239, 245, 26, 219, 69] highest_pc.view=106 locked.block=[143, 231, 81, 253, 161, 19, 28, 140, 244, 151, 202, 54, 3, 83, 176, 164, 35, 222, 186, 2, 34, 127, 205, 254, 201, 157, 81, 170, 13, 191, 57, 218] locked.view=103    
+2025-12-05T14:34:28.465623Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[17, 223, 90, 1, 148, 61, 131, 56, 82, 83, 158, 204, 115, 53, 222, 123, 3, 134, 170, 11, 56, 246, 68, 70, 86, 112, 14, 239, 59, 166, 55, 250] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[7, 82, 180, 13, 33, 150, 36, 183, 83, 195, 51, 111, 42, 235, 128, 19, 119, 207, 43, 36, 204, 99, 113, 92, 102, 155, 167, 134, 205, 180, 238, 221] justify.view=100 | highest_pc.block=[239, 191, 218, 161, 95, 32, 136, 241, 155, 178, 203, 118, 18, 3, 219, 191, 209, 149, 101, 204, 230, 45, 196, 239, 43, 209, 94, 239, 245, 26, 219, 69] highest_pc.view=106 | locked.block=[143, 231, 81, 253, 161, 19, 28, 140, 244, 151, 202, 54, 3, 83, 176, 164, 35, 222, 186, 2, 34, 127, 205, 254, 201, 157, 81, 170, 13, 191, 57, 218] locked.view=103    
+2025-12-05T14:34:28.728984Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 108 timed out; latency may accumulate
+2025-12-05T14:34:30.028550Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:34:30.148833Z  WARN ThreadId(08) docker_node: Node 0 Regular transaction queue backlog: 3095645 transactions
+2025-12-05T14:34:35.028549Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:34:35.148824Z  WARN ThreadId(08) docker_node: Node 0 Regular transaction queue backlog: 3095645 transactions
+2025-12-05T14:34:37.374426Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 110 timed out; latency may accumulate
+2025-12-05T14:34:40.027971Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:34:40.107148Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[238, 78, 169, 206, 251, 136, 68, 141, 61, 181, 152, 240, 13, 77, 230, 109, 58, 205, 68, 129, 35, 114, 67, 110, 101, 150, 70, 84, 5, 238, 59, 82] view=93 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=true (exists=true) | cond3(view>locked || extends)=false (pc.view=93, locked.view=106, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[17, 241, 199, 132, 17, 184, 194, 139, 86, 245, 107, 11, 27, 75, 0, 59, 6, 103, 255, 111, 51, 143, 179, 212, 153, 22, 83, 239, 80, 151, 219, 83] highest_pc.view=109 locked.block=[239, 191, 218, 161, 95, 32, 136, 241, 155, 178, 203, 118, 18, 3, 219, 191, 209, 149, 101, 204, 230, 45, 196, 239, 43, 209, 94, 239, 245, 26, 219, 69] locked.view=106    
+2025-12-05T14:34:40.107185Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[34, 209, 233, 26, 158, 49, 124, 97, 140, 7, 207, 37, 173, 102, 196, 128, 123, 191, 221, 7, 184, 165, 66, 252, 180, 156, 18, 157, 220, 132, 176, 73] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[238, 78, 169, 206, 251, 136, 68, 141, 61, 181, 152, 240, 13, 77, 230, 109, 58, 205, 68, 129, 35, 114, 67, 110, 101, 150, 70, 84, 5, 238, 59, 82] justify.view=93 | highest_pc.block=[17, 241, 199, 132, 17, 184, 194, 139, 86, 245, 107, 11, 27, 75, 0, 59, 6, 103, 255, 111, 51, 143, 179, 212, 153, 22, 83, 239, 80, 151, 219, 83] highest_pc.view=109 | locked.block=[239, 191, 218, 161, 95, 32, 136, 241, 155, 178, 203, 118, 18, 3, 219, 191, 209, 149, 101, 204, 230, 45, 196, 239, 43, 209, 94, 239, 245, 26, 219, 69] locked.view=106    
+2025-12-05T14:34:40.149245Z  WARN ThreadId(08) docker_node: Node 0 Regular transaction queue backlog: 3095645 transactions
+2025-12-05T14:34:45.028290Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:34:45.064359Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_PC_FAIL: pc.block=[238, 78, 169, 206, 251, 136, 68, 141, 61, 181, 152, 240, 13, 77, 230, 109, 58, 205, 68, 129, 35, 114, 67, 110, 101, 150, 70, 84, 5, 238, 59, 82] view=93 phase=Generic | cond1(chain_id/genesis)=true (pc.chain_id=0, my.chain_id=0) | cond2(block_exists/genesis)=true (exists=true) | cond3(view>locked || extends)=false (pc.view=93, locked.view=106, extends=false) | cond4(phase/updates)=true (phase_special=false, has_updates=false) | highest_pc.block=[17, 241, 199, 132, 17, 184, 194, 139, 86, 245, 107, 11, 27, 75, 0, 59, 6, 103, 255, 111, 51, 143, 179, 212, 153, 22, 83, 239, 80, 151, 219, 83] highest_pc.view=109 locked.block=[239, 191, 218, 161, 95, 32, 136, 241, 155, 178, 203, 118, 18, 3, 219, 191, 209, 149, 101, 204, 230, 45, 196, 239, 43, 209, 94, 239, 245, 26, 219, 69] locked.view=106    
+2025-12-05T14:34:45.064392Z  WARN ThreadId(20) hotstuff_rs::block_tree::invariants: SAFE_BLOCK_FAIL: block=[228, 94, 179, 166, 239, 64, 64, 0, 115, 153, 190, 7, 250, 92, 0, 32, 168, 36, 241, 24, 191, 31, 151, 76, 121, 253, 250, 244, 194, 70, 253, 210] height=None | cond1(safe_pc)=false | cond2(is_block_justify)=true (justify.phase=Generic) | justify.block=[238, 78, 169, 206, 251, 136, 68, 141, 61, 181, 152, 240, 13, 77, 230, 109, 58, 205, 68, 129, 35, 114, 67, 110, 101, 150, 70, 84, 5, 238, 59, 82] justify.view=93 | highest_pc.block=[17, 241, 199, 132, 17, 184, 194, 139, 86, 245, 107, 11, 27, 75, 0, 59, 6, 103, 255, 111, 51, 143, 179, 212, 153, 22, 83, 239, 80, 151, 219, 83] highest_pc.view=109 | locked.block=[239, 191, 218, 161, 95, 32, 136, 241, 155, 178, 203, 118, 18, 3, 219, 191, 209, 149, 101, 204, 230, 45, 196, 239, 43, 209, 94, 239, 245, 26, 219, 69] locked.view=106    
+2025-12-05T14:34:45.149585Z  WARN ThreadId(08) docker_node: Node 0 Regular transaction queue backlog: 3095645 transactions
+2025-12-05T14:34:50.028251Z  WARN ThreadId(08) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:34:50.149497Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 3095645 transactions
+2025-12-05T14:34:55.028527Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:34:55.148788Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 3095645 transactions
+2025-12-05T14:35:00.027860Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:35:00.149126Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 3095645 transactions
+2025-12-05T14:35:02.381531Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 115 timed out; latency may accumulate
+2025-12-05T14:35:05.028376Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:35:05.149614Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 3095645 transactions
+2025-12-05T14:35:10.027716Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:35:10.148950Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 3095645 transactions
+2025-12-05T14:35:12.384319Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 117 timed out; latency may accumulate
+2025-12-05T14:35:15.028044Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:35:15.149324Z  WARN ThreadId(03) docker_node: Node 0 Regular transaction queue backlog: 3095645 transactions
+2025-12-05T14:35:20.027657Z  WARN ThreadId(03) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:35:20.148879Z  WARN ThreadId(06) docker_node: Node 0 Regular transaction queue backlog: 3095645 transactions
+2025-12-05T14:35:22.387822Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 119 timed out; latency may accumulate
+2025-12-05T14:35:25.028339Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:35:25.149577Z  WARN ThreadId(06) docker_node: Node 0 Regular transaction queue backlog: 3095645 transactions
+2025-12-05T14:35:27.389266Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 120 timed out; latency may accumulate
+2025-12-05T14:35:30.027791Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:35:30.149053Z  WARN ThreadId(06) docker_node: Node 0 Regular transaction queue backlog: 3095645 transactions
+2025-12-05T14:35:32.390692Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Node 0 view 121 timed out; latency may accumulate
+2025-12-05T14:35:35.028585Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:35:35.148838Z  WARN ThreadId(06) docker_node: Node 0 Regular transaction queue backlog: 3095645 transactions
+2025-12-05T14:35:40.027852Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-05T14:35:40.149063Z  WARN ThreadId(06) docker_node: Node 0 Regular transaction queue backlog: 3095645 transactions
+2025-12-05T14:35:45.028050Z  WARN ThreadId(06) docker_node:   Connection reuse ineffective (2.0 msg/conn)

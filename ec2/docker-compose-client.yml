@@ -17,8 +17,9 @@ services:
       - RUST_LOG=${RUST_LOG}
       - CLIENT_ORDERING_MODE=${CLIENT_ORDERING_MODE}
       - TARGET_TPS=500
-      - CLIENT_TOTAL_TX=100
-      - CLIENT_BATCH_SIZE=10000
+      - CLIENT_TOTAL_TX=5000
+      - CLIENT_BATCH_SIZE=0  # batch mode (batch-tps test)
+      - CLIENT_BATCH_SIZE_CONSTANT=3 # normal batch per node
     volumes:
       - ./logs:/logs
       - ./logs:/log

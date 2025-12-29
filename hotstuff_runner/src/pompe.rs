@@ -905,7 +905,7 @@ impl PompeManager {
             let payload_bytes = bincode::serialized_size(&transaction)
                 .map(|sz| sz as usize)
                 .unwrap_or(0);
-            warn!(
+            debug!(
                 "🚨 [Ordering1] Node {} processing suspiciously high tx_id: {} (payload={} bytes)",
                 node_id, transaction.id, payload_bytes
             );
@@ -978,7 +978,7 @@ impl PompeManager {
             error!("❌ [handle_ordering1_request] Async send failed: {}", e);
         }
         if transaction.id > 100000 {
-            warn!(
+            debug!(
                 "🚨 [Ordering1] Node {} sent response for high tx_id: {}",
                 node_id, transaction.id
             );

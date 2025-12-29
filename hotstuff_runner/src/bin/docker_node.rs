@@ -613,7 +613,7 @@ async fn handle_lockfree_client_connection(
 
                             // Log regular transaction processing with queue status
                             let queue_size = regular_tx_processor.get_queue_size();
-                            info!("[Lock-free] Node {} Regular transaction queued: {}, queue size: {}", 
+                            warn!("[Lock-free] Node {} Regular transaction queued: {}, queue size: {}", 
                                   node_id, tx_string, queue_size);
 
                             // Queue size management (following second code logic)

@@ -40,7 +40,9 @@ init:
 
 deploy:
 	@/opt/homebrew/bin/bash deploy-ec2.sh
-	@$(MAKE) start
+# 	@$(MAKE) start
+	@$(MAKE) pull
+
 
 
 pull:
@@ -65,6 +67,7 @@ pull:
 	@echo "Pulling client image ($(CLIENT)) ..."
 	@ssh $(SSH_OPTS) $(CLIENT) "cd ~/hotstuff && docker compose pull hotstuff-client" || true
 	@echo "Image pull complete"
+# 	@$(MAKE) start
 
 start: 
 	@$(MAKE) hosts-clean
@@ -86,8 +89,8 @@ start:
 	@sleep 20
 	@ssh $(SSH_OPTS) $(CLIENT) "cd ~/hotstuff && docker compose --profile client up -d || docker-compose --profile client up -d" || { echo "Failed to start client"; exit 1; }
 	@echo "Experiment startup complete"
-	@echo "Waiting 3.5 minutes before automatically stopping..."
-	@sleep 210
+	@echo "Waiting 3 minutes before automatically stopping..."
+	@sleep 180
 	@$(MAKE) stop
 
 
@@ -142,19 +145,37 @@ logs-core:
 	node1=$$(awk '$$2=="node1" {print "ubuntu@"$$1; exit}' hosts.txt); \
 	if [ -n "$$node0" ]; then \
 		host=$${node0##*@}; \
-		( scp $(SSH_OPTS) -r $$node0:~/hotstuff/logs/* ./ec2-logs/logs-$$host ) & \
+		( \
+			if ssh $(SSH_OPTS) $$node0 'sh -c "[ -d ~/hotstuff/logs ] && find ~/hotstuff/logs -mindepth 1 -maxdepth 1 | read"'; then \
+				scp $(SSH_OPTS) -r $$node0:~/hotstuff/logs/* ./ec2-logs/logs-$$host; \
+			else \
+				echo "No logs present on $$node0, skipping copy"; \
+			fi \
+		) & \
 		pids="$$pids $$!"; \
 	else \
 		echo "Warning: node0 public IP not found, skipping node0 log collection"; \
 	fi; \
 	if [ -n "$$node1" ]; then \
 		host=$${node1##*@}; \
-		( scp $(SSH_OPTS) -r $$node1:~/hotstuff/logs/* ./ec2-logs/logs-$$host ) & \
+		( \
+			if ssh $(SSH_OPTS) $$node1 'sh -c "[ -d ~/hotstuff/logs ] && find ~/hotstuff/logs -mindepth 1 -maxdepth 1 | read"'; then \
+				scp $(SSH_OPTS) -r $$node1:~/hotstuff/logs/* ./ec2-logs/logs-$$host; \
+			else \
+				echo "No logs present on $$node1, skipping copy"; \
+			fi \
+		) & \
 		pids="$$pids $$!"; \
 	else \
 		echo "Warning: node1 public IP not found, skipping node1 log collection"; \
 	fi; \
-	( scp $(SSH_OPTS) -r $(CLIENT):~/hotstuff/logs ./ec2-logs/logs-client ) & \
+	( \
+		if ssh $(SSH_OPTS) $(CLIENT) 'sh -c "[ -d ~/hotstuff/logs ] && find ~/hotstuff/logs -mindepth 1 -maxdepth 1 | read"'; then \
+			scp $(SSH_OPTS) -r $(CLIENT):~/hotstuff/logs ./ec2-logs/logs-client; \
+		else \
+			echo "No logs present on $(CLIENT), skipping copy"; \
+		fi \
+	) & \
 	pids="$$pids $$!"; \
 	for pid in $$pids; do \
 		if ! wait $$pid; then status=1; fi; \

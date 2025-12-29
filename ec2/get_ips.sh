@@ -109,6 +109,7 @@ cat "$HOSTS_FILE"
 
 echo "Running generate-node-envs.sh (NODE_IP_SOURCE=${NODE_IP_SOURCE:-private})"
 NODE_IP_SOURCE="${NODE_IP_SOURCE:-}" ./generate-node-envs.sh
+# NODE_IP_SOURCE="${NODE_IP_SOURCE:-}" ./generate-node-envs-attack-mode.sh
 
 echo "Updated envs/"
 

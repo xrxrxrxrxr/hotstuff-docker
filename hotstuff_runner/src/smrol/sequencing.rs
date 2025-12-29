@@ -2489,7 +2489,7 @@ impl TransactionSequencing {
         // }
 
         if transaction.id > 100000 {
-            warn!(
+            debug!(
                 "[Sequencing] 🚨 Node {} received suspiciously high tx_id {}, sender {}",
                 self.process_id, transaction.id, sender_id
             );

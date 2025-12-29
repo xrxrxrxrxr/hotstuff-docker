@@ -1,0 +1,132 @@
+2025-12-10T07:28:14.313294Z  WARN ThreadId(01) docker_node: metrics exporter disabled by SMROL_DISABLE_METRICS
+2025-12-10T07:28:34.530512Z  WARN ThreadId(01) hotstuff_runner::tcp_node: Node 0 view timeout set to 5000 ms
+2025-12-10T07:28:34.540748Z ERROR ThreadId(23) hotstuff_runner::pompe_network: Node 0 failed to connect to node 1: Connection refused (os error 111)
+2025-12-10T07:28:34.541128Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 2: Connection refused (os error 111)
+2025-12-10T07:28:34.541481Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 3: Connection refused (os error 111)
+2025-12-10T07:28:34.542174Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 5: Connection refused (os error 111)
+2025-12-10T07:28:34.542549Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 6: Connection refused (os error 111)
+2025-12-10T07:28:34.543860Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 7: Connection refused (os error 111)
+2025-12-10T07:28:34.544205Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 8: Connection refused (os error 111)
+2025-12-10T07:28:34.544564Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 9: Connection refused (os error 111)
+2025-12-10T07:28:34.544942Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 10: Connection refused (os error 111)
+2025-12-10T07:28:34.545292Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 11: Connection refused (os error 111)
+2025-12-10T07:28:34.545644Z ERROR ThreadId(22) hotstuff_runner::pompe_network: Node 0 failed to connect to node 12: Connection refused (os error 111)
+2025-12-10T07:28:34.565991Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: SMROL_MEDIAN_INFLIGHT=24, SMROL_ORDER_FINALIZE_INFLIGHT=4, SMROL_FINAL_SIGN_INFLIGHT=4, SMROL_FINAL_VERIFY_INFLIGHT=24
+2025-12-10T07:28:34.566037Z  WARN ThreadId(01) hotstuff_runner::smrol::sequencing: [Sequencing] Node 0 multi-signature verification disabled: false
+2025-12-10T07:28:34.566678Z  WARN ThreadId(02) hotstuff_runner::smrol::sequencing: [Sequencing] Node 0 final verify dispatcher started
+2025-12-10T07:28:34.567767Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-10T07:28:39.567506Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-10T07:28:39.569839Z  WARN ThreadId(01) docker_node: Node 0 port 20000 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.571653Z  WARN ThreadId(01) docker_node: Node 1 port 20001 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.573538Z  WARN ThreadId(01) docker_node: Node 2 port 20002 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.575558Z  WARN ThreadId(01) docker_node: Node 3 port 20003 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.577443Z  WARN ThreadId(01) docker_node: Node 4 port 20004 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.579064Z  WARN ThreadId(01) docker_node: Node 5 port 20005 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.581098Z  WARN ThreadId(01) docker_node: Node 6 port 20006 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.582795Z  WARN ThreadId(01) docker_node: Node 7 port 20007 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.584361Z  WARN ThreadId(01) docker_node: Node 8 port 20008 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.586016Z  WARN ThreadId(01) docker_node: Node 9 port 20009 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.588014Z  WARN ThreadId(01) docker_node: Node 10 port 20010 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.589844Z  WARN ThreadId(01) docker_node: Node 11 port 20011 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.591574Z  WARN ThreadId(01) docker_node: Node 12 port 20012 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.593835Z  WARN ThreadId(01) docker_node: Node 13 port 20013 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.595534Z  WARN ThreadId(01) docker_node: Node 14 port 20014 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.597127Z  WARN ThreadId(01) docker_node: Node 15 port 20015 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.598653Z  WARN ThreadId(01) docker_node: Node 16 port 20016 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.600257Z  WARN ThreadId(01) docker_node: Node 17 port 20017 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.601905Z  WARN ThreadId(01) docker_node: Node 18 port 20018 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.603546Z  WARN ThreadId(01) docker_node: Node 19 port 20019 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.605349Z  WARN ThreadId(01) docker_node: Node 20 port 20020 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.607112Z  WARN ThreadId(01) docker_node: Node 21 port 20021 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.608860Z  WARN ThreadId(01) docker_node: Node 22 port 20022 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.610725Z  WARN ThreadId(01) docker_node: Node 23 port 20023 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.612424Z  WARN ThreadId(01) docker_node: Node 24 port 20024 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.613939Z  WARN ThreadId(01) docker_node: Node 25 port 20025 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.615666Z  WARN ThreadId(01) docker_node: Node 26 port 20026 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.617413Z  WARN ThreadId(01) docker_node: Node 27 port 20027 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.619385Z  WARN ThreadId(01) docker_node: Node 28 port 20028 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.621136Z  WARN ThreadId(01) docker_node: Node 29 port 20029 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.622685Z  WARN ThreadId(01) docker_node: Node 30 port 20030 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.624165Z  WARN ThreadId(01) docker_node: Node 31 port 20031 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.626073Z  WARN ThreadId(01) docker_node: Node 32 port 20032 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.627764Z  WARN ThreadId(01) docker_node: Node 33 port 20033 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.629512Z  WARN ThreadId(01) docker_node: Node 34 port 20034 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.631227Z  WARN ThreadId(01) docker_node: Node 35 port 20035 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.632964Z  WARN ThreadId(01) docker_node: Node 36 port 20036 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.634863Z  WARN ThreadId(01) docker_node: Node 37 port 20037 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.636583Z  WARN ThreadId(01) docker_node: Node 38 port 20038 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.638132Z  WARN ThreadId(01) docker_node: Node 39 port 20039 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.639668Z  WARN ThreadId(01) docker_node: Node 40 port 20040 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.641250Z  WARN ThreadId(01) docker_node: Node 41 port 20041 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.643144Z  WARN ThreadId(01) docker_node: Node 42 port 20042 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.644774Z  WARN ThreadId(01) docker_node: Node 43 port 20043 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.646511Z  WARN ThreadId(01) docker_node: Node 44 port 20044 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.648179Z  WARN ThreadId(01) docker_node: Node 45 port 20045 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.649784Z  WARN ThreadId(01) docker_node: Node 46 port 20046 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.651270Z  WARN ThreadId(01) docker_node: Node 47 port 20047 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.652982Z  WARN ThreadId(01) docker_node: Node 48 port 20048 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.654614Z  WARN ThreadId(01) docker_node: Node 49 port 20049 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.656312Z  WARN ThreadId(01) docker_node: Node 50 port 20050 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.657942Z  WARN ThreadId(01) docker_node: Node 51 port 20051 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.660872Z  WARN ThreadId(01) docker_node: Node 52 port 20052 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.663140Z  WARN ThreadId(01) docker_node: Node 53 port 20053 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.665274Z  WARN ThreadId(01) docker_node: Node 54 port 20054 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.667089Z  WARN ThreadId(01) docker_node: Node 55 port 20055 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.668867Z  WARN ThreadId(01) docker_node: Node 56 port 20056 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.670618Z  WARN ThreadId(01) docker_node: Node 57 port 20057 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.672169Z  WARN ThreadId(01) docker_node: Node 58 port 20058 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.673971Z  WARN ThreadId(01) docker_node: Node 59 port 20059 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.675805Z  WARN ThreadId(01) docker_node: Node 60 port 20060 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.677279Z  WARN ThreadId(01) docker_node: Node 61 port 20061 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.678891Z  WARN ThreadId(01) docker_node: Node 62 port 20062 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.680582Z  WARN ThreadId(01) docker_node: Node 63 port 20063 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.682159Z  WARN ThreadId(01) docker_node: Node 64 port 20064 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.683856Z  WARN ThreadId(01) docker_node: Node 65 port 20065 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.685603Z  WARN ThreadId(01) docker_node: Node 66 port 20066 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.687269Z  WARN ThreadId(01) docker_node: Node 67 port 20067 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.688946Z  WARN ThreadId(01) docker_node: Node 68 port 20068 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.690544Z  WARN ThreadId(01) docker_node: Node 69 port 20069 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.692177Z  WARN ThreadId(01) docker_node: Node 70 port 20070 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.693799Z  WARN ThreadId(01) docker_node: Node 71 port 20071 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.695388Z  WARN ThreadId(01) docker_node: Node 72 port 20072 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.697093Z  WARN ThreadId(01) docker_node: Node 73 port 20073 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.698900Z  WARN ThreadId(01) docker_node: Node 74 port 20074 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.702146Z  WARN ThreadId(01) docker_node: Node 75 port 20075 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.703923Z  WARN ThreadId(01) docker_node: Node 76 port 20076 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.705572Z  WARN ThreadId(01) docker_node: Node 77 port 20077 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.707287Z  WARN ThreadId(01) docker_node: Node 78 port 20078 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.709045Z  WARN ThreadId(01) docker_node: Node 79 port 20079 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.710717Z  WARN ThreadId(01) docker_node: Node 80 port 20080 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.712251Z  WARN ThreadId(01) docker_node: Node 81 port 20081 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.713885Z  WARN ThreadId(01) docker_node: Node 82 port 20082 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.715403Z  WARN ThreadId(01) docker_node: Node 83 port 20083 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.717086Z  WARN ThreadId(01) docker_node: Node 84 port 20084 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.718617Z  WARN ThreadId(01) docker_node: Node 85 port 20085 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.720170Z  WARN ThreadId(01) docker_node: Node 86 port 20086 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.722066Z  WARN ThreadId(01) docker_node: Node 87 port 20087 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.723876Z  WARN ThreadId(01) docker_node: Node 88 port 20088 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:39.725440Z  WARN ThreadId(01) docker_node: Node 89 port 20089 temporarily unreachable: failed to lookup address information: Temporary failure in name resolution
+2025-12-10T07:28:44.567647Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-10T07:28:49.567851Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-10T07:28:54.567333Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-10T07:28:59.567964Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-10T07:29:04.567780Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (2.0 msg/conn)
+2025-12-10T07:29:09.567400Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (9.0 msg/conn)
+2025-12-10T07:29:09.792117Z  WARN ThreadId(07) hotstuff_runner::pompe: ⚡ [Timed Output] Node 0 flushed 168 transactions
+2025-12-10T07:29:10.292982Z  WARN ThreadId(07) hotstuff_runner::pompe: ⚡ [Timed Output] Node 0 flushed 12 transactions
+2025-12-10T07:29:10.514798Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 [produce_block] queue size: 180, attempting up to 180 transactions this block    
+2025-12-10T07:29:11.107214Z  WARN ThreadId(21) hotstuff_runner::tcp_node: Detected transaction backlog: submit rate (0.5) > confirm rate (0.0)
+2025-12-10T07:29:14.567691Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (9.8 msg/conn)
+2025-12-10T07:29:19.567651Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (9.8 msg/conn)
+2025-12-10T07:29:24.567338Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (9.8 msg/conn)
+2025-12-10T07:29:29.567893Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (9.8 msg/conn)
+2025-12-10T07:29:34.567539Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (9.8 msg/conn)
+2025-12-10T07:29:39.568012Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (9.8 msg/conn)
+2025-12-10T07:29:44.568123Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (9.8 msg/conn)
+2025-12-10T07:29:49.568044Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (9.8 msg/conn)
+2025-12-10T07:29:54.567812Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (9.8 msg/conn)
+2025-12-10T07:29:59.568032Z  WARN ThreadId(02) docker_node:   Connection reuse ineffective (9.8 msg/conn)
+2025-12-10T07:30:04.568221Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (9.8 msg/conn)
+2025-12-10T07:30:05.809064Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 [produce_block] queue size: 0, attempting up to 0 transactions this block    
+2025-12-10T07:30:05.809077Z  WARN ThreadId(20) hotstuff_runner::app: Node 0 view(142) far exceeds block count (1); potential sync issue    
+2025-12-10T07:30:09.568048Z  WARN ThreadId(07) docker_node:   Connection reuse ineffective (9.8 msg/conn)
