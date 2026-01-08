@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # deploy-ec2.sh
 
-SSH_KEY=~/.ssh/xrui.pem
+SSH_KEY= # your key path
 SSH_OPTS="-i $SSH_KEY -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR"
 
 # Read hosts.txt

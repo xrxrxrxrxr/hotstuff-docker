@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-KEY_NAME="xrui"
-PUBLIC_KEY_FILE="$HOME/.ssh/xrui.pub"
+KEY_NAME= # your key name
+PUBLIC_KEY_FILE= # your public key path
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REGIONS_FILE="$SCRIPT_DIR/regions.txt"
 
