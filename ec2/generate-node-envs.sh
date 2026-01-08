@@ -112,6 +112,41 @@ for (( i = 0; i < NODE_COUNT; ++i )); do
   fi
 done
 
+HOTSTUFF_NODE_LEAST_ID_VALUE=1
+if [[ -n "${HOTSTUFF_NODE_LEAST_ID:-}" ]]; then
+  if ! [[ "$HOTSTUFF_NODE_LEAST_ID" =~ ^[0-9]+$ ]]; then
+    echo "HOTSTUFF_NODE_LEAST_ID must be a non-negative integer" >&2
+    exit 1
+  fi
+  HOTSTUFF_NODE_LEAST_ID_VALUE="$HOTSTUFF_NODE_LEAST_ID"
+fi
+
+if (( HOTSTUFF_NODE_LEAST_ID_VALUE >= NODE_COUNT )); then
+  echo "HOTSTUFF_NODE_LEAST_ID (${HOTSTUFF_NODE_LEAST_ID_VALUE}) must be less than NODE_COUNT (${NODE_COUNT})" >&2
+  exit 1
+fi
+
+if [[ -n "${HOTSTUFF_NODE_NUM:-}" ]]; then
+  if ! [[ "$HOTSTUFF_NODE_NUM" =~ ^[0-9]+$ ]] || (( HOTSTUFF_NODE_NUM == 0 )); then
+    echo "HOTSTUFF_NODE_NUM must be a positive integer" >&2
+    exit 1
+  fi
+  HOTSTUFF_NODE_NUM_VALUE="$HOTSTUFF_NODE_NUM"
+else
+  HOTSTUFF_NODE_NUM_VALUE=$((NODE_COUNT - HOTSTUFF_NODE_LEAST_ID_VALUE))
+fi
+
+if (( HOTSTUFF_NODE_LEAST_ID_VALUE + HOTSTUFF_NODE_NUM_VALUE > NODE_COUNT )); then
+  echo "HOTSTUFF_NODE_LEAST_ID (${HOTSTUFF_NODE_LEAST_ID_VALUE}) + HOTSTUFF_NODE_NUM (${HOTSTUFF_NODE_NUM_VALUE}) exceeds NODE_COUNT (${NODE_COUNT})" >&2
+  exit 1
+fi
+
+EFFECTIVE_NODE_COUNT=$HOTSTUFF_NODE_NUM_VALUE
+if (( EFFECTIVE_NODE_COUNT <= 0 )); then
+  echo "Need at least one HotStuff node (check HOTSTUFF_NODE_LEAST_ID/HOTSTUFF_NODE_NUM)" >&2
+  exit 1
+fi
+
 mkdir -p "$ENVS_DIR"
 
 for (( i = 0; i < NODE_COUNT; ++i )); do
@@ -122,6 +157,8 @@ NODE_LEAST_ID=0
 NODE_NUM=${NODE_COUNT}
 NODE_PORT=10000
 NODE_HOSTS=${NODE_HOSTS}
+HOTSTUFF_NODE_LEAST_ID=${HOTSTUFF_NODE_LEAST_ID_VALUE}
+HOTSTUFF_NODE_NUM=${EFFECTIVE_NODE_COUNT}
 EOF
   echo "Generated ${env_file}"
 done
@@ -131,7 +168,7 @@ client_env_file="$ENVS_DIR/client.env"
 cat > "$client_env_file" <<EOF
 CLIENT_ID=client
 CLIENT_MODE=load_test
-CLIENT_ORDERING_MODE=pompe
+CLIENT_ORDERING_MODE=smrol
 NODE_LEAST_ID=0
 NODE_NUM=${NODE_COUNT}
 NODE_HOSTS=${NODE_HOSTS}
@@ -143,4 +180,4 @@ RUST_LOG=warn
 EOF
 echo "Generated ${client_env_file}"
 
-echo "Generated ${NODE_COUNT} node configuration files (NODE_HOSTS uses ${NODE_IP_SOURCE} IPs)."
+echo "Generated ${NODE_COUNT} node configuration files (NODE_HOSTS uses ${NODE_IP_SOURCE} IPs, HotStuff validator range starts at ${HOTSTUFF_NODE_LEAST_ID_VALUE} spanning ${EFFECTIVE_NODE_COUNT} nodes)."

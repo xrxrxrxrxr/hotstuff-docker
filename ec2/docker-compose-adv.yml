@@ -26,7 +26,7 @@ services:
 
       - POMPE_ATTACK_ONLY=1
       - SMROL_ATTACK_ONLY=1
-      - ADVERSARY_MODE=pompe
+      - ADVERSARY_MODE=smrol
       - ADVERSARY_PAYLOAD_BYTES=500
       - ATTACK_SLEEP_MICROS=100
 

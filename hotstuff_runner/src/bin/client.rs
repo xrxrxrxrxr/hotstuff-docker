@@ -65,7 +65,7 @@ pub struct LatencyTracker {
 
 // Separated state: statistics reporter (standalone)
 pub struct StatsReporter {
-    total_responses: usize,
+    consensus_samples: usize,
 }
 
 // Response command enum: latency tracker handles responses
@@ -152,7 +152,8 @@ impl LatencyTracker {
     }
 
     // Support batch processing of consensus responses
-    pub fn handle_consensus_response(&mut self, tx_ids: Vec<u64>) {
+    pub fn handle_consensus_response(&mut self, tx_ids: Vec<u64>) -> usize {
+        let mut recorded = 0;
         for tx_id in tx_ids {
             let base_id = original_tx_id_from_synthetic(tx_id);
 
@@ -165,12 +166,11 @@ impl LatencyTracker {
                 let latency_ms = latency as f64 / 1000.0;
                 self.consensus_latencies.push(latency);
                 self.consensus_recorded.insert(base_id);
-                if base_id % 1000 == 0 {
-                    info!(
-                        "[latency] tx {} consensus delay: {} ms",
-                        base_id, latency_ms
-                    );
-                }
+                recorded += 1;
+                info!(
+                    "[latency] tx {} consensus delay: {} ms",
+                    base_id, latency_ms
+                );
             }
             if let Some(pushed_time) = self.pushed_timestamps.remove(&base_id) {
                 let latency = pushed_time.elapsed().as_micros();
@@ -184,6 +184,7 @@ impl LatencyTracker {
                 }
             }
         }
+        recorded
     }
 
     pub fn get_stats(&self) -> (usize, usize) {
@@ -331,15 +332,20 @@ impl LatencyTracker {
 
 impl StatsReporter {
     pub fn new() -> Self {
-        Self { total_responses: 0 }
+        Self {
+            consensus_samples: 0,
+        }
     }
 
-    pub fn record_response(&mut self) {
-        self.total_responses += 1;
+    pub fn record_consensus_samples(&mut self, count: usize) {
+        if count == 0 {
+            return;
+        }
+        self.consensus_samples += count;
     }
 
     pub fn should_print_stats(&self) -> bool {
-        self.total_responses > 0 && self.total_responses % 100 == 0
+        self.consensus_samples > 0 && self.consensus_samples % 500 == 0
     }
 }
 
@@ -569,9 +575,11 @@ impl ClientNode {
             for node_offset in 0..node_num {
                 let node_id = node_least_id + node_offset;
                 let transactions: Vec<TestTransaction> = if is_batch {
-                    vec![self.tx_generator.generate_batched_tx(batch_size as usize)] // batch mode
+                    vec![self.tx_generator.generate_batched_tx(batch_size as usize)]
+                // batch mode
                 } else {
-                    self.tx_generator.generate_batch(batch_size_costant as usize) // normal mode, x txs per node
+                    self.tx_generator
+                        .generate_batch(batch_size_costant as usize) // normal mode, x txs per node
                 };
                 self.record_transaction_sizes(&transactions);
 
@@ -592,6 +600,9 @@ impl ClientNode {
                             sent_count,
                             node_id
                         );
+                        if total_sent >= max_transactions {
+                            break;
+                        }
                     }
                     Err(e) => {
                         warn!(
@@ -602,6 +613,10 @@ impl ClientNode {
                         );
                     }
                 }
+            }
+
+            if total_sent >= max_transactions {
+                break;
             }
 
             batch_counter += 1;
@@ -1214,6 +1229,7 @@ async fn async_main() -> Result<(), Box<dyn std::error::Error>> {
                         }
                     }
                     Some(response_cmd) = response_rx.recv() => {
+                        let mut new_consensus_samples = 0usize;
                         {
                             let mut tracker_guard = tracker.lock().await;
                             match response_cmd {
@@ -1227,7 +1243,7 @@ async fn async_main() -> Result<(), Box<dyn std::error::Error>> {
                                     tracker_guard.handle_pushed_to_hotstuff(tx_ids);
                                 }
                                 ResponseCommand::HotStuffCommitted { tx_ids } => {
-                                    tracker_guard.handle_consensus_response(tx_ids);
+                                    new_consensus_samples = tracker_guard.handle_consensus_response(tx_ids);
                                 }
                                 ResponseCommand::Error { tx_ids, error_msg } => {
                                     error!("[client] {} transactions failed: {}", tx_ids.len(), error_msg);
@@ -1238,10 +1254,12 @@ async fn async_main() -> Result<(), Box<dyn std::error::Error>> {
                             }
                         }
 
-                        stats_reporter.record_response();
-                        if stats_reporter.should_print_stats() {
-                            let tracker_guard = tracker.lock().await;
-                            tracker_guard.print_comprehensive_stats();
+                        if new_consensus_samples > 0 {
+                            stats_reporter.record_consensus_samples(new_consensus_samples);
+                            if stats_reporter.should_print_stats() {
+                                let tracker_guard = tracker.lock().await;
+                                tracker_guard.print_comprehensive_stats();
+                            }
                         }
                     }
                 }

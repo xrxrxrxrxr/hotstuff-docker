@@ -61,6 +61,8 @@ services:
       - SMROL_DISABLE_METRICS=1
       - RUST_BACKTRACE=1
       - METRICS_LISTEN_ADDR=0.0.0.0:9900
+
+      - HOTSTUFF_NODE_LEAST_ID=0
     volumes:
       - ./logs:/logs
       - ./logs:/log

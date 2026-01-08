@@ -2,7 +2,7 @@
 # deploy-ec2.sh
 
 SSH_KEY=~/.ssh/xrui.pem
-SSH_OPTS="-i $SSH_KEY -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+SSH_OPTS="-i $SSH_KEY -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR"
 
 # Read hosts.txt
 declare -A PUBLIC_IPS PRIVATE_IPS
@@ -60,17 +60,25 @@ for name in "${NODE_NAMES[@]}"; do
       exit 1
     fi
 
+    # 给这个节点的所有输出加前缀（防止并发输出交错导致误判）
+    exec > >(sed -u "s/^/[$name $ip] /") 2>&1
+
     echo "Deploying $name ($ip)..."
 
     set -e
-    ssh $SSH_OPTS ubuntu@$ip "mkdir -p ~/hotstuff/logs"
-    scp $SSH_OPTS docker-compose-node.yml ubuntu@$ip:~/hotstuff/docker-compose.yml
+    REMOTE_BASE="/home/ubuntu/hotstuff"
+
+    ssh $SSH_OPTS ubuntu@$ip "sudo mkdir -p /home/ubuntu/hotstuff/logs && sudo chown -R ubuntu:ubuntu /home/ubuntu/hotstuff"
+    ssh $SSH_OPTS ubuntu@$ip "mkdir -p $REMOTE_BASE/logs"
+    scp $SSH_OPTS docker-compose-node.yml ubuntu@$ip:$REMOTE_BASE/docker-compose.yml
+
     env_file="envs/${name}.env"
     if [[ ! -f "$env_file" ]]; then
       echo "Error: $env_file not found"
       exit 1
     fi
-    scp $SSH_OPTS "$env_file" ubuntu@$ip:~/hotstuff/.env
+
+    scp $SSH_OPTS "$env_file" ubuntu@$ip:$REMOTE_BASE/.env
 
     echo "$name deployment completed"
     echo ""

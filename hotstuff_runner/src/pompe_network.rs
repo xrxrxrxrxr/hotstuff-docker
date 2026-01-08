@@ -6,7 +6,7 @@ use crate::flood_limiter::FloodLimiter;
 use crate::pompe::PompeMessage;
 use crate::resolve_target;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::{
     atomic::{AtomicUsize, Ordering},
     Arc, Mutex, OnceLock,
@@ -54,6 +54,7 @@ pub struct PompeNetwork {
     node_id: usize,
     pompe_port: u16,
     pub peer_node_ids: Vec<usize>,
+    allowed_node_ids: Arc<HashSet<usize>>,
     message_tx: async_mpsc::UnboundedSender<(usize, PompeMessage)>,
     message_rx: Arc<AsyncMutex<async_mpsc::UnboundedReceiver<(usize, PompeMessage)>>>,
 
@@ -80,6 +81,26 @@ fn attack_only_mode() -> bool {
             })
             .unwrap_or(false)
     })
+}
+
+fn read_allowed_node_ids() -> HashSet<usize> {
+    std::env::var("NODE_HOSTS")
+        .ok()
+        .map(|hosts| {
+            hosts
+                .split(',')
+                .filter_map(|entry| {
+                    let mut parts = entry.split(':');
+                    let name = parts.next()?.trim();
+                    if !name.starts_with("node") {
+                        return None;
+                    }
+                    let id = name[4..].parse::<usize>().ok()?;
+                    Some(id)
+                })
+                .collect::<HashSet<_>>()
+        })
+        .unwrap_or_else(HashSet::new)
 }
 
 impl PompeNetwork {
@@ -143,13 +164,29 @@ impl PompeNetwork {
             "Creating Pompe network for node {}, port {}",
             node_id, pompe_port
         );
-        info!("Peer node list: {:?}", peer_node_ids);
+        let allowed_node_ids = Arc::new(read_allowed_node_ids());
+        let filtered_peer_node_ids: Vec<usize> = peer_node_ids
+            .into_iter()
+            .filter(|id| {
+                if allowed_node_ids.contains(id) {
+                    true
+                } else {
+                    warn!(
+                        "[PompeNetwork] Skipping peer node {} because it was not found in NODE_HOSTS",
+                        id
+                    );
+                    false
+                }
+            })
+            .collect();
+
+        info!("Peer node list: {:?}", filtered_peer_node_ids);
 
         // Ensure the current node is present in the peer list
-        if !peer_node_ids.contains(&node_id) {
+        if !filtered_peer_node_ids.contains(&node_id) {
             warn!(
                 "Current node {} not found in peer list: {:?}",
-                node_id, peer_node_ids
+                node_id, filtered_peer_node_ids
             );
         }
 
@@ -178,7 +215,8 @@ impl PompeNetwork {
         let network = Self {
             node_id,
             pompe_port,
-            peer_node_ids,
+            peer_node_ids: filtered_peer_node_ids,
+            allowed_node_ids,
             message_tx: tx,
             message_rx: Arc::new(AsyncMutex::new(rx)),
             connections: Arc::new(tokio::sync::RwLock::new(HashMap::new())),
@@ -341,6 +379,14 @@ impl PompeNetwork {
                 );
                 return Err(format!("Send-to-self failed: {}", e));
             }
+            return Ok(());
+        }
+
+        if !self.allowed_node_ids.contains(&target_node_id) {
+            debug!(
+                "[PompeNetwork] Skipping send to node {} (not present in NODE_HOSTS)",
+                target_node_id
+            );
             return Ok(());
         }
 
@@ -779,6 +825,7 @@ impl Clone for PompeNetwork {
             node_id: self.node_id,
             pompe_port: self.pompe_port,
             peer_node_ids: self.peer_node_ids.clone(),
+            allowed_node_ids: Arc::clone(&self.allowed_node_ids),
             message_tx: self.message_tx.clone(),
             message_rx: Arc::clone(&self.message_rx),
             connections: Arc::clone(&self.connections),

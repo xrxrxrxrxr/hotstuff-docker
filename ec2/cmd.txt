@@ -8,14 +8,18 @@ NODE_IP_SOURCE=public ./get_ips.sh
 attack: 
 ./start_instances.sh --plan plan-30.json
 NODE_IP_SOURCE=public ./get_ips.sh
-    ### change in ./get_ips.sh: 
-    ```
-    # NODE_IP_SOURCE="${NODE_IP_SOURCE:-}" ./generate-node-envs.sh
-    NODE_IP_SOURCE="${NODE_IP_SOURCE:-}" ./generate-node-envs-attack-mode.sh
-    ```    
+    ignore:                            ### change in ./get_ips.sh: 
+                                ```
+                                # NODE_IP_SOURCE="${NODE_IP_SOURCE:-}" ./generate-node-envs.sh
+                                NODE_IP_SOURCE="${NODE_IP_SOURCE:-}" ./generate-node-envs-attack-mode.sh
+                                ```    
     ### changes in docker-compose-adv.yml
     ```
     ADVERSARY_MODE=pompe
+    ```
+    ### changes in docker-compose-node.yml
+    ```
+    HOTSTUFF_NODE_LEAST_ID=1
     ```
 make deploy-adv (after make pull, ignore 'make start' in make pull)
 make start

@@ -892,9 +892,63 @@ async fn async_main() -> Result<(), String> {
         .unwrap_or_else(|_| "4".to_string())
         .parse()
         .expect("NODE_NUM must be a number");
+    let ordering_upper_bound = node_least_id + node_num;
+
+    if ordering_upper_bound <= node_least_id {
+        return Err("NODE_NUM must be greater than zero".to_string());
+    }
+
+    let hotstuff_least_id: usize = match env::var("HOTSTUFF_NODE_LEAST_ID") {
+        Ok(value) => value
+            .parse()
+            .map_err(|_| "HOTSTUFF_NODE_LEAST_ID must be numeric".to_string())?,
+        Err(_) => node_least_id,
+    };
+
+    if hotstuff_least_id < node_least_id || hotstuff_least_id >= ordering_upper_bound {
+        return Err(format!(
+            "HOTSTUFF_NODE_LEAST_ID ({}) must be within [{}, {})",
+            hotstuff_least_id, node_least_id, ordering_upper_bound
+        ));
+    }
+
+    let hotstuff_node_num: usize = match env::var("HOTSTUFF_NODE_NUM") {
+        Ok(value) => {
+            let parsed = value
+                .parse()
+                .map_err(|_| "HOTSTUFF_NODE_NUM must be numeric".to_string())?;
+            if parsed == 0 {
+                return Err("HOTSTUFF_NODE_NUM must be greater than zero".to_string());
+            }
+            parsed
+        }
+        Err(_) => ordering_upper_bound - hotstuff_least_id,
+    };
+
+    warn!(
+        "HOTSTUFF_NODE_LEAST_ID={}, HOTSTUFF_NODE_NUM={}",
+        hotstuff_least_id, hotstuff_node_num
+    );
+
+    let hotstuff_upper_bound = hotstuff_least_id + hotstuff_node_num;
+    if hotstuff_upper_bound > ordering_upper_bound {
+        return Err(format!(
+            "HOTSTUFF validator range [{}..{}) exceeds configured nodes [{}..{})",
+            hotstuff_least_id, hotstuff_upper_bound, node_least_id, ordering_upper_bound
+        ));
+    }
+
+    if node_id < hotstuff_least_id || node_id >= hotstuff_upper_bound {
+        return Err(format!(
+            "Node {} is outside the HotStuff validator range [{}..{}), cannot start docker_node",
+            node_id, hotstuff_least_id, hotstuff_upper_bound
+        ));
+    }
 
     setup_tracing_logger(node_id);
 
+    warn!("HOTSTUFF_NODE_LEAST_ID={}, HOTSTUFF_NODE_NUM={}", hotstuff_least_id, hotstuff_node_num);
+    
     let metrics_disabled = std::env::var("SMROL_DISABLE_METRICS")
         .map(|v| matches!(v.trim(), "1" | "true" | "yes" | "on"))
         .unwrap_or(true);
@@ -916,26 +970,49 @@ async fn async_main() -> Result<(), String> {
     info!("Node key: {:?}", my_verifying_key.to_bytes()[0..8].to_vec());
 
     // Create peer node configuration
-    let mut peer_addrs = HashMap::new();
-    let mut all_verifying_keys = Vec::new();
+    info!(
+        "Configured HotStuff validator range: [{}..{}) ({} nodes)",
+        hotstuff_least_id, hotstuff_upper_bound, hotstuff_node_num
+    );
 
-    for i in node_least_id..=(node_least_id + node_num - 1) {
-        let peer_secret: [u8; 32] = [(i + 1) as u8; 32];
+    let mut peer_addrs = HashMap::new();
+    let mut hotstuff_verifying_keys = Vec::new();
+    let mut verifying_keys_map = HashMap::new();
+    let mut node_id_to_addr = HashMap::new();
+
+    for actual_node_id in node_least_id..ordering_upper_bound {
+        let peer_secret: [u8; 32] = [(actual_node_id + 1) as u8; 32];
         let peer_signing_key = SigningKey::from_bytes(&peer_secret);
         let peer_verifying_key = VerifyingKey::from(peer_signing_key.verifying_key());
 
-        let addr =
-            create_peer_address(i).map_err(|e| format!("Cannot create peer address: {}", e))?;
+        let resolved_addr = create_peer_address(actual_node_id)
+            .map_err(|e| format!("Cannot create peer address: {}", e))?;
 
-        peer_addrs.insert(peer_verifying_key, addr);
-        all_verifying_keys.push(peer_verifying_key);
+        if actual_node_id >= hotstuff_least_id && actual_node_id < hotstuff_upper_bound {
+            peer_addrs.insert(peer_verifying_key, resolved_addr);
+            hotstuff_verifying_keys.push(peer_verifying_key);
 
-        info!(
-            "Node {} peer_verifying_key: {:?} -> {}",
-            i,
-            peer_verifying_key.to_bytes()[0..4].to_vec(),
-            addr
-        );
+            info!(
+                "HotStuff node {} key {:?} -> {}",
+                actual_node_id,
+                peer_verifying_key.to_bytes()[0..4].to_vec(),
+                resolved_addr
+            );
+        } else {
+            debug!(
+                "Ordering-only node {} key {:?} resolved via {}",
+                actual_node_id,
+                peer_verifying_key.to_bytes()[0..4].to_vec(),
+                resolved_addr
+            );
+        }
+
+        // Populate SMROL structures for all ordering nodes (even if excluded from HotStuff)
+        verifying_keys_map.insert(actual_node_id, peer_verifying_key);
+
+        let smrol_port = 21000u16 + actual_node_id as u16;
+        let smrol_addr = SocketAddr::new(resolved_addr.ip(), smrol_port);
+        node_id_to_addr.insert(actual_node_id, smrol_addr);
     }
 
     if !peer_addrs.contains_key(&my_verifying_key) {
@@ -943,11 +1020,15 @@ async fn async_main() -> Result<(), String> {
         return Err("Node configuration error".to_string());
     }
 
-    info!("Validator set: {} validators", all_verifying_keys.len());
+    info!(
+        "Validator set: {} validators ({} ordering nodes)",
+        hotstuff_verifying_keys.len(),
+        node_num
+    );
 
     let init_app_state_updates = AppStateUpdates::new();
     let mut init_validator_set_updates = ValidatorSetUpdates::new();
-    for key in &all_verifying_keys {
+    for key in &hotstuff_verifying_keys {
         init_validator_set_updates.insert(*key, Power::new(1));
     }
 
@@ -991,27 +1072,6 @@ async fn async_main() -> Result<(), String> {
     // Performance stats
     let node_stats = Arc::new(PerformanceStats::new());
     let lockfree_stats = Arc::new(LockFreeStats::new());
-
-    // Pre-compute verifying key map and SMROL address mapping for later managers
-    let mut verifying_keys_map = HashMap::new();
-    let mut node_id_to_addr = HashMap::new();
-
-    for (i, key) in all_verifying_keys.iter().enumerate() {
-        let actual_node_id = node_least_id + i; // Actual node_id
-        verifying_keys_map.insert(actual_node_id, *key);
-
-        if let Some(addr) = peer_addrs.get(key) {
-            let smrol_port = 21000u16 + actual_node_id as u16;
-            let smrol_addr = SocketAddr::new(addr.ip(), smrol_port);
-            node_id_to_addr.insert(actual_node_id, smrol_addr);
-        } else {
-            warn!(
-                "SMROL peer address missing for node {} (verifier {:?})",
-                actual_node_id,
-                key.to_bytes()[0..4].to_vec()
-            );
-        }
-    }
 
     // Start completely lock-free client listener with dual processors
     let client_listener_node_id = node_id;
@@ -1057,7 +1117,7 @@ async fn async_main() -> Result<(), String> {
             pompe_config.batch_size
         );
 
-        let all_node_ids: Vec<usize> = (node_least_id..=(node_least_id + node_num - 1)).collect();
+        let all_node_ids: Vec<usize> = (node_least_id..ordering_upper_bound).collect();
         info!("Pompe network node list: {:?}", all_node_ids);
 
         let mut pompe = PompeManager::new_with_complete_network(
