@@ -24,3 +24,10 @@ NODE_IP_SOURCE=public ./get_ips.sh
 
 `*` in command `./start_instances.sh --plan plan-*.json` is a configurable number for system scale. 
 Alternatively, modify `plan-*.json` file under path `ec2/plans`
+
+
+Note:  
+Modify the key path to your own key path in the following files:
+`ec2/deploy-ec2.sh`
+`ec2/init-ec2.sh`
+`ec2/upload_pubkey.sh`
